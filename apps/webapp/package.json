@@ -1,0 +1,10 @@
+{
+    "name": "apps-webapp",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "nuxt build",
+        "dev": "nx serve webapp",
+        "preview": "node .output/server/index.mjs"
+    }
+}

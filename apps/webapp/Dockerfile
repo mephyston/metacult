@@ -1,20 +1,19 @@
-FROM oven/bun:1-alpine AS base
-WORKDIR /usr/src/app
-
 # Install dependencies
-FROM base AS install
+FROM node:lts-alpine AS install
+WORKDIR /usr/src/app
 COPY package.json bun.lock nx.json tsconfig.base.json ./
-
+COPY apps/webapp/package.json ./apps/webapp/package.json
 COPY libs ./libs
-RUN bun install --frozen-lockfile
+RUN npm install
 
 # Build
 FROM install AS build
 COPY . .
-RUN bun run nx build webapp
+RUN cd apps/webapp && npm run build
 
 # Final image
-FROM base AS release
+FROM oven/bun:1-alpine AS release
+WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/apps/webapp/.output ./.output
 
 EXPOSE 3000/tcp
