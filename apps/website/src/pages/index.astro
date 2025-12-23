@@ -1,0 +1,29 @@
+---
+import { Button } from '@metacult/shared-ui';
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Metacult Website</title>
+	</head>
+	<body class="bg-background text-white p-10 font-sans">
+		<h1 class="text-4xl font-display mb-8 text-primary">
+			Metacult Website (Astro)
+		</h1>
+
+		<div class="space-y-4">
+			<p>Demonstration of Shared UI:</p>
+			<div class="space-x-4">
+				<Button variant="primary" client:visible>Primary Button</Button>
+				<Button variant="secondary" client:visible
+					>Secondary Button</Button
+				>
+				<Button variant="outline" client:visible>Outline Button</Button>
+			</div>
+		</div>
+	</body>
+</html>
