@@ -21,6 +21,16 @@ export default defineNuxtConfig({
   css: ['~/assets/css/styles.css'],
   vite: {
     plugins: [nxViteTsPaths()],
+    build: {
+      target: 'esnext',
+    },
+  },
+  nitro: {
+    esbuild: {
+      options: {
+        target: 'esnext',
+      },
+    },
   },
   modules: ['@nuxtjs/tailwindcss'],
   alias: {
