@@ -2,7 +2,14 @@
     "$schema": "https://railway.com/railway.schema.json",
     "build": {
         "builder": "DOCKERFILE",
-        "dockerfilePath": "apps/webapp/Dockerfile"
+        "dockerfilePath": "apps/webapp/Dockerfile",
+        "watchPatterns": [
+            "apps/webapp/**",
+            "libs/shared/**",
+            "package.json",
+            "bun.lockb",
+            "tsconfig.base.json"
+        ]
     },
     "deploy": {
         "restartPolicyType": "ON_FAILURE"

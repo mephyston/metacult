@@ -60,13 +60,15 @@
   "dependencies": {
     "drizzle-orm": "^0.45.1",
     "elysia": "^1.4.19",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "uuid": "^13.0.0"
   },
   "scripts": {
     "dev": "docker-compose up -d && nx run-many -t serve",
     "stop": "docker-compose down",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "bun libs/backend/infrastructure/src/lib/db/seed.ts"
   }
 }
