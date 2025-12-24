@@ -1,16 +1,12 @@
-import { Elysia, t } from 'elysia';
-import { DrizzleWorkRepository } from '@metacult/backend/infrastructure';
+import { getDbConnection, DrizzleWorkRepository } from '@metacult/backend/infrastructure';
 import { ExploreWorksUseCase } from '@metacult/backend/application';
 import { WorkType } from '@metacult/backend/domain';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import * as schema from '@metacult/backend/infrastructure';
+import { t, Elysia } from 'elysia';
 
 console.log('Registering Real Works Routes...');
 
 // Setup DB connection
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle(pool, { schema });
+const { db } = getDbConnection();
 
 // Instantiate dependencies
 const workRepository = new DrizzleWorkRepository(db as any);
