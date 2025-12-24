@@ -1,3 +1,4 @@
+console.log('🚀 Initializing API...');
 import { Elysia } from 'elysia';
 import { worksRoutes } from './src/routes/works.routes';
 
