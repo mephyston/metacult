@@ -5,7 +5,7 @@
         "dockerfilePath": "apps/api/Dockerfile"
     },
     "deploy": {
-        "restartPolicyType": "ON_FAILURE",
-        "healthcheckPath": "/"
+        "startCommand": "bun run db:migrate && bun run apps/api/index.ts",
+        "restartPolicyType": "ON_FAILURE"
     }
 }

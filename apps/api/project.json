@@ -7,7 +7,7 @@
         "serve": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "bun start",
+                "command": "bun run --cwd ../../ db:migrate && bun run dev",
                 "cwd": "apps/api"
             }
         }

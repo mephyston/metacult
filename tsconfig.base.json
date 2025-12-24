@@ -12,6 +12,15 @@
     "paths": {
       "@metacult/shared-ui": [
         "libs/shared/ui/src/index.ts"
+      ],
+      "@metacult/backend/domain": [
+        "libs/backend/domain/src/index.ts"
+      ],
+      "@metacult/backend/infrastructure": [
+        "libs/backend/infrastructure/src/index.ts"
+      ],
+      "@metacult/backend/application": [
+        "libs/backend/application/src/index.ts"
       ]
     }
   }
