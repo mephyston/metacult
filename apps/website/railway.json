@@ -7,7 +7,7 @@
             "apps/website/**",
             "libs/shared/**",
             "package.json",
-            "bun.lockb",
+            "bun.lock",
             "tsconfig.base.json"
         ]
     },
