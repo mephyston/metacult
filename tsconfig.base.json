@@ -5,7 +5,9 @@
     "target": "ESNext",
     "module": "Preserve",
     "lib": [
-      "ESNext"
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
     ],
     "skipLibCheck": true,
     "baseUrl": ".",
