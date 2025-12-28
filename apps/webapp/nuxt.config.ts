@@ -9,6 +9,15 @@ export default defineNuxtConfig({
     host: 'localhost',
     port: 4201,
   },
+  app: {
+    head: {
+      link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap' }
+      ]
+    }
+  },
   typescript: {
     typeCheck: true,
     tsConfig: {
@@ -18,7 +27,7 @@ export default defineNuxtConfig({
   imports: {
     autoImport: true,
   },
-  css: ['~/assets/css/styles.css'],
+  css: ['~/assets/css/styles.css', '@metacult/shared-ui/styles/global.css'],
   vite: {
     plugins: [nxViteTsPaths()],
     build: {
@@ -34,6 +43,7 @@ export default defineNuxtConfig({
   },
   modules: ['@nuxtjs/tailwindcss'],
   alias: {
+    '@metacult/shared-ui/styles': '../../libs/shared/ui/src/styles',
     '@metacult/shared-ui': '../../libs/shared/ui/src/index.ts',
   },
 });

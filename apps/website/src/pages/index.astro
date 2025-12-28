@@ -1,29 +1,66 @@
 ---
-import { Button } from '@metacult/shared-ui';
+import Layout from '../layouts/Layout.astro';
+import { Hero, ReviewDeck, Card, Button, Badge } from '@metacult/shared-ui';
+
+// Mock Data for Review Deck Demo
+const demoReviews = [
+	{
+		id: 1,
+		title: 'Elden Ring',
+		category: 'Game',
+		image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3', // Placeholder
+		description:
+			"Un chef d'œuvre de FromSoftware. Difficile mais gratifiant.",
+	},
+	{
+		id: 2,
+		title: 'Dune: Part Two',
+		category: 'Movie',
+		image: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3', // Placeholder
+		description: 'Visuellement époustouflant. Une adaptation magistrale.',
+	},
+	{
+		id: 3,
+		title: 'Arcane',
+		category: 'Series',
+		image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=2525&ixlib=rb-4.0.3', // Placeholder
+		description: 'La meilleure adaptation de jeu vidéo jamais réalisée ?',
+	},
+];
+
+// Mock Data for Features
+const features = [
+	{
+		title: 'Swipe Rapide',
+		description:
+			'Triez 50 œuvres en 1 minute. Fini les débats interminables.',
+		icon: '⚡',
+	},
+	{
+		title: 'Backlog Unifié',
+		description: 'Tout votre chaos culturel rangé au même endroit.',
+		icon: '📚',
+	},
+	{
+		title: 'Squad Compatibility',
+		description:
+			'Découvrez qui sont vos vrais amis (et vos ennemis culturels).',
+		icon: '🤝',
+	},
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Metacult Website</title>
-	</head>
-	<body class="bg-background text-white p-10 font-sans">
-		<h1 class="text-4xl font-display mb-8 text-primary">
-			Metacult Website (Astro)
-		</h1>
-
-		<div class="space-y-4">
-			<p>Demonstration of Shared UI:</p>
-			<div class="space-x-4">
-				<Button variant="primary" client:visible>Primary Button</Button>
-				<Button variant="secondary" client:visible
-					>Secondary Button</Button
-				>
-				<Button variant="outline" client:visible>Outline Button</Button>
-			</div>
-		</div>
-	</body>
-</html>
+<Layout title="MetaCult - Le Radar Social">
+	<!-- HERO SECTION -->
+	<Hero
+		client:load
+		badge="Nouvelle Version 2.0"
+		heading="Le Radar Social pour votre Culture."
+		description="Découvrez, suivez et partagez vos films, jeux et séries préférés avec votre squad. Une seule app pour toute votre culture."
+		ctaText="Créez votre compte"
+		ctaLink="/auth/register"
+		secondaryCtaText="Connectez-vous"
+		secondaryCtaLink="/auth/login"
+		image="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1974&auto=format&fit=crop"
+	/>
+</Layout>

@@ -8,6 +8,15 @@
       "types": "./index.d.ts",
       "import": "./index.mjs",
       "require": "./index.js"
-    }
+    },
+    "./styles/*": "./src/styles/*"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.562.0",
+    "radix-vue": "^1.9.17",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7"
   }
 }

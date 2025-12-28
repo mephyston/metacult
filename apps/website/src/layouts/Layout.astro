@@ -1,0 +1,62 @@
+---
+import { Header, Footer } from '@metacult/shared-ui';
+
+import '@metacult/shared-ui/styles/global.css';
+
+interface Props {
+    title: string;
+    bodyClass?: string;
+}
+
+const { title, bodyClass = 'bg-background text-gray-800' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="description" content="Astro description" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <meta name="generator" content={Astro.generator} />
+        <title>{title}</title>
+    </head>
+    <body class={`font-sans min-h-screen flex flex-col ${bodyClass}`}>
+        <Header client:load>
+            <div slot="nav" class="flex gap-8 items-center">
+                <a
+                    href="/"
+                    class="text-sm font-medium hover:text-primary transition-colors"
+                    >Home</a
+                >
+                <a
+                    href="/games"
+                    class="text-sm font-medium hover:text-primary transition-colors"
+                    >Games</a
+                >
+                <a
+                    href="/movies"
+                    class="text-sm font-medium hover:text-primary transition-colors"
+                    >Movies</a
+                >
+                <a
+                    href="/ds"
+                    class="text-sm font-medium text-gray-500 hover:text-white transition-colors"
+                    >Design System</a
+                >
+            </div>
+        </Header>
+
+        <main class="flex-1">
+            <slot />
+        </main>
+
+        <Footer />
+    </body>
+</html>

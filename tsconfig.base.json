@@ -13,6 +13,9 @@
       "@metacult/shared-ui": [
         "libs/shared/ui/src/index.ts"
       ],
+      "@metacult/shared-ui/styles/*": [
+        "libs/shared/ui/src/styles/*"
+      ],
       "@metacult/backend/domain": [
         "libs/backend/domain/src/index.ts"
       ],

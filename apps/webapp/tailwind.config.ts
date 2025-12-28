@@ -1,7 +1,7 @@
-const sharedPreset = require('../../libs/shared/ui/src/styles/tailwind-preset.js');
+import type { Config } from 'tailwindcss';
+import sharedPreset from '../../libs/shared/ui/src/styles/tailwind.preset.mjs';
 
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
     presets: [sharedPreset],
     content: [
         './app.vue',
@@ -16,4 +16,4 @@ module.exports = {
         extend: {},
     },
     plugins: [],
-};
+} satisfies Config;

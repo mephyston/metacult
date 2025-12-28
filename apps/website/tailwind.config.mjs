@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-import sharedPreset from '../../libs/shared/ui/src/styles/tailwind-preset.js';
+/** @type {import('tailwindcss').Config} */
+import sharedPreset from '../../libs/shared/ui/src/styles/tailwind.preset.mjs';
 
 export default {
     presets: [sharedPreset],

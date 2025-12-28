@@ -1,0 +1,126 @@
+---
+import {
+    Button,
+    Card,
+    CardImage,
+    CardContent,
+    CardFooter,
+} from '@metacult/shared-ui';
+---
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>DS - Cards | Metacult</title>
+    </head>
+    <body class="bg-background text-white p-10 font-sans">
+        <h1 class="text-4xl font-display mb-8 text-primary">
+            Design System: Cards
+        </h1>
+
+        <div class="space-y-12">
+            <section>
+                <h2
+                    class="text-2xl text-white mb-6 border-b border-gray-700 pb-2"
+                >
+                    Cards
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Standard Card -->
+                    <Card client:visible>
+                        <CardImage
+                            src="https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7x.jpg"
+                            alt="The Witcher 3"
+                        >
+                            <template #badge>
+                                <span
+                                    class="bg-primary text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm"
+                                    >RPG</span
+                                >
+                            </template>
+                            <template #likes>
+                                <span>❤️ 125</span>
+                            </template>
+                        </CardImage>
+                        <CardContent>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">
+                                The Witcher 3: Wild Hunt
+                            </h3>
+                            <p class="text-sm text-gray-500 mb-4">
+                                Geralt of Rivia searches for his adopted
+                                daughter Ciri in a war-torn open world.
+                            </p>
+                        </CardContent>
+                        <CardFooter>
+                            <Button variant="primary" size="sm" class="w-full"
+                                >View Details</Button
+                            >
+                        </CardFooter>
+                    </Card>
+
+                    <!-- Movie Card -->
+                    <Card client:visible>
+                        <CardImage
+                            src="https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg"
+                            alt="Inception"
+                        >
+                            <template #badge>
+                                <span
+                                    class="bg-danger text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm"
+                                    >Sci-Fi</span
+                                >
+                            </template>
+                        </CardImage>
+                        <CardContent>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">
+                                Inception
+                            </h3>
+                            <p class="text-sm text-gray-500 mb-4">
+                                A thief who steals corporate secrets through the
+                                use of dream-sharing technology.
+                            </p>
+                        </CardContent>
+                        <CardFooter>
+                            <div
+                                class="flex justify-between items-center w-full"
+                            >
+                                <span class="text-xs text-gray-400">2h 28m</span
+                                >
+                                <Button variant="outline" size="sm"
+                                    >Watch Trailer</Button
+                                >
+                            </div>
+                        </CardFooter>
+                    </Card>
+
+                    <!-- Simple Card -->
+                    <Card variant="inverse" client:visible>
+                        <CardContent>
+                            <h3 class="text-white text-lg font-bold mb-2">
+                                System Notification
+                            </h3>
+                            <p class="text-gray-300">
+                                This is an inverse card variant used for system
+                                messages or dark-themed areas.
+                            </p>
+                        </CardContent>
+                        <CardFooter>
+                            <Button variant="secondary" size="sm"
+                                >Dismiss</Button
+                            >
+                        </CardFooter>
+                    </Card>
+                </div>
+            </section>
+        </div>
+    </body>
+</html>

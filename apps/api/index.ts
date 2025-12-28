@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+
 console.log('🚀 Initializing API...');
 import { Elysia } from 'elysia';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
@@ -9,7 +11,8 @@ try {
   const { db } = getDbConnection();
 
   console.log('📦 Running Database Migrations...');
-  await migrate(db, { migrationsFolder: 'drizzle' });
+  const migrationsFolder = resolve(import.meta.dir, '../../drizzle');
+  await migrate(db, { migrationsFolder });
   console.log('✅ Migrations applied successfully!');
 
   const app = new Elysia()
