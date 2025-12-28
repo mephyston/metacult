@@ -6,14 +6,14 @@ import * as path from 'path';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 
-export default defineConfig(() => ({
+export default defineConfig(({ mode }) => ({
   root: import.meta.dirname,
   cacheDir: '../../../node_modules/.vite/libs/shared/ui',
   plugins: [
     vue(),
     nxViteTsPaths(),
     nxCopyAssetsPlugin(['*.md']),
-    dts({
+    mode === 'production' && dts({
       entryRoot: 'src',
       tsconfigPath: path.join(import.meta.dirname, 'tsconfig.lib.json'),
       pathsToAliases: false,

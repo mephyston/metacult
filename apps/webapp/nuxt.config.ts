@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'url';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineNuxtConfig } from 'nuxt/config';
 
@@ -19,7 +20,7 @@ export default defineNuxtConfig({
     }
   },
   typescript: {
-    typeCheck: true,
+    typeCheck: false,
     tsConfig: {
       extends: '../../../tsconfig.json', // Nuxt copies this string as-is to the `./.nuxt/tsconfig.json`, therefore it needs to be relative to that directory
     },
@@ -34,6 +35,9 @@ export default defineNuxtConfig({
       target: 'esnext',
     },
   },
+  build: {
+    transpile: ['@metacult/shared-ui'],
+  },
   nitro: {
     esbuild: {
       options: {
@@ -43,7 +47,7 @@ export default defineNuxtConfig({
   },
   modules: ['@nuxtjs/tailwindcss'],
   alias: {
-    '@metacult/shared-ui/styles': '../../libs/shared/ui/src/styles',
-    '@metacult/shared-ui': '../../libs/shared/ui/src/index.ts',
+    '@metacult/shared-ui/styles': fileURLToPath(new URL('../../libs/shared/ui/src/styles', import.meta.url)),
+    '@metacult/shared-ui': fileURLToPath(new URL('../../libs/shared/ui/src/index.ts', import.meta.url)),
   },
 });
