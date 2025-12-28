@@ -1,11 +1,5 @@
 ---
-import {
-    Button,
-    Card,
-    CardImage,
-    CardContent,
-    CardFooter,
-} from '@metacult/shared-ui';
+import { Button, Card, CardContent, CardFooter } from '@metacult/shared-ui';
 ---
 
 <html lang="en">
@@ -37,20 +31,19 @@ import {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Standard Card -->
                     <Card client:visible>
-                        <CardImage
-                            src="https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7x.jpg"
-                            alt="The Witcher 3"
-                        >
-                            <template #badge>
+                        <div class="relative">
+                            <img
+                                src="https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7x.jpg"
+                                alt="The Witcher 3"
+                                class="w-full h-48 object-cover rounded-t-xl"
+                            />
+                            <div class="absolute top-2 left-2">
                                 <span
                                     class="bg-primary text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm"
                                     >RPG</span
                                 >
-                            </template>
-                            <template #likes>
-                                <span>❤️ 125</span>
-                            </template>
-                        </CardImage>
+                            </div>
+                        </div>
                         <CardContent>
                             <h3 class="text-lg font-bold text-gray-800 mb-2">
                                 The Witcher 3: Wild Hunt
@@ -61,7 +54,7 @@ import {
                             </p>
                         </CardContent>
                         <CardFooter>
-                            <Button variant="primary" size="sm" class="w-full"
+                            <Button variant="default" size="sm" class="w-full"
                                 >View Details</Button
                             >
                         </CardFooter>
@@ -69,17 +62,19 @@ import {
 
                     <!-- Movie Card -->
                     <Card client:visible>
-                        <CardImage
-                            src="https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg"
-                            alt="Inception"
-                        >
-                            <template #badge>
+                        <div class="relative">
+                            <img
+                                src="https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg"
+                                alt="Inception"
+                                class="w-full h-48 object-cover rounded-t-xl"
+                            />
+                            <div class="absolute top-2 left-2">
                                 <span
-                                    class="bg-danger text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm"
+                                    class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm"
                                     >Sci-Fi</span
                                 >
-                            </template>
-                        </CardImage>
+                            </div>
+                        </div>
                         <CardContent>
                             <h3 class="text-lg font-bold text-gray-800 mb-2">
                                 Inception
@@ -103,7 +98,7 @@ import {
                     </Card>
 
                     <!-- Simple Card -->
-                    <Card variant="inverse" client:visible>
+                    <Card client:visible>
                         <CardContent>
                             <h3 class="text-white text-lg font-bold mb-2">
                                 System Notification
