@@ -96,6 +96,7 @@
       "name": "apps-website",
       "version": "0.0.1",
       "dependencies": {
+        "@metacult/shared-ui": "workspace:*",
         "@vueuse/core": "^14.1.0",
         "astro": "^5.16.6",
         "class-variance-authority": "^0.7.1",

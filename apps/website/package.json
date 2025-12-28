@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "astro": "^5.16.6",
+    "@metacult/shared-ui": "workspace:*",
     "@vueuse/core": "^14.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
