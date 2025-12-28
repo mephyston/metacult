@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 FROM base AS install
 COPY package.json bun.lock ./
 COPY apps/api/package.json ./apps/api/package.json
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Final image
 FROM base AS release
