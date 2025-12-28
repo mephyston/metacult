@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 COPY package.json bun.lock nx.json tsconfig.base.json ./
 COPY apps/webapp/package.json ./apps/webapp/package.json
 COPY libs ./libs
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Build
 FROM install AS build
