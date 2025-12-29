@@ -5,6 +5,10 @@ console.log('🚀 Starting Metacult Worker Service...');
 
 const worker = createWorker(IMPORT_QUEUE_NAME, processImportMedia, {
     concurrency: 5, // Process 5 jobs in parallel
+    limiter: {
+        max: 1, // Max 1 job...
+        duration: 1100, // ...per 1.1 seconds (Respect Google API Quota)
+    },
 });
 
 // Daemon mode: Keep process alive
