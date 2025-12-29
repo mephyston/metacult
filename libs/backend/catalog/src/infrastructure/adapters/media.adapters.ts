@@ -12,14 +12,15 @@ export class IgdbAdapter implements IMediaProvider {
 
     async search(query: string): Promise<Media[]> {
         const rawGames = await this.provider.searchGames(query);
-        return rawGames.map(game => mapGameToEntity(game as IgdbGameRaw).media as Media);
+        // Helper to safely cast
+        return rawGames.map(game => mapGameToEntity(game as IgdbGameRaw));
     }
 
     async getMedia(id: string, type: MediaType): Promise<Media | null> {
         if (type !== MediaType.GAME) return null;
         const raw = await this.provider.getGameDetails(id);
         if (!raw) return null;
-        return mapGameToEntity(raw as IgdbGameRaw).media as Media;
+        return mapGameToEntity(raw as IgdbGameRaw);
     }
 }
 
@@ -31,22 +32,22 @@ export class TmdbAdapter implements IMediaProvider {
         // We only map movies and tv from the mixed results
         return rawResults
             .map((item: any) => {
-                if (item.media_type === 'movie') return mapMovieToEntity(item as TmdbMovieRaw).media as Media;
-                if (item.media_type === 'tv') return mapTvToEntity(item as TmdbTvRaw).media as Media;
+                if (item.media_type === 'movie') return mapMovieToEntity(item as TmdbMovieRaw);
+                if (item.media_type === 'tv') return mapTvToEntity(item as TmdbTvRaw);
                 return null;
             })
-            .filter((item): item is Media => item !== null);
+            .filter((item) => item !== null) as Media[];
     }
 
     async getMedia(id: string, type: MediaType): Promise<Media | null> {
         if (type === MediaType.MOVIE) {
             const raw = await this.provider.getDetails(id, 'movie');
             if (!raw) return null;
-            return mapMovieToEntity(raw as TmdbMovieRaw).media as Media;
+            return mapMovieToEntity(raw as TmdbMovieRaw);
         } else if (type === MediaType.TV) {
             const raw = await this.provider.getDetails(id, 'tv');
             if (!raw) return null;
-            return mapTvToEntity(raw as TmdbTvRaw).media as Media;
+            return mapTvToEntity(raw as TmdbTvRaw);
         }
         return null;
     }
@@ -57,13 +58,13 @@ export class GoogleBooksAdapter implements IMediaProvider {
 
     async search(query: string): Promise<Media[]> {
         const rawBooks = await this.provider.searchBooks(query);
-        return rawBooks.map(b => mapBookToEntity(b as GoogleBookRaw).media as Media);
+        return rawBooks.map(b => mapBookToEntity(b as GoogleBookRaw));
     }
 
     async getMedia(id: string, type: MediaType): Promise<Media | null> {
         if (type !== MediaType.BOOK) return null;
         const raw = await this.provider.getBookDetails(id);
         if (!raw) return null;
-        return mapBookToEntity(raw as GoogleBookRaw).media as Media;
+        return mapBookToEntity(raw as GoogleBookRaw);
     }
 }

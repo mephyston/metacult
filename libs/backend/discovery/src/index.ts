@@ -1,3 +1,3 @@
 export * from './application/queries/get-mixed-feed/get-mixed-feed.query';
 export * from './application/queries/get-mixed-feed/get-mixed-feed.handler';
-export * from './infrastructure/api/discovery.routes';
+export * from './api/routes';

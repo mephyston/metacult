@@ -9,7 +9,7 @@ import { MediaType } from '../../domain/entities/media.entity';
 describe('Media Mappers', () => {
 
     describe('TMDB Mapper', () => {
-        it('should map a TMDB Movie to a valid NewMedia + NewMovie entity', () => {
+        it('should map a TMDB Movie to a valid Movie entity', () => {
             const mockTmdbMovie = {
                 id: 101,
                 title: 'Inception',
@@ -24,26 +24,17 @@ describe('Media Mappers', () => {
 
             const result = mapMovieToEntity(mockTmdbMovie as any);
 
-            expect(result.media.type).toBe(MediaType.MOVIE);
-            // Note: Current mapper returns { media, movie } structure, not a single merged entity under 'type'.
-            // Based on mappers.ts content: return { media: {...}, movie: {...} }
-            expect(result.media.title).toBe('Inception');
-            expect(result.media.releaseDate).toBeInstanceOf(Date);
-            expect(result.media.releaseDate?.toISOString().split('T')[0]).toBe('2010-07-16');
-            expect(result.media.globalRating).toBe(8.8);
-            expect(result.media.providerMetadata).toEqual({
-                source: 'TMDB',
-                tmdbId: 101,
-                mediaType: 'movie',
-                movieRaw: mockTmdbMovie
-            });
+            expect(result.type).toBe(MediaType.MOVIE);
+            expect(result.title).toBe('Inception');
+            expect((result.releaseYear as any).value).toBe(2010);
+            expect((result.rating as any).value).toBe(8.8);
+            expect(result.providerId).toBe('101');
 
             // Specific Movie Checks
-            // Mapper.ts: durationMinutes: raw.runtime
-            expect(result.movie.durationMinutes).toBe(148);
+            expect(result.durationMinutes).toBe(148);
         });
 
-        it('should map a TMDB TV Show to a valid NewMedia + NewTv entity', () => {
+        it('should map a TMDB TV Show to a valid TV entity', () => {
             const mockTmdbTv = {
                 id: 202,
                 name: 'Breaking Bad',
@@ -59,11 +50,11 @@ describe('Media Mappers', () => {
 
             const result = mapTvToEntity(mockTmdbTv as any);
 
-            expect(result.media.type).toBe(MediaType.TV);
-            expect(result.media.title).toBe('Breaking Bad');
-            expect(result.tv.creator).toBe('Vince Gilligan');
-            expect(result.tv.episodesCount).toBe(62);
-            expect(result.tv.seasonsCount).toBe(5);
+            expect(result.type).toBe(MediaType.TV);
+            expect(result.title).toBe('Breaking Bad');
+            expect(result.creator).toBe('Vince Gilligan');
+            expect(result.episodesCount).toBe(62);
+            expect(result.seasonsCount).toBe(5);
         });
 
         it('should handle null poster_path gracefully (Edge Case)', () => {
@@ -74,12 +65,13 @@ describe('Media Mappers', () => {
             };
 
             const result = mapMovieToEntity(mockTmdbMovie as any);
-            expect(result.media.title).toBe('Unknown Movie');
+            expect(result.title).toBe('Unknown Movie');
+            expect(result.coverUrl).toBeNull();
         });
     });
 
     describe('IGDB Mapper', () => {
-        it('should correctly convert unix timestamp to Date object', () => {
+        it('should correctly convert unix timestamp to Date object (ReleaseYear)', () => {
             const mockIgdbGame = {
                 id: 303,
                 name: 'The Witcher 3',
@@ -90,11 +82,10 @@ describe('Media Mappers', () => {
 
             const result = mapGameToEntity(mockIgdbGame as any);
 
-            expect(result.media.type).toBe(MediaType.GAME);
-            expect(result.media.title).toBe('The Witcher 3');
-            expect(result.media.releaseDate).toBeInstanceOf(Date);
-            expect(result.media.releaseDate?.toISOString().startsWith('2015-05-19')).toBe(true);
-            expect(result.game.platform).toEqual(['PC']);
+            expect(result.type).toBe(MediaType.GAME);
+            expect(result.title).toBe('The Witcher 3');
+            expect((result.releaseYear as any).value).toBe(2015);
+            expect(result.platform).toEqual(['PC']);
         });
     });
 });

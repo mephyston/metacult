@@ -10,7 +10,7 @@ async function runMigrations() {
 
     // Assuming process.cwd() is the project root in Docker (/usr/src/app)
     // Or local project root
-    const migrationsFolder = path.join(process.cwd(), 'drizzle');
+    const migrationsFolder = path.join(process.cwd(), 'libs/backend/infrastructure/drizzle');
     console.log(`🔹 Migrations folder: ${migrationsFolder}`);
 
     for (let i = 1; i <= MAX_RETRIES; i++) {

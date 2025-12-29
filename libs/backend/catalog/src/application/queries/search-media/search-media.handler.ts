@@ -9,7 +9,7 @@ export class SearchMediaHandler {
 
     async execute(query: SearchMediaQuery): Promise<Media[]> {
         console.log(`[SearchMediaHandler] Search: "${query.search || ''}" Type: ${query.type || 'ALL'}`);
-        return this.mediaRepository.findMany({
+        return this.mediaRepository.search({
             search: query.search,
             type: query.type,
             tag: query.tag

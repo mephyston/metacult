@@ -1,37 +1,42 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
-import { mediaRoutes } from '@metacult/backend/catalog';
+import { catalogRoutes, mediaSchema } from '@metacult/backend/catalog';
 import { discoveryRoutes } from '@metacult/backend/discovery';
 import { authRoutes } from './src/routes/auth.routes';
 import { importRoutes } from './src/routes/import.routes';
 import { getDbConnection } from '@metacult/backend/infrastructure';
-import * as schema from '@metacult/backend/infrastructure';
+import * as infraSchema from '@metacult/backend/infrastructure';
 import { initCrons } from './src/cron/cron.service';
 
 // Initialize DB (Composition Root)
-const { db } = getDbConnection(schema);
+// Merge schemas to ensure DB client satisfies all module requirements
+const fullSchema = { ...infraSchema, ...mediaSchema };
+// Initialize Singleton
+getDbConnection(fullSchema);
 
-try {
-  console.log('🚀 Initializing API...');
-  console.log('🔌 Connecting to Database...');
+console.log('🚀 Initializing API (Elysia)...');
+console.log('🔌 Connecting to Database...');
 
-  // Initialize Cron Jobs
-  initCrons().catch(console.error);
+// Initialize Cron Jobs
+initCrons().catch(console.error);
 
-  const app = new Elysia()
-    .use(mediaRoutes)
-    .use(authRoutes)
-    .use(importRoutes)
-    .get('/', () => 'Hello Metacult API')
-    .listen({
-      port: Number(process.env.PORT) || 3333,
-      hostname: '0.0.0.0'
-    });
+const app = new Elysia()
+  .use(swagger())
+  .use(cors())
+  .get('/', () => 'Hello Metacult API (Elysia)')
+  // Mount Routes
+  .use(authRoutes)
+  .group('/api', (app) => app
+    .group('/import', (app) => app.use(importRoutes))
+    .use(catalogRoutes) // catalogRoutes already has prefix '/media'
+    .use(discoveryRoutes) // discoveryRoutes already has prefix '/discovery'
+  );
 
-  console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
+const port = Number(process.env.PORT) || 3333;
 
-} catch (error) {
-  console.error('❌ Failed to start API due to DB/Migration error:', error);
-  process.exit(1);
-}
+app.listen(port);
+
+console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
+
+export default app;

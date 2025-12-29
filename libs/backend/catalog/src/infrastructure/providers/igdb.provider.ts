@@ -1,5 +1,5 @@
 import { redisClient } from '../../../../infrastructure/src/lib/redis/redis.client';
-// import { cacheService } from '@metacult/backend/infrastructure';
+import { cacheService } from '../../../../infrastructure/src/lib/cache/cache.service';
 
 interface TwitchTokenResponse {
     access_token: string;
@@ -82,6 +82,9 @@ export class IgdbProvider {
             console.error('⚠️ IGDB Details Error:', error);
             return null;
         }
+    }
+    async getMedia(id: string): Promise<any | null> {
+        return this.getGameDetails(id);
     }
 }
 

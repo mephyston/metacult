@@ -1,48 +1,44 @@
-import { Elysia, t } from 'elysia';
+import { Elysia } from 'elysia';
 import { importQueue } from '@metacult/backend/infrastructure';
 
-export const importRoutes = new Elysia({ prefix: '/import' })
-    .post('/games/:id', async ({ params }) => {
-        const jobId = `game-${params.id}-${Date.now()}`;
+// Routes are prefixed in the mounting file (e.g. /api/import)
+
+const app = new Elysia()
+    .post('/games/:id', async ({ params: { id } }) => {
+        const jobId = `game-${id}-${Date.now()}`;
         await importQueue.add('import-game', {
             type: 'game',
-            id: params.id
+            id
         }, { jobId });
 
-        return { status: 'queued', type: 'game', id: params.id, jobId };
-    }, {
-        params: t.Object({ id: t.String() })
+        return { status: 'queued', type: 'game', id, jobId };
     })
-    .post('/movies/:id', async ({ params }) => {
-        const jobId = `movie-${params.id}-${Date.now()}`;
+    .post('/movies/:id', async ({ params: { id } }) => {
+        const jobId = `movie-${id}-${Date.now()}`;
         await importQueue.add('import-movie', {
             type: 'movie',
-            id: params.id
+            id
         }, { jobId });
 
-        return { status: 'queued', type: 'movie', id: params.id, jobId };
-    }, {
-        params: t.Object({ id: t.String() })
+        return { status: 'queued', type: 'movie', id, jobId };
     })
-    .post('/tv/:id', async ({ params }) => {
-        const jobId = `tv-${params.id}-${Date.now()}`;
+    .post('/tv/:id', async ({ params: { id } }) => {
+        const jobId = `tv-${id}-${Date.now()}`;
         await importQueue.add('import-tv', {
             type: 'tv',
-            id: params.id
+            id
         }, { jobId });
 
-        return { status: 'queued', type: 'tv', id: params.id, jobId };
-    }, {
-        params: t.Object({ id: t.String() })
+        return { status: 'queued', type: 'tv', id, jobId };
     })
-    .post('/books/:id', async ({ params }) => {
-        const jobId = `book-${params.id}-${Date.now()}`;
+    .post('/books/:id', async ({ params: { id } }) => {
+        const jobId = `book-${id}-${Date.now()}`;
         await importQueue.add('import-book', {
             type: 'book',
-            id: params.id
+            id
         }, { jobId });
 
-        return { status: 'queued', type: 'book', id: params.id, jobId };
-    }, {
-        params: t.Object({ id: t.String() })
+        return { status: 'queued', type: 'book', id, jobId };
     });
+
+export const importRoutes = app;

@@ -1,4 +1,4 @@
-import { getDbConnection } from '../libs/backend/infrastructure/src/lib/db/client';
+import { getDbConnection } from '../client';
 import { sql } from 'drizzle-orm';
 
 async function main() {

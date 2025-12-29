@@ -1,10 +1,27 @@
 import type { ProviderMetadata } from '../types/provider-responses';
 
+import { Rating } from '../value-objects/rating.vo';
+import { CoverUrl } from '../value-objects/cover-url.vo';
+import { ReleaseYear } from '../value-objects/release-year.vo';
+
 export enum MediaType {
-    GAME = 'GAME',
-    MOVIE = 'MOVIE',
-    TV = 'TV',
-    BOOK = 'BOOK',
+    GAME = 'game',
+    MOVIE = 'movie',
+    TV = 'tv',
+    BOOK = 'book'
+}
+
+export class Media {
+    constructor(
+        public readonly id: string,
+        public readonly title: string,
+        public readonly description: string | null,
+        public readonly type: MediaType,
+        public readonly coverUrl: CoverUrl | null,
+        public readonly rating: Rating | null,
+        public readonly releaseYear: ReleaseYear | null,
+        public readonly providerId: string
+    ) { }
 }
 
 export enum InteractionType {
@@ -21,40 +38,71 @@ export enum RatingValue {
     SKIP = 1,
 }
 
-export interface Media {
-    id: string;
-    type: MediaType;
-    title: string;
-    releaseDate: Date | null;
-    globalRating: number | null;
-    providerMetadata?: ProviderMetadata;
-    createdAt: Date;
+
+export class Game extends Media {
+    constructor(
+        id: string,
+        title: string,
+        description: string | null,
+        coverUrl: CoverUrl | null,
+        rating: Rating | null,
+        releaseYear: ReleaseYear | null,
+        providerId: string,
+        public readonly platform: string[],
+        public readonly developer: string | null,
+        public readonly timeToBeat: number | null
+    ) {
+        super(id, title, description, MediaType.GAME, coverUrl, rating, releaseYear, providerId);
+    }
 }
 
-export interface Game extends Media {
-    type: MediaType.GAME;
-    platform: string[]; // JSON array in DB
-    developer: string | null;
-    timeToBeat: number | null;
+export class Movie extends Media {
+    constructor(
+        id: string,
+        title: string,
+        description: string | null,
+        coverUrl: CoverUrl | null,
+        rating: Rating | null,
+        releaseYear: ReleaseYear | null,
+        providerId: string,
+        public readonly director: string | null,
+        public readonly durationMinutes: number | null
+    ) {
+        super(id, title, description, MediaType.MOVIE, coverUrl, rating, releaseYear, providerId);
+    }
 }
 
-export interface Movie extends Media {
-    type: MediaType.MOVIE;
-    director: string | null;
-    durationMinutes: number | null;
+export class TV extends Media {
+    constructor(
+        id: string,
+        title: string,
+        description: string | null,
+        coverUrl: CoverUrl | null,
+        rating: Rating | null,
+        releaseYear: ReleaseYear | null,
+        providerId: string,
+        public readonly creator: string | null,
+        public readonly episodesCount: number | null,
+        public readonly seasonsCount: number | null
+    ) {
+        super(id, title, description, MediaType.TV, coverUrl, rating, releaseYear, providerId);
+    }
 }
 
-export interface TV extends Media {
-    type: MediaType.TV;
-    creator: string | null;
-    episodesCount: number | null;
-    seasonsCount: number | null;
-}
-
-export interface Book extends Media {
-    type: MediaType.BOOK;
-    author: string | null;
-    pages: number | null;
+export class Book extends Media {
+    constructor(
+        id: string,
+        title: string,
+        description: string | null,
+        coverUrl: CoverUrl | null,
+        rating: Rating | null,
+        releaseYear: ReleaseYear | null,
+        providerId: string,
+        public readonly author: string | null,
+        public readonly pages: number | null
+    ) {
+        super(id, title, description, MediaType.BOOK, coverUrl, rating, releaseYear, providerId);
+    }
 }
 
 export interface UserInteraction {

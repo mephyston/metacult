@@ -1,12 +1,13 @@
 import { Elysia } from 'elysia';
 import { auth } from '@metacult/backend/infrastructure';
 
-export const authRoutes = new Elysia()
-    .get('/api/auth/session', async ({ request }) => {
-        return await auth.api.getSession({
+export const authRoutes = new Elysia({ prefix: '/api/auth' })
+    .get('/session', async ({ request }) => {
+        const session = await auth.api.getSession({
             headers: request.headers
         });
+        return session;
     })
-    .all('/api/auth/*', ({ request }) => {
+    .all('/*', ({ request }) => {
         return auth.handler(request);
     });

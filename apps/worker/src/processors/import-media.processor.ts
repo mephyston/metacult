@@ -14,6 +14,7 @@ import {
     ImportMediaHandler,
     ImportMediaCommand
 } from '@metacult/backend/catalog';
+import { Job } from 'bullmq';
 
 export interface ImportMediaProcessorDeps {
     handler?: ImportMediaHandler;
