@@ -5,34 +5,29 @@ export class TmdbProvider {
     async searchMulti(query: string): Promise<any[]> {
         if (!this.apiKey) return [];
 
-        try {
-            const url = `${this.apiUrl}/search/multi?api_key=${this.apiKey}&query=${encodeURIComponent(query)}&include_adult=false`;
-            const response = await fetch(url);
+        const url = `${this.apiUrl}/search/multi?api_key=${this.apiKey}&query=${encodeURIComponent(query)}&include_adult=false`;
+        const response = await fetch(url);
 
-            if (!response.ok) throw new Error(`TMDB Search failed: ${response.statusText}`);
-
-            const data = (await response.json()) as { results: any[] };
-            // Filter only movies and tv shows
-            return data.results.filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv');
-        } catch (error) {
-            console.error('⚠️ TMDB Search Error:', error);
-            return [];
+        if (!response.ok) {
+            throw new Error(`Provider Error [TMDB]: ${response.status} ${response.statusText}`);
         }
+
+        const data = (await response.json()) as { results: any[] };
+        // Filter only movies and tv shows
+        return data.results.filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv');
     }
 
     async getDetails(id: string, type: 'movie' | 'tv'): Promise<any | null> {
         if (!this.apiKey) return null;
 
-        try {
-            const url = `${this.apiUrl}/${type}/${id}?api_key=${this.apiKey}`;
-            const response = await fetch(url);
+        const url = `${this.apiUrl}/${type}/${id}?api_key=${this.apiKey}`;
+        const response = await fetch(url);
 
-            if (!response.ok) throw new Error(`TMDB Details failed: ${response.statusText}`);
-            return (await response.json()) as any;
-        } catch (error) {
-            console.error('⚠️ TMDB Details Error:', error);
-            return null;
+        if (!response.ok) {
+            throw new Error(`Provider Error [TMDB]: ${response.status} ${response.statusText}`);
         }
+
+        return (await response.json()) as any;
     }
 }
 
