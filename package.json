@@ -84,7 +84,7 @@
     "stop": "docker-compose down",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:migrate:prod": "bun libs/backend/infrastructure/src/lib/db/migrate.ts",
+    "db:migrate:prod": "bun --env-file=apps/api/.env libs/backend/infrastructure/src/lib/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "db:seed": "bun libs/backend/infrastructure/src/lib/db/seed.ts",
     "test": "bun test"
