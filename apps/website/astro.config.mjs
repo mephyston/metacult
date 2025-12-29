@@ -8,6 +8,8 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 // https://astro.build/config
 export default defineConfig({
     integrations: [
@@ -17,7 +19,9 @@ export default defineConfig({
     vite: {
         plugins: [nxViteTsPaths()],
         ssr: {
-            noExternal: ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next'],
+            noExternal: isProduction
+                ? ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'vue', '@astrojs/vue']
+                : ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next'],
         },
         optimizeDeps: {
             include: ['vue', 'radix-vue', 'lucide-vue-next', 'class-variance-authority', 'clsx', 'tailwind-merge'],
