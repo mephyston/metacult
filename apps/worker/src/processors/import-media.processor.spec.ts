@@ -4,19 +4,8 @@ import { MediaType } from '@metacult/backend/domain';
 import { Job } from 'bullmq';
 import { ImportMediaUseCase } from '@metacult/backend/application';
 
-// Mock Infrastructure Dependencies (Still needed for the 'new' calls inside processor if we fall back, 
-// but we are injecting the UseCase so the real one isn't created.
-// HOWEVER, the processor still instantiates Repository/Adapters *before* checking deps.useCase?
-// Let's check the code. Yes, step 1 (Infrastructure) happens before Step 2 (Use Case).
-// So we still need to mock infrastructure to avoid real DB connections.)
+// Mocks are injected via Dependency Injection in the test cases
 
-mock.module('@metacult/backend/infrastructure', () => ({
-    getDbConnection: () => ({ db: {} }),
-    DrizzleMediaRepository: class MockRepo { },
-    IgdbAdapter: class MockIgdb { },
-    TmdbAdapter: class MockTmdb { },
-    GoogleBooksAdapter: class MockBooks { },
-}));
 
 describe('Import Media Processor', () => {
 

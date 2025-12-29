@@ -7,22 +7,26 @@ const mockCreateWorker = mock(() => ({
 }));
 
 // Mock the processor to avoid its dependencies (db, etc.)
-mock.module("./processors/import-media.processor", () => ({
-    processImportMedia: mock(() => Promise.resolve()),
-}));
+// Processor mock removed to prevent leakage into other tests
+
 
 // Mock infrastructure
 mock.module("@metacult/backend/infrastructure", () => {
     return {
         createWorker: mockCreateWorker,
-        IMPORT_QUEUE_NAME: 'import-queue'
+        IMPORT_QUEUE_NAME: 'import-queue',
+        // Stubs for processor imports
+        getDbConnection: () => ({ db: {} }),
+        DrizzleMediaRepository: class { },
+        IgdbAdapter: class { },
+        TmdbAdapter: class { },
+        GoogleBooksAdapter: class { }
     };
 });
 
 describe("Worker Configuration", () => {
     it("should initialize import-queue worker with rate limiting", async () => {
-        // 2. Import the worker index (which executes the createWorker call)
-        // We use dynamic import to ensure mocks are active before execution
+        // 2. Import the worker index
         await import("./index");
 
         // 3. Verify createWorker was called
@@ -30,10 +34,12 @@ describe("Worker Configuration", () => {
 
         // 4. Inspect arguments
         const calls = mockCreateWorker.mock.calls;
+        if (calls.length === 0) throw new Error("Worker not created");
+
         const args = calls[0]; // First call arguments: [queueName, processor, options]
 
         const queueName = args[0];
-        const options = args[2];
+        const options = args[2] as any; // Cast to avoid undefined error
 
         expect(queueName).toBe('import-queue');
 
