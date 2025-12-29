@@ -17,7 +17,7 @@ export default defineConfig({
     vite: {
         plugins: [nxViteTsPaths()],
         ssr: {
-            noExternal: ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'vue', '@astrojs/vue'],
+            noExternal: ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next'],
         },
         optimizeDeps: {
             include: ['vue', 'radix-vue', 'lucide-vue-next', 'class-variance-authority', 'clsx', 'tailwind-merge'],
