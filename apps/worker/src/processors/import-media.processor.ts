@@ -26,21 +26,24 @@ export const processImportMedia = async (job: Job<ImportJob>, deps: ImportMediaP
     console.log(`🔄 [Worker] Processing Import Job ${job.id} | Type: ${type} | ID: ${id}`);
 
     try {
-        // 1. Initialize Dependencies (In a real app, DI container does this)
-        const { db } = getDbConnection();
-        const repository = new DrizzleMediaRepository(db as any);
+        let useCase = deps.useCase;
 
-        const igdbAdapter = new IgdbAdapter();
-        const tmdbAdapter = new TmdbAdapter();
-        const googleBooksAdapter = new GoogleBooksAdapter();
+        if (!useCase) {
+            // 1. Initialize Dependencies (Only if useCase not injected)
+            const { db } = getDbConnection();
+            const repository = new DrizzleMediaRepository(db as any);
 
-        // 2. Initialize Use Case
-        const useCase = deps.useCase || new ImportMediaUseCase(
-            repository,
-            igdbAdapter,
-            tmdbAdapter,
-            googleBooksAdapter
-        );
+            const igdbAdapter = new IgdbAdapter();
+            const tmdbAdapter = new TmdbAdapter();
+            const googleBooksAdapter = new GoogleBooksAdapter();
+
+            useCase = new ImportMediaUseCase(
+                repository,
+                igdbAdapter,
+                tmdbAdapter,
+                googleBooksAdapter
+            );
+        }
 
         // 3. Execute
         let mediaType: MediaType;
