@@ -1,8 +1,5 @@
-import { resolve } from 'path';
-
 console.log('🚀 Initializing API...');
 import { Elysia } from 'elysia';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { worksRoutes } from './src/routes/works.routes';
 import { authRoutes } from './src/routes/auth.routes';
 import { getDbConnection } from '@metacult/backend/infrastructure';
@@ -11,10 +8,9 @@ try {
   console.log('🔌 Connecting to Database...');
   const { db } = getDbConnection();
 
-  console.log('📦 Running Database Migrations...');
-  const migrationsFolder = resolve(import.meta.dir, '../../drizzle');
-  await migrate(db, { migrationsFolder });
-  console.log('✅ Migrations applied successfully!');
+  console.log('🔌 Connecting to Database...');
+  const { db } = getDbConnection();
+
 
   const app = new Elysia()
     .use(worksRoutes)

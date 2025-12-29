@@ -7,4 +7,4 @@ echo "📦 Running Migrations..."
 bun run db:migrate:prod
 
 echo "🔥 Starting Server..."
-exec bun run apps/api/index.ts
+exec bun apps/api/index.ts
