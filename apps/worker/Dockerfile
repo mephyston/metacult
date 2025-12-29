@@ -12,6 +12,9 @@ FROM base AS release
 COPY --from=install /usr/src/app/node_modules ./node_modules
 COPY . .
 
+# Run Tests during build to prevent bad deployments
+RUN bun test apps/worker
+
 # Run the worker
 USER bun
 ENTRYPOINT []
