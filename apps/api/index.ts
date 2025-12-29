@@ -4,6 +4,7 @@ console.log('🚀 Initializing API...');
 import { Elysia } from 'elysia';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { worksRoutes } from './src/routes/works.routes';
+import { authRoutes } from './src/routes/auth.routes';
 import { getDbConnection } from '@metacult/backend/infrastructure';
 
 try {
@@ -17,6 +18,7 @@ try {
 
   const app = new Elysia()
     .use(worksRoutes)
+    .use(authRoutes)
     .get('/', () => 'Hello Metacult API')
     .listen({
       port: Number(process.env.PORT) || 3333,
