@@ -1,16 +1,22 @@
-import { WorkType } from '@metacult/backend/domain';
-import type { IWorkRepository, Work } from '@metacult/backend/domain';
+import { MediaType } from '@metacult/backend/domain';
+import type { IMediaRepository, Media } from '@metacult/backend/domain';
 
-export interface ExploreWorksInput {
+export interface ExploreMediaInput {
     search?: string;
-    type?: WorkType;
+    type?: MediaType;
     tag?: string;
 }
 
-export class ExploreWorksUseCase {
-    constructor(private readonly workRepository: IWorkRepository) { }
+export interface ExploreMediaInput {
+    search?: string;
+    type?: MediaType;
+    tag?: string;
+}
 
-    async execute(input: ExploreWorksInput): Promise<Work[]> {
+export class ExploreMediaUseCase {
+    constructor(private readonly mediaRepository: IMediaRepository) { }
+
+    async execute(input: ExploreMediaInput): Promise<Media[]> {
         // Business logic can be added here (logging, stats, complex filtering rules)
 
         // Example: Maybe we want to enforce that "search" must be at least 3 chars if provided
@@ -19,7 +25,7 @@ export class ExploreWorksUseCase {
             // but normally we would validate Input here.
         }
 
-        return this.workRepository.search({
+        return this.mediaRepository.search({
             search: input.search,
             type: input.type,
             tag: input.tag,

@@ -1,7 +1,7 @@
 export * from './lib/db/schema';
 export * from './lib/db/client';
 export * from './lib/db/schema/auth.schema';
-export * from './lib/repositories/drizzle-work.repository';
+export * from './lib/repositories/drizzle-media.repository';
 export * from './lib/auth/better-auth.service';
 export * from './lib/queue/queue.client';
 export * from './lib/redis/redis.client';
@@ -9,3 +9,4 @@ export * from './lib/cache/cache.service';
 export * from './lib/providers/igdb.provider';
 export * from './lib/providers/tmdb.provider';
 export * from './lib/providers/google-books.provider';
+export * from './lib/adapters/media.adapters';

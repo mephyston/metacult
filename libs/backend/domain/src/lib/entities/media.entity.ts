@@ -1,7 +1,9 @@
-export enum WorkType {
+import type { ProviderMetadata } from '../types/provider-responses';
+
+export enum MediaType {
     GAME = 'GAME',
     MOVIE = 'MOVIE',
-    SHOW = 'SHOW',
+    TV = 'TV',
     BOOK = 'BOOK',
 }
 
@@ -19,31 +21,45 @@ export enum RatingValue {
     SKIP = 1,
 }
 
-export interface Work {
+export interface Media {
     id: string;
-    type: WorkType;
+    type: MediaType;
     title: string;
     releaseDate: Date | null;
     globalRating: number | null;
+    providerMetadata?: ProviderMetadata;
     createdAt: Date;
 }
 
-export interface Game extends Work {
-    type: WorkType.GAME;
+export interface Game extends Media {
+    type: MediaType.GAME;
     platform: string[]; // JSON array in DB
     developer: string | null;
-    timeToBeat: number | null; // Minutes or hours? Usually hours in frontend, but let's assume raw data. User didn't specify unit, but "time_to_beat" implies duration.
+    timeToBeat: number | null;
 }
 
-export interface Movie extends Work {
-    type: WorkType.MOVIE;
+export interface Movie extends Media {
+    type: MediaType.MOVIE;
     director: string | null;
     durationMinutes: number | null;
 }
 
+export interface TV extends Media {
+    type: MediaType.TV;
+    creator: string | null;
+    episodesCount: number | null;
+    seasonsCount: number | null;
+}
+
+export interface Book extends Media {
+    type: MediaType.BOOK;
+    author: string | null;
+    pages: number | null;
+}
+
 export interface UserInteraction {
     userId: string;
-    workId: string;
+    mediaId: string;
     type: InteractionType;
     value: RatingValue | null;
     comments: string | null;

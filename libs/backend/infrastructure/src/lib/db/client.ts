@@ -11,6 +11,7 @@ export const getDbConnection = () => {
         console.log('🔌 Connecting to Database...');
         const isProduction = process.env.NODE_ENV === 'production';
         const connectionString = process.env.DATABASE_URL;
+        console.log(`🔌 Connecting to Database (URL length: ${connectionString?.length || 0})`);
 
         pool = new Pool({
             connectionString,

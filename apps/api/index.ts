@@ -1,17 +1,22 @@
-console.log('🚀 Initializing API...');
 import { Elysia } from 'elysia';
-import { worksRoutes } from './src/routes/works.routes';
+import { mediaRoutes } from './src/routes/media.routes';
 import { authRoutes } from './src/routes/auth.routes';
+import { importRoutes } from './src/routes/import.routes';
 import { getDbConnection } from '@metacult/backend/infrastructure';
+import { initCrons } from './src/cron/cron.service';
 
 try {
+  console.log('🚀 Initializing API...');
   console.log('🔌 Connecting to Database...');
   const { db } = getDbConnection();
 
+  // Initialize Cron Jobs
+  initCrons().catch(console.error);
 
   const app = new Elysia()
-    .use(worksRoutes)
+    .use(mediaRoutes)
     .use(authRoutes)
+    .use(importRoutes)
     .get('/', () => 'Hello Metacult API')
     .listen({
       port: Number(process.env.PORT) || 3333,
@@ -19,6 +24,7 @@ try {
     });
 
   console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
+
 } catch (error) {
   console.error('❌ Failed to start API due to DB/Migration error:', error);
   process.exit(1);

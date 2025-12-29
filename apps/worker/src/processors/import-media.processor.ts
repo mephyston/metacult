@@ -1,34 +1,60 @@
 import type { Job } from 'bullmq';
-import { getDbConnection, works } from '@metacult/backend/infrastructure';
-import { eq } from 'drizzle-orm';
+import {
+    type ImportJob,
+    getDbConnection,
+    DrizzleMediaRepository
+} from '@metacult/backend/infrastructure';
+import { MediaType } from '@metacult/backend/domain';
+import { ImportMediaUseCase } from '@metacult/backend/application';
+import { IgdbAdapter, TmdbAdapter, GoogleBooksAdapter } from '@metacult/backend/infrastructure'; // We'll need to export these
 
-const { db } = getDbConnection();
+export const processImportMedia = async (job: Job<ImportJob>) => {
+    const { type } = job.data;
 
-// Define job payload interface
-interface ImportMediaJob {
-    workId: string;
-    sourceData: any; // Simulated external API data
-}
+    // Log context based on job type
+    if (type === 'daily-global-sync') {
+        console.log(`🔄 [Worker] Processing Cron Job ${job.id} | Type: ${type}`);
+        // TODO: Cron implementation
+        return;
+    }
 
-export const processImportMedia = async (job: Job<ImportMediaJob>) => {
-    console.log(`🔄 Processing Import Job ${job.id} for Work ID: ${job.data.workId}`);
-
-    // Simulate async processing (e.g., fetching from IGDB/TMDB)
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const id = (job.data as any).id;
+    console.log(`🔄 [Worker] Processing Import Job ${job.id} | Type: ${type} | ID: ${id}`);
 
     try {
-        // Fake update in DB
-        // In a real scenario, we would parse sourceData and update columns
-        await db.update(works)
-            .set({
-                sourceRawData: job.data.sourceData,
-                // Mark as updated or processed if we had a status column
-            })
-            .where(eq(works.id, job.data.workId));
+        // 1. Initialize Dependencies (In a real app, DI container does this)
+        const { db } = getDbConnection();
+        const repository = new DrizzleMediaRepository(db as any);
 
-        console.log(`✅ Work ${job.data.workId} updated successfully with raw data.`);
-    } catch (error) {
-        console.error(`💥 Failed to update work ${job.data.workId}:`, error);
-        throw error; // Let BullMQ handle retries
+        const igdbAdapter = new IgdbAdapter();
+        const tmdbAdapter = new TmdbAdapter();
+        const googleBooksAdapter = new GoogleBooksAdapter();
+
+        // 2. Initialize Use Case
+        const useCase = new ImportMediaUseCase(
+            repository,
+            igdbAdapter,
+            tmdbAdapter,
+            googleBooksAdapter
+        );
+
+        // 3. Execute
+        let mediaType: MediaType;
+        switch (type) {
+            case 'game': mediaType = MediaType.GAME; break;
+            case 'movie': mediaType = MediaType.MOVIE; break;
+            case 'tv': mediaType = MediaType.TV; break;
+            case 'book': mediaType = MediaType.BOOK; break;
+            default: throw new Error(`Unknown type ${type}`);
+        }
+
+        await useCase.execute({
+            type: mediaType,
+            sourceId: id
+        });
+
+    } catch (error: any) {
+        console.error(`💥 [Error] Failed to process job ${job.id}:`, error.message);
+        throw error;
     }
 };

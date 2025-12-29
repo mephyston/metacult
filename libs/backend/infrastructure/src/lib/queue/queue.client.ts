@@ -10,7 +10,11 @@ const connection = {
 // --- Producer: Import Queue ---
 export const IMPORT_QUEUE_NAME = 'import-queue';
 
-export const importQueue = new Queue(IMPORT_QUEUE_NAME, {
+export type ImportJob =
+    | { type: 'game' | 'movie' | 'tv' | 'book'; id: string }
+    | { type: 'daily-global-sync'; id?: never };
+
+export const importQueue = new Queue<ImportJob>(IMPORT_QUEUE_NAME, {
     connection,
     defaultJobOptions: {
         attempts: 3,

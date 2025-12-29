@@ -3,15 +3,17 @@ import { processImportMedia } from './processors/import-media.processor';
 
 console.log('🚀 Starting Metacult Worker Service...');
 
+// Create Worker
+// The actual switch logic for job types is delegated to the processor function
 const worker = createWorker(IMPORT_QUEUE_NAME, processImportMedia, {
-    concurrency: 5, // Process 5 jobs in parallel
+    concurrency: 5, // Process up to 5 jobs in parallel
     limiter: {
         max: 1, // Max 1 job...
-        duration: 1100, // ...per 1.1 seconds (Respect Google API Quota)
+        duration: 1100, // ...per 1.1 seconds (Respect Google/External API Quotas)
     },
 });
 
-// Daemon mode: Keep process alive
+// Daemon mode checks
 process.on('SIGSIGINT', async () => {
     console.log('🛑 Shutting down worker...');
     await worker.close();
