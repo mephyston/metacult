@@ -1,8 +1,8 @@
-import { Context } from 'elysia';
-import { SearchMediaHandler } from '../../application/queries/search-media/search-media.handler';
-import { ImportMediaHandler } from '../../application/commands/import-media/import-media.handler';
-import { SearchMediaDto, ImportMediaDto } from '../dtos/media.dtos';
-import { MediaType } from '../../domain/entities/media.entity';
+import type { Context } from 'elysia';
+import { SearchMediaHandler } from '../../../application/queries/search-media/search-media.handler';
+import { ImportMediaHandler } from '../../../application/commands/import-media/import-media.handler';
+import type { SearchMediaDto, ImportMediaDto } from '../dtos/media.dtos';
+import { MediaType } from '../../../domain/entities/media.entity';
 
 export class MediaController {
     constructor(
