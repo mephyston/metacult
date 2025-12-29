@@ -12,8 +12,11 @@ FROM base AS release
 COPY --from=install /usr/src/app/node_modules ./node_modules
 COPY . .
 
+COPY apps/api/start.sh ./apps/api/start.sh
+RUN chmod +x ./apps/api/start.sh
+
 # Run the app
 USER bun
 EXPOSE 3000/tcp
 ENTRYPOINT []
-CMD [ "bun", "apps/api/index.ts" ]
+CMD [ "./apps/api/start.sh" ]

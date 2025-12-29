@@ -9,7 +9,14 @@ let db: ReturnType<typeof drizzle>;
 export const getDbConnection = () => {
     if (!pool) {
         console.log('🔌 Connecting to Database...');
-        pool = new Pool({ connectionString: process.env.DATABASE_URL });
+        const isProduction = process.env.NODE_ENV === 'production';
+        const connectionString = process.env.DATABASE_URL;
+
+        pool = new Pool({
+            connectionString,
+            ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+        });
+
         db = drizzle(pool, { schema: { ...schema, ...authSchema } });
     }
     return { pool, db };

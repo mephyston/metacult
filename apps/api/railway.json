@@ -13,7 +13,7 @@
         ]
     },
     "deploy": {
-        "startCommand": "bun db:migrate:prod && bun apps/api/index.ts",
+        "startCommand": "./apps/api/start.sh",
         "restartPolicyType": "ON_FAILURE"
     }
 }
