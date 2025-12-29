@@ -1,43 +1,56 @@
-import type { Job } from 'bullmq';
+import { getDbConnection } from '../../../../libs/backend/infrastructure/src/lib/db/client';
+import { type ImportJob, IMPORT_QUEUE_NAME } from '../../../../libs/backend/infrastructure/src/lib/queue/queue.client';
+// } from '@metacult/backend/infrastructure';
+import * as mediaSchema from '@metacult/backend/catalog';
 import {
-    type ImportJob,
-    getDbConnection,
-    DrizzleMediaRepository
-} from '@metacult/backend/infrastructure';
-import { MediaType } from '@metacult/backend/domain';
-import { ImportMediaUseCase } from '@metacult/backend/application';
-import { IgdbAdapter, TmdbAdapter, GoogleBooksAdapter } from '@metacult/backend/infrastructure'; // We'll need to export these
+    MediaType,
+    DrizzleMediaRepository,
+    IgdbProvider,
+    TmdbProvider,
+    GoogleBooksProvider,
+    IgdbAdapter,
+    TmdbAdapter,
+    GoogleBooksAdapter,
+    ImportMediaHandler,
+    ImportMediaCommand
+} from '@metacult/backend/catalog';
 
 export interface ImportMediaProcessorDeps {
-    useCase?: ImportMediaUseCase;
+    handler?: ImportMediaHandler;
 }
 
-export const processImportMedia = async (job: Job<ImportJob>, deps: ImportMediaProcessorDeps = {}) => {
+export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: string | ImportMediaProcessorDeps) => {
+    // Handle DI injection for tests vs BullMQ token
+    const deps = typeof tokenOrDeps === 'object' ? tokenOrDeps : undefined;
     const { type } = job.data;
 
-    // Log context based on job type
     if (type === 'daily-global-sync') {
-        console.log(`🔄 [Worker] Processing Cron Job ${job.id} | Type: ${type}`);
-        // TODO: Cron implementation
+        console.log(`🔄 [Worker] Processing Cron Job ${job.id} | Type: ${type} `);
         return;
     }
 
     const id = (job.data as any).id;
-    console.log(`🔄 [Worker] Processing Import Job ${job.id} | Type: ${type} | ID: ${id}`);
+    console.log(`🔄 [Worker] Processing Import Job ${job.id} | Type: ${type} | ID: ${id} `);
 
     try {
-        let useCase = deps.useCase;
+        let handler = deps?.handler;
 
-        if (!useCase) {
-            // 1. Initialize Dependencies (Only if useCase not injected)
-            const { db } = getDbConnection();
+        if (!handler) {
+            console.log('🏭 [Worker] Initializing dependencies...');
+            const { db } = getDbConnection(mediaSchema);
             const repository = new DrizzleMediaRepository(db as any);
 
-            const igdbAdapter = new IgdbAdapter();
-            const tmdbAdapter = new TmdbAdapter();
-            const googleBooksAdapter = new GoogleBooksAdapter();
+            // Initialize Providers
+            const igdbProvider = new IgdbProvider();
+            const tmdbProvider = new TmdbProvider();
+            const googleBooksProvider = new GoogleBooksProvider();
 
-            useCase = new ImportMediaUseCase(
+            // Wrap in Adapters
+            const igdbAdapter = new IgdbAdapter(igdbProvider);
+            const tmdbAdapter = new TmdbAdapter(tmdbProvider);
+            const googleBooksAdapter = new GoogleBooksAdapter(googleBooksProvider);
+
+            handler = new ImportMediaHandler(
                 repository,
                 igdbAdapter,
                 tmdbAdapter,
@@ -45,7 +58,6 @@ export const processImportMedia = async (job: Job<ImportJob>, deps: ImportMediaP
             );
         }
 
-        // 3. Execute
         let mediaType: MediaType;
         switch (type) {
             case 'game': mediaType = MediaType.GAME; break;
@@ -55,13 +67,13 @@ export const processImportMedia = async (job: Job<ImportJob>, deps: ImportMediaP
             default: throw new Error(`Unknown type ${type}`);
         }
 
-        await useCase.execute({
-            type: mediaType,
-            sourceId: id
-        });
+        const command = new ImportMediaCommand(id, mediaType);
+        await handler.execute(command);
+
+        console.log(`✅ [Worker] Job ${job.id} completed.`);
 
     } catch (error: any) {
-        console.error(`💥 [Error] Failed to process job ${job.id}:`, error.message);
+        console.error(`💥 [Error] Failed to process job ${job.id}: `, error.message);
         throw error;
     }
 };

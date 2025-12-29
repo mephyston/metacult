@@ -1,14 +1,20 @@
 import { Elysia } from 'elysia';
-import { mediaRoutes } from './src/routes/media.routes';
+import { cors } from '@elysiajs/cors';
+import { swagger } from '@elysiajs/swagger';
+import { mediaRoutes } from '@metacult/backend/catalog';
+import { discoveryRoutes } from '@metacult/backend/discovery';
 import { authRoutes } from './src/routes/auth.routes';
 import { importRoutes } from './src/routes/import.routes';
 import { getDbConnection } from '@metacult/backend/infrastructure';
+import * as schema from '@metacult/backend/infrastructure';
 import { initCrons } from './src/cron/cron.service';
+
+// Initialize DB (Composition Root)
+const { db } = getDbConnection(schema);
 
 try {
   console.log('🚀 Initializing API...');
   console.log('🔌 Connecting to Database...');
-  const { db } = getDbConnection();
 
   // Initialize Cron Jobs
   initCrons().catch(console.error);

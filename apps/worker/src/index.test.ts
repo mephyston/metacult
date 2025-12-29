@@ -1,5 +1,6 @@
-import { describe, it, expect, mock, spyOn } from "bun:test";
-
+import { describe, it, expect, mock } from 'bun:test';
+import { IMPORT_QUEUE_NAME } from '../../../libs/backend/infrastructure/src/lib/queue/queue.client';
+// import { IMPORT_QUEUE_NAME } from '@metacult/backend/infrastructure';
 // 1. Mock infrastructure to capture createWorker calls
 const mockCreateWorker = mock(() => ({
     close: async () => { }, // mock close method
@@ -9,6 +10,14 @@ const mockCreateWorker = mock(() => ({
 // Mock the processor to avoid its dependencies (db, etc.)
 // Processor mock removed to prevent leakage into other tests
 
+
+// Mock the DEEP IMPORT path now used by worker/src/index.ts
+mock.module('../../../libs/backend/infrastructure/src/lib/queue/queue.client', () => {
+    return {
+        createWorker: mockCreateWorker,
+        IMPORT_QUEUE_NAME: 'import-queue'
+    };
+});
 
 // Mock infrastructure
 mock.module("@metacult/backend/infrastructure", () => {

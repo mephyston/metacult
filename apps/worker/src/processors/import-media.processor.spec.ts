@@ -1,49 +1,35 @@
 import { describe, it, expect, mock } from 'bun:test';
 import { processImportMedia } from './import-media.processor';
-import { MediaType } from '@metacult/backend/domain';
+import { MediaType, ImportMediaHandler } from '@metacult/backend/catalog';
 import { Job } from 'bullmq';
-import { ImportMediaUseCase } from '@metacult/backend/application';
-
-// Mocks are injected via Dependency Injection in the test cases
-
 
 describe('Import Media Processor', () => {
 
-    it('should route TMDB_MOVIE job to Use Case with correct parameters', async () => {
-        // Arrange
-        const mockExecute = mock(() => Promise.resolve());
-        const mockUseCase = {
-            execute: mockExecute
-        } as unknown as ImportMediaUseCase;
+    // Mock Handler
+    const mockExecute = mock((command) => Promise.resolve());
+    const mockHandler = {
+        execute: mockExecute
+    } as unknown as ImportMediaHandler;
 
-        const mockJob = {
+    it('should route TMDB_MOVIE job to Handler with correct parameters', async () => {
+        const job = {
             id: 'job-1',
             data: {
                 type: 'movie',
-                id: '123'
+                id: '123' // TMDB ID
             }
         } as unknown as Job;
 
-        // Act
-        // Inject the mock use case!
-        await processImportMedia(mockJob, { useCase: mockUseCase });
+        await processImportMedia(job as any, { handler: mockHandler });
 
-        // Assert
         expect(mockExecute).toHaveBeenCalled();
-        expect(mockExecute).toHaveBeenCalledWith({
-            type: MediaType.MOVIE,
-            sourceId: '123'
-        });
+        const callArgs = (mockExecute as any).mock.calls[0][0]; // First arg is Command
+        expect(callArgs.type).toBe(MediaType.MOVIE);
+        expect(callArgs.mediaId).toBe('123');
     });
 
     it('should route GAME job correctly', async () => {
-        // Arrange
-        const mockExecute = mock(() => Promise.resolve());
-        const mockUseCase = {
-            execute: mockExecute
-        } as unknown as ImportMediaUseCase;
-
-        const mockJob = {
+        const job = {
             id: 'job-2',
             data: {
                 type: 'game',
@@ -51,13 +37,10 @@ describe('Import Media Processor', () => {
             }
         } as unknown as Job;
 
-        // Act
-        await processImportMedia(mockJob, { useCase: mockUseCase });
+        await processImportMedia(job as any, { handler: mockHandler });
 
-        // Assert
-        expect(mockExecute).toHaveBeenCalledWith({
-            type: MediaType.GAME,
-            sourceId: '999'
-        });
+        const callArgs = (mockExecute as any).mock.lastCall[0];
+        expect(callArgs.type).toBe(MediaType.GAME);
+        expect(callArgs.mediaId).toBe('999');
     });
 });

@@ -74,3 +74,4 @@ export class CacheService {
 }
 
 export const cacheService = new CacheService();
+// console.log('✅ [Infrastructure] CacheService Initialized', !!cacheService);
