@@ -8,7 +8,11 @@ import { MediaType } from '@metacult/backend/domain';
 import { ImportMediaUseCase } from '@metacult/backend/application';
 import { IgdbAdapter, TmdbAdapter, GoogleBooksAdapter } from '@metacult/backend/infrastructure'; // We'll need to export these
 
-export const processImportMedia = async (job: Job<ImportJob>) => {
+export interface ImportMediaProcessorDeps {
+    useCase?: ImportMediaUseCase;
+}
+
+export const processImportMedia = async (job: Job<ImportJob>, deps: ImportMediaProcessorDeps = {}) => {
     const { type } = job.data;
 
     // Log context based on job type
@@ -31,7 +35,7 @@ export const processImportMedia = async (job: Job<ImportJob>) => {
         const googleBooksAdapter = new GoogleBooksAdapter();
 
         // 2. Initialize Use Case
-        const useCase = new ImportMediaUseCase(
+        const useCase = deps.useCase || new ImportMediaUseCase(
             repository,
             igdbAdapter,
             tmdbAdapter,
