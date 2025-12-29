@@ -13,7 +13,6 @@
         ]
     },
     "deploy": {
-        "startCommand": "./apps/api/start.sh",
         "restartPolicyType": "ON_FAILURE"
     }
 }

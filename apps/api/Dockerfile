@@ -20,6 +20,7 @@ RUN chmod +x ./apps/api/start.sh
 
 # Run the app
 USER bun
+ENV PORT=3000
 EXPOSE 3000/tcp
 ENTRYPOINT []
 CMD [ "./apps/api/start.sh" ]

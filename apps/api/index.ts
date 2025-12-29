@@ -33,10 +33,10 @@ const app = new Elysia()
     .use(discoveryRoutes) // discoveryRoutes already has prefix '/discovery'
   );
 
-const port = Number(process.env.PORT) || 3333;
+const port = Number(process.env.PORT) || 3000;
 
 app.listen(port);
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
 
-export default app;
+// export default app;

@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia';
+import { Elysia, t } from 'elysia';
 import { importQueue } from '@metacult/backend/infrastructure';
 
 // Routes are prefixed in the mounting file (e.g. /api/import)
@@ -12,6 +12,10 @@ const app = new Elysia()
         }, { jobId });
 
         return { status: 'queued', type: 'game', id, jobId };
+    }, {
+        params: t.Object({
+            id: t.String({ minLength: 1 })
+        })
     })
     .post('/movies/:id', async ({ params: { id } }) => {
         const jobId = `movie-${id}-${Date.now()}`;
@@ -21,6 +25,10 @@ const app = new Elysia()
         }, { jobId });
 
         return { status: 'queued', type: 'movie', id, jobId };
+    }, {
+        params: t.Object({
+            id: t.String({ minLength: 1 })
+        })
     })
     .post('/tv/:id', async ({ params: { id } }) => {
         const jobId = `tv-${id}-${Date.now()}`;
@@ -30,6 +38,10 @@ const app = new Elysia()
         }, { jobId });
 
         return { status: 'queued', type: 'tv', id, jobId };
+    }, {
+        params: t.Object({
+            id: t.String({ minLength: 1 })
+        })
     })
     .post('/books/:id', async ({ params: { id } }) => {
         const jobId = `book-${id}-${Date.now()}`;
@@ -39,6 +51,10 @@ const app = new Elysia()
         }, { jobId });
 
         return { status: 'queued', type: 'book', id, jobId };
+    }, {
+        params: t.Object({
+            id: t.String({ minLength: 1 })
+        })
     });
 
 export const importRoutes = app;
