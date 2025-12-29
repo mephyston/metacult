@@ -35,6 +35,7 @@ export const works = pgTable('works', {
     title: text('title').notNull(),
     releaseDate: timestamp('release_date', { mode: 'date' }),
     globalRating: real('global_rating'),
+    sourceRawData: json('source_raw_data'), // Using json for broader compatibility, jsonb if specific psql features needed
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

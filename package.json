@@ -66,6 +66,7 @@
   "dependencies": {
     "@vueuse/core": "^14.1.0",
     "better-auth": "^1.4.9",
+    "bullmq": "^5.66.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.1",
@@ -78,7 +79,7 @@
     "uuid": "^13.0.0"
   },
   "scripts": {
-    "dev": "docker-compose up -d && nx run-many -t serve --output-style=stream",
+    "dev": "docker-compose up -d && bun db:migrate:prod && nx run-many -t serve --output-style=stream",
     "stop": "docker-compose down",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

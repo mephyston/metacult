@@ -1,0 +1,11 @@
+{
+    "name": "@metacult/worker",
+    "module": "src/index.ts",
+    "type": "module",
+    "dependencies": {
+        "bullmq": "*"
+    },
+    "devDependencies": {
+        "@types/node": "*"
+    }
+}

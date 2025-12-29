@@ -13,5 +13,32 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:alpine
+    container_name: metacult-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    container_name: metacult-worker
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: metacult
+      DATABASE_URL: postgres://user:password@postgres:5432/metacult
+      REDIS_URL: redis://redis:6379
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: http://api:3000
+    restart: always
+
 volumes:
   postgres_data:
+  redis_data:
