@@ -28,7 +28,8 @@ describe('Media Mappers', () => {
             expect(result.title).toBe('Inception');
             expect((result.releaseYear as any).value).toBe(2010);
             expect((result.rating as any).value).toBe(8.8);
-            expect(result.providerId).toBe('101');
+            expect(result.externalReference.id).toBe('101');
+            expect(result.externalReference.provider).toBe('tmdb');
 
             // Specific Movie Checks
             expect(result.durationMinutes).toBe(148);
@@ -55,6 +56,8 @@ describe('Media Mappers', () => {
             expect(result.creator).toBe('Vince Gilligan');
             expect(result.episodesCount).toBe(62);
             expect(result.seasonsCount).toBe(5);
+            expect(result.externalReference.id).toBe('202');
+            expect(result.externalReference.provider).toBe('tmdb');
         });
 
         it('should handle null poster_path gracefully (Edge Case)', () => {
@@ -86,6 +89,8 @@ describe('Media Mappers', () => {
             expect(result.title).toBe('The Witcher 3');
             expect((result.releaseYear as any).value).toBe(2015);
             expect(result.platform).toEqual(['PC']);
+            expect(result.externalReference.id).toBe('303');
+            expect(result.externalReference.provider).toBe('igdb');
         });
     });
 });

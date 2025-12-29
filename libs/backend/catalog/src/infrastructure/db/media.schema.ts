@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, timestamp, real, jsonb, json, integer, pgEnum } from 'drizzle-orm/pg-core';
-import type { ProviderMetadata } from '../../domain/types/provider-responses';
+import type { ProviderMetadata } from '../types/raw-responses';
 
 // --- Enums ---
 export const mediaTypeEnum = pgEnum('media_type', [

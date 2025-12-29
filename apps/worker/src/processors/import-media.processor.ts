@@ -4,15 +4,9 @@ import { type ImportJob, IMPORT_QUEUE_NAME } from '../../../../libs/backend/infr
 import * as mediaSchema from '@metacult/backend/catalog';
 import {
     MediaType,
-    DrizzleMediaRepository,
-    IgdbProvider,
-    TmdbProvider,
-    GoogleBooksProvider,
-    IgdbAdapter,
-    TmdbAdapter,
-    GoogleBooksAdapter,
     ImportMediaHandler,
-    ImportMediaCommand
+    ImportMediaCommand,
+    CatalogModuleFactory // Import Factory
 } from '@metacult/backend/catalog';
 import { Job } from 'bullmq';
 
@@ -37,26 +31,10 @@ export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: stri
         let handler = deps?.handler;
 
         if (!handler) {
-            console.log('🏭 [Worker] Initializing dependencies...');
+            console.log('🏭 [Worker] Initializing dependencies via Factory...');
             const { db } = getDbConnection(mediaSchema);
-            const repository = new DrizzleMediaRepository(db as any);
-
-            // Initialize Providers
-            const igdbProvider = new IgdbProvider();
-            const tmdbProvider = new TmdbProvider();
-            const googleBooksProvider = new GoogleBooksProvider();
-
-            // Wrap in Adapters
-            const igdbAdapter = new IgdbAdapter(igdbProvider);
-            const tmdbAdapter = new TmdbAdapter(tmdbProvider);
-            const googleBooksAdapter = new GoogleBooksAdapter(googleBooksProvider);
-
-            handler = new ImportMediaHandler(
-                repository,
-                igdbAdapter,
-                tmdbAdapter,
-                googleBooksAdapter
-            );
+            // Use Factory to create handler
+            handler = CatalogModuleFactory.createImportMediaHandler(db);
         }
 
         let mediaType: MediaType;

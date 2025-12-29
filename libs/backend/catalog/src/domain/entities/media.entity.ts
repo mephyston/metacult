@@ -1,8 +1,9 @@
-import type { ProviderMetadata } from '../types/provider-responses';
+
 
 import { Rating } from '../value-objects/rating.vo';
 import { CoverUrl } from '../value-objects/cover-url.vo';
 import { ReleaseYear } from '../value-objects/release-year.vo';
+import { ExternalReference } from '../value-objects/external-reference.vo';
 
 export enum MediaType {
     GAME = 'game',
@@ -20,7 +21,7 @@ export class Media {
         public readonly coverUrl: CoverUrl | null,
         public readonly rating: Rating | null,
         public readonly releaseYear: ReleaseYear | null,
-        public readonly providerId: string
+        public readonly externalReference: ExternalReference
     ) { }
 }
 
@@ -47,12 +48,12 @@ export class Game extends Media {
         coverUrl: CoverUrl | null,
         rating: Rating | null,
         releaseYear: ReleaseYear | null,
-        providerId: string,
+        externalReference: ExternalReference,
         public readonly platform: string[],
         public readonly developer: string | null,
         public readonly timeToBeat: number | null
     ) {
-        super(id, title, description, MediaType.GAME, coverUrl, rating, releaseYear, providerId);
+        super(id, title, description, MediaType.GAME, coverUrl, rating, releaseYear, externalReference);
     }
 }
 
@@ -64,11 +65,11 @@ export class Movie extends Media {
         coverUrl: CoverUrl | null,
         rating: Rating | null,
         releaseYear: ReleaseYear | null,
-        providerId: string,
+        externalReference: ExternalReference,
         public readonly director: string | null,
         public readonly durationMinutes: number | null
     ) {
-        super(id, title, description, MediaType.MOVIE, coverUrl, rating, releaseYear, providerId);
+        super(id, title, description, MediaType.MOVIE, coverUrl, rating, releaseYear, externalReference);
     }
 }
 
@@ -80,12 +81,12 @@ export class TV extends Media {
         coverUrl: CoverUrl | null,
         rating: Rating | null,
         releaseYear: ReleaseYear | null,
-        providerId: string,
+        externalReference: ExternalReference,
         public readonly creator: string | null,
         public readonly episodesCount: number | null,
         public readonly seasonsCount: number | null
     ) {
-        super(id, title, description, MediaType.TV, coverUrl, rating, releaseYear, providerId);
+        super(id, title, description, MediaType.TV, coverUrl, rating, releaseYear, externalReference);
     }
 }
 
@@ -97,11 +98,11 @@ export class Book extends Media {
         coverUrl: CoverUrl | null,
         rating: Rating | null,
         releaseYear: ReleaseYear | null,
-        providerId: string,
+        externalReference: ExternalReference,
         public readonly author: string | null,
         public readonly pages: number | null
     ) {
-        super(id, title, description, MediaType.BOOK, coverUrl, rating, releaseYear, providerId);
+        super(id, title, description, MediaType.BOOK, coverUrl, rating, releaseYear, externalReference);
     }
 }
 

@@ -6,10 +6,9 @@ export * from './application/queries/search-media/search-media.query';
 export * from './application/queries/search-media/search-media.handler';
 export * from './application/commands/import-media/import-media.command';
 export * from './application/commands/import-media/import-media.handler';
-export * from './infrastructure/repositories/drizzle-media.repository';
-export * from './infrastructure/providers/igdb.provider';
-export * from './infrastructure/providers/tmdb.provider';
-export * from './infrastructure/providers/google-books.provider';
-export * from './infrastructure/adapters/media.adapters';
+export * from './application/factories/catalog.factory'; // New Factory
 export * from './api/routes'; // Export Elysia routes
 export * as mediaSchema from './infrastructure/db/media.schema';
+
+// Note: Infrastructure implementations (Repositories, Providers) are now encapsulated.
+// Consumers must use CatalogModuleFactory or Dependency Injection.

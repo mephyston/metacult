@@ -5,7 +5,7 @@ import type { IgdbProvider } from '../providers/igdb.provider';
 import type { TmdbProvider } from '../providers/tmdb.provider';
 import type { GoogleBooksProvider } from '../providers/google-books.provider';
 import { mapGameToEntity, mapMovieToEntity, mapTvToEntity, mapBookToEntity } from './mappers';
-import type { IgdbGameRaw, TmdbMovieRaw, TmdbTvRaw, GoogleBookRaw } from '../../domain/types/provider-responses';
+import type { IgdbGameRaw, TmdbMovieRaw, TmdbTvRaw, GoogleBookRaw } from '../types/raw-responses';
 
 export class IgdbAdapter implements IMediaProvider {
     constructor(private readonly provider: IgdbProvider) { }

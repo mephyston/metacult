@@ -5,7 +5,9 @@ import { MediaType, Media, Game, Movie, TV, Book } from '../../domain/entities/m
 import { Rating } from '../../domain/value-objects/rating.vo';
 import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
 import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
+import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
 import * as schema from '../db/media.schema';
+import type { ProviderMetadata } from '../types/raw-responses';
 
 // Helper to safely create VOs from DB data
 const createRating = (val: number | null): Rating | null => {
@@ -98,17 +100,35 @@ export class DrizzleMediaRepository implements IMediaRepository {
             // Map ReleaseYear VO to Date (approximate)
             const releaseDate = media.releaseYear ? new Date(media.releaseYear.getValue(), 0, 1) : null;
 
+            // Reconstruct ProviderMetadata from ExternalReference
+            let providerMetadata: ProviderMetadata;
+            const ref = media.externalReference;
+
+            if (ref.provider === 'igdb') {
+                providerMetadata = { source: 'IGDB', igdbId: Number(ref.id) };
+            } else if (ref.provider === 'tmdb') {
+                providerMetadata = {
+                    source: 'TMDB',
+                    tmdbId: Number(ref.id),
+                    mediaType: media.type === MediaType.MOVIE ? 'movie' : 'tv'
+                };
+            } else if (ref.provider === 'google_books') {
+                providerMetadata = { source: 'GOOGLE_BOOKS', googleId: ref.id };
+            } else {
+                providerMetadata = {} as any; // Fallback
+            }
+
             // 1. Insert/Update medias table
             await tx
                 .insert(schema.medias)
                 .values({
                     id: media.id,
                     title: media.title,
-                    type: media.type,
+                    type: media.type.toUpperCase() as any,
                     releaseDate: releaseDate,
                     globalRating: media.rating?.getValue() ?? null,
                     createdAt: new Date(), // Using now for createdAt, assuming new entity
-                    providerMetadata: {}, // Assuming metadata is handled elsewhere or stripped for now if not in Entity root
+                    providerMetadata: providerMetadata,
                 })
                 .onConflictDoUpdate({
                     target: schema.medias.id,
@@ -202,44 +222,55 @@ export class DrizzleMediaRepository implements IMediaRepository {
     }): Media {
         const id = row.medias.id;
         const title = row.medias.title;
-        // const description = row.medias.description; // DB Schema needs description?
-        const description = null; // Add to schema later if needed
-        const providerId = 'unknown'; // Need to map this from metadata or schema
-        const coverUrl = createCoverUrl(null); // DB doesn't seem to have cover_url on root media yet? Schema check needed.
+        const description = null;
+
+        let externalReference: ExternalReference;
+        const metadata = row.medias.providerMetadata;
+
+        if (metadata) {
+            if (metadata.source === 'IGDB') externalReference = new ExternalReference('igdb', String(metadata.igdbId));
+            else if (metadata.source === 'TMDB') externalReference = new ExternalReference('tmdb', String(metadata.tmdbId));
+            else if (metadata.source === 'GOOGLE_BOOKS') externalReference = new ExternalReference('google_books', metadata.googleId);
+            else externalReference = new ExternalReference('unknown', 'unknown');
+        } else {
+            externalReference = new ExternalReference('unknown', 'unknown');
+        }
+
+        const coverUrl = createCoverUrl(null);
         const rating = createRating(row.medias.globalRating);
         const releaseYear = createReleaseYear(row.medias.releaseDate);
 
         switch (row.medias.type) {
-            case MediaType.GAME:
+            case 'GAME':
                 if (!row.games) throw new Error(`Data integrity error: Media ${id} is TYPE GAME but has no games record.`);
                 return new Game(
-                    id, title, description, coverUrl, rating, releaseYear, providerId,
+                    id, title, description, coverUrl, rating, releaseYear, externalReference,
                     row.games.platform as string[],
                     row.games.developer,
                     row.games.timeToBeat
                 );
 
-            case MediaType.MOVIE:
+            case 'MOVIE':
                 if (!row.movies) throw new Error(`Data integrity error: Media ${id} is TYPE MOVIE but has no movies record.`);
                 return new Movie(
-                    id, title, description, coverUrl, rating, releaseYear, providerId,
+                    id, title, description, coverUrl, rating, releaseYear, externalReference,
                     row.movies.director,
                     row.movies.durationMinutes
                 );
 
-            case MediaType.TV:
+            case 'TV':
                 if (!row.tv) throw new Error(`Data integrity error: Media ${id} is TYPE TV but has no tv record.`);
                 return new TV(
-                    id, title, description, coverUrl, rating, releaseYear, providerId,
+                    id, title, description, coverUrl, rating, releaseYear, externalReference,
                     row.tv.creator,
                     row.tv.episodesCount,
                     row.tv.seasonsCount
                 );
 
-            case MediaType.BOOK:
+            case 'BOOK':
                 if (!row.books) throw new Error(`Data integrity error: Media ${id} is TYPE BOOK but has no books record.`);
                 return new Book(
-                    id, title, description, coverUrl, rating, releaseYear, providerId,
+                    id, title, description, coverUrl, rating, releaseYear, externalReference,
                     row.books.author,
                     row.books.pages
                 );

@@ -1,27 +1,15 @@
-import {
-    medias,
-    games,
-    movies,
-    tv,
-    books,
-    mediaTypeEnum,
-} from '../db/media.schema';
 import type {
     IgdbGameRaw,
     TmdbMovieRaw,
     TmdbTvRaw,
     GoogleBookRaw,
-    ProviderMetadata,
-} from '../../domain/types/provider-responses';
-import { eq } from 'drizzle-orm';
+} from '../types/raw-responses';
 import { v4 as uuidv4 } from 'uuid';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from '../db/media.schema';
 
-// Types for Drizzle schema
 import { Rating } from '../../domain/value-objects/rating.vo';
 import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
 import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
+import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
 import { Game, Movie, TV, Book } from '../../domain/entities/media.entity';
 
 // Helper to safely create VOs
@@ -50,7 +38,7 @@ export function mapGameToEntity(raw: IgdbGameRaw): Game {
         createCoverUrl(raw.cover?.url),
         createRating(rating),
         createReleaseYear(raw.first_release_date),
-        String(raw.id),
+        new ExternalReference('igdb', String(raw.id)),
         raw.platforms?.map((p) => p.name) || [],
         null, // Developer not fetched
         null // TimeToBeat not fetched
@@ -66,7 +54,7 @@ export function mapMovieToEntity(raw: TmdbMovieRaw): Movie {
         createCoverUrl(posterUrl),
         createRating(raw.vote_average),
         createReleaseYear(raw.release_date),
-        String(raw.id),
+        new ExternalReference('tmdb', String(raw.id)),
         null, // Director
         raw.runtime || null
     );
@@ -81,7 +69,7 @@ export function mapTvToEntity(raw: TmdbTvRaw): TV {
         createCoverUrl(posterUrl),
         createRating(raw.vote_average),
         createReleaseYear(raw.first_air_date),
-        String(raw.id),
+        new ExternalReference('tmdb', String(raw.id)),
         raw.created_by?.[0]?.name || null,
         raw.number_of_episodes || null,
         raw.number_of_seasons || null
@@ -97,7 +85,7 @@ export function mapBookToEntity(raw: GoogleBookRaw): Book {
         createCoverUrl(info.imageLinks?.thumbnail),
         null, // No rating
         createReleaseYear(info.publishedDate),
-        String(raw.id),
+        new ExternalReference('google_books', String(raw.id)),
         info.authors?.[0] || 'Unknown',
         info.pageCount || null
     );
