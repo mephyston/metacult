@@ -8,9 +8,6 @@ try {
   console.log('🔌 Connecting to Database...');
   const { db } = getDbConnection();
 
-  console.log('🔌 Connecting to Database...');
-  const { db } = getDbConnection();
-
 
   const app = new Elysia()
     .use(worksRoutes)
