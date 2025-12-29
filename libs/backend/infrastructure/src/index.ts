@@ -6,3 +6,6 @@ export * from './lib/auth/better-auth.service';
 export * from './lib/queue/queue.client';
 export * from './lib/redis/redis.client';
 export * from './lib/cache/cache.service';
+export * from './lib/providers/igdb.provider';
+export * from './lib/providers/tmdb.provider';
+export * from './lib/providers/google-books.provider';
