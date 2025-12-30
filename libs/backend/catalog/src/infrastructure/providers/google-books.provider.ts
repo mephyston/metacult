@@ -1,8 +1,10 @@
+import type { GoogleBookRaw } from '../types/raw-responses';
+
 export class GoogleBooksProvider {
     private apiKey = process.env['GOOGLE_BOOKS_API_KEY'] || '';
     private apiUrl = 'https://www.googleapis.com/books/v1/volumes';
 
-    async searchBooks(query: string): Promise<any[]> {
+    async searchBooks(query: string): Promise<GoogleBookRaw[]> {
         if (!this.apiKey) return [];
 
         const url = `${this.apiUrl}?q=${encodeURIComponent(query)}&key=${this.apiKey}&maxResults=10`;
@@ -13,10 +15,10 @@ export class GoogleBooksProvider {
         }
 
         const data = (await response.json()) as { items?: any[] };
-        return data.items || [];
+        return (data.items || []).map((item: any) => item as GoogleBookRaw);
     }
 
-    async getBookDetails(id: string): Promise<any | null> {
+    async getBookDetails(id: string): Promise<GoogleBookRaw | null> {
         if (!this.apiKey) return null;
 
         const url = `${this.apiUrl}/${id}?key=${this.apiKey}`;
@@ -27,7 +29,7 @@ export class GoogleBooksProvider {
             throw new Error(`Provider Error [GoogleBooks]: ${response.status} ${response.statusText}`);
         }
 
-        return (await response.json()) as any;
+        return (await response.json()) as GoogleBookRaw;
     }
 }
 

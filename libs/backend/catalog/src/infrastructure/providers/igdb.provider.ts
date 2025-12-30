@@ -1,4 +1,5 @@
 import { redisClient, cacheService } from '@metacult/backend/infrastructure';
+import type { IgdbGameRaw } from '../types/raw-responses';
 
 interface TwitchTokenResponse {
     access_token: string;
@@ -36,7 +37,7 @@ export class IgdbProvider {
         }, 5000000); // Token usually lasts ~60 days, we cache safely within that range or rely on expiration logic return
     }
 
-    async searchGames(query: string): Promise<any[]> {
+    async searchGames(query: string): Promise<IgdbGameRaw[]> {
         const token = await this.getAccessToken();
         if (!token) return [];
 
@@ -52,14 +53,14 @@ export class IgdbProvider {
             });
 
             if (!response.ok) throw new Error(`IGDB Search failed: ${response.statusText}`);
-            return (await response.json()) as any[];
+            return (await response.json()) as IgdbGameRaw[];
         } catch (error) {
             console.error('⚠️ IGDB Search Error:', error);
             return [];
         }
     }
 
-    async getGameDetails(id: string): Promise<any | null> {
+    async getGameDetails(id: string): Promise<IgdbGameRaw | null> {
         const token = await this.getAccessToken();
         if (!token) return null;
 
@@ -75,14 +76,15 @@ export class IgdbProvider {
             });
 
             if (!response.ok) throw new Error(`IGDB Details failed: ${response.statusText}`);
-            const data = (await response.json()) as any[];
+            const data = (await response.json()) as IgdbGameRaw[];
             return data[0] || null;
         } catch (error) {
             console.error('⚠️ IGDB Details Error:', error);
             return null;
         }
     }
-    async getMedia(id: string): Promise<any | null> {
+
+    async getMedia(id: string): Promise<IgdbGameRaw | null> {
         return this.getGameDetails(id);
     }
 }
