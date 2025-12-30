@@ -3,6 +3,7 @@ FROM oven/bun:1 AS install
 WORKDIR /usr/src/app
 COPY package.json bun.lock nx.json tsconfig.base.json ./
 COPY apps/webapp/package.json ./apps/webapp/package.json
+COPY libs/shared/ui/package.json ./libs/shared/ui/package.json
 RUN bun install
 
 # Build
