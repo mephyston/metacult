@@ -48,6 +48,14 @@ const features = [
 		icon: '🤝',
 	},
 ];
+
+import { getImage } from 'astro:assets';
+const heroBg = await getImage({
+	src: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1974&auto=format&fit=crop',
+	width: 1920,
+	height: 1080,
+	format: 'webp',
+});
 ---
 
 <Layout title="MetaCult - Le Radar Social">
@@ -61,6 +69,6 @@ const features = [
 		ctaLink="/auth/register"
 		secondaryCtaText="Connectez-vous"
 		secondaryCtaLink="/auth/login"
-		image="https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1974&auto=format&fit=crop"
+		image={heroBg.src}
 	/>
 </Layout>

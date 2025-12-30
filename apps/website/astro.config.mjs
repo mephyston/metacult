@@ -16,6 +16,9 @@ export default defineConfig({
         tailwind(),
         vue()
     ],
+    image: {
+        domains: ['images.unsplash.com', 'images.igdb.com', 'image.tmdb.org'],
+    },
     vite: {
         plugins: [nxViteTsPaths()],
         ssr: {

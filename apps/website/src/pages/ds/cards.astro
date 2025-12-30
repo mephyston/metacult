@@ -1,5 +1,6 @@
 ---
 import { Button, Card, CardContent, CardFooter } from '@metacult/shared-ui';
+import { Image } from 'astro:assets';
 ---
 
 <html lang="en">
@@ -30,11 +31,13 @@ import { Button, Card, CardContent, CardFooter } from '@metacult/shared-ui';
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Standard Card -->
-                    <Card client:visible>
+                    <Card>
                         <div class="relative">
-                            <img
+                            <Image
                                 src="https://images.igdb.com/igdb/image/upload/t_cover_big/co1r7x.jpg"
                                 alt="The Witcher 3"
+                                width={500}
+                                height={280}
                                 class="w-full h-48 object-cover rounded-t-xl"
                             />
                             <div class="absolute top-2 left-2">
@@ -61,11 +64,13 @@ import { Button, Card, CardContent, CardFooter } from '@metacult/shared-ui';
                     </Card>
 
                     <!-- Movie Card -->
-                    <Card client:visible>
+                    <Card>
                         <div class="relative">
-                            <img
+                            <Image
                                 src="https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg"
                                 alt="Inception"
+                                width={500}
+                                height={280}
                                 class="w-full h-48 object-cover rounded-t-xl"
                             />
                             <div class="absolute top-2 left-2">
@@ -98,7 +103,7 @@ import { Button, Card, CardContent, CardFooter } from '@metacult/shared-ui';
                     </Card>
 
                     <!-- Simple Card -->
-                    <Card client:visible>
+                    <Card>
                         <CardContent>
                             <h3 class="text-white text-lg font-bold mb-2">
                                 System Notification

@@ -11,18 +11,12 @@ export default defineNuxtConfig({
     port: 4201,
   },
   app: {
-    head: {
-      link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap' }
-      ]
-    }
+    // google-fonts handles the font links now
   },
   typescript: {
     typeCheck: false,
     tsConfig: {
-      extends: '../../../tsconfig.json', // Nuxt copies this string as-is to the `./.nuxt/tsconfig.json`, therefore it needs to be relative to that directory
+      extends: '../../../tsconfig.json',
     },
   },
   imports: {
@@ -45,7 +39,15 @@ export default defineNuxtConfig({
       },
     },
   },
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/google-fonts'],
+  googleFonts: {
+    families: {
+      Roboto: [300, 400, 500, 700],
+    },
+    display: 'swap',
+    prefetch: true,
+    preconnect: true,
+  },
   alias: {
     '@metacult/shared-ui/styles': fileURLToPath(new URL('../../libs/shared/ui/src/styles', import.meta.url)),
     '@metacult/shared-ui': fileURLToPath(new URL('../../libs/shared/ui/src/index.ts', import.meta.url)),
