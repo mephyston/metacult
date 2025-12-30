@@ -24,30 +24,30 @@ console.log('🔌 Connecting to Database...');
 // ✅ Read environment variables ONCE at startup (Composition Root responsibility)
 // Note: Variables are loaded from apps/api/.env (not a global .env)
 const catalogConfig: CatalogModuleConfig = {
-    igdb: {
-        clientId: process.env.IGDB_CLIENT_ID || '',
-        clientSecret: process.env.IGDB_CLIENT_SECRET || '',
-    },
-    tmdb: {
-        apiKey: process.env.TMDB_API_KEY || '',
-    },
-    googleBooks: {
-        apiKey: process.env.GOOGLE_BOOKS_API_KEY || '',
-    },
+  igdb: {
+    clientId: process.env.IGDB_CLIENT_ID || '',
+    clientSecret: process.env.IGDB_CLIENT_SECRET || '',
+  },
+  tmdb: {
+    apiKey: process.env.TMDB_API_KEY || '',
+  },
+  googleBooks: {
+    apiKey: process.env.GOOGLE_BOOKS_API_KEY || '',
+  },
 };
 
 // Validate critical env vars at startup (fail-fast principle)
 if (!catalogConfig.igdb.clientId || !catalogConfig.igdb.clientSecret) {
-    console.warn('⚠️  IGDB credentials missing. Game import will fail.');
-    console.warn('   Configure IGDB_CLIENT_ID and IGDB_CLIENT_SECRET in apps/api/.env');
+  console.warn('⚠️  IGDB credentials missing. Game import will fail.');
+  console.warn('   Configure IGDB_CLIENT_ID and IGDB_CLIENT_SECRET in apps/api/.env');
 }
 if (!catalogConfig.tmdb.apiKey) {
-    console.warn('⚠️  TMDB API key missing. Movie/TV import will fail.');
-    console.warn('   Configure TMDB_API_KEY in apps/api/.env');
+  console.warn('⚠️  TMDB API key missing. Movie/TV import will fail.');
+  console.warn('   Configure TMDB_API_KEY in apps/api/.env');
 }
 if (!catalogConfig.googleBooks.apiKey) {
-    console.warn('⚠️  Google Books API key missing. Book import will fail.');
-    console.warn('   Configure GOOGLE_BOOKS_API_KEY in apps/api/.env');
+  console.warn('⚠️  Google Books API key missing. Book import will fail.');
+  console.warn('   Configure GOOGLE_BOOKS_API_KEY in apps/api/.env');
 }
 
 // 1. Catalog Module
@@ -98,6 +98,9 @@ const app = new Elysia()
 
 const port = Number(process.env.PORT) || 3000;
 
-app.listen(port);
+app.listen({
+  port,
+  hostname: '0.0.0.0'
+});
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
