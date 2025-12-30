@@ -32,7 +32,7 @@ const createReleaseYear = (dateText: string | number | undefined | null): Releas
 // Mappers now accept an ID, allowing the Repository to control identity generation.
 // If no ID is provided (e.g. search results), we can still use a transient ID.
 
-export function mapGameToEntity(raw: IgdbGameRaw, id: string = uuidv4()): Game {
+export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
     const rating = raw.total_rating ? raw.total_rating / 10 : null;
     return new Game(
         id,
@@ -48,7 +48,7 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string = uuidv4()): Game {
     );
 }
 
-export function mapMovieToEntity(raw: TmdbMovieRaw, id: string = uuidv4()): Movie {
+export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
     const posterUrl = raw.poster_path ? `https://image.tmdb.org/t/p/w500${raw.poster_path}` : null;
     return new Movie(
         id,
@@ -63,7 +63,7 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string = uuidv4()): Movi
     );
 }
 
-export function mapTvToEntity(raw: TmdbTvRaw, id: string = uuidv4()): TV {
+export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
     const posterUrl = raw.poster_path ? `https://image.tmdb.org/t/p/w500${raw.poster_path}` : null;
     return new TV(
         id,
@@ -79,7 +79,7 @@ export function mapTvToEntity(raw: TmdbTvRaw, id: string = uuidv4()): TV {
     );
 }
 
-export function mapBookToEntity(raw: GoogleBookRaw, id: string = uuidv4()): Book {
+export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
     const info = raw.volumeInfo;
     return new Book(
         id,

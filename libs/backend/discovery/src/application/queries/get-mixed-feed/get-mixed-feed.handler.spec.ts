@@ -8,10 +8,10 @@ describe('GetMixedFeedHandler', () => {
             get: mock(() => Promise.resolve(JSON.stringify([{ type: 'MEDIA', data: {} }]))),
             set: mock(() => Promise.resolve('OK')),
         } as any;
-        const mockCatalog = {} as any;
+        const mockMediaSearcher = {} as any;
         const mockAds = {} as any;
 
-        const handler = new GetMixedFeedHandler(mockRedis, mockCatalog, mockAds);
+        const handler = new GetMixedFeedHandler(mockRedis, mockMediaSearcher, mockAds);
         const result = await handler.execute(new GetMixedFeedQuery('test'));
 
         expect(result).toHaveLength(1);
@@ -24,15 +24,15 @@ describe('GetMixedFeedHandler', () => {
             set: mock(() => Promise.resolve('OK')),
         } as any;
 
-        const mockMediaHandler = {
-            execute: mock(() => Promise.resolve(Array(10).fill({ id: 'media' })))
+        const mockMediaSearcher = {
+            search: mock(() => Promise.resolve(Array(10).fill({ id: 'media' })))
         } as any;
 
         const mockAdsHandler = {
-            execute: mock(() => Promise.resolve([{ id: 'ad-1' }, { id: 'ad-2' }]))
+            execute: mock(() => Promise.resolve([{ id: 'ad1' }, { id: 'ad2' }]))
         } as any;
 
-        const handler = new GetMixedFeedHandler(mockRedis, mockMediaHandler, mockAdsHandler);
+        const handler = new GetMixedFeedHandler(mockRedis, mockMediaSearcher, mockAdsHandler);
         const result = await handler.execute(new GetMixedFeedQuery('test'));
 
         // Logic: 5 media, 1 ad, 5 media, 1 ad
@@ -43,7 +43,7 @@ describe('GetMixedFeedHandler', () => {
         expect(result).toHaveLength(12);
         expect(result[5]?.type).toBe('SPONSORED');
 
-        expect(mockMediaHandler.execute).toHaveBeenCalled();
+        expect(mockMediaSearcher.search).toHaveBeenCalled();
         expect(mockAdsHandler.execute).toHaveBeenCalled();
         expect(mockRedis.set).toHaveBeenCalled();
     });

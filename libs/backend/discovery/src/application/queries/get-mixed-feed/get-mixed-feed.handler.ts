@@ -1,7 +1,7 @@
 import { Redis } from 'ioredis';
-import { SearchMediaHandler, SearchMediaQuery, MediaType } from '@metacult/backend/catalog';
-import { GetActiveAdsHandler, GetActiveAdsQuery } from '@metacult/backend/marketing';
 import { GetMixedFeedQuery } from './get-mixed-feed.query';
+import type { IMediaSearcher } from '../../ports/media-searcher.interface';
+import type { IAdsProvider } from '../../ports/ads-provider.interface';
 
 // Types (simplified for this exercise)
 export type MixedFeedItem =
@@ -11,8 +11,8 @@ export type MixedFeedItem =
 export class GetMixedFeedHandler {
     constructor(
         private readonly redis: Redis,
-        private readonly searchMediaHandler: SearchMediaHandler,
-        private readonly adsHandler: GetActiveAdsHandler
+        private readonly mediaSearcher: IMediaSearcher,
+        private readonly adsProvider: IAdsProvider
     ) { }
 
     async execute(query: GetMixedFeedQuery): Promise<MixedFeedItem[]> {
@@ -25,10 +25,10 @@ export class GetMixedFeedHandler {
         }
 
         // 2. Fetch Dependencies
-        // Using Catalog's SearchMediaHandler directly (Module communication)
+        // Using injected Ports
         const [mediaItems, ads] = await Promise.all([
-            this.searchMediaHandler.execute(new SearchMediaQuery(query.search)),
-            this.adsHandler.execute(new GetActiveAdsQuery())
+            this.mediaSearcher.search(query.search),
+            this.adsProvider.getAds()
         ]);
 
         // 3. Mix Logic (1 Ad per 5 Media items)

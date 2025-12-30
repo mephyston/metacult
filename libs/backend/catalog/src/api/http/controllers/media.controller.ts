@@ -13,7 +13,8 @@ export class MediaController {
     // Elysia Context type is generic, we can type body/query if we want strictness in controller 
     // but Elysia handles validation at route level usually.
 
-    async search({ query }: Context<{ query: SearchMediaDto['query'] }>) {
+    // Simplified to accept strict types, decoupling from Elysia Context
+    async search(query: SearchMediaDto['query']) {
         const { q, type, tag } = query;
         const mediaType = type as MediaType | undefined;
 
@@ -26,7 +27,7 @@ export class MediaController {
         return medias;
     }
 
-    async import({ body }: Context<{ body: ImportMediaDto['body'] }>) {
+    async import(body: ImportMediaDto['body']) {
         const { mediaId, type } = body;
 
         await this.importHandler.execute({

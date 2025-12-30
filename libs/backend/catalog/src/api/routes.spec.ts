@@ -19,6 +19,12 @@ const MediaTypeEnum = t.Union([
 ]);
 
 const catalogRoutes = new Elysia({ prefix: '/media' })
+    .onError(({ code, error, set }) => {
+        if (code === 'VALIDATION') {
+            set.status = 400;
+            return { message: 'Validation Error', details: error };
+        }
+    })
     .get('/search', ({ query }) => {
         return mockController.search({ query } as any);
     }, {
@@ -44,9 +50,9 @@ describe('Catalog API Routes', () => {
         expect(validRes.status).toBe(200);
 
         // 2. Invalid validation (too short)
-        // Elysia default validation error is 422
+        // Elysia default validation error is 422, mapped to 400
         const invalidRes = await catalogRoutes.handle(new Request('http://localhost/media/search?q='));
-        expect(invalidRes.status).toBe(422);
+        expect(invalidRes.status).toBe(400);
     });
 
     it('should validate import body', async () => {
@@ -65,7 +71,7 @@ describe('Catalog API Routes', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: 'game' })
         }));
-        expect(invalidRes.status).toBe(422);
+        expect(invalidRes.status).toBe(400);
 
         // 3. Invalid Enum
         const invalidEnum = await catalogRoutes.handle(new Request('http://localhost/media/import', {
@@ -73,6 +79,6 @@ describe('Catalog API Routes', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mediaId: '123', type: 'invalid' })
         }));
-        expect(invalidEnum.status).toBe(422);
+        expect(invalidEnum.status).toBe(400);
     });
 });

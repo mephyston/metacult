@@ -9,8 +9,14 @@ const MediaTypeEnum = t.Union([
 ]);
 
 export const catalogRoutes = new Elysia({ prefix: '/media' })
+    .onError(({ code, error, set }) => {
+        if (code === 'VALIDATION') {
+            set.status = 400;
+            return { message: 'Validation Error', details: error };
+        }
+    })
     .get('/search', ({ query }) => {
-        return mediaController.search({ query } as any); // Use 'as any' for now to bypass strict DTO mismatch, validation is handled runtime
+        return mediaController.search(query);
     }, {
         query: t.Object({
             q: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
@@ -19,7 +25,7 @@ export const catalogRoutes = new Elysia({ prefix: '/media' })
         })
     })
     .post('/import', ({ body }) => {
-        return mediaController.import({ body } as any);
+        return mediaController.import(body);
     }, {
         body: t.Object({
             mediaId: t.String({ minLength: 1 }),

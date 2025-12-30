@@ -10,5 +10,6 @@ export * from './application/factories/catalog.factory'; // New Factory
 export * from './api/routes'; // Export Elysia routes
 export * as mediaSchema from './infrastructure/db/media.schema';
 
+export * from './infrastructure/repositories/drizzle-media.repository';
 // Note: Infrastructure implementations (Repositories, Providers) are now encapsulated.
 // Consumers must use CatalogModuleFactory or Dependency Injection.

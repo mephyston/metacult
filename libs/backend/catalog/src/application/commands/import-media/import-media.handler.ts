@@ -47,8 +47,7 @@ export class ImportMediaHandler {
         }
 
         if (!media) {
-            console.warn(`[ImportMediaHandler] Media not found in provider: ${type}/${mediaId}`);
-            return;
+            throw new Error(`Media not found in provider: ${type}/${mediaId}`);
         }
 
         // 3. Save to DB

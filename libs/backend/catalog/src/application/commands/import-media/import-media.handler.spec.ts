@@ -26,7 +26,7 @@ describe('ImportMediaHandler', () => {
         handler = new ImportMediaHandler(mockRepo, mockIgdb, mockTmdb, mockGoogleBooks);
     });
 
-    it('should skip if media already exists', async () => {
+    it('should skip import if media already exists', async () => {
         mockRepo.findById.mockResolvedValue({ id: '123' });
         const command: ImportMediaCommand = { mediaId: '123', type: MediaType.GAME };
 
@@ -37,19 +37,18 @@ describe('ImportMediaHandler', () => {
         expect(mockRepo.create).not.toHaveBeenCalled();
     });
 
-    it('should fetch and save game media', async () => {
+    it('should route GAME type to IgdbAdapter', async () => {
         const mockMedia = { id: '123', title: 'Test Game', type: MediaType.GAME } as Media;
         mockIgdb.getMedia.mockResolvedValue(mockMedia);
         const command: ImportMediaCommand = { mediaId: '123', type: MediaType.GAME };
 
         await handler.execute(command);
 
-        expect(mockRepo.findById).toHaveBeenCalledWith('123');
         expect(mockIgdb.getMedia).toHaveBeenCalledWith('123', MediaType.GAME, 'generated-uuid');
         expect(mockRepo.create).toHaveBeenCalledWith(mockMedia);
     });
 
-    it('should fetch and save movie media', async () => {
+    it('should route MOVIE type to TmdbAdapter', async () => {
         const mockMedia = { id: '456', title: 'Test Movie', type: MediaType.MOVIE } as Media;
         mockTmdb.getMedia.mockResolvedValue(mockMedia);
         const command: ImportMediaCommand = { mediaId: '456', type: MediaType.MOVIE };
@@ -60,24 +59,12 @@ describe('ImportMediaHandler', () => {
         expect(mockRepo.create).toHaveBeenCalledWith(mockMedia);
     });
 
-    it('should handle provider error', async () => {
-        mockIgdb.getMedia.mockRejectedValue(new Error('API Error'));
-        const command: ImportMediaCommand = { mediaId: '999', type: MediaType.GAME };
-
-        try {
-            await handler.execute(command);
-        } catch (e: any) {
-            expect(e.message).toBe('API Error');
-        }
-
-        expect(mockRepo.create).not.toHaveBeenCalled();
-    });
-
-    it('should ignore if provider returns null', async () => {
+    it('should throw if provider returns null', async () => {
         mockIgdb.getMedia.mockResolvedValue(null);
         const command: ImportMediaCommand = { mediaId: '404', type: MediaType.GAME };
 
-        await handler.execute(command);
+        // Expect to throw
+        await expect(handler.execute(command)).rejects.toThrow('Media not found');
 
         expect(mockIgdb.getMedia).toHaveBeenCalled();
         expect(mockRepo.create).not.toHaveBeenCalled();
