@@ -136,6 +136,102 @@ Regroupe les pratiques essentielles pour un projet AstroJS moderne et robuste. :
 
 Full standard is available here for further request: [AstroJS Development Standards](.packmind/standards/astrojs-development-standards.md)
 
+## Standard: DDD Clean Architecture Implementation
+
+Application pratique de DDD et Clean Architecture avec structure en couches, Value Objects, Entities et Ports/Adapters. :
+* Créer des Domain Services pour logique complexe impliquant plusieurs entités.
+* Créer des Entities avec logique métier (Game extends Media, Movie extends Media).
+* Créer des Mappers dans Infrastructure pour convertir Domain vers DTO.
+* Définir des Domain Exceptions pour les règles métier (MediaAlreadyExistsError).
+* Définir des Ports (interfaces) dans application/ports (IMediaRepository).
+* Injecter la configuration via paramètres (pas process.env dans les Factories).
+* La couche Application contient les Use Cases (Commands/Queries - CQRS).
+* La couche Domain ne doit avoir AUCUNE dépendance externe (pure TypeScript).
+* La couche Infrastructure implémente les Adapters (DrizzleMediaRepository).
+* Le barrel file index.ts expose UNIQUEMENT l'API publique (pas les implémentations).
+* Le Composition Root (apps/api/index.ts) est le SEUL endroit qui lit process.env.
+* Organiser les tests par couche avec fichiers .spec.ts adjacents au code source.
+* Structurer chaque Bounded Context en 4 couches : domain, application, infrastructure, api.
+* Utiliser Constructor Injection dans les Handlers/Services pour faciliter les tests.
+* Utiliser des Factories pour créer les dépendances (CatalogModuleFactory).
+* Utiliser des Value Objects pour encapsuler la validation (Rating, CoverUrl, etc.).
+* Utiliser l'Anti-Corruption Layer (Adapters) pour isoler les APIs tierces.
+* Valider les données externes avec Type Guards natifs (pas Zod en Domain/Application).
+
+Full standard is available here for further request: [DDD Clean Architecture Implementation](.packmind/standards/ddd-clean-architecture-implementation.md)
+
+## Standard: Docker Multi-Stage Builds Bun
+
+Pratiques Docker multi-stage avec Bun pour images optimis\u00e9es, cache intelligent et s\u00e9curit\u00e9. :
+* Configurer HEALTHCHECK avec curl ou wget pour monitoring automatique.
+* Copier package.json et bun.lockb AVANT le code pour cache layer des dépendances.
+* Définir un USER non-root pour sécurité (USER bun en production).
+* Exposer le port avec EXPOSE 3000 (documentatif pour Railway/docker-compose).
+* Installer les dépendances avec bun install --frozen-lockfile en stage dependencies.
+* Optimiser la taille finale avec apk del après installation si packages temporaires nécessaires.
+* Passer les variables d'environnement via docker-compose.yml ou Railway (pas COPY .env).
+* Séparer les stages en dependencies, build, production pour optimiser le cache.
+* Utiliser .dockerignore pour exclure node_modules, .nx, .git du contexte de build.
+* Utiliser CMD avec forme exec ["bun", "run", "start"] comme entrypoint (pas shell form).
+* Utiliser COPY --from=dependencies pour réutiliser node_modules entre stages.
+* Utiliser oven/bun:alpine comme image de base (plus légère que debian).
+
+Full standard is available here for further request: [Docker Multi-Stage Builds Bun](.packmind/standards/docker-multi-stage-builds-bun.md)
+
+## Standard: ElysiaJS + Bun Development Standards
+
+Standards et bonnes pratiques pour le développement d'APIs backend avec ElysiaJS et Bun runtime. :
+* Activer CORS avec @elysiajs/cors et configurer les origines autorisées explicitement.
+* Activer strict mode dans ElysiaJS pour validation stricte des types.
+* Configurer tsconfig.json avec "types": ["bun-types"] pour obtenir les types Bun.
+* Créer des routes avec Factory Functions pour faciliter l'injection de dépendances.
+* Définir les schemas TypeBox inline dans les routes pour validation automatique.
+* Démarrer les applications avec bun run (pas node) pour bénéficier des optimisations du runtime natif.
+* Préférer Constructor Injection dans les routes avec Factory Pattern.
+* Utiliser bun build avec --target=bun pour optimiser les bundles pour le runtime Bun.
+* Utiliser Bun.env au lieu de process.env pour accès optimisé aux variables d'environnement.
+* Utiliser Elysia.group() pour organiser les routes par module ou domaine.
+* Utiliser Elysia.onError() pour centraliser la gestion d'erreurs.
+* Utiliser TypeBox pour la validation des requêtes (jamais Zod avec ElysiaJS).
+
+Full standard is available here for further request: [ElysiaJS + Bun Development Standards](.packmind/standards/elysiajs-bun-development-standards.md)
+
+## Standard: NX Monorepo Architecture Standards
+
+Architecture et bonnes pratiques pour organiser un monorepo NX scalable avec boundaries enforcement et optimisation des builds. :
+* Activer le cache NX avec cache: true dans targetDefaults pour optimiser les rebuilds.
+* Appliquer le tag system NX pour enforcer les boundaries entre modules.
+* Chaque Bounded Context expose un barrel file (index.ts) strict avec API publique uniquement.
+* Configurer paths dans tsconfig.base.json pour import aliases clairs et lisibles.
+* Configurer project.json avec tags pour chaque lib/app selon son scope et type.
+* Documenter l'architecture du monorepo dans AGENTS.md ou ARCHITECTURE.md à la racine.
+* Éviter les import circulaires en analysant régulièrement avec nx graph pour détecter les cycles.
+* Limiter les dépendances cross-layer avec @nx/enforce-module-boundaries dans eslint config.
+* Organiser le monorepo en apps/ (applications déployables) et libs/ (modules réutilisables).
+* Organiser les libs backend en Bounded Contexts (DDD) isolés et autonomes.
+* Préférer bunx nx run-many -t build pour build parallèle de plusieurs projets.
+* Structurer libs/ par couche technique : backend/, shared/, frontend/ pour séparation des responsabilités.
+* Utiliser implicitDependencies pour forcer rebuild si fichier racine modifié.
+* Utiliser nx affected en CI/CD pour build uniquement les projets modifiés depuis la branche de base.
+* Utiliser nx.json pour définir les targetDefaults globaux applicables à tous les projets.
+
+Full standard is available here for further request: [NX Monorepo Architecture Standards](.packmind/standards/nx-monorepo-architecture-standards.md)
+
+## Standard: Railway Deployment Standards
+
+Pratiques de déploiement sur Railway avec configuration optimale et healthchecks. :
+* Activer le build cache Docker avec multi-stage builds.
+* Configurer startCommand avec le binaire et chemin corrects (bun, node).
+* Configurer watchPatterns pour rebuild uniquement si fichiers pertinents modifiés.
+* Créer un railway.json par application déployable avec configuration spécifique.
+* Définir un healthcheckPath pour vérifier le démarrage de l'application.
+* Documenter les variables d'environnement requises dans README.md par app.
+* Injecter les variables d'environnement via Railway Dashboard (jamais .env en production).
+* Utiliser builder DOCKERFILE et spécifier dockerfilePath relatif à la racine.
+* Utiliser restartPolicyType ON_FAILURE pour auto-restart en cas d'erreur.
+
+Full standard is available here for further request: [Railway Deployment Standards](.packmind/standards/railway-deployment-standards.md)
+
 ## Standard: VueJS 3 Development Standards
 
 Standard global pour le développement Vue.js 3 avec Composition API et TypeScript. :
@@ -256,3 +352,24 @@ Appliquer sur tous les projets Web, particulièrement en phase de développement
 
 Full standard is available here for further request: [Web Performance - Seuils et Métriques](.packmind/standards/web-performance-seuils-et-metriques.md)
 <!-- end: Packmind standards -->
+<!-- start: Packmind recipes -->
+# Packmind Recipes
+
+🚨 **MANDATORY STEP** 🚨
+
+Before writing, editing, or generating ANY code:
+
+**ALWAYS READ**: the available recipes below to see what recipes are available
+
+## Recipe Usage Rules:
+- **MANDATORY**: Always check the recipes list first
+- **CONDITIONAL**: Only read/use individual recipes if they are relevant to your task
+- **OPTIONAL**: If no recipes are relevant, proceed without using any
+
+**Remember: Always check the recipes list first, but only use recipes that actually apply to your specific task.**`
+
+## Available recipes
+
+* [Créer un Bounded Context DDD](.packmind/recipes/creer-un-bounded-context-ddd.md): Recipe pour créer un nouveau Bounded Context backend respectant DDD et Clean Architecture avec structure complète (domain, application, infrastructure, api)."}, {"name": "Ajouter tsconfig paths", "description": "Ajouter alias dans `tsconfig.base.json` paths : `@metacult/backend-<nom>`: [`libs/backend/<nom>/src/index.ts`]"}, {"name": "Créer les tests", "description": "Créer fichiers `.spec.ts` adjacents aux handlers et services avec tests unitaires. Mocker les repositories et providers."}, {"name": "Générer migration Drizzle", "description": "Exécuter `bun db:generate` pour générer migration SQL depuis schema. Vérifier fichier dans `libs/backend/infrastructure/drizzle/`."}, {"name": "Documenter dans AGENTS.md", "description": "Ajouter section dans AGENTS.md décrivant le nouveau Bounded Context, son rôle, ses dépendances et son API publique."}]
+* [Créer une nouvelle App déployable](.packmind/recipes/creer-une-nouvelle-app-deployable.md): Recipe pour cr\u00e9er une nouvelle application d\u00e9ployable (API, frontend, worker) avec Dockerfile, Railway config et int\u00e9gration monorepo NX."}, {"name": "Ajouter scripts package.json", "description": "Ajouter scripts dans `apps/<nom>/package.json` : `dev`, `build`, `start`, `test` avec commandes Bun appropri\u00e9es."}, {"name": "Configurer CORS si API", "description": "Si app backend, installer @elysiajs/cors et configurer origins autoris\u00e9es dans index.ts."}, {"name": "Ajouter tests e2e", "description": "Cr\u00e9er `apps/<nom>/src/index.test.ts` avec tests end-to-end pour routes principales ou pages critiques."}, {"name": "Configurer CI/CD", "description": "V\u00e9rifier que railway.json watchPatterns inclut tous les dossiers pertinents pour trigger rebuild automatique."}]
+<!-- end: Packmind recipes -->
