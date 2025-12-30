@@ -31,8 +31,28 @@ export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: stri
         if (!handler) {
             console.log('🏭 [Worker] Initializing dependencies via Factory...');
             const { db } = getDbConnection(mediaSchema);
+
+            // Validate Envs
+            if (!process.env.IGDB_CLIENT_ID || !process.env.TMDB_API_KEY) {
+                console.warn('⚠️ [Worker] Missing API Credentials in env. Imports might fail.');
+            }
+
+            // Create Config
+            const config = {
+                igdb: {
+                    clientId: process.env.IGDB_CLIENT_ID || '',
+                    clientSecret: process.env.IGDB_CLIENT_SECRET || '',
+                },
+                tmdb: {
+                    apiKey: process.env.TMDB_API_KEY || '',
+                },
+                googleBooks: {
+                    apiKey: process.env.GOOGLE_BOOKS_API_KEY || '',
+                }
+            };
+
             // Use Factory to create handler
-            handler = CatalogModuleFactory.createImportMediaHandler(db);
+            handler = CatalogModuleFactory.createImportMediaHandler(db, config);
         }
 
         let mediaType: MediaType;

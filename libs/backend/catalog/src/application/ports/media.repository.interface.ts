@@ -13,5 +13,6 @@ export interface IMediaRepository {
     search(filters: MediaSearchFilters): Promise<Media[]>;
     searchViews(filters: MediaSearchFilters): Promise<MediaReadDto[]>;
     create(media: Media): Promise<void>;
+    findByProviderId(provider: string, externalId: string): Promise<Media | null>;
     nextId(): string;
 }

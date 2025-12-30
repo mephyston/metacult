@@ -3,6 +3,13 @@ export * from './domain/entities/media.entity';
 export * from './domain/value-objects/rating.vo';
 export * from './domain/value-objects/cover-url.vo';
 export * from './domain/value-objects/release-year.vo';
+export * from './domain/value-objects/external-reference.vo';
+
+// ===== DOMAIN ERRORS (Public API) =====
+export * from './domain/errors/catalog.errors';
+
+// ===== DOMAIN SERVICES (Public API) =====
+export { MediaImportPolicy } from './domain/services/media-import.policy';
 
 // ===== APPLICATION (Public API) =====
 export * from './application/queries/search-media/search-media.query';
@@ -26,4 +33,4 @@ export * as mediaSchema from './infrastructure/db/media.schema';
 
 // ❌ Repository implementations are INTERNAL. Use CatalogModuleFactory instead.
 // Consumers must use CatalogModuleFactory or Dependency Injection Container.
-// DO NOT export: DrizzleMediaRepository, IgdbProvider, etc.
+// DO NOT export: DrizzleMediaRepository, IgdbProvider, mappers, validators, etc.

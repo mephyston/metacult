@@ -1,4 +1,4 @@
-import { eq, ilike, and, desc } from 'drizzle-orm';
+import { eq, ilike, and, desc, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { IMediaRepository, MediaSearchFilters } from '../../application/ports/media.repository.interface';
 import { MediaType, Media, Game, Movie, TV, Book } from '../../domain/entities/media.entity';
@@ -8,6 +8,7 @@ import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
 import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
 import * as schema from '../db/media.schema';
 import type { ProviderMetadata } from '../types/raw-responses';
+import { ProviderMetadataMapper } from '../mappers/provider-metadata.mapper';
 
 // Helper to safely create VOs from DB data
 const createRating = (val: number | null): Rating | null => {
@@ -159,28 +160,54 @@ export class DrizzleMediaRepository implements IMediaRepository {
         return Array.from(unique.values());
     }
 
+    async findByProviderId(provider: string, externalId: string): Promise<Media | null> {
+        let condition;
+        // Map conceptual provider names to DB storage format
+        if (provider === 'igdb') {
+            condition = and(
+                eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'IGDB'),
+                eq(sql<string>`${schema.medias.providerMetadata}->>'igdbId'`, externalId)
+            );
+        } else if (provider === 'tmdb') {
+            condition = and(
+                eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'TMDB'),
+                eq(sql<string>`${schema.medias.providerMetadata}->>'tmdbId'`, externalId)
+            );
+        } else if (provider === 'google_books') {
+            condition = and(
+                eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'GOOGLE_BOOKS'),
+                eq(sql<string>`${schema.medias.providerMetadata}->>'googleId'`, externalId)
+            );
+        } else {
+            return null;
+        }
+
+        const rows = await this.db
+            .select()
+            .from(schema.medias)
+            .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
+            .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
+            .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
+            .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
+            .where(condition)
+            .limit(1);
+
+        if (rows.length === 0 || !rows[0]) return null;
+
+        return this.mapRowToEntity(rows[0]);
+    }
+
     async create(media: Media): Promise<void> {
         await this.db.transaction(async (tx) => {
             // Map ReleaseYear VO to Date (approximate)
             const releaseDate = media.releaseYear ? new Date(media.releaseYear.getValue(), 0, 1) : null;
 
-            // Reconstruct ProviderMetadata from ExternalReference
-            let providerMetadata: ProviderMetadata;
-            const ref = media.externalReference;
-
-            if (ref.provider === 'igdb') {
-                providerMetadata = { source: 'IGDB', igdbId: Number(ref.id) };
-            } else if (ref.provider === 'tmdb') {
-                providerMetadata = {
-                    source: 'TMDB',
-                    tmdbId: Number(ref.id),
-                    mediaType: media.type === MediaType.MOVIE ? 'movie' : 'tv'
-                };
-            } else if (ref.provider === 'google_books') {
-                providerMetadata = { source: 'GOOGLE_BOOKS', googleId: ref.id };
-            } else {
-                providerMetadata = {} as any; // Fallback
-            }
+            // Use mapper to convert ExternalReference to ProviderMetadata
+            const mediaTypeContext = media.type === MediaType.MOVIE ? 'movie' : media.type === MediaType.TV ? 'tv' : undefined;
+            const providerMetadata = ProviderMetadataMapper.toProviderMetadataWithType(
+                media.externalReference,
+                mediaTypeContext
+            );
 
             // 1. Insert/Update medias table
             await tx
@@ -288,14 +315,16 @@ export class DrizzleMediaRepository implements IMediaRepository {
         const title = row.medias.title;
         const description = null;
 
+        // Use mapper to convert ProviderMetadata back to ExternalReference
         let externalReference: ExternalReference;
         const metadata = row.medias.providerMetadata;
 
         if (metadata) {
-            if (metadata.source === 'IGDB') externalReference = new ExternalReference('igdb', String(metadata.igdbId));
-            else if (metadata.source === 'TMDB') externalReference = new ExternalReference('tmdb', String(metadata.tmdbId));
-            else if (metadata.source === 'GOOGLE_BOOKS') externalReference = new ExternalReference('google_books', metadata.googleId);
-            else externalReference = new ExternalReference('unknown', 'unknown');
+            try {
+                externalReference = ProviderMetadataMapper.toExternalReference(metadata);
+            } catch {
+                externalReference = new ExternalReference('unknown', 'unknown');
+            }
         } else {
             externalReference = new ExternalReference('unknown', 'unknown');
         }
