@@ -5,8 +5,8 @@ import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/g
 export class FeedController {
   constructor(private readonly getMixedFeedHandler: GetMixedFeedHandler) { }
 
-  async getFeed({ query }: Context) {
-    const searchTerm = (query as any)['q'] || ''; // Elysia types might need assertion or generic
+  async getFeed(params: { q?: string }) {
+    const searchTerm = params.q || '';
     const feed = await this.getMixedFeedHandler.execute(new GetMixedFeedQuery(searchTerm));
     return feed;
   }
