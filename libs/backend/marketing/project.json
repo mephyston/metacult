@@ -1,0 +1,30 @@
+{
+    "name": "backend-marketing",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "sourceRoot": "libs/backend/marketing/src",
+    "tags": [
+        "type:feature",
+        "scope:marketing",
+        "layer:backend"
+    ],
+    "targets": {
+        "lint": {
+            "executor": "@nx/eslint:lint",
+            "outputs": [
+                "{options.outputFile}"
+            ],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/backend/marketing/**/*.ts"
+                ]
+            }
+        },
+        "test": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "bun test libs/backend/marketing"
+            }
+        }
+    }
+}

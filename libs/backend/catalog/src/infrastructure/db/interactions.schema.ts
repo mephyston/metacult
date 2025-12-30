@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, pgEnum, integer } from 'drizzle-orm/pg-core';
-import { users } from '../../../../infrastructure/src/lib/db/schema/users.schema'; // Direct relative import
+import { users } from '@metacult/backend/infrastructure'; // Direct relative import
 import { medias } from './media.schema';
 import { relations } from 'drizzle-orm';
 

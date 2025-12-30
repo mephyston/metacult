@@ -1,5 +1,4 @@
-import { createWorker, IMPORT_QUEUE_NAME } from '../../../libs/backend/infrastructure/src/lib/queue/queue.client';
-// import { createWorker, IMPORT_QUEUE_NAME } from '../../../libs/backend/infrastructure/src/index';
+import { createWorker, IMPORT_QUEUE_NAME } from '@metacult/backend/infrastructure';
 import { processImportMedia } from './processors/import-media.processor';
 
 console.log('🚀 Starting Metacult Worker Service...');

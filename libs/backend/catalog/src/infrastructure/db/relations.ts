@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { medias, games, movies, tv, books, tags, mediasToTags } from './media.schema'; // Local
 import { userInteractions } from './interactions.schema'; // Local
-import { users } from '../../../../infrastructure/src/lib/db/schema/users.schema'; // Direct relative import to fix resolution
+import { users } from '@metacult/backend/infrastructure'; // Direct relative import to fix resolution
 
 export const mediasRelations = relations(medias, ({ one, many }) => ({
     game: one(games, {

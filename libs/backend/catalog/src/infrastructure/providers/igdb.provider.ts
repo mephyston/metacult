@@ -1,5 +1,4 @@
-import { redisClient } from '../../../../infrastructure/src/lib/redis/redis.client';
-import { cacheService } from '../../../../infrastructure/src/lib/cache/cache.service';
+import { redisClient, cacheService } from '@metacult/backend/infrastructure';
 
 interface TwitchTokenResponse {
     access_token: string;

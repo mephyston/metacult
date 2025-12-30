@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import sharedPreset from '../../libs/shared/ui/src/styles/tailwind.preset.mjs';
+import sharedPreset from '@metacult/shared-ui/styles/tailwind.preset.mjs';
 
 export default {
     presets: [sharedPreset],

@@ -1,6 +1,4 @@
-import { getDbConnection } from '../../../../libs/backend/infrastructure/src/lib/db/client';
-import { type ImportJob, IMPORT_QUEUE_NAME } from '../../../../libs/backend/infrastructure/src/lib/queue/queue.client';
-// } from '@metacult/backend/infrastructure';
+import { getDbConnection, type ImportJob, IMPORT_QUEUE_NAME } from '@metacult/backend/infrastructure';
 import * as mediaSchema from '@metacult/backend/catalog';
 import {
     MediaType,
