@@ -5,7 +5,7 @@ import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/g
 export class FeedController {
   constructor(private readonly getMixedFeedHandler: GetMixedFeedHandler) { }
 
-  async getFeed(params: { q?: string }) {
+  async getMixedFeed(params: { q?: string }) {
     const searchTerm = params.q || '';
     const feed = await this.getMixedFeedHandler.execute(new GetMixedFeedQuery(searchTerm));
     return feed;
