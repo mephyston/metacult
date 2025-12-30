@@ -16,6 +16,7 @@ RUN cd apps/website && bun run build
 
 # Final image
 FROM nginx:alpine AS release
+COPY apps/website/nginx.conf /etc/nginx/nginx.conf
 COPY --from=build /usr/src/app/apps/website/dist /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
