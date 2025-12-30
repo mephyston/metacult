@@ -7,6 +7,12 @@ interface TwitchTokenResponse {
     token_type: string;
 }
 
+/**
+ * Provider Infrastructure pour l'API IGDB (Twitch).
+ * Gère l'authentification OAuth2 Client Credentials et les requêtes Raw.
+ * 
+ * @class IgdbProvider
+ */
 export class IgdbProvider {
     private clientId: string;
     private clientSecret: string;
@@ -18,6 +24,13 @@ export class IgdbProvider {
         this.clientSecret = clientSecret;
     }
 
+    /**
+     * Récupère ou rafraîchit le token d'accès Twitch (nécessaire pour IGDB).
+     * Utilise le cache Redis pour éviter de spammer l'endpoint d'auth.
+     * 
+     * @private
+     * @returns {Promise<string | null>} Bearer token ou null si erreur config.
+     */
     private async getAccessToken(): Promise<string | null> {
         if (!this.clientId || !this.clientSecret) {
             console.error('❌ IGDB Credentials missing');
@@ -26,7 +39,7 @@ export class IgdbProvider {
 
         // Attempt to get from cache or fetch new
         return cacheService.getOrSet('igdb_access_token', async () => {
-            console.log('🔄 Refreshing IGDB/Twitch Access Token...');
+            console.log('🔄 Rafraîchissement du Token d\'accès IGDB/Twitch...');
 
             const response = await fetch(
                 `${this.authUrl}?client_id=${this.clientId}&client_secret=${this.clientSecret}&grant_type=client_credentials`,
@@ -42,6 +55,13 @@ export class IgdbProvider {
         }, 5000000); // Token usually lasts ~60 days, we cache safely within that range or rely on expiration logic return
     }
 
+    /**
+     * Recherche des jeux sur l'API IGDB.
+     * Utilise le langage de requête Apicalypse.
+     * 
+     * @param {string} query - Terme de recherche.
+     * @returns {Promise<IgdbGameRaw[]>} Liste brute des jeux.
+     */
     async searchGames(query: string): Promise<IgdbGameRaw[]> {
         const token = await this.getAccessToken();
         if (!token) return [];
@@ -60,11 +80,16 @@ export class IgdbProvider {
             if (!response.ok) throw new Error(`IGDB Search failed: ${response.statusText}`);
             return (await response.json()) as IgdbGameRaw[];
         } catch (error) {
-            console.error('⚠️ IGDB Search Error:', error);
+            console.error('⚠️ Erreur Recherche IGDB :', error);
             return [];
         }
     }
 
+    /**
+     * Récupère les détails complets d'un jeu par son ID IGDB.
+     * 
+     * @param {string} id - ID IGDB.
+     */
     async getGameDetails(id: string): Promise<IgdbGameRaw | null> {
         const token = await this.getAccessToken();
         if (!token) return null;
@@ -84,11 +109,15 @@ export class IgdbProvider {
             const data = (await response.json()) as IgdbGameRaw[];
             return data[0] || null;
         } catch (error) {
-            console.error('⚠️ IGDB Details Error:', error);
+            console.error('⚠️ Erreur Détails IGDB :', error);
             return null;
         }
     }
 
+    /**
+     * Alias pour `getGameDetails`.
+     * Satisfait l'interface générique si besoin.
+     */
     async getMedia(id: string): Promise<IgdbGameRaw | null> {
         return this.getGameDetails(id);
     }

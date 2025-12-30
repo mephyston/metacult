@@ -3,6 +3,7 @@ import { type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 
 export const authSchema = pgSchema('auth');
 
+/** Table des utilisateurs (pour l'authentification). */
 export const user = authSchema.table('user', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
@@ -13,6 +14,7 @@ export const user = authSchema.table('user', {
     updatedAt: timestamp('updated_at').notNull(),
 });
 
+/** Table des sessions actives. */
 export const session = authSchema.table('session', {
     id: text('id').primaryKey(),
     expiresAt: timestamp('expires_at').notNull(),
@@ -26,6 +28,7 @@ export const session = authSchema.table('session', {
         .references(() => user.id, { onDelete: 'cascade' }),
 });
 
+/** Table des comptes liés (OAuth, etc.). */
 export const account = authSchema.table('account', {
     id: text('id').primaryKey(),
     accountId: text('account_id').notNull(),
@@ -44,6 +47,7 @@ export const account = authSchema.table('account', {
     updatedAt: timestamp('updated_at').notNull(),
 });
 
+/** Table de vérification (tokens email, etc.). */
 export const verification = authSchema.table('verification', {
     id: text('id').primaryKey(),
     identifier: text('identifier').notNull(),

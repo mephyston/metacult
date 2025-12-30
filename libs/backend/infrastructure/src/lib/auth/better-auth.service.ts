@@ -5,6 +5,10 @@ import { user, session, account, verification } from '../db/schema/auth.schema';
 
 const { db } = getDbConnection();
 
+/**
+ * Configuration du service d'authentification (Better Auth).
+ * Gère les sessions, les comptes OAuth et les utilisateurs via Drizzle.
+ */
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL,
     basePath: '/api/auth',

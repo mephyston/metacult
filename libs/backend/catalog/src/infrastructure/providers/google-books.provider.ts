@@ -1,5 +1,9 @@
 import type { GoogleBookRaw } from '../types/raw-responses';
 
+/**
+ * Provider Infrastructure pour l'API Google Books.
+ * Gère la recherche et la récupération de livres.
+ */
 export class GoogleBooksProvider {
     private apiKey: string;
     private apiUrl = 'https://www.googleapis.com/books/v1/volumes';
@@ -8,6 +12,10 @@ export class GoogleBooksProvider {
         this.apiKey = apiKey;
     }
 
+    /**
+     * Recherche de livres.
+     * @param {string} query 
+     */
     async searchBooks(query: string): Promise<GoogleBookRaw[]> {
         if (!this.apiKey) return [];
 
@@ -15,13 +23,17 @@ export class GoogleBooksProvider {
         const response = await fetch(url);
 
         if (!response.ok) {
-            throw new Error(`Provider Error [GoogleBooks]: ${response.status} ${response.statusText}`);
+            throw new Error(`Erreur Provider [GoogleBooks] : ${response.status} ${response.statusText}`);
         }
 
         const data = (await response.json()) as { items?: any[] };
         return (data.items || []).map((item: any) => item as GoogleBookRaw);
     }
 
+    /**
+     * Détails d'un livre par ID.
+     * @param {string} id - ID Volume Google.
+     */
     async getBookDetails(id: string): Promise<GoogleBookRaw | null> {
         if (!this.apiKey) return null;
 
@@ -30,7 +42,7 @@ export class GoogleBooksProvider {
 
         if (!response.ok) {
             if (response.status === 404) return null;
-            throw new Error(`Provider Error [GoogleBooks]: ${response.status} ${response.statusText}`);
+            throw new Error(`Erreur Provider [GoogleBooks] : ${response.status} ${response.statusText}`);
         }
 
         return (await response.json()) as GoogleBookRaw;

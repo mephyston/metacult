@@ -5,7 +5,10 @@ export class CacheService {
     private defaultTtl = 3600; // 1 hour default
 
     /**
-     * Get a typed value from cache
+     * Récupère une valeur typée du cache.
+     * @template T
+     * @param {string} key - Clé Redis.
+     * @returns {Promise<T | null>} La donnée désérialisée ou null.
      */
     async get<T>(key: string): Promise<T | null> {
         try {
@@ -19,7 +22,10 @@ export class CacheService {
     }
 
     /**
-     * Set a value in cache with TTL
+     * Stocke une valeur dans le cache avec un TTL.
+     * @param {string} key - Clé.
+     * @param {any} value - Donnée à sérialiser.
+     * @param {number} ttlSeconds - Durée de vie en secondes (défaut 1h).
      */
     async set(key: string, value: any, ttlSeconds: number = this.defaultTtl): Promise<void> {
         try {
@@ -31,7 +37,7 @@ export class CacheService {
     }
 
     /**
-     * Delete a key from cache
+     * Supprime une clé du cache.
      */
     async del(key: string): Promise<void> {
         try {
@@ -42,8 +48,18 @@ export class CacheService {
     }
 
     /**
-     * Get from cache or execute fetcher and cache result (Cache-Aside Pattern)
-     * Fail-Open: If Redis fails, just runs the fetcher.
+     * Pattern Cache-Aside (Look-Aside).
+     * 1. Cherche dans le cache.
+     * 2. Si absent (Miss), exécute la fonction `fetcher` (Source of Truth).
+     * 3. Met en cache le résultat et le retourne.
+     * 
+     * Tolérance aux pannes (Fail-Open) : Si Redis est down, exécute directement le fetcher.
+     * 
+     * @template T
+     * @param {string} key - Clé de cache.
+     * @param {() => Promise<T>} fetcher - Fonction asynchrone pour récupérer la donnée fraîche.
+     * @param {number} ttlSeconds - TTL.
+     * @returns {Promise<T>} Le résultat (du cache ou de la source).
      */
     async getOrSet<T>(
         key: string,

@@ -3,13 +3,16 @@ import { processImportMedia } from './processors/import-media.processor';
 
 console.log('🚀 Starting Metacult Worker Service...');
 
-// Create Worker
-// The actual switch logic for job types is delegated to the processor function
+/**
+ * Point d'entrée du Worker.
+ * Initialise le processeur de file d'attente avec une stratégie de Rate Limiting stricte
+ * pour respecter les quotas des APIs externes (IGDB, TMDB, Google Books).
+ */
 const worker = createWorker(IMPORT_QUEUE_NAME, processImportMedia, {
-    concurrency: 5, // Process up to 5 jobs in parallel
+    concurrency: 5, // Traite jusqu'à 5 jobs en parallèle (si le rate limit le permet)
     limiter: {
         max: 1, // Max 1 job...
-        duration: 1100, // ...per 1.1 seconds (Respect Google/External API Quotas)
+        duration: 1100, // ...toutes les 1.1 secondes (soit ~0.9 req/sec)
     },
 });
 

@@ -3,6 +3,8 @@ import { medias, games, movies, tv, books, tags, mediasToTags } from './media.sc
 import { userInteractions } from './interactions.schema'; // Local
 import { users } from '@metacult/backend/infrastructure'; // Direct relative import to fix resolution
 
+/** Relations du schéma DB (Drizzle ORM). */
+
 export const mediasRelations = relations(medias, ({ one, many }) => ({
     game: one(games, {
         fields: [medias.id],

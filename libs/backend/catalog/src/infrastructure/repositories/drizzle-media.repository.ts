@@ -29,15 +29,33 @@ const createReleaseYear = (date: Date | null): ReleaseYear | null => {
 // Helper type for the DB instance
 type Db = NodePgDatabase<typeof schema>;
 
+/**
+ * Implémentation Drizzle du port de persistance `IMediaRepository`.
+ * Gère le mapping entre les Entités du Domaine et le schéma relationnel SQL.
+ * 
+ * @class DrizzleMediaRepository
+ * @implements {IMediaRepository}
+ */
 export class DrizzleMediaRepository implements IMediaRepository {
+    /**
+     * @param {Db} db - L'instance de connexion Drizzle (injectée).
+     */
     constructor(private readonly db: Db) { }
 
     nextId(): string {
         return crypto.randomUUID();
     }
 
+    /**
+     * Récupère un média par ID en chargeant les données spécifiques à son type (Polymorphisme).
+     * Utilise des LEFT JOIN pour tout récupérer en une seule requête SQL.
+     * 
+     * @param {string} id - UUID cible.
+     * @returns {Promise<Media | null>} L'entité pleinement hydratée.
+     */
     async findById(id: string): Promise<Media | null> {
-        // Polymorphic fetch using left joins to hydrate specific fields
+        // Fetch Polymorphique : On utilise des LEFT JOINs pour hydrater les champs spécifiques du type
+        // Cela permet de reconstruire l'Entité complète (Ex: Game avec ses champs de jeu) en une seule requête.
         const rows = await this.db
             .select()
             .from(schema.medias)
@@ -54,7 +72,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     }
 
     async search(filters: MediaSearchFilters): Promise<Media[]> {
-        console.log('🔍 REPO: Executing search');
+        console.log('🔍 REPO: Exécution recherche (Entités)');
         const query = this.db
             .select()
             .from(schema.medias)
@@ -101,7 +119,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     }
 
     async searchViews(filters: MediaSearchFilters): Promise<import('../../application/queries/search-media/media-read.dto').MediaReadDto[]> {
-        console.log('🔍 REPO: Executing DTO search');
+        console.log('🔍 REPO: Exécution recherche (DTOs)');
         const query = this.db
             .select({
                 id: schema.medias.id,
@@ -160,9 +178,18 @@ export class DrizzleMediaRepository implements IMediaRepository {
         return Array.from(unique.values());
     }
 
+    /**
+     * Recherche un média via ses identifiants fournisseurs stockés en JSONB.
+     * Cette méthode traduit les concepts du domaine ('igdb', 'tmdb') vers
+     * les requêtes SQL spécifiques au schéma `providerMetadata`.
+     * 
+     * @param {string} provider - Nom du provider normalisé.
+     * @param {string} externalId - ID externe.
+     * @returns {Promise<Media | null>}
+     */
     async findByProviderId(provider: string, externalId: string): Promise<Media | null> {
         let condition;
-        // Map conceptual provider names to DB storage format
+        // Mappage des concepts du Domaine (Provider) vers le schéma de persistence (JSONB)
         if (provider === 'igdb') {
             condition = and(
                 eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'IGDB'),
@@ -197,6 +224,12 @@ export class DrizzleMediaRepository implements IMediaRepository {
         return this.mapRowToEntity(rows[0]);
     }
 
+    /**
+     * Persiste (ou met à jour) un aggrégat Media complet.
+     * Gère la transaction pour sauvegarder dans `medias` et la table de sous-type correspondante.
+     * 
+     * @param {Media} media - L'entité à sauvegarder.
+     */
     async create(media: Media): Promise<void> {
         await this.db.transaction(async (tx) => {
             // Map ReleaseYear VO to Date (approximate)

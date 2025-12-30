@@ -1,14 +1,15 @@
 import { Elysia, t } from 'elysia';
 import type { MediaController } from './http/controllers/media.controller';
-
-const MediaTypeEnum = t.Union([
-    t.Literal('game'),
-    t.Literal('movie'),
-    t.Literal('tv'),
-    t.Literal('book'),
-]);
+import { SearchMediaSchema, ImportMediaSchema } from './http/dtos/media.dtos';
 
 // ✅ Factory Pattern: Routes acceptent le controller en paramètre
+/**
+ * Crée le routeur Elysia pour le module Catalogue.
+ * Définit les endpoints HTTP et la validation des entrées.
+ * 
+ * @param {MediaController} controller - Contrôleur injecté.
+ * @returns {Elysia} instance router.
+ */
 export const createCatalogRoutes = (controller: MediaController) => {
     return new Elysia({ prefix: '/media' })
         .onError(({ code, error, set }) => {
@@ -18,20 +19,15 @@ export const createCatalogRoutes = (controller: MediaController) => {
             }
         })
         .get('/search', ({ query }) => {
+            // Note: En Elysia, la validation 'query' spread-ée peut nécessiter une adaptation si on passe le DTO complet
+            // Ici on extrait manuellement pour passer au controller
             return controller.search(query);
         }, {
-            query: t.Object({
-                q: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
-                type: t.Optional(MediaTypeEnum),
-                tag: t.Optional(t.String({ pattern: '^[a-z0-9-]+$' })),
-            })
+            query: SearchMediaSchema.properties.query
         })
         .post('/import', ({ body }) => {
             return controller.import(body);
         }, {
-            body: t.Object({
-                mediaId: t.String({ minLength: 1 }),
-                type: MediaTypeEnum,
-            })
+            body: ImportMediaSchema.properties.body
         });
 };

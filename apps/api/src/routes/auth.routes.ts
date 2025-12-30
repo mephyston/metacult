@@ -1,6 +1,10 @@
 import { Elysia } from 'elysia';
 import { auth } from '@metacult/backend/infrastructure';
 
+/**
+ * Routeur d'Authentification.
+ * Délègue la gestion de session et d'auth à la librairie BetterAuth.
+ */
 export const authRoutes = new Elysia({ prefix: '/api/auth' })
     .get('/session', async ({ request }) => {
         const session = await auth.api.getSession({

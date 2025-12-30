@@ -2,6 +2,7 @@ import { pgTable, uuid, text, timestamp, real, jsonb, json, integer, pgEnum } fr
 import type { ProviderMetadata } from '../types/raw-responses';
 
 // --- Enums ---
+/** Enumération des types de médias persistés. */
 export const mediaTypeEnum = pgEnum('media_type', [
     'GAME',
     'MOVIE',
@@ -12,6 +13,7 @@ export const mediaTypeEnum = pgEnum('media_type', [
 // --- Tables ---
 
 // Central Table
+/** Table principale des Médias (Pattern Table-Per-Type Inheritance). */
 export const medias = pgTable('medias', {
     id: uuid('id').defaultRandom().primaryKey(),
     type: mediaTypeEnum('type').notNull(),
@@ -23,6 +25,7 @@ export const medias = pgTable('medias', {
 });
 
 // Extension: Games
+/** Table étendue pour les Jeux Vidéo. */
 export const games = pgTable('games', {
     id: uuid('id')
         .primaryKey()
@@ -33,6 +36,7 @@ export const games = pgTable('games', {
 });
 
 // Extension: Movies
+/** Table étendue pour les Films. */
 export const movies = pgTable('movies', {
     id: uuid('id')
         .primaryKey()
@@ -42,6 +46,7 @@ export const movies = pgTable('movies', {
 });
 
 // Extension: TV Shows
+/** Table étendue pour les Séries TV. */
 export const tv = pgTable('tv', {
     id: uuid('id')
         .primaryKey()
@@ -52,6 +57,7 @@ export const tv = pgTable('tv', {
 });
 
 // Extension: Books
+/** Table étendue pour les Livres. */
 export const books = pgTable('books', {
     id: uuid('id')
         .primaryKey()
@@ -61,6 +67,7 @@ export const books = pgTable('books', {
 });
 
 // Shared: Tags
+/** Table des Tags (Système de classification). */
 export const tags = pgTable('tags', {
     id: uuid('id').defaultRandom().primaryKey(),
     slug: text('slug').unique().notNull(),
@@ -69,6 +76,7 @@ export const tags = pgTable('tags', {
 });
 
 // Join: Medias <-> Tags
+/** Table de jointure Many-to-Many entre Médias et Tags. */
 export const mediasToTags = pgTable('medias_to_tags', {
     mediaId: uuid('media_id')
         .references(() => medias.id, { onDelete: 'cascade' })

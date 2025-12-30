@@ -9,9 +9,21 @@ import {
     UnsupportedMediaTypeError
 } from '../../../domain/errors/catalog.errors';
 
+/**
+ * Cas d'Utilisation (Use Case) : Importer un média externe.
+ * Orchestre les interactions entre le Domaine, les Providers externes et le Repository.
+ * 
+ * @class ImportMediaHandler
+ */
 export class ImportMediaHandler {
     private readonly importPolicy: MediaImportPolicy;
 
+    /**
+     * @param {IMediaRepository} mediaRepository - Port pour la persistance.
+     * @param {IMediaProvider} igdbAdapter - Adapter pour les jeux (IGDB).
+     * @param {IMediaProvider} tmdbAdapter - Adapter pour films/séries (TMDB).
+     * @param {IMediaProvider} googleBooksAdapter - Adapter pour les livres (Google Books).
+     */
     constructor(
         private readonly mediaRepository: IMediaRepository,
         private readonly igdbAdapter: IMediaProvider,
@@ -21,16 +33,32 @@ export class ImportMediaHandler {
         this.importPolicy = new MediaImportPolicy(mediaRepository);
     }
 
+    /**
+     * Exécute la logique d'importation.
+     * 
+     * 1. Vérifie si le média existe déjà (Politique de Domaine).
+     * 2. Récupère les métadonnées depuis le bon Provider.
+     * 3. Persiste le nouveau média.
+     * 
+     * @param {ImportMediaCommand} command - Les données de la commande.
+     * @throws {MediaAlreadyExistsError} Si le média est déjà présent en base.
+     * @throws {MediaNotFoundInProviderError} Si l'ID externe est invalide.
+     * @throws {ProviderUnavailableError} En cas d'échec technique de l'API externe.
+     * @throws {UnsupportedMediaTypeError} Si le type de média n'est pas géré.
+     * @returns {Promise<void>}
+     */
     async execute(command: ImportMediaCommand): Promise<void> {
         const { mediaId, type } = command;
 
-        console.log(`[ImportMediaHandler] Processing ${type} ID: ${mediaId}`);
+        console.log(`[ImportMediaHandler] Traitement ${type} ID: ${mediaId}`);
 
-        // 1. Validate import using Domain Service (throws MediaAlreadyExistsError if duplicate)
+        // 1. Validation Domaine via Domain Service
+        // Vérifie les doublons en utilisant les règles métier pures (ID externe)
         const providerName = this.mapTypeToProviderName(type);
         await this.importPolicy.validateImport(providerName, mediaId);
 
-        // 2. Fetch from appropriate provider
+        // 2. Orchestration Infrastructure (Récupération Données)
+        // Appel au port (Interface) pour récupérer les données externes
         let media;
         try {
             const newId = this.mediaRepository.nextId();
@@ -49,27 +77,28 @@ export class ImportMediaHandler {
                     throw new UnsupportedMediaTypeError(type);
             }
         } catch (error) {
-            // Re-throw domain exceptions as-is
+            // Re-throw exceptions du domaine telles quelles
             if (error instanceof UnsupportedMediaTypeError) {
                 throw error;
             }
 
-            // Wrap provider errors in domain exceptions
-            console.error(`[ImportMediaHandler] Provider error for ${type}/${mediaId}:`, error);
+            // Encapsulation: On masque les erreurs techniques du provider derrière une erreur métier
+            console.error(`[ImportMediaHandler] Erreur Provider pour ${type}/${mediaId}:`, error);
             throw new ProviderUnavailableError(
                 providerName,
                 error instanceof Error ? error : new Error(String(error))
             );
         }
 
-        // 3. Validate media was found
+        // 3. Validation de l'existence
         if (!media) {
             throw new MediaNotFoundInProviderError(providerName, mediaId);
         }
 
-        // 4. Save to repository
+        // 4. Persistance
+        // Délégation au Repository pour sauvegarder l'état
         await this.mediaRepository.create(media);
-        console.log(`[ImportMediaHandler] Successfully imported ${media.title}`);
+        console.log(`[ImportMediaHandler] Succès import de ${media.title}`);
     }
 
     private mapTypeToProviderName(type: MediaType): string {

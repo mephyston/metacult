@@ -1,105 +1,105 @@
 /**
- * Native TypeScript type guards for runtime validation of provider responses.
- * These guards replace Zod schemas and provide type-safe validation using native TypeScript.
+ * Type guards natifs TypeScript pour la validation runtime des réponses providers.
+ * Remplace Zod pour une validation légère et type-safe.
  */
 
 import type { IgdbGameRaw, TmdbMovieRaw, TmdbTvRaw, GoogleBookRaw } from '../types/raw-responses';
 import { InvalidProviderDataError } from '../../domain/errors/catalog.errors';
 
 /**
- * Validates IGDB game response structure.
- * @throws InvalidProviderDataError if validation fails
+ * Valide la structure de réponse d'un jeu IGDB.
+ * @throws InvalidProviderDataError si la validation échoue.
  */
 export function validateIgdbGame(data: unknown): asserts data is IgdbGameRaw {
     if (!data || typeof data !== 'object') {
-        throw new InvalidProviderDataError('igdb', 'Response is not an object');
+        throw new InvalidProviderDataError('igdb', 'La réponse n\'est pas un objet');
     }
 
     const game = data as Record<string, unknown>;
 
     if (typeof game.id !== 'number') {
-        throw new InvalidProviderDataError('igdb', 'Missing or invalid field: id (expected number)');
+        throw new InvalidProviderDataError('igdb', 'Champ manquant ou invalide : id (attendu : number)');
     }
 
     if (!game.name || typeof game.name !== 'string') {
-        throw new InvalidProviderDataError('igdb', 'Missing or invalid field: name (expected non-empty string)');
+        throw new InvalidProviderDataError('igdb', 'Champ manquant ou invalide : name (attendu : string non vide)');
     }
 
-    // Optional fields validation (if present, must be correct type)
+    // Validation des champs optionnels
     if (game.rating !== undefined && game.rating !== null && typeof game.rating !== 'number') {
-        throw new InvalidProviderDataError('igdb', 'Invalid field: rating (expected number or null)');
+        throw new InvalidProviderDataError('igdb', 'Champ invalide : rating (attendu : number ou null)');
     }
 
     if (game.first_release_date !== undefined && game.first_release_date !== null && typeof game.first_release_date !== 'number') {
-        throw new InvalidProviderDataError('igdb', 'Invalid field: first_release_date (expected number or null)');
+        throw new InvalidProviderDataError('igdb', 'Champ invalide : first_release_date (attendu : number ou null)');
     }
 
     if (game.platforms !== undefined && game.platforms !== null && !Array.isArray(game.platforms)) {
-        throw new InvalidProviderDataError('igdb', 'Invalid field: platforms (expected array or null)');
+        throw new InvalidProviderDataError('igdb', 'Champ invalide : platforms (attendu : array ou null)');
     }
 }
 
 /**
- * Validates TMDB movie response structure.
- * @throws InvalidProviderDataError if validation fails
+ * Valide la structure de réponse d'un film TMDB.
+ * @throws InvalidProviderDataError si la validation échoue.
  */
 export function validateTmdbMovie(data: unknown): asserts data is TmdbMovieRaw {
     if (!data || typeof data !== 'object') {
-        throw new InvalidProviderDataError('tmdb', 'Response is not an object');
+        throw new InvalidProviderDataError('tmdb', 'La réponse n\'est pas un objet');
     }
 
     const movie = data as Record<string, unknown>;
 
     if (typeof movie.id !== 'number') {
-        throw new InvalidProviderDataError('tmdb', 'Missing or invalid field: id (expected number)');
+        throw new InvalidProviderDataError('tmdb', 'Champ manquant ou invalide : id (attendu : number)');
     }
 
     if (!movie.title || typeof movie.title !== 'string') {
-        throw new InvalidProviderDataError('tmdb', 'Missing or invalid field: title (expected non-empty string)');
+        throw new InvalidProviderDataError('tmdb', 'Champ manquant ou invalide : title (attendu : string non vide)');
     }
 
-    // Ensure media_type is 'movie' for consistency
+    // Vérifie que le media_type est 'movie' pour la cohérence
     if (movie.media_type !== 'movie' && movie.media_type !== undefined) {
-        throw new InvalidProviderDataError('tmdb', 'Invalid media_type (expected "movie")');
+        throw new InvalidProviderDataError('tmdb', 'media_type invalide (attendu : "movie")');
     }
 
     if (movie.vote_average !== undefined && movie.vote_average !== null && typeof movie.vote_average !== 'number') {
-        throw new InvalidProviderDataError('tmdb', 'Invalid field: vote_average (expected number or null)');
+        throw new InvalidProviderDataError('tmdb', 'Champ invalide : vote_average (attendu : number ou null)');
     }
 }
 
 /**
- * Validates TMDB TV response structure.
- * @throws InvalidProviderDataError if validation fails
+ * Valide la structure de réponse d'une série TV TMDB.
+ * @throws InvalidProviderDataError si la validation échoue.
  */
 export function validateTmdbTv(data: unknown): asserts data is TmdbTvRaw {
     if (!data || typeof data !== 'object') {
-        throw new InvalidProviderDataError('tmdb', 'Response is not an object');
+        throw new InvalidProviderDataError('tmdb', 'La réponse n\'est pas un objet');
     }
 
     const tv = data as Record<string, unknown>;
 
     if (typeof tv.id !== 'number') {
-        throw new InvalidProviderDataError('tmdb', 'Missing or invalid field: id (expected number)');
+        throw new InvalidProviderDataError('tmdb', 'Champ manquant ou invalide : id (attendu : number)');
     }
 
     if (!tv.name || typeof tv.name !== 'string') {
-        throw new InvalidProviderDataError('tmdb', 'Missing or invalid field: name (expected non-empty string)');
+        throw new InvalidProviderDataError('tmdb', 'Champ manquant ou invalide : name (attendu : string non vide)');
     }
 
-    // Ensure media_type is 'tv' for consistency
+    // Vérifie que le media_type est 'tv' pour la cohérence
     if (tv.media_type !== 'tv' && tv.media_type !== undefined) {
-        throw new InvalidProviderDataError('tmdb', 'Invalid media_type (expected "tv")');
+        throw new InvalidProviderDataError('tmdb', 'media_type invalide (attendu : "tv")');
     }
 
     if (tv.vote_average !== undefined && tv.vote_average !== null && typeof tv.vote_average !== 'number') {
-        throw new InvalidProviderDataError('tmdb', 'Invalid field: vote_average (expected number or null)');
+        throw new InvalidProviderDataError('tmdb', 'Champ invalide : vote_average (attendu : number ou null)');
     }
 }
 
 /**
- * Validates Google Books response structure.
- * @throws InvalidProviderDataError if validation fails
+ * Valide la structure de réponse d'un livre Google Books.
+ * @throws InvalidProviderDataError si la validation échoue.
  */
 export function validateGoogleBook(data: unknown): asserts data is GoogleBookRaw {
     if (!data || typeof data !== 'object') {

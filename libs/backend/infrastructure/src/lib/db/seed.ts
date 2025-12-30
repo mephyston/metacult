@@ -2,7 +2,7 @@
 import { importQueue } from '../queue/queue.client';
 
 async function main() {
-    console.log('🌱 Sending Seed Jobs to Queue...');
+    console.log('🌱 Envoi des Jobs de Seed à la Queue...');
 
     // Real IDs from providers for "Seeding"
     const seeds = [
@@ -15,7 +15,7 @@ async function main() {
     ];
 
     for (const seed of seeds) {
-        console.log(`🚀 Queuing ${seed.type}: ${seed.id}`);
+        console.log(`🚀 Ajout en queue ${seed.type} : ${seed.id}`);
         await importQueue.add(
             'seed-import',
             { type: seed.type, id: seed.id },
@@ -26,11 +26,11 @@ async function main() {
         );
     }
 
-    console.log('✅ Seed jobs queued! Ensure Worker is running to process them.');
+    console.log('✅ Jobs de Seed en file d\'attente ! Assurez-vous que le Worker tourne.');
     process.exit(0);
 }
 
 main().catch((err) => {
-    console.error('❌ Seeding failed:', err);
+    console.error('❌ Echec du Seeding :', err);
     process.exit(1);
 });

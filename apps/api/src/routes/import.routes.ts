@@ -1,8 +1,14 @@
 import { Elysia, t } from 'elysia';
 import { importQueue } from '@metacult/backend/infrastructure';
 
-// Routes are prefixed in the mounting file (e.g. /api/import)
+// Les routes sont préfixées lors du montage (ex: /api/import)
 
+/**
+ * Routeur pour les imports manuels de médias.
+ * Agit comme un "Fire and Forget" : pousse un job dans la queue et répond immédiatement.
+ * 
+ * @const importRoutes
+ */
 const app = new Elysia()
     .post('/games/:id', async ({ params: { id } }) => {
         const jobId = `game-${id}-${Date.now()}`;

@@ -1,4 +1,5 @@
 
+/** Structure brute d'un Jeu (IGDB). */
 export interface IgdbGameRaw {
     id: number;
     name: string;
@@ -19,6 +20,7 @@ export interface IgdbGameRaw {
     total_rating?: number;
 }
 
+/** Structure brute d'un Film (TMDB). */
 export interface TmdbMovieRaw {
     id: number;
     title: string;
@@ -29,6 +31,7 @@ export interface TmdbMovieRaw {
     runtime?: number;
 }
 
+/** Structure brute d'une Série TV (TMDB). */
 export interface TmdbTvRaw {
     id: number;
     name: string;
@@ -44,6 +47,7 @@ export interface TmdbTvRaw {
     }>;
 }
 
+/** Structure brute d'un Livre (Google Books). */
 export interface GoogleBookRaw {
     id: string;
     volumeInfo: {
@@ -59,6 +63,7 @@ export interface GoogleBookRaw {
     };
 }
 
+/** Union discriminée pour stocker les métadonnées Provider en JSONB. */
 export type ProviderMetadata =
     | { source: 'IGDB'; igdbId: number; gameRaw?: IgdbGameRaw }
     | { source: 'TMDB'; tmdbId: number; mediaType: 'movie'; movieRaw?: TmdbMovieRaw }

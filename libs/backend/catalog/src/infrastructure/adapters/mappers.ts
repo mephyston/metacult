@@ -29,9 +29,16 @@ const createReleaseYear = (dateText: string | number | undefined | null): Releas
     try { return new ReleaseYear(year); } catch { return null; }
 };
 
-// Mappers now accept an ID, allowing the Repository to control identity generation.
-// If no ID is provided (e.g. search results), we can still use a transient ID.
+/**
+ * Mappers : Transforment les réponses brutes des APIs externes en Entités du Domaine.
+ * Ils acceptent un ID injecté, permettant au Repository de gérer la génération d'identité.
+ */
 
+/**
+ * Mappe un jeu IGDB vers l'entité Game.
+ * @param {IgdbGameRaw} raw - Données brutes IGDB.
+ * @param {string} id - ID interne pré-généré.
+ */
 export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
     const rating = raw.total_rating ? raw.total_rating / 10 : null;
     return new Game(
@@ -48,6 +55,11 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
     );
 }
 
+/**
+ * Mappe un film TMDB vers l'entité Movie.
+ * @param {TmdbMovieRaw} raw - Données brutes TMDB.
+ * @param {string} id - ID interne pré-généré.
+ */
 export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
     const posterUrl = raw.poster_path ? `https://image.tmdb.org/t/p/w500${raw.poster_path}` : null;
     return new Movie(
@@ -63,6 +75,11 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
     );
 }
 
+/**
+ * Mappe une série TMDB vers l'entité TV.
+ * @param {TmdbTvRaw} raw - Données brutes TMDB.
+ * @param {string} id - ID interne pré-généré.
+ */
 export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
     const posterUrl = raw.poster_path ? `https://image.tmdb.org/t/p/w500${raw.poster_path}` : null;
     return new TV(
@@ -79,6 +96,11 @@ export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
     );
 }
 
+/**
+ * Mappe un livre Google Books vers l'entité Book.
+ * @param {GoogleBookRaw} raw - Données brutes Google Books.
+ * @param {string} id - ID interne pré-généré.
+ */
 export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
     const info = raw.volumeInfo;
     return new Book(

@@ -8,13 +8,35 @@ export type MixedFeedItem =
     | { type: 'MEDIA'; data: any }
     | { type: 'SPONSORED'; data: any };
 
+/**
+ * Cas d'Utilisation (Use Case) : Générer un flux mixte (Contenu + Pubs).
+ * Implémente une stratégie de cache aggressive avec Redis et de l'orchestration de ports.
+ * 
+ * @class GetMixedFeedHandler
+ */
 export class GetMixedFeedHandler {
+    /**
+     * @param {Redis} redis - Cache distribué pour stocker le feed calculé.
+     * @param {IMediaSearcher} mediaSearcher - Service pour trouver du contenu.
+     * @param {IAdsProvider} adsProvider - Service pour trouver des pubs.
+     */
     constructor(
         private readonly redis: Redis,
         private readonly mediaSearcher: IMediaSearcher,
         private readonly adsProvider: IAdsProvider
     ) { }
 
+    /**
+     * Exécute la query.
+     * Algorithme :
+     * 1. Vérifie le cache Redis (TTL court).
+     * 2. Si miss : Récupère Médias et Pubs en parallèle.
+     * 3. Aggregation : Insère 1 pub tous les 5 médias.
+     * 4. Mise en cache du résultat.
+     * 
+     * @param {GetMixedFeedQuery} query - Paramètres de recherche.
+     * @returns {Promise<MixedFeedItem[]>} Le flux composite.
+     */
     async execute(query: GetMixedFeedQuery): Promise<MixedFeedItem[]> {
         const cacheKey = `discovery:feed:${query.search}`;
 

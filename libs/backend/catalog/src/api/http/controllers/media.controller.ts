@@ -4,6 +4,11 @@ import { ImportMediaHandler } from '../../../application/commands/import-media/i
 import type { SearchMediaDto, ImportMediaDto } from '../dtos/media.dtos';
 import { MediaType } from '../../../domain/entities/media.entity';
 
+/**
+ * Contrôleur HTTP pour le Catalogue.
+ * Orchestre les requêtes entrantes vers les Handlers (CQRS).
+ * Découplé du framework HTTP (Elysia) autant que possible.
+ */
 export class MediaController {
     constructor(
         private readonly searchHandler: SearchMediaHandler,
@@ -14,6 +19,10 @@ export class MediaController {
     // but Elysia handles validation at route level usually.
 
     // Simplified to accept strict types, decoupling from Elysia Context
+    /**
+     * Recherche de médias (Jeux, Films, etc.).
+     * @param {SearchMediaDto['query']} query 
+     */
     async search(query: SearchMediaDto['query']) {
         const { q, type, tag } = query;
         const mediaType = type as MediaType | undefined;
@@ -27,6 +36,10 @@ export class MediaController {
         return medias;
     }
 
+    /**
+     * Import manuel d'un média.
+     * @param {ImportMediaDto['body']} body 
+     */
     async import(body: ImportMediaDto['body']) {
         const { mediaId, type } = body;
 

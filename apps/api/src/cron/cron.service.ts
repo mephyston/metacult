@@ -1,7 +1,11 @@
 import { importQueue } from '@metacult/backend/infrastructure';
 
+/**
+ * Initialise les tâches planifiées (Cron Jobs) dans BullMQ.
+ * Idempotent: Les configurations 'repeat' écrasent les précédentes si le jobId est identique.
+ */
 export const initCrons = async () => {
-    console.log('⏰ Initializing Cron Jobs...');
+    console.log('⏰ Initialisation des tâches Cron...');
 
     // Daily Sync at 3:00 AM
     await importQueue.add(
@@ -15,5 +19,5 @@ export const initCrons = async () => {
         }
     );
 
-    console.log('✅ Daily Sync scheduled for 3:00 AM');
+    console.log('✅ Synchro quotidienne planifiée pour 03h00');
 };

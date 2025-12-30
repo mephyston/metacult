@@ -2,31 +2,32 @@ import type { IMediaRepository } from '../../application/ports/media.repository.
 import { MediaAlreadyExistsError } from '../errors/catalog.errors';
 
 /**
- * Domain Service that encapsulates business rules for media imports.
- * This service ensures that domain invariants are respected.
+ * Service de Domaine (Domain Service).
+ * Encapsule les règles métier qui ne peuvent pas appartenir naturellement à une Entité seule.
+ * Ici: La politique d'unicité (on ne peut pas importer un média s'il existe déjà).
  */
 export class MediaImportPolicy {
-    constructor(private readonly repository: IMediaRepository) {}
+    constructor(private readonly repository: IMediaRepository) { }
 
     /**
-     * Determines if a media can be imported based on business rules.
+     * Vérifie si un import est autorisé selon les règles métier.
      * 
-     * Business Rule: A media should not be imported if it already exists
-     * from the same provider with the same external ID.
+     * Règle Métier : Un média ne doit pas être importé s'il existe déjà
+     * pour le même provider avec le même ID externe.
      * 
-     * @throws MediaAlreadyExistsError if the media already exists
+     * @throws MediaAlreadyExistsError si le média existe déjà
      */
     async validateImport(provider: string, externalId: string): Promise<void> {
         const existing = await this.repository.findByProviderId(provider, externalId);
-        
+
         if (existing) {
             throw new MediaAlreadyExistsError(provider, externalId, existing.id);
         }
     }
 
     /**
-     * Checks if a media already exists without throwing.
-     * Useful for conditional logic without exception handling.
+     * Vérifie l'existence sans lever d'exception.
+     * Utile pour des logiques conditionnelles.
      */
     async mediaExists(provider: string, externalId: string): Promise<boolean> {
         const existing = await this.repository.findByProviderId(provider, externalId);

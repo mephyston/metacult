@@ -1,10 +1,10 @@
 /**
- * Domain Exceptions for Catalog Module
- * These exceptions represent business rule violations and domain-specific errors.
+ * Exceptions du Domaine pour le module Catalogue.
+ * Représentent des violations de règles métier ou erreurs spécifiques au domaine.
  */
 
 /**
- * Thrown when attempting to import a media that already exists in the catalog.
+ * Le média existe déjà dans le catalogue.
  */
 export class MediaAlreadyExistsError extends Error {
     constructor(
@@ -18,7 +18,7 @@ export class MediaAlreadyExistsError extends Error {
 }
 
 /**
- * Thrown when a media cannot be found in the external provider.
+ * Média introuvable chez le fournisseur externe.
  */
 export class MediaNotFoundInProviderError extends Error {
     constructor(
@@ -31,12 +31,12 @@ export class MediaNotFoundInProviderError extends Error {
 }
 
 /**
- * Thrown when an external provider is unavailable or returns an error.
+ * Le fournisseur externe est indisponible ou a retourné une erreur.
  */
 export class ProviderUnavailableError extends Error {
     constructor(
         public readonly provider: string,
-        public readonly cause?: Error
+        public override readonly cause?: Error
     ) {
         super(`Provider ${provider} is unavailable`);
         this.name = 'ProviderUnavailableError';
@@ -47,7 +47,7 @@ export class ProviderUnavailableError extends Error {
 }
 
 /**
- * Thrown when data from a provider fails validation.
+ * Les données retournées par le fournisseur sont invalides.
  */
 export class InvalidProviderDataError extends Error {
     constructor(
@@ -60,7 +60,7 @@ export class InvalidProviderDataError extends Error {
 }
 
 /**
- * Thrown when attempting an operation on an unsupported media type.
+ * Type de média non supporté.
  */
 export class UnsupportedMediaTypeError extends Error {
     constructor(

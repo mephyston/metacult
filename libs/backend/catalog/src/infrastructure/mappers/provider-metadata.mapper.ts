@@ -2,12 +2,13 @@ import { ExternalReference } from '../../domain/value-objects/external-reference
 import type { ProviderMetadata } from '../types/raw-responses';
 
 /**
- * Infrastructure Mapper: Converts between Domain Value Objects and Infrastructure DTOs.
- * This prevents the repository from handling conversion logic directly.
+ * Mappeur d'Infrastructure.
+ * Convertit les Value Objects du Domaine vers les DTOs d'Infrastructure (structure JSONB utilisée en base).
+ * Empêche le Repository de porter la logique de conversion.
  */
 export class ProviderMetadataMapper {
     /**
-     * Converts an ExternalReference (domain) to ProviderMetadata (infrastructure).
+     * Convertit une ExternalReference (Domaine) vers ProviderMetadata (Infra).
      */
     static toProviderMetadata(ref: ExternalReference): ProviderMetadata {
         if (ref.provider === 'igdb') {
@@ -16,12 +17,12 @@ export class ProviderMetadataMapper {
                 igdbId: Number(ref.id),
             };
         } else if (ref.provider === 'tmdb') {
-            // Note: mediaType needs to be inferred from context or passed separately
-            // For now, we'll default to 'movie' but this should be enhanced
+            // Note : le mediaType doit être déduit du contexte ou passé séparément.
+            // Par défaut 'movie', mais doit être amélioré.
             return {
                 source: 'TMDB',
                 tmdbId: Number(ref.id),
-                mediaType: 'movie', // TODO: This should be passed as parameter
+                mediaType: 'movie', // TODO: Passer en paramètre
             };
         } else if (ref.provider === 'google_books') {
             return {
@@ -29,12 +30,12 @@ export class ProviderMetadataMapper {
                 googleId: ref.id,
             };
         }
-        
-        throw new Error(`Unknown provider: ${ref.provider}`);
+
+        throw new Error(`Fournisseur inconnu : ${ref.provider}`);
     }
 
     /**
-     * Converts an ExternalReference with explicit media type context.
+     * Convertit une ExternalReference avec contexte de type média explicite.
      */
     static toProviderMetadataWithType(
         ref: ExternalReference,
@@ -57,12 +58,12 @@ export class ProviderMetadataMapper {
                 googleId: ref.id,
             };
         }
-        
-        throw new Error(`Unknown provider: ${ref.provider}`);
+
+        throw new Error(`Fournisseur inconnu : ${ref.provider}`);
     }
 
     /**
-     * Converts ProviderMetadata (infrastructure) to ExternalReference (domain).
+     * Convertit ProviderMetadata (Infra) vers ExternalReference (Domaine).
      */
     static toExternalReference(metadata: ProviderMetadata): ExternalReference {
         if (metadata.source === 'IGDB') {
@@ -72,7 +73,7 @@ export class ProviderMetadataMapper {
         } else if (metadata.source === 'GOOGLE_BOOKS') {
             return new ExternalReference('google_books', metadata.googleId);
         }
-        
+
         throw new Error(`Unknown metadata source: ${(metadata as any).source}`);
     }
 }

@@ -1,3 +1,8 @@
+/**
+ * DTO de Lecture (Read Model).
+ * Optimisé pour l'affichage et le transfert réseau (sérialisation JSON).
+ * Ne contient pas de logique métier, juste des données.
+ */
 export interface MediaReadDto {
     id: string;
     title: string;
