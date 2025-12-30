@@ -1,0 +1,231 @@
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import { useMagicKeys, useDebounceFn } from '@vueuse/core';
+import { 
+  Search as SearchIcon, 
+  CloudDownload, 
+  Loader2, 
+  Gamepad2, 
+  Film, 
+  Tv, 
+  BookOpen 
+} from 'lucide-vue-next';
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandSeparator
+} from '../ui/command';
+import { Button } from '../ui/button';
+
+// Types (simplified version of DTO)
+interface SearchResultItem {
+  id: string;
+  externalId: string | null;
+  title: string;
+  year: number | null;
+  poster: string | null;
+  type: 'game' | 'movie' | 'tv' | 'book';
+  isImported: boolean;
+}
+
+interface GroupedSearchResponse {
+  games: SearchResultItem[];
+  movies: SearchResultItem[];
+  shows: SearchResultItem[];
+  books: SearchResultItem[];
+}
+
+const open = ref(false);
+const query = ref('');
+const isLoading = ref(false);
+const results = ref<GroupedSearchResponse>({ games: [], movies: [], shows: [], books: [] });
+const importingId = ref<string | null>(null);
+
+const { Meta_K, Ctrl_K } = useMagicKeys({
+  passive: false,
+  onEventFired(e) {
+    if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      open.value = !open.value;
+    }
+  },
+});
+
+function handleOpen() {
+  open.value = true;
+}
+
+const searchApi = async (q: string) => {
+  if (q.length < 3) {
+    results.value = { games: [], movies: [], shows: [], books: [] };
+    return;
+  }
+  
+  isLoading.value = true;
+  try {
+    // TODO: Use Env var for API URL in production
+    const res = await fetch(`http://localhost:3000/api/media/search?q=${encodeURIComponent(q)}`);
+    if (res.ok) {
+      results.value = await res.json();
+    }
+  } catch (e) {
+    console.error('Search failed', e);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const debouncedSearch = useDebounceFn(searchApi, 500);
+
+watch(query, (newVal) => {
+  debouncedSearch(newVal);
+});
+
+async function handleSelect(item: SearchResultItem) {
+  if (item.isImported) {
+    navigateToMedia(item.type, item.id);
+  } else {
+    // Import logic
+    console.log('[Search] Importing item:', item);
+    importingId.value = item.id;
+    try {
+      const res = await fetch('http://localhost:3000/api/media/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          mediaId: item.externalId || item.id, // Use External Provider ID for import
+          type: item.type 
+        })
+      });
+      
+      if (res.ok) {
+        // Ideally we should wait for response to get the new local ID, 
+        // but for now redirecting to same ID might fail if it was external.
+        // We should refresh or go to pending state.
+        // Assuming API returns the created ID would be better, but let's stick to simple flow.
+        window.location.reload(); 
+      }
+    } catch (e) {
+      console.error('Import failed', e);
+    } finally {
+      importingId.value = null;
+    }
+  }
+}
+
+function navigateToMedia(type: string, id: string) {
+  open.value = false;
+  window.location.href = `/catalog/${type}/${id}`;
+}
+</script>
+
+<template>
+  <div>
+    <Button
+      variant="outline"
+      class="relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2"
+      @click="handleOpen"
+    >
+      <SearchIcon class="h-4 w-4 xl:mr-2" />
+      <span class="hidden xl:inline-flex">Rechercher...</span>
+      <span class="sr-only">Rechercher</span>
+      <kbd
+        class="pointer-events-none absolute right-1.5 top-2 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 xl:flex"
+      >
+        <span class="text-xs">⌘</span>K
+      </kbd>
+    </Button>
+    
+    <CommandDialog :open="open" @update:open="open = $event" :filter-function="(val: any[]) => val">
+      <CommandInput 
+        placeholder="Rechercher des films, jeux, livres..." 
+        :model-value="query"
+        @input="(e: Event) => query = (e.target as HTMLInputElement).value"
+      />
+      
+      <CommandList>
+        <CommandEmpty v-if="!isLoading && query.length >= 3">Aucun résultat trouvé.</CommandEmpty>
+        <CommandEmpty v-if="isLoading" class="py-6 flex justify-center">
+            <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+        </CommandEmpty>
+
+        <!-- Games -->
+        <CommandGroup v-if="results.games.length > 0" heading="Jeux Vidéo">
+          <CommandItem 
+            v-for="item in results.games" 
+            :key="item.id" 
+            :value="item.title"
+            @select="handleSelect(item)"
+          >
+            <Gamepad2 class="mr-2 h-4 w-4" />
+            <span>{{ item.title }}</span>
+            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs">({{ item.year }})</span>
+            <div class="ml-auto flex items-center">
+               <Loader2 v-if="importingId === item.id" class="h-4 w-4 animate-spin" />
+               <CloudDownload v-else-if="!item.isImported" class="h-4 w-4 text-muted-foreground opacity-70" />
+            </div>
+          </CommandItem>
+        </CommandGroup>
+
+        <!-- Movies -->
+        <CommandGroup v-if="results.movies.length > 0" heading="Films">
+            <CommandItem 
+              v-for="item in results.movies" 
+              :key="item.id" 
+              :value="item.title"
+              @select="handleSelect(item)"
+            >
+              <Film class="mr-2 h-4 w-4" />
+              <span>{{ item.title }}</span>
+              <span v-if="item.year" class="ml-2 text-muted-foreground text-xs">({{ item.year }})</span>
+              <div class="ml-auto flex items-center">
+                 <Loader2 v-if="importingId === item.id" class="h-4 w-4 animate-spin" />
+                 <CloudDownload v-else-if="!item.isImported" class="h-4 w-4 text-muted-foreground opacity-70" />
+              </div>
+            </CommandItem>
+        </CommandGroup>
+
+        <!-- Shows -->
+        <CommandGroup v-if="results.shows.length > 0" heading="Séries TV">
+            <CommandItem 
+              v-for="item in results.shows" 
+              :key="item.id" 
+              :value="item.title"
+              @select="handleSelect(item)"
+            >
+              <Tv class="mr-2 h-4 w-4" />
+              <span>{{ item.title }}</span>
+              <span v-if="item.year" class="ml-2 text-muted-foreground text-xs">({{ item.year }})</span>
+              <div class="ml-auto flex items-center">
+                 <Loader2 v-if="importingId === item.id" class="h-4 w-4 animate-spin" />
+                 <CloudDownload v-else-if="!item.isImported" class="h-4 w-4 text-muted-foreground opacity-70" />
+              </div>
+            </CommandItem>
+        </CommandGroup>
+
+        <!-- Books -->
+        <CommandGroup v-if="results.books.length > 0" heading="Livres">
+            <CommandItem 
+              v-for="item in results.books" 
+              :key="item.id" 
+              :value="item.title"
+              @select="handleSelect(item)"
+            >
+              <BookOpen class="mr-2 h-4 w-4" />
+              <span>{{ item.title }}</span>
+              <span v-if="item.year" class="ml-2 text-muted-foreground text-xs">({{ item.year }})</span>
+              <div class="ml-auto flex items-center">
+                 <Loader2 v-if="importingId === item.id" class="h-4 w-4 animate-spin" />
+                 <CloudDownload v-else-if="!item.isImported" class="h-4 w-4 text-muted-foreground opacity-70" />
+              </div>
+            </CommandItem>
+        </CommandGroup>
+
+      </CommandList>
+    </CommandDialog>
+  </div>
+</template>

@@ -22,6 +22,14 @@ interface HeroProps {
   imageSizes?: string;
   badge?: string;
   fetchpriority?: 'high' | 'low' | 'auto'; // Added for LCP optimization
+  recentMedias?: Array<{
+    id: string;
+    title: string;
+    releaseYear: number | null;
+    type: string;
+    posterUrl: string | null;
+    tags?: string[];
+  }>;
 }
 
 withDefaults(defineProps<HeroProps>(), {
@@ -31,15 +39,11 @@ withDefaults(defineProps<HeroProps>(), {
   ctaLink: '/register',
   secondaryCtaText: 'Connctez-vous',
   secondaryCtaLink: '/login',
-  badge: 'Nouvelle Version 2.0'
+  badge: 'Nouvelle Version 2.0',
+  recentMedias: () => []
 });
 
-const upcomingShows = [
-  { title: "Dune: Part Two", date: "Sun, Oct 12", time: "20:00", image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=300&auto=format&fit=crop" },
-  { title: "Oppenheimer", date: "Fri, Sep 5", time: "18:00", image: "https://images.unsplash.com/photo-1506157786151-b8491531f436?q=80&w=300&auto=format&fit=crop" },
-  { title: "Interstellar", date: "Sat, Nov 15", time: "19:30", image: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=300&auto=format&fit=crop" },
-  { title: "Blade Runner 2049", date: "Fri, Dec 12", time: "21:00", image: "https://images.unsplash.com/photo-1542662565-7e4b66b29a30?q=80&w=300&auto=format&fit=crop" },
-];
+
 </script>
 
 <template>
@@ -49,9 +53,9 @@ const upcomingShows = [
           <!-- Left Content -->
           <div class="flex flex-col justify-center gap-8 sm:gap-10">
               <div class="space-y-4">
-                  <Badge variant="outline" class="w-fit rounded-full border-border bg-muted/50 px-3 py-1 text-sm font-medium text-muted-foreground backdrop-blur-sm">
+                  <!---<Badge variant="outline" class="w-fit rounded-full border-border bg-muted/50 px-3 py-1 text-sm font-medium text-muted-foreground backdrop-blur-sm">
                       Saison 2025
-                  </Badge>
+                  </Badge>-->
                   <h1 class="text-4xl font-bold tracking-tight sm:text-5xl xl:text-6xl text-foreground">
                       Swipez, notez, partagez vos
                       <TextRotator />
@@ -71,10 +75,10 @@ const upcomingShows = [
                   </Button>
               </div>
 
-              <!-- Upcoming Shows Marquee -->
-              <div>
+              <!-- Recent Media Marquee -->
+              <div class="mt-8">
                   <h3 class="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                      À l'affiche cette semaine
+                      Derniers Ajouts
                   </h3>
                   <div class="relative group">
                       <!-- Fade Gradients -->
@@ -83,19 +87,44 @@ const upcomingShows = [
                       
                       <!-- Marquee Container -->
                       <div class="flex overflow-hidden gap-[var(--gap)] select-none" style="--gap: 1rem; --duration: 40s;">
-                          <div v-for="i in 4" :key="i" class="flex shrink-0 animate-marquee items-center justify-around gap-[var(--gap)] group-hover:[animation-play-state:paused]">
-                              <div v-for="(show, index) in upcomingShows" :key="index" class="bg-card text-card-foreground flex flex-col rounded-xl border py-4 shadow-sm w-[240px]">
-                                  <div class="px-4 pb-3">
-                                      <img :src="show.image" class="aspect-video w-full rounded-lg object-cover h-28" :alt="show.title" />
-                                  </div>
-                                  <div class="px-4">
-                                      <div class="text-base font-medium truncate">{{ show.title }}</div>
-                                      <div class="text-xs text-muted-foreground flex justify-between mt-1">
-                                          <span>{{ show.date }}</span>
-                                          <span>{{ show.time }}</span>
-                                      </div>
-                                  </div>
-                              </div>
+                          <div v-for="i in 2" :key="i" class="flex shrink-0 animate-marquee items-center justify-around gap-[var(--gap)] group-hover:[animation-play-state:paused]">
+                              <template v-if="recentMedias && recentMedias.length > 0">
+                                <div v-for="media in recentMedias" :key="`${i}-${media.id}`" class="bg-card text-card-foreground flex flex-col rounded-md border shadow-sm w-[160px] h-[240px] overflow-hidden group">
+                                    <div class="relative h-[75%] w-full overflow-hidden bg-muted">
+                                        <img 
+                                            :src="media.posterUrl || 'https://images.unsplash.com/photo-1594322436404-5a0526db4d13?w=300&h=450&fit=crop'" 
+                                            class="object-cover w-full h-full block transition-opacity duration-300 hover:opacity-90" 
+                                            :alt="media.title" 
+                                            loading="lazy"
+                                            referrerpolicy="no-referrer" 
+                                        />
+                                        <div class="absolute top-2 left-2">
+                                            <Badge variant="secondary" class="bg-background/90 backdrop-blur-md text-foreground border-white/10 shadow-sm font-semibold px-1.5 py-0 text-[10px] capitalize">
+                                                {{ media.type }}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col justify-between flex-1 p-2">
+                                        <div>
+                                            <div class="flex items-baseline justify-between mb-0.5">
+                                                <h4 class="text-xs font-bold leading-tight truncate mr-1" :title="media.title">
+                                                    {{ media.title }}
+                                                </h4>
+                                                <span class="text-[10px] text-muted-foreground shrink-0">{{ media.releaseYear || 'N/A' }}</span>
+                                            </div>
+                                            <div class="flex flex-wrap gap-0.5 mt-auto h-4 overflow-hidden">
+                                                <span v-for="tag in media.tags?.slice(0, 1)" :key="tag" class="text-[9px] text-muted-foreground bg-muted px-1 py-0 rounded-[2px]">
+                                                    {{ tag }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                              </template>
+                              <template v-else>
+                                <!-- Empty state or skeletons if needed, but for now just empty loop which explains 'nothing shows' -->
+                                <div class="px-6 py-4 text-sm text-muted-foreground">Aucun média récent</div>
+                              </template>
                           </div>
                       </div>
                   </div>

@@ -67,11 +67,30 @@ export class CatalogModuleFactory {
      * Crée le Handler de Recherche.
      * 
      * @param {any} db - instance Drizzle.
+     * @param {CatalogModuleConfig} config - Config.
+     * @param {any} redis - Redis client.
      * @returns {SearchMediaHandler}
      */
-    static createSearchMediaHandler(db: any): SearchMediaHandler {
+    static createSearchMediaHandler(db: any, config: CatalogModuleConfig, redis: any): SearchMediaHandler {
         const repository = new DrizzleMediaRepository(db);
-        return new SearchMediaHandler(repository);
+
+        // Re-creating adapters here (stateless). 
+        // In a real DI container this would be singleton.
+        const igdbProvider = new IgdbProvider(config.igdb.clientId, config.igdb.clientSecret);
+        const tmdbProvider = new TmdbProvider(config.tmdb.apiKey);
+        const googleBooksProvider = new GoogleBooksProvider(config.googleBooks.apiKey);
+
+        const igdbAdapter = new IgdbAdapter(igdbProvider);
+        const tmdbAdapter = new TmdbAdapter(tmdbProvider);
+        const googleBooksAdapter = new GoogleBooksAdapter(googleBooksProvider);
+
+        return new SearchMediaHandler(
+            repository,
+            redis,
+            igdbAdapter,
+            tmdbAdapter,
+            googleBooksAdapter
+        );
     }
 
     /**
@@ -80,14 +99,38 @@ export class CatalogModuleFactory {
      * 
      * @param {any} db - instance Drizzle.
      * @param {CatalogModuleConfig} config - Config.
+     * @param {any} redis - Redis Client.
      * @returns {MediaController}
      */
-    static createController(db: any, config: CatalogModuleConfig): MediaController {
+    /**
+     * Crée le Handler de Médias Récents.
+     * 
+     * @param {any} db - instance Drizzle.
+     * @param {any} redis - Redis Client.
+     * @returns {GetRecentMediaHandler}
+     */
+    static createGetRecentMediaHandler(db: any, redis: any): GetRecentMediaHandler {
+        const repository = new DrizzleMediaRepository(db);
+        return new GetRecentMediaHandler(repository, redis);
+    }
+
+    /**
+     * Crée le Contrôleur HTTP (pour Elysia).
+     * Assemble tous les Handlers.
+     * 
+     * @param {any} db - instance Drizzle.
+     * @param {CatalogModuleConfig} config - Config.
+     * @param {any} redis - Redis Client.
+     * @returns {MediaController}
+     */
+    static createController(db: any, config: CatalogModuleConfig, redis: any): MediaController {
         return new MediaController(
-            this.createSearchMediaHandler(db),
-            this.createImportMediaHandler(db, config)
+            this.createSearchMediaHandler(db, config, redis),
+            this.createImportMediaHandler(db, config),
+            this.createGetRecentMediaHandler(db, redis)
         );
     }
 }
 import { MediaController } from '../../api/http/controllers/media.controller';
 import { SearchMediaHandler } from '../queries/search-media/search-media.handler';
+import { GetRecentMediaHandler } from '../queries/get-recent-media/get-recent-media.handler';

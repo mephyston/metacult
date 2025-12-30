@@ -64,5 +64,11 @@ export interface IMediaRepository {
      * Génère un nouvel identifiant unique (UUID).
      * @returns {string} Un nouvel UUID.
      */
+    /**
+     * Récupère les médias les plus récents.
+     * @param limit Nombre de médias à récupérer.
+     */
+    findMostRecent(limit: number): Promise<MediaReadDto[]>;
+
     nextId(): string;
 }

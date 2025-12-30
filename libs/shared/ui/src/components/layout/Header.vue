@@ -53,7 +53,7 @@ const components: { title: string; href: string; description: string }[] = [
                 <span class="text-2xl font-display font-bold text-white uppercase tracking-wider">Metacult</span>
             </a>
 
-            <!-- Desktop Nav -->
+            <!-- Desktop Nav (Left aligned) -->
             <div class="hidden md:flex">
                 <NavigationMenu>
                     <NavigationMenuList>
@@ -116,16 +116,26 @@ const components: { title: string; href: string; description: string }[] = [
             </div>
         </div>
 
-        <!-- Navbar Right -->
-        <div class="navbar-right flex items-center ml-auto gap-2">
+        <!-- Right Side Container (aligned to right) -->
+        <div class="flex items-center ml-auto gap-4">
+            
+            <!-- Search Slot -->
+            <div class="hidden md:block mr-2">
+                <slot name="search" />
+            </div>
+
+            <!-- Actions -->
             <slot name="actions" />
             
-            <ThemeToggle class="text-white hover:bg-white/10 hover:text-white" />
+            <!-- Connect Button -->
             <Button variant="default" size="sm" href="/auth/login">
                 Se connecter
             </Button>
 
-             <!-- Mobile Menu Button -->
+            <!-- Theme Toggle -->
+            <ThemeToggle class="text-white hover:bg-white/10 hover:text-white" />
+
+            <!-- Mobile Menu Button -->
             <button 
                 @click="toggleMenu"
                 class="md:hidden text-gray-400 hover:text-white ml-2"
@@ -135,7 +145,6 @@ const components: { title: string; href: string; description: string }[] = [
                 </svg>
             </button>
         </div>
-
       </div>
     </div>
 

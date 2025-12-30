@@ -172,10 +172,73 @@ export class DrizzleMediaRepository implements IMediaRepository {
                     releaseYear: row.releaseYear ? row.releaseYear.getFullYear() : null,
                     description: null, // Schema missing description
                     coverUrl: null, // Schema missing coverUrl column
+                    isImported: true
                 });
             }
         }
         return Array.from(unique.values());
+    }
+
+    async findMostRecent(limit: number): Promise<import('../../application/queries/search-media/media-read.dto').MediaReadDto[]> {
+        try {
+            // 1. Fetch recent medias
+            const rows = await this.db.select()
+                .from(schema.medias)
+                .orderBy(desc(schema.medias.createdAt))
+                .limit(limit);
+
+            if (rows.length === 0) return [];
+
+            // 2. Fetch tags for these medias
+            const mediaIds = rows.map(r => r.id);
+            const tagsRows = await this.db.select({
+                mediaId: schema.mediasToTags.mediaId,
+                tagSlug: schema.tags.slug,
+                tagLabel: schema.tags.label
+            })
+                .from(schema.mediasToTags)
+                .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
+                .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
+
+            // 3. Map tags by Media ID
+            const tagsMap = new Map<string, string[]>();
+            for (const tagRow of tagsRows) {
+                if (!tagsMap.has(tagRow.mediaId)) {
+                    tagsMap.set(tagRow.mediaId, []);
+                }
+                tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
+            }
+
+            return rows.map(row => {
+                let coverUrl: string | null = null;
+                const metadata = row.providerMetadata as any;
+
+                if (metadata) {
+                    if (metadata.coverUrl) {
+                        coverUrl = metadata.coverUrl;
+                    } else if (metadata.poster_path) {
+                        const path = metadata.poster_path.startsWith('/') ? metadata.poster_path : `/${metadata.poster_path}`;
+                        coverUrl = `https://image.tmdb.org/t/p/original${path}`;
+                    } else if (metadata.image_id) {
+                        coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
+                    }
+                }
+
+                return {
+                    id: row.id,
+                    title: row.title,
+                    type: row.type.toLowerCase() as any,
+                    rating: row.globalRating,
+                    releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
+                    coverUrl: coverUrl,
+                    isImported: true,
+                    tags: tagsMap.get(row.id) || [] // New field
+                } as any;
+            });
+        } catch (e) {
+            console.error('🔥 REPO ERROR:', e);
+            throw e;
+        }
     }
 
     /**
@@ -235,33 +298,45 @@ export class DrizzleMediaRepository implements IMediaRepository {
             // Map ReleaseYear VO to Date (approximate)
             const releaseDate = media.releaseYear ? new Date(media.releaseYear.getValue(), 0, 1) : null;
 
-            // Use mapper to convert ExternalReference to ProviderMetadata
-            const mediaTypeContext = media.type === MediaType.MOVIE ? 'movie' : media.type === MediaType.TV ? 'tv' : undefined;
-            const providerMetadata = ProviderMetadataMapper.toProviderMetadataWithType(
+            // Map ProviderMetadata and inject CoverURL
+            let mediaTypeContext: 'movie' | 'tv' | undefined;
+            if (media.type === MediaType.MOVIE) mediaTypeContext = 'movie';
+            if (media.type === MediaType.TV) mediaTypeContext = 'tv';
+
+            const providerMetadataRaw = ProviderMetadataMapper.toProviderMetadataWithType(
                 media.externalReference,
                 mediaTypeContext
             );
 
+            // ✅ INJECTION DU COVER URL (Fix: Persistence manquante)
+            if (media.coverUrl) {
+                providerMetadataRaw.coverUrl = media.coverUrl.getValue();
+            }
+
+            const mediaRow: typeof schema.medias.$inferInsert = {
+                id: media.id,
+                title: media.title,
+                type: media.type.toUpperCase() as any, // DB expects UPPERCASE enum
+                releaseDate: releaseDate,
+                globalRating: media.rating ? media.rating.getValue() : null,
+                providerMetadata: providerMetadataRaw,
+                createdAt: new Date(),
+            };
+
             // 1. Insert/Update medias table
             await tx
                 .insert(schema.medias)
-                .values({
-                    id: media.id,
-                    title: media.title,
-                    type: media.type.toUpperCase() as any,
-                    releaseDate: releaseDate,
-                    globalRating: media.rating?.getValue() ?? null,
-                    createdAt: new Date(), // Using now for createdAt, assuming new entity
-                    providerMetadata: providerMetadata,
-                })
+                .values(mediaRow)
                 .onConflictDoUpdate({
                     target: schema.medias.id,
                     set: {
-                        title: media.title,
-                        releaseDate: releaseDate,
-                        globalRating: media.rating?.getValue() ?? null,
+                        title: mediaRow.title,
+                        releaseDate: mediaRow.releaseDate,
+                        globalRating: mediaRow.globalRating,
+                        providerMetadata: mediaRow.providerMetadata, // Met à jour les métadonnées
                     },
                 });
+            // (Subtype insertion follows...)
 
             // 2. Insert/Update into subtype table
             switch (media.type) {

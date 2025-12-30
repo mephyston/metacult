@@ -38,20 +38,35 @@ export class GetMixedFeedHandler {
      * @returns {Promise<MixedFeedItem[]>} Le flux composite.
      */
     async execute(query: GetMixedFeedQuery): Promise<MixedFeedItem[]> {
-        const cacheKey = `discovery:feed:${query.search}`;
+        const normalizedSearch = query.search.trim().toLowerCase();
+        const cacheKey = `discovery:feed:${normalizedSearch}`;
 
-        // 1. Check Short-lived Cache (30s)
+        // 1. Check Redis Cache
         const cached = await this.redis.get(cacheKey);
         if (cached) {
+            console.log(`[MixedFeed] Cache Hit pour "${query.search}"`);
             return JSON.parse(cached);
         }
 
-        // 2. Fetch Dependencies
-        // Using injected Ports
-        const [mediaItems, ads] = await Promise.all([
+        console.log(`[MixedFeed] Cache Miss pour "${query.search}" - Fetching dependencies...`);
+
+        // 2. Fetch Dependencies (Resilient)
+        const results = await Promise.allSettled([
             this.mediaSearcher.search(query.search),
             this.adsProvider.getAds()
         ]);
+
+        const [mediaRes, adsRes] = results;
+        const mediaItems = mediaRes.status === 'fulfilled' ? mediaRes.value : [];
+        const ads = adsRes.status === 'fulfilled' ? adsRes.value : [];
+
+        // Log failures but don't crash
+        if (mediaRes.status === 'rejected') {
+            console.error('[MixedFeed] Media Searcher Error:', mediaRes.reason);
+        }
+        if (adsRes.status === 'rejected') {
+            console.error('[MixedFeed] Ads Provider Error:', adsRes.reason);
+        }
 
         // 3. Mix Logic (1 Ad per 5 Media items)
         const mixedFeed: MixedFeedItem[] = [];
@@ -71,8 +86,9 @@ export class GetMixedFeedHandler {
             }
         }
 
-        // 4. Set Cache
-        await this.redis.set(cacheKey, JSON.stringify(mixedFeed), 'EX', 30);
+        // 4. Set Cache (TTL 1h)
+        await this.redis.set(cacheKey, JSON.stringify(mixedFeed), 'EX', 3600);
+        console.log(`[MixedFeed] Cached ${mixedFeed.length} items`);
 
         return mixedFeed;
     }

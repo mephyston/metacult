@@ -1,56 +1,33 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { Hero, ReviewDeck, Card, Button, Badge } from '@metacult/shared-ui';
-
-// Mock Data for Review Deck Demo
-const demoReviews = [
-	{
-		id: 1,
-		title: 'Elden Ring',
-		category: 'Game',
-		image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3', // Placeholder
-		description:
-			"Un chef d'œuvre de FromSoftware. Difficile mais gratifiant.",
-	},
-	{
-		id: 2,
-		title: 'Dune: Part Two',
-		category: 'Movie',
-		image: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3', // Placeholder
-		description: 'Visuellement époustouflant. Une adaptation magistrale.',
-	},
-	{
-		id: 3,
-		title: 'Arcane',
-		category: 'Series',
-		image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=2525&ixlib=rb-4.0.3', // Placeholder
-		description: 'La meilleure adaptation de jeu vidéo jamais réalisée ?',
-	},
-];
-
-// Mock Data for Features
-const features = [
-	{
-		title: 'Swipe Rapide',
-		description:
-			'Triez 50 œuvres en 1 minute. Fini les débats interminables.',
-		icon: '⚡',
-	},
-	{
-		title: 'Backlog Unifié',
-		description: 'Tout votre chaos culturel rangé au même endroit.',
-		icon: '📚',
-	},
-	{
-		title: 'Squad Compatibility',
-		description:
-			'Découvrez qui sont vos vrais amis (et vos ennemis culturels).',
-		icon: '🤝',
-	},
-];
-
+import { Hero } from '@metacult/shared-ui';
 import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
+
+// Basic Server-Side Data Fetching
+let recentMedias = [];
+try {
+	const res = await fetch(
+		`${import.meta.env.PUBLIC_API_URL}/api/media/recent`,
+	);
+	if (res.ok) {
+		recentMedias = await res.json();
+	} else {
+		console.error('Failed to fetch recent media:', res.statusText);
+	}
+} catch (e) {
+	console.error('Error fetching recent media:', e);
+}
+
+// Hero Content (Moved to variables to ensure clean strings)
+const heroBadge = 'Nouvelle Version 2.0';
+const heroHeading = 'Le Radar Social pour votre Culture.';
+const heroDescription =
+	'Découvrez, suivez et partagez vos films, jeux et séries préférés avec votre squad. Une seule app pour toute votre culture.';
+const heroCtaText = 'Créer un compte';
+const heroSecondaryCtaText = 'Se connecter';
+const heroImageSizes =
+	'(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1920px';
 
 const heroBg = await getImage({
 	src: heroImage,
@@ -65,15 +42,16 @@ const heroBg = await getImage({
 	<!-- HERO SECTION -->
 	<Hero
 		client:idle
-		badge="Nouvelle Version 2.0"
-		heading="Le Radar Social pour votre Culture."
-		description="Découvrez, suivez et partagez vos films, jeux et séries préférés avec votre squad. Une seule app pour toute votre culture."
-		ctaText="Créez votre compte"
+		badge={heroBadge}
+		heading={heroHeading}
+		description={heroDescription}
+		ctaText={heroCtaText}
 		ctaLink="/auth/register"
-		secondaryCtaText="Connectez-vous"
+		secondaryCtaText={heroSecondaryCtaText}
 		secondaryCtaLink="/auth/login"
 		image={heroBg.src}
-		imageSizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1920px"
+		imageSizes={heroImageSizes}
 		fetchpriority="high"
+		recentMedias={recentMedias}
 	/>
 </Layout>

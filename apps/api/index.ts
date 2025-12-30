@@ -61,11 +61,12 @@ if (!catalogConfig.googleBooks.apiKey) {
 
 // 1. Module Catalog
 // ✅ Injection de la configuration dans la Factory (Principe Clean Architecture)
-const catalogController = CatalogModuleFactory.createController(db, catalogConfig);
+// Injection de redisClient pour le caching
+const catalogController = CatalogModuleFactory.createController(db, catalogConfig, redisClient);
 const catalogRoutesRouter = createCatalogRoutes(catalogController);
 
 // Discovery a besoin de `SearchMediaHandler`.
-const searchHandler = CatalogModuleFactory.createSearchMediaHandler(db);
+const searchHandler = CatalogModuleFactory.createSearchMediaHandler(db, catalogConfig, redisClient);
 
 
 // 2. Module Marketing
@@ -75,7 +76,26 @@ const adsHandler = new GetActiveAdsHandler(redisClient);
 const mediaSearchAdapter = {
   search: async (q: string) => {
     // Adaptateur: String -> SearchQuery -> DTO
-    return searchHandler.execute({ search: q });
+    // Le handler retourne maintenant une réponse groupée. On doit l'aplatir pour le module Discovery.
+    const grouped = await searchHandler.execute({ search: q });
+    const all = [
+      ...grouped.games,
+      ...grouped.movies,
+      ...grouped.shows,
+      ...grouped.books
+    ];
+
+    // Mapping vers MediaReadDto (attendu par Discovery ?)
+    return all.map(item => ({
+      id: item.id,
+      title: item.title,
+      type: item.type,
+      coverUrl: item.poster,
+      rating: null, // Pas dispo dans search result léger
+      releaseYear: item.year,
+      description: null, // Pas dispo
+      isImported: item.isImported
+    }));
   }
 };
 

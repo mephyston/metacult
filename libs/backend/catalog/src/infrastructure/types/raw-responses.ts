@@ -65,7 +65,7 @@ export interface GoogleBookRaw {
 
 /** Union discriminée pour stocker les métadonnées Provider en JSONB. */
 export type ProviderMetadata =
-    | { source: 'IGDB'; igdbId: number; gameRaw?: IgdbGameRaw }
-    | { source: 'TMDB'; tmdbId: number; mediaType: 'movie'; movieRaw?: TmdbMovieRaw }
-    | { source: 'TMDB'; tmdbId: number; mediaType: 'tv'; tvRaw?: TmdbTvRaw }
-    | { source: 'GOOGLE_BOOKS'; googleId: string; bookRaw?: GoogleBookRaw };
+    | { source: 'IGDB'; igdbId: number; gameRaw?: IgdbGameRaw; coverUrl?: string }
+    | { source: 'TMDB'; tmdbId: number; mediaType: 'movie'; movieRaw?: TmdbMovieRaw; coverUrl?: string }
+    | { source: 'TMDB'; tmdbId: number; mediaType: 'tv'; tvRaw?: TmdbTvRaw; coverUrl?: string }
+    | { source: 'GOOGLE_BOOKS'; googleId: string; bookRaw?: GoogleBookRaw; coverUrl?: string };

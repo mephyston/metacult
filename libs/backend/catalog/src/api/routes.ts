@@ -2,6 +2,8 @@ import { Elysia, t } from 'elysia';
 import type { MediaController } from './http/controllers/media.controller';
 import { SearchMediaSchema, ImportMediaSchema } from './http/dtos/media.dtos';
 
+import { MediaNotFoundInProviderError, ProviderUnavailableError, MediaAlreadyExistsError } from '../domain/errors/catalog.errors';
+
 // ✅ Factory Pattern: Routes acceptent le controller en paramètre
 /**
  * Crée le routeur Elysia pour le module Catalogue.
@@ -17,6 +19,21 @@ export const createCatalogRoutes = (controller: MediaController) => {
                 set.status = 400;
                 return { message: 'Validation Error', details: error };
             }
+            if (error instanceof MediaNotFoundInProviderError) {
+                set.status = 404;
+                return { message: error.message };
+            }
+            if (error instanceof ProviderUnavailableError) {
+                set.status = 503;
+                return { message: error.message, cause: error.cause };
+            }
+            if (error instanceof MediaAlreadyExistsError) {
+                set.status = 409;
+                return { message: error.message };
+            }
+            console.error('[CatalogRoutes] Unhandled Error:', error);
+            set.status = 500;
+            return { message: 'Internal Server Error' };
         })
         .get('/search', ({ query }) => {
             // Note: En Elysia, la validation 'query' spread-ée peut nécessiter une adaptation si on passe le DTO complet
@@ -29,5 +46,8 @@ export const createCatalogRoutes = (controller: MediaController) => {
             return controller.import(body);
         }, {
             body: ImportMediaSchema.properties.body
+        })
+        .get('/recent', () => {
+            return controller.getRecent();
         });
 };

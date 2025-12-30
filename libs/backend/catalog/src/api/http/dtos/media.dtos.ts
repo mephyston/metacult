@@ -37,3 +37,29 @@ export type SearchMediaDto = Static<typeof SearchMediaSchema>;
 
 /** DTO pour le body de la requête d'import. */
 export type ImportMediaDto = Static<typeof ImportMediaSchema>;
+
+/**
+ * Schema pour un item de résultat de recherche (unifié).
+ */
+export const SearchResultItemSchema = t.Object({
+    id: t.String(),
+    title: t.String(),
+    year: t.Union([t.Number(), t.Null()]),
+    poster: t.Union([t.String(), t.Null()]),
+    type: MediaTypeEnum,
+    isImported: t.Boolean(),
+    externalId: t.Union([t.String(), t.Null()]),
+});
+
+/**
+ * Schema pour la réponse groupée (pour l'UI).
+ */
+export const GroupedSearchResponseSchema = t.Object({
+    games: t.Array(SearchResultItemSchema),
+    movies: t.Array(SearchResultItemSchema),
+    shows: t.Array(SearchResultItemSchema),
+    books: t.Array(SearchResultItemSchema),
+});
+
+export type GroupedSearchResponseDto = Static<typeof GroupedSearchResponseSchema>;
+

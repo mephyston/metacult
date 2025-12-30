@@ -1,15 +1,14 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Header from './components/Header.vue';
+</script>
 
 <template>
-  <main>
-    <header>
-      <nav>
-        <NuxtLink to="/"> Home </NuxtLink>
-        <NuxtLink to="/about"> About </NuxtLink>
-      </nav>
-    </header>
-    <nuxt-page />
-  </main>
+  <div class="relative flex min-h-screen flex-col bg-background">
+    <Header />
+    <main class="flex-1">
+      <nuxt-page />
+    </main>
+  </div>
 </template>
 
 <style scoped lang="css">

@@ -1,6 +1,6 @@
-import type { Context } from 'elysia';
 import { SearchMediaHandler } from '../../../application/queries/search-media/search-media.handler';
 import { ImportMediaHandler } from '../../../application/commands/import-media/import-media.handler';
+import { GetRecentMediaHandler } from '../../../application/queries/get-recent-media/get-recent-media.handler';
 import type { SearchMediaDto, ImportMediaDto } from '../dtos/media.dtos';
 import { MediaType } from '../../../domain/entities/media.entity';
 
@@ -12,13 +12,10 @@ import { MediaType } from '../../../domain/entities/media.entity';
 export class MediaController {
     constructor(
         private readonly searchHandler: SearchMediaHandler,
-        private readonly importHandler: ImportMediaHandler
+        private readonly importHandler: ImportMediaHandler,
+        private readonly recentMediaHandler: GetRecentMediaHandler
     ) { }
 
-    // Elysia Context type is generic, we can type body/query if we want strictness in controller 
-    // but Elysia handles validation at route level usually.
-
-    // Simplified to accept strict types, decoupling from Elysia Context
     /**
      * Recherche de médias (Jeux, Films, etc.).
      * @param {SearchMediaDto['query']} query 
@@ -45,9 +42,16 @@ export class MediaController {
 
         await this.importHandler.execute({
             mediaId,
-            type
+            type: type as MediaType
         });
 
         return { success: true, message: `Imported ${type}: ${mediaId}` };
+    }
+
+    /**
+     * Récupère les médias récemment ajoutés.
+     */
+    async getRecent() {
+        return this.recentMediaHandler.execute({ limit: 10 });
     }
 }

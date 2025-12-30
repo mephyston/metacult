@@ -11,4 +11,5 @@ export interface MediaReadDto {
     rating: number | null;
     releaseYear: number | null;
     description: string | null;
+    isImported: boolean;
 }

@@ -10,9 +10,12 @@ export * from './components/ui/logo';
 export * from './components/ui/text-rotator';
 export * from './components/ui/tooltip';
 export * from './components/ui/theme-toggle';
+export * from './components/ui/command';
+export * from './components/ui/dialog';
 
 // Export Layout components
 export * from './components/layout';
+export { default as Search } from './components/layout/Search.vue';
 
 // Export Feature components
 export { default as ReviewDeck } from './components/features/review/ReviewDeck.vue';
