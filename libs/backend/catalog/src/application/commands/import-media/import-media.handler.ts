@@ -3,10 +3,10 @@ import type { IMediaProvider } from '../../ports/media-provider.interface';
 import type { ImportMediaCommand } from './import-media.command';
 import { MediaType } from '../../../domain/entities/media.entity';
 import { MediaImportPolicy } from '../../../domain/services/media-import.policy';
-import { 
-    MediaNotFoundInProviderError, 
-    ProviderUnavailableError, 
-    UnsupportedMediaTypeError 
+import {
+    MediaNotFoundInProviderError,
+    ProviderUnavailableError,
+    UnsupportedMediaTypeError
 } from '../../../domain/errors/catalog.errors';
 
 export class ImportMediaHandler {
@@ -53,12 +53,12 @@ export class ImportMediaHandler {
             if (error instanceof UnsupportedMediaTypeError) {
                 throw error;
             }
-            
+
             // Wrap provider errors in domain exceptions
             console.error(`[ImportMediaHandler] Provider error for ${type}/${mediaId}:`, error);
             throw new ProviderUnavailableError(
                 providerName,
-                error instanceof Error ? error.message : 'Unknown error'
+                error instanceof Error ? error : new Error(String(error))
             );
         }
 
