@@ -88,6 +88,7 @@ const app = new Elysia()
   .use(swagger())
   .use(cors())
   .get('/', () => 'Hello Metacult API (Elysia)')
+  .get('/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   // Mount Routes
   .use(authRoutes)
   .group('/api', (app) => app
