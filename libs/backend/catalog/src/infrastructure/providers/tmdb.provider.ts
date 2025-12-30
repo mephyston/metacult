@@ -3,8 +3,12 @@ import type { TmdbMovieRaw, TmdbTvRaw } from '../types/raw-responses';
 export type TmdbMediaRaw = TmdbMovieRaw | TmdbTvRaw;
 
 export class TmdbProvider {
-    private apiKey = process.env['TMDB_API_KEY'] || '';
+    private apiKey: string;
     private apiUrl = 'https://api.themoviedb.org/3';
+
+    constructor(apiKey: string) {
+        this.apiKey = apiKey;
+    }
 
     async searchMulti(query: string): Promise<TmdbMediaRaw[]> {
         if (!this.apiKey) return [];
@@ -37,4 +41,4 @@ export class TmdbProvider {
     }
 }
 
-export const tmdbProvider = new TmdbProvider();
+// export const tmdbProvider = new TmdbProvider(); // Removed: Use CatalogModuleFactory

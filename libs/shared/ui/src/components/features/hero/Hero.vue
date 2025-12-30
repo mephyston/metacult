@@ -21,6 +21,7 @@ interface HeroProps {
   image?: string;
   imageSizes?: string;
   badge?: string;
+  fetchpriority?: 'high' | 'low' | 'auto'; // Added for LCP optimization
 }
 
 withDefaults(defineProps<HeroProps>(), {

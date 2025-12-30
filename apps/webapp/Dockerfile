@@ -3,11 +3,11 @@ FROM oven/bun:1 AS install
 WORKDIR /usr/src/app
 COPY package.json bun.lock nx.json tsconfig.base.json ./
 COPY apps/webapp/package.json ./apps/webapp/package.json
-COPY libs ./libs
 RUN bun install
 
 # Build
 FROM install AS build
+COPY --from=install /usr/src/app/node_modules ./node_modules
 COPY . .
 RUN cd apps/webapp && bun run build
 

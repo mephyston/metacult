@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
-import { createCatalogRoutes, CatalogModuleFactory } from '@metacult/backend/catalog';
+import { createCatalogRoutes, CatalogModuleFactory, mediaSchema } from '@metacult/backend/catalog';
 import { createDiscoveryRoutes, FeedController, GetMixedFeedHandler } from '@metacult/backend/discovery';
 import { authRoutes } from './src/routes/auth.routes';
 import { importRoutes } from './src/routes/import.routes';

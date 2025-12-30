@@ -7,13 +7,19 @@ COPY package.json bun.lock ./
 COPY apps/api/package.json ./apps/api/package.json
 RUN bun install
 
-# Final image
-FROM base AS release
+# Build stage
+FROM base AS build
 COPY --from=install /usr/src/app/node_modules ./node_modules
+# ✅ Copy source code AFTER dependencies
 COPY . .
 
 # Run Tests during build to prevent bad deployments
 RUN bun test apps/api
+
+# Final image
+FROM base AS release
+COPY --from=install /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app .
 
 COPY apps/api/start.sh ./apps/api/start.sh
 RUN chmod +x ./apps/api/start.sh

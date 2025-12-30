@@ -8,10 +8,15 @@ interface TwitchTokenResponse {
 }
 
 export class IgdbProvider {
-    private clientId = process.env['IGDB_CLIENT_ID'] || '';
-    private clientSecret = process.env['IGDB_CLIENT_SECRET'] || '';
+    private clientId: string;
+    private clientSecret: string;
     private authUrl = 'https://id.twitch.tv/oauth2/token';
     private apiUrl = 'https://api.igdb.com/v4';
+
+    constructor(clientId: string, clientSecret: string) {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+    }
 
     private async getAccessToken(): Promise<string | null> {
         if (!this.clientId || !this.clientSecret) {
@@ -89,4 +94,4 @@ export class IgdbProvider {
     }
 }
 
-export const igdbProvider = new IgdbProvider();
+// export const igdbProvider = new IgdbProvider(); // Removed: Use CatalogModuleFactory

@@ -1,8 +1,12 @@
 import type { GoogleBookRaw } from '../types/raw-responses';
 
 export class GoogleBooksProvider {
-    private apiKey = process.env['GOOGLE_BOOKS_API_KEY'] || '';
+    private apiKey: string;
     private apiUrl = 'https://www.googleapis.com/books/v1/volumes';
+
+    constructor(apiKey: string) {
+        this.apiKey = apiKey;
+    }
 
     async searchBooks(query: string): Promise<GoogleBookRaw[]> {
         if (!this.apiKey) return [];
@@ -33,4 +37,4 @@ export class GoogleBooksProvider {
     }
 }
 
-export const googleBooksProvider = new GoogleBooksProvider();
+// export const googleBooksProvider = new GoogleBooksProvider(); // Removed: Use CatalogModuleFactory

@@ -1,8 +1,13 @@
 node_modules
+.git
+.nx
 dist
 .output
 .nuxt
 .astro
-.git
-.DS_Store
 *.log
+.env.local
+.env*.local
+coverage
+.vscode
+.idea

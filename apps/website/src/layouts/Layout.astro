@@ -1,13 +1,12 @@
+---
 import { Header, Footer } from '@metacult/shared-ui';
 import '@metacult/shared-ui/styles/global.css';
 
-// ✅ Auto-hébergement des fonts
+// ✅ Self-hosted fonts
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-
-import { ViewTransitions } from 'astro:transitions';
 
 interface Props {
     title: string;
@@ -26,7 +25,6 @@ const { title, bodyClass = '' } = Astro.props;
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="generator" content={Astro.generator} />
         <title>{title}</title>
-        <ViewTransitions />
     </head>
     <body class={`font-sans min-h-screen flex flex-col ${bodyClass}`}>
         <Header client:load>
