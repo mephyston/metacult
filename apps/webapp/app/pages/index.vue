@@ -25,7 +25,7 @@ const items = [
     }
 ];
 
-function handleVote({ item, direction }: { item: any, direction: string }) {
+function handleVote({ item, direction }: { item: { title: string }, direction: string }) {
     console.log(`Voted ${direction} on ${item.title}`);
 }
 </script>

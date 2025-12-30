@@ -301,42 +301,16 @@ static create(props: Omit<Media, 'id'>): Media {
 
 ---
 
-##### 1.4. Adapters - Casts `as any` (Type safety compromise)
+##### 1.4. Adapters - Casts `as any` (Type safety compromise) ✅ **RÉSOLU**
 
-**Localisation**: `media.adapters.ts:16, 23, 35-36`
+**Statut**: ✅ **IMPLÉMENTÉ**
 
-```typescript
-// ⚠️ Type safety perdue
-return rawGames.map(game => mapGameToEntity(game as IgdbGameRaw));
-```
+Les providers sont maintenant strictement typés :
+- `IgdbProvider.searchGames()`: `Promise<IgdbGameRaw[]>`
+- `TmdbProvider.searchMulti()`: `Promise<TmdbMediaRaw[]>`
+- `TmdbProvider.getDetails()`: `Promise<TmdbMediaRaw | null>`
 
-**Cause**: Les providers retournent probablement `any` ou `unknown`.
-
-**✅ CORRECTION**:
-
-```typescript
-// providers/igdb.provider.ts
-export class IgdbProvider {
-    async searchGames(query: string): Promise<IgdbGameRaw[]> {  // ✅ Type précis
-        const response = await fetch(/* ... */);
-        const data = await response.json();
-        
-        // Option 1: Cast assumé (rapide mais risqué)
-        return data as IgdbGameRaw[];
-        
-        // Option 2: Validation Zod (sûr mais overhead)
-        return IgdbGameRawSchema.array().parse(data);
-    }
-}
-
-// media.adapters.ts
-async search(query: string): Promise<Media[]> {
-    const rawGames = await this.provider.searchGames(query);
-    return rawGames.map(mapGameToEntity);  // ✅ Plus de cast
-}
-```
-
-**Trade-off**: Validation runtime (Zod) vs Performance. Pour API externes instables → Zod recommandé.
+Les casts restants dans `media.adapters.ts` sont **légitimes** (type narrowing de `TmdbMediaRaw` → `TmdbMovieRaw` ou `TmdbTvRaw`), pas une perte de type safety.
 
 ---
 

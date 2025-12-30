@@ -50,18 +50,21 @@ const features = [
 ];
 
 import { getImage } from 'astro:assets';
+import heroImage from '../assets/hero.jpg';
+
 const heroBg = await getImage({
-	src: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1974&auto=format&fit=crop',
+	src: heroImage,
 	width: 1920,
 	height: 1080,
-	format: 'webp',
+	format: 'avif',
+	quality: 85,
 });
 ---
 
 <Layout title="MetaCult - Le Radar Social">
 	<!-- HERO SECTION -->
 	<Hero
-		client:load
+		client:idle
 		badge="Nouvelle Version 2.0"
 		heading="Le Radar Social pour votre Culture."
 		description="Découvrez, suivez et partagez vos films, jeux et séries préférés avec votre squad. Une seule app pour toute votre culture."

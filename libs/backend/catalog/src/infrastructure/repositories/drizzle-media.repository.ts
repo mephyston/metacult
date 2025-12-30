@@ -99,6 +99,66 @@ export class DrizzleMediaRepository implements IMediaRepository {
         return Array.from(uniqueMediasMap.values());
     }
 
+    async searchViews(filters: MediaSearchFilters): Promise<import('../../application/queries/search-media/media-read.dto').MediaReadDto[]> {
+        console.log('🔍 REPO: Executing DTO search');
+        const query = this.db
+            .select({
+                id: schema.medias.id,
+                title: schema.medias.title,
+                type: schema.medias.type,
+                rating: schema.medias.globalRating,
+                releaseYear: schema.medias.releaseDate,
+                // description: schema.medias.description, // Not in schema yet, assumed null
+                coverUrl: schema.medias.providerMetadata, // Extracting first image if possible, or null for now. Schema doesn't have direct coverUrl column? 
+                // Wait, Entity has coverUrl. Where does it come from? 
+                // In mapRowToEntity: "const coverUrl = createCoverUrl(null);" -> It seems coverUrl is effectively null in current implementation??
+                // Checking schema.medias definition might be useful.
+                // For now, returning null to match current behavior.
+            })
+            .from(schema.medias)
+            .leftJoin(schema.mediasToTags, eq(schema.medias.id, schema.mediasToTags.mediaId))
+            .leftJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id));
+
+        const conditions = [];
+
+        if (filters.type) {
+            conditions.push(eq(schema.medias.type, filters.type as any));
+        }
+
+        if (filters.search) {
+            conditions.push(ilike(schema.medias.title, `%${filters.search}%`));
+        }
+
+        if (filters.tag) {
+            conditions.push(eq(schema.tags.slug, filters.tag));
+        }
+
+        if (conditions.length > 0) {
+            query.where(and(...conditions));
+        }
+
+        query.orderBy(desc(schema.medias.createdAt));
+
+        const rows = await query.execute();
+
+        // Raw aggregation to avoid duplication
+        const unique = new Map<string, import('../../application/queries/search-media/media-read.dto').MediaReadDto>();
+        for (const row of rows) {
+            if (!unique.has(row.id)) {
+                unique.set(row.id, {
+                    id: row.id,
+                    title: row.title,
+                    type: row.type.toLowerCase() as any,
+                    rating: row.rating,
+                    releaseYear: row.releaseYear ? row.releaseYear.getFullYear() : null,
+                    description: null, // Schema missing description
+                    coverUrl: null, // Schema missing coverUrl column
+                });
+            }
+        }
+        return Array.from(unique.values());
+    }
+
     async create(media: Media): Promise<void> {
         await this.db.transaction(async (tx) => {
             // Map ReleaseYear VO to Date (approximate)

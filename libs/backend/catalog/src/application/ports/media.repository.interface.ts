@@ -6,9 +6,12 @@ export interface MediaSearchFilters {
     search?: string; // title search
 }
 
+import type { MediaReadDto } from '../queries/search-media/media-read.dto';
+
 export interface IMediaRepository {
     findById(id: string): Promise<Media | null>;
     search(filters: MediaSearchFilters): Promise<Media[]>;
+    searchViews(filters: MediaSearchFilters): Promise<MediaReadDto[]>;
     create(media: Media): Promise<void>;
     nextId(): string;
 }
