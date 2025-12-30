@@ -44,7 +44,7 @@ function handleVote({ item, direction }: { item: any, direction: string }) {
         </div>
         <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
              <!-- User Avatar Placeholder -->
-             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
+             <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" >
         </div>
     </header>
 

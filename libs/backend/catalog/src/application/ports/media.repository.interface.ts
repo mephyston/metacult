@@ -1,4 +1,4 @@
-import type { Media, MediaType } from '../entities/media.entity';
+import type { Media, MediaType } from '../../domain/entities/media.entity';
 
 export interface MediaSearchFilters {
     type?: MediaType;

@@ -40,6 +40,7 @@ export default defineNuxtConfig({
     },
   },
   modules: ['@nuxtjs/tailwindcss', '@nuxtjs/google-fonts'],
+  // @ts-expect-error: googleFonts property is added by the module but types are not inferred without build
   googleFonts: {
     families: {
       Roboto: [300, 400, 500, 700],

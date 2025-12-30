@@ -40,13 +40,13 @@ describe("Worker Configuration", () => {
         expect(mockCreateWorker).toHaveBeenCalled();
 
         // 4. Inspect arguments
-        const calls = mockCreateWorker.mock.calls;
+        const calls = mockCreateWorker.mock.calls as unknown as any[];
         if (calls.length === 0) throw new Error("Worker not created");
 
         const args = calls[0]; // First call arguments: [queueName, processor, options]
 
         const queueName = args[0];
-        const options = args[2] as any; // Cast to avoid undefined error
+        const options = args[2]; // Cast to avoid undefined error
 
         expect(queueName).toBe('import-queue');
 
