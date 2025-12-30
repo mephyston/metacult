@@ -28,11 +28,11 @@ describe('GetMixedFeedHandler', () => {
             search: mock(() => Promise.resolve(Array(10).fill({ id: 'media' })))
         } as any;
 
-        const mockAdsHandler = {
-            execute: mock(() => Promise.resolve([{ id: 'ad1' }, { id: 'ad2' }]))
+        const mockAdsProvider = {
+            getAds: mock(() => Promise.resolve([{ id: 'ad1' }, { id: 'ad2' }]))
         } as any;
 
-        const handler = new GetMixedFeedHandler(mockRedis, mockMediaSearcher, mockAdsHandler);
+        const handler = new GetMixedFeedHandler(mockRedis, mockMediaSearcher, mockAdsProvider);
         const result = await handler.execute(new GetMixedFeedQuery('test'));
 
         // Logic: 5 media, 1 ad, 5 media, 1 ad
@@ -44,7 +44,7 @@ describe('GetMixedFeedHandler', () => {
         expect(result[5]?.type).toBe('SPONSORED');
 
         expect(mockMediaSearcher.search).toHaveBeenCalled();
-        expect(mockAdsHandler.execute).toHaveBeenCalled();
+        expect(mockAdsProvider.getAds).toHaveBeenCalled();
         expect(mockRedis.set).toHaveBeenCalled();
     });
 });

@@ -1,7 +1,7 @@
 
 # Install dependencies
 # Install dependencies
-FROM oven/bun:1 AS install
+FROM oven/bun:1-alpine AS install
 WORKDIR /usr/src/app
 COPY package.json bun.lock nx.json tsconfig.base.json ./
 COPY apps/website/package.json ./apps/website/package.json

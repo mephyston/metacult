@@ -19,6 +19,7 @@ interface HeroProps {
   secondaryCtaText?: string;
   secondaryCtaLink?: string;
   image?: string;
+  imageSizes?: string;
   badge?: string;
 }
 
@@ -118,7 +119,7 @@ const upcomingShows = [
                       
                       <!-- Image Section (Occupies ~72% of space) -->
                       <div class="relative h-[72%] w-full overflow-hidden rounded-t-2xl">
-                          <img :src="image || 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=1000&auto=format&fit=crop'" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" alt="Review Media" />
+                          <img :src="image || 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=1000&auto=format&fit=crop'" :sizes="imageSizes" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" alt="Review Media" />
                           
                           <!-- Media Type Tag -->
                           <div class="absolute top-4 left-4">
