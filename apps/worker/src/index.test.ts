@@ -12,20 +12,18 @@ const mockCreateWorker = mock(() => ({
 
 
 // Mock the DEEP IMPORT path now used by worker/src/index.ts
+// Mock the DEEP IMPORT path now used by worker/src/index.ts
+// bun test might resolve aliases to absolute paths, so we need to be careful with double mocking.
+// Merging into one mock block for safety.
+
 mock.module('@metacult/backend/infrastructure', () => {
     return {
         createWorker: mockCreateWorker,
-        IMPORT_QUEUE_NAME: 'import-queue'
-    };
-});
-
-// Mock infrastructure
-mock.module("@metacult/backend/infrastructure", () => {
-    return {
-        createWorker: mockCreateWorker,
         IMPORT_QUEUE_NAME: 'import-queue',
-        // Stubs for processor imports
         getDbConnection: () => ({ db: {} }),
+        cacheService: { getOrSet: async () => null, get: async () => null, set: async () => null }, // Mock cacheService
+        CacheService: class { },
+        redisClient: {},
         DrizzleMediaRepository: class { },
         IgdbAdapter: class { },
         TmdbAdapter: class { },
