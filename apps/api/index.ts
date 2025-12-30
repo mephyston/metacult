@@ -22,7 +22,7 @@ console.log('🔌 Connecting to Database...');
 // --- COMPOSITION ROOT ---
 
 // 1. Catalog Module
-const mediaRepo = new DrizzleMediaRepository(db);
+const mediaRepo = new DrizzleMediaRepository(db as any);
 const searchHandler = new SearchMediaHandler(mediaRepo);
 
 // 2. Marketing Module
@@ -39,16 +39,7 @@ const mediaSearchAdapter = {
 const adsAdapter = {
   getAds: async () => {
     // Adapter: Void -> Query -> DTO
-    return adsHandler.execute(new GetActiveAdsHandler(redisClient) as any); // Wait, handler instance vs query...
-    // Actually adsHandler is instance of GetActiveAdsHandler.
-    // It expects a Query.
-    // The query is GetActiveAdsQuery.
-    // I need to import GetActiveAdsQuery? Or use empty object/any?
-    // Marketing module exports GetActiveAdsQuery?
-    // Let's just pass empty object cast to any if we want to be quick, OR import the Query class.
-    // Better: import the Query class if possible. But `apps/api` should create it.
-    // I need to import GetActiveAdsQuery from marketing.
-    return adsHandler.execute({});
+    return adsHandler.execute(new GetActiveAdsQuery());
   }
 };
 // But Typescript might complain about missing properties if I pass {}.
