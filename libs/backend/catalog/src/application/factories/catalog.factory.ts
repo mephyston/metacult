@@ -5,20 +5,34 @@ import { TmdbProvider } from '../../infrastructure/providers/tmdb.provider';
 import { GoogleBooksProvider } from '../../infrastructure/providers/google-books.provider';
 import { IgdbAdapter, TmdbAdapter, GoogleBooksAdapter } from '../../infrastructure/adapters/media.adapters';
 
+// ✅ Configuration injectée (pas d'accès direct à process.env)
+export interface CatalogModuleConfig {
+    igdb: {
+        clientId: string;
+        clientSecret: string;
+    };
+    tmdb: {
+        apiKey: string;
+    };
+    googleBooks: {
+        apiKey: string;
+    };
+}
+
 export class CatalogModuleFactory {
-    static createImportMediaHandler(db: any): ImportMediaHandler {
+    static createImportMediaHandler(db: any, config: CatalogModuleConfig): ImportMediaHandler {
         const repository = new DrizzleMediaRepository(db);
 
-        // Initialize Providers
+        // ✅ Initialize Providers with injected credentials
         const igdbProvider = new IgdbProvider(
-            process.env.IGDB_CLIENT_ID || '',
-            process.env.IGDB_CLIENT_SECRET || ''
+            config.igdb.clientId,
+            config.igdb.clientSecret
         );
         const tmdbProvider = new TmdbProvider(
-            process.env.TMDB_API_KEY || ''
+            config.tmdb.apiKey
         );
         const googleBooksProvider = new GoogleBooksProvider(
-            process.env.GOOGLE_BOOKS_API_KEY || ''
+            config.googleBooks.apiKey
         );
 
         // Wrap in Adapters
@@ -39,10 +53,10 @@ export class CatalogModuleFactory {
         return new SearchMediaHandler(repository);
     }
 
-    static createController(db: any): MediaController {
+    static createController(db: any, config: CatalogModuleConfig): MediaController {
         return new MediaController(
             this.createSearchMediaHandler(db),
-            this.createImportMediaHandler(db)
+            this.createImportMediaHandler(db, config)
         );
     }
 }

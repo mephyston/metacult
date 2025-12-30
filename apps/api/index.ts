@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
-import { createCatalogRoutes, CatalogModuleFactory, mediaSchema } from '@metacult/backend/catalog';
+import { createCatalogRoutes, CatalogModuleFactory, mediaSchema, type CatalogModuleConfig } from '@metacult/backend/catalog';
 import { createDiscoveryRoutes, FeedController, GetMixedFeedHandler } from '@metacult/backend/discovery';
 import { authRoutes } from './src/routes/auth.routes';
 import { importRoutes } from './src/routes/import.routes';
@@ -19,16 +19,42 @@ const { db } = getDbConnection(fullSchema);
 console.log('🚀 Initializing API (Elysia)...');
 console.log('🔌 Connecting to Database...');
 
-// --- COMPOSITION ROOT ---
+// --- COMPOSITION ROOT (Configuration Loading) ---
+
+// ✅ Read environment variables ONCE at startup (Composition Root responsibility)
+// Note: Variables are loaded from apps/api/.env (not a global .env)
+const catalogConfig: CatalogModuleConfig = {
+    igdb: {
+        clientId: process.env.IGDB_CLIENT_ID || '',
+        clientSecret: process.env.IGDB_CLIENT_SECRET || '',
+    },
+    tmdb: {
+        apiKey: process.env.TMDB_API_KEY || '',
+    },
+    googleBooks: {
+        apiKey: process.env.GOOGLE_BOOKS_API_KEY || '',
+    },
+};
+
+// Validate critical env vars at startup (fail-fast principle)
+if (!catalogConfig.igdb.clientId || !catalogConfig.igdb.clientSecret) {
+    console.warn('⚠️  IGDB credentials missing. Game import will fail.');
+    console.warn('   Configure IGDB_CLIENT_ID and IGDB_CLIENT_SECRET in apps/api/.env');
+}
+if (!catalogConfig.tmdb.apiKey) {
+    console.warn('⚠️  TMDB API key missing. Movie/TV import will fail.');
+    console.warn('   Configure TMDB_API_KEY in apps/api/.env');
+}
+if (!catalogConfig.googleBooks.apiKey) {
+    console.warn('⚠️  Google Books API key missing. Book import will fail.');
+    console.warn('   Configure GOOGLE_BOOKS_API_KEY in apps/api/.env');
+}
 
 // 1. Catalog Module
-// Use Factory to encapsulate implementation details (Providers, Repositories)
-const catalogController = CatalogModuleFactory.createController(db);
+// ✅ Inject configuration into Factory (Clean Architecture principle)
+const catalogController = CatalogModuleFactory.createController(db, catalogConfig);
 const catalogRoutesRouter = createCatalogRoutes(catalogController);
 
-// Need pure handlers for Discovery adapter?
-// The factory creates new instances every time. Ideally we should singleton them or expose them.
-// But for now, creating new instances for Discovery adapter is acceptable or we can just use the controller methods if possible?
 // Discovery needs `SearchMediaHandler`.
 const searchHandler = CatalogModuleFactory.createSearchMediaHandler(db);
 
