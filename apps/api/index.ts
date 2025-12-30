@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
-import { catalogRoutes, mediaSchema, SearchMediaHandler, DrizzleMediaRepository } from '@metacult/backend/catalog';
+import { createCatalogRoutes, CatalogModuleFactory } from '@metacult/backend/catalog';
 import { createDiscoveryRoutes, FeedController, GetMixedFeedHandler } from '@metacult/backend/discovery';
 import { authRoutes } from './src/routes/auth.routes';
 import { importRoutes } from './src/routes/import.routes';
@@ -22,8 +22,16 @@ console.log('🔌 Connecting to Database...');
 // --- COMPOSITION ROOT ---
 
 // 1. Catalog Module
-const mediaRepo = new DrizzleMediaRepository(db as any);
-const searchHandler = new SearchMediaHandler(mediaRepo);
+// Use Factory to encapsulate implementation details (Providers, Repositories)
+const catalogController = CatalogModuleFactory.createController(db);
+const catalogRoutesRouter = createCatalogRoutes(catalogController);
+
+// Need pure handlers for Discovery adapter?
+// The factory creates new instances every time. Ideally we should singleton them or expose them.
+// But for now, creating new instances for Discovery adapter is acceptable or we can just use the controller methods if possible?
+// Discovery needs `SearchMediaHandler`.
+const searchHandler = CatalogModuleFactory.createSearchMediaHandler(db);
+
 
 // 2. Marketing Module
 const adsHandler = new GetActiveAdsHandler(redisClient);
@@ -42,13 +50,6 @@ const adsAdapter = {
     return adsHandler.execute(new GetActiveAdsQuery());
   }
 };
-// But Typescript might complain about missing properties if I pass {}.
-// Let's import GetActiveAdsQuery if available, or just cast.
-// "argument of type '{}' is not assignable to parameter of type 'GetActiveAdsQuery'"
-// I will just cast to any to satisfy the Adapter implementation in Composition Root. 
-// Ideally I should import the Query, but I don't want to break exports again.
-// Wait, `apps/api/index.ts` imports `GetActiveAdsHandler` but not `GetActiveAdsQuery`.
-// I'll add `import { GetActiveAdsQuery }` to the import line.
 
 const mixedFeedHandler = new GetMixedFeedHandler(redisClient, mediaSearchAdapter, adsAdapter);
 const feedController = new FeedController(mixedFeedHandler);
@@ -65,8 +66,8 @@ const app = new Elysia()
   .use(authRoutes)
   .group('/api', (app) => app
     .group('/import', (app) => app.use(importRoutes))
-    .use(catalogRoutes) // catalogRoutes already has prefix '/media'
-    .use(discoveryRoutes) // discoveryRoutes already has prefix '/discovery'
+    .use(catalogRoutesRouter)
+    .use(discoveryRoutes)
   );
 
 const port = Number(process.env.PORT) || 3000;
@@ -74,5 +75,3 @@ const port = Number(process.env.PORT) || 3000;
 app.listen(port);
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
-
-// export default app;

@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { mediaController } from '../infrastructure/di';
+import type { MediaController } from './http/controllers/media.controller';
 
 const MediaTypeEnum = t.Union([
     t.Literal('game'),
@@ -8,27 +8,30 @@ const MediaTypeEnum = t.Union([
     t.Literal('book'),
 ]);
 
-export const catalogRoutes = new Elysia({ prefix: '/media' })
-    .onError(({ code, error, set }) => {
-        if (code === 'VALIDATION') {
-            set.status = 400;
-            return { message: 'Validation Error', details: error };
-        }
-    })
-    .get('/search', ({ query }) => {
-        return mediaController.search(query);
-    }, {
-        query: t.Object({
-            q: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
-            type: t.Optional(MediaTypeEnum),
-            tag: t.Optional(t.String({ pattern: '^[a-z0-9-]+$' })),
+// ✅ Factory Pattern: Routes acceptent le controller en paramètre
+export const createCatalogRoutes = (controller: MediaController) => {
+    return new Elysia({ prefix: '/media' })
+        .onError(({ code, error, set }) => {
+            if (code === 'VALIDATION') {
+                set.status = 400;
+                return { message: 'Validation Error', details: error };
+            }
         })
-    })
-    .post('/import', ({ body }) => {
-        return mediaController.import(body);
-    }, {
-        body: t.Object({
-            mediaId: t.String({ minLength: 1 }),
-            type: MediaTypeEnum,
+        .get('/search', ({ query }) => {
+            return controller.search(query);
+        }, {
+            query: t.Object({
+                q: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
+                type: t.Optional(MediaTypeEnum),
+                tag: t.Optional(t.String({ pattern: '^[a-z0-9-]+$' })),
+            })
         })
-    });
+        .post('/import', ({ body }) => {
+            return controller.import(body);
+        }, {
+            body: t.Object({
+                mediaId: t.String({ minLength: 1 }),
+                type: MediaTypeEnum,
+            })
+        });
+};
