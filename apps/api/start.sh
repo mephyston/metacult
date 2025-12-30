@@ -1,10 +1,8 @@
 #!/bin/sh
 set -e
 
-echo "🚀 Starting API Service..."
+echo "Running database migrations..."
+bun run db:migrate:prod
 
-echo "📦 Running Migrations..."
-bun libs/backend/infrastructure/src/lib/db/migrate.ts
-
-echo "🔥 Starting Server..."
+echo "Starting application..."
 exec bun apps/api/index.ts

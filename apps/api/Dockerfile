@@ -23,4 +23,4 @@ USER bun
 ENV PORT=3000
 EXPOSE 3000/tcp
 ENTRYPOINT []
-CMD [ "./apps/api/start.sh" ]
+CMD ["/apps/api/start.sh"]
