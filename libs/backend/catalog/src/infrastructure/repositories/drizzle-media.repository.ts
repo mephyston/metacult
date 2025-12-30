@@ -31,6 +31,10 @@ type Db = NodePgDatabase<typeof schema>;
 export class DrizzleMediaRepository implements IMediaRepository {
     constructor(private readonly db: Db) { }
 
+    nextId(): string {
+        return crypto.randomUUID();
+    }
+
     async findById(id: string): Promise<Media | null> {
         // Polymorphic fetch using left joins to hydrate specific fields
         const rows = await this.db

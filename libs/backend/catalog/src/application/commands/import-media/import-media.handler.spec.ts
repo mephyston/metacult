@@ -16,7 +16,8 @@ describe('ImportMediaHandler', () => {
             findById: mock(() => Promise.resolve(null)),
             create: mock(() => Promise.resolve()),
             findAll: mock(() => Promise.resolve([])),
-            findByType: mock(() => Promise.resolve([]))
+            findByType: mock(() => Promise.resolve([])),
+            nextId: mock(() => 'generated-uuid')
         };
         mockIgdb = { getMedia: mock(() => Promise.resolve(null)) };
         mockTmdb = { getMedia: mock(() => Promise.resolve(null)) };
@@ -44,7 +45,7 @@ describe('ImportMediaHandler', () => {
         await handler.execute(command);
 
         expect(mockRepo.findById).toHaveBeenCalledWith('123');
-        expect(mockIgdb.getMedia).toHaveBeenCalledWith('123', MediaType.GAME);
+        expect(mockIgdb.getMedia).toHaveBeenCalledWith('123', MediaType.GAME, 'generated-uuid');
         expect(mockRepo.create).toHaveBeenCalledWith(mockMedia);
     });
 
@@ -55,7 +56,7 @@ describe('ImportMediaHandler', () => {
 
         await handler.execute(command);
 
-        expect(mockTmdb.getMedia).toHaveBeenCalledWith('456', MediaType.MOVIE);
+        expect(mockTmdb.getMedia).toHaveBeenCalledWith('456', MediaType.MOVIE, 'generated-uuid');
         expect(mockRepo.create).toHaveBeenCalledWith(mockMedia);
     });
 

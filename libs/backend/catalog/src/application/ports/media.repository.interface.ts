@@ -10,4 +10,5 @@ export interface IMediaRepository {
     findById(id: string): Promise<Media | null>;
     search(filters: MediaSearchFilters): Promise<Media[]>;
     create(media: Media): Promise<void>;
+    nextId(): string;
 }

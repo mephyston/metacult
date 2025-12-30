@@ -26,16 +26,17 @@ export class ImportMediaHandler {
         // 2. Fetch from strict provider
         let media = null;
         try {
+            const newId = this.mediaRepository.nextId();
             switch (type) {
                 case MediaType.GAME:
-                    media = await this.igdbAdapter.getMedia(mediaId, type);
+                    media = await this.igdbAdapter.getMedia(mediaId, type, newId);
                     break;
                 case MediaType.MOVIE:
                 case MediaType.TV:
-                    media = await this.tmdbAdapter.getMedia(mediaId, type);
+                    media = await this.tmdbAdapter.getMedia(mediaId, type, newId);
                     break;
                 case MediaType.BOOK:
-                    media = await this.googleBooksAdapter.getMedia(mediaId, type);
+                    media = await this.googleBooksAdapter.getMedia(mediaId, type, newId);
                     break;
                 default:
                     throw new Error(`Unsupported media type: ${type}`);

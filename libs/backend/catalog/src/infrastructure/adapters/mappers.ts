@@ -29,10 +29,13 @@ const createReleaseYear = (dateText: string | number | undefined | null): Releas
     try { return new ReleaseYear(year); } catch { return null; }
 };
 
-export function mapGameToEntity(raw: IgdbGameRaw): Game {
+// Mappers now accept an ID, allowing the Repository to control identity generation.
+// If no ID is provided (e.g. search results), we can still use a transient ID.
+
+export function mapGameToEntity(raw: IgdbGameRaw, id: string = uuidv4()): Game {
     const rating = raw.total_rating ? raw.total_rating / 10 : null;
     return new Game(
-        uuidv4(),
+        id,
         raw.name,
         raw.summary || null,
         createCoverUrl(raw.cover?.url),
@@ -45,10 +48,10 @@ export function mapGameToEntity(raw: IgdbGameRaw): Game {
     );
 }
 
-export function mapMovieToEntity(raw: TmdbMovieRaw): Movie {
+export function mapMovieToEntity(raw: TmdbMovieRaw, id: string = uuidv4()): Movie {
     const posterUrl = raw.poster_path ? `https://image.tmdb.org/t/p/w500${raw.poster_path}` : null;
     return new Movie(
-        uuidv4(),
+        id,
         raw.title,
         raw.overview || null,
         createCoverUrl(posterUrl),
@@ -60,10 +63,10 @@ export function mapMovieToEntity(raw: TmdbMovieRaw): Movie {
     );
 }
 
-export function mapTvToEntity(raw: TmdbTvRaw): TV {
+export function mapTvToEntity(raw: TmdbTvRaw, id: string = uuidv4()): TV {
     const posterUrl = raw.poster_path ? `https://image.tmdb.org/t/p/w500${raw.poster_path}` : null;
     return new TV(
-        uuidv4(),
+        id,
         raw.name,
         raw.overview || null,
         createCoverUrl(posterUrl),
@@ -76,10 +79,10 @@ export function mapTvToEntity(raw: TmdbTvRaw): TV {
     );
 }
 
-export function mapBookToEntity(raw: GoogleBookRaw): Book {
+export function mapBookToEntity(raw: GoogleBookRaw, id: string = uuidv4()): Book {
     const info = raw.volumeInfo;
     return new Book(
-        uuidv4(),
+        id,
         info.title,
         info.description || null,
         createCoverUrl(info.imageLinks?.thumbnail),

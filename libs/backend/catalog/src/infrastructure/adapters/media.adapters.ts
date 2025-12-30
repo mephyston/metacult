@@ -16,11 +16,12 @@ export class IgdbAdapter implements IMediaProvider {
         return rawGames.map(game => mapGameToEntity(game as IgdbGameRaw));
     }
 
-    async getMedia(id: string, type: MediaType): Promise<Media | null> {
+    // IgdbAdapter
+    async getMedia(id: string, type: MediaType, targetId?: string): Promise<Media | null> {
         if (type !== MediaType.GAME) return null;
         const raw = await this.provider.getGameDetails(id);
         if (!raw) return null;
-        return mapGameToEntity(raw as IgdbGameRaw);
+        return mapGameToEntity(raw as IgdbGameRaw, targetId);
     }
 }
 
@@ -39,15 +40,15 @@ export class TmdbAdapter implements IMediaProvider {
             .filter((item) => item !== null) as Media[];
     }
 
-    async getMedia(id: string, type: MediaType): Promise<Media | null> {
+    async getMedia(id: string, type: MediaType, targetId?: string): Promise<Media | null> {
         if (type === MediaType.MOVIE) {
             const raw = await this.provider.getDetails(id, 'movie');
             if (!raw) return null;
-            return mapMovieToEntity(raw as TmdbMovieRaw);
+            return mapMovieToEntity(raw as TmdbMovieRaw, targetId);
         } else if (type === MediaType.TV) {
             const raw = await this.provider.getDetails(id, 'tv');
             if (!raw) return null;
-            return mapTvToEntity(raw as TmdbTvRaw);
+            return mapTvToEntity(raw as TmdbTvRaw, targetId);
         }
         return null;
     }
@@ -61,10 +62,10 @@ export class GoogleBooksAdapter implements IMediaProvider {
         return rawBooks.map(b => mapBookToEntity(b as GoogleBookRaw));
     }
 
-    async getMedia(id: string, type: MediaType): Promise<Media | null> {
+    async getMedia(id: string, type: MediaType, targetId?: string): Promise<Media | null> {
         if (type !== MediaType.BOOK) return null;
         const raw = await this.provider.getBookDetails(id);
         if (!raw) return null;
-        return mapBookToEntity(raw as GoogleBookRaw);
+        return mapBookToEntity(raw as GoogleBookRaw, targetId);
     }
 }
