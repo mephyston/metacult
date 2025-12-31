@@ -9,8 +9,7 @@ let recentMedias = [];
 try {
 	const requestId = Astro.locals.requestId;
 	// Prioritize Internal URL for SSR (Cost & Performance optimization on Railway)
-	const apiUrl =
-		import.meta.env.API_INTERNAL_URL || import.meta.env.PUBLIC_API_URL;
+	const apiUrl = import.meta.env.API_URL || import.meta.env.PUBLIC_API_URL;
 	const res = await fetch(`${apiUrl}/api/media/recent`, {
 		headers: {
 			'x-request-id': requestId || crypto.randomUUID(),

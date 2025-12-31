@@ -82,8 +82,8 @@ const searchApi = async (q: string) => {
   
   isLoading.value = true;
   try {
-    // TODO: Use Env var for API URL in production
-    const res = await fetch(`http://localhost:3000/api/media/search?q=${encodeURIComponent(q)}`);
+    const baseUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/media/search?q=${encodeURIComponent(q)}`);
     if (res.ok) {
       results.value = await res.json();
     }
@@ -107,8 +107,9 @@ async function handleSelect(item: SearchResultItem) {
     // Import logic
     console.log('[Search] Importing item:', item);
     importingId.value = item.id;
+    const baseUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     try {
-      const res = await fetch('http://localhost:3000/api/media/import', {
+      const res = await fetch(`${baseUrl}/api/media/import`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
