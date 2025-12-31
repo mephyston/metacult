@@ -37,7 +37,8 @@ async function runMigrations() {
             await migrate(db, { migrationsFolder });
 
             console.log('✅ Migrations appliquées avec succès !');
-            process.exit(0);
+            console.log('✅ Migrations appliquées avec succès !');
+            return;
         } catch (error: any) {
             console.error(`❌ Échec tentative de migration ${i} :`, error.message);
             if (i < MAX_RETRIES) {
@@ -58,5 +59,7 @@ export { runMigrations };
 // Start.sh calls "bun run ...migrate.ts", so it will run.
 // Importing it in index.ts won't trigger this block.
 if (import.meta.main) {
-    runMigrations();
+    runMigrations()
+        .then(() => process.exit(0))
+        .catch(() => process.exit(1));
 }
