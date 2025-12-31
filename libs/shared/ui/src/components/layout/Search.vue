@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useMagicKeys, useDebounceFn } from '@vueuse/core';
 import { 
   Search as SearchIcon, 
@@ -44,6 +44,21 @@ const query = ref('');
 const isLoading = ref(false);
 const results = ref<GroupedSearchResponse>({ games: [], movies: [], shows: [], books: [] });
 const importingId = ref<string | null>(null);
+const commandListRef = ref<any>(null);
+
+const hasResults = computed(() => {
+  return results.value.games.length > 0 || 
+         results.value.movies.length > 0 || 
+         results.value.shows.length > 0 || 
+         results.value.books.length > 0;
+});
+
+// Reset scroll on query change
+watch(query, () => {
+  if (commandListRef.value?.$el) {
+    commandListRef.value.$el.scrollTop = 0;
+  }
+});
 
 const { Meta_K, Ctrl_K } = useMagicKeys({
   passive: false,
@@ -133,22 +148,30 @@ function navigateToMedia(type: string, id: string) {
       <SearchIcon class="h-4 w-4 xl:mr-2" />
       <span class="hidden xl:inline-flex">Rechercher...</span>
       <span class="sr-only">Rechercher</span>
-      <kbd
-        class="pointer-events-none absolute right-1.5 top-2 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 xl:flex"
-      >
-        <span class="text-xs">⌘</span>K
-      </kbd>
+      <div class="pointer-events-none absolute right-1.5 top-2 hidden select-none items-center gap-1 xl:flex">
+        <kbd class="inline-flex h-6 w-6 items-center justify-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+          <span class="text-xs">⌘</span>
+        </kbd>
+        <kbd class="inline-flex h-6 w-6 items-center justify-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+          K
+        </kbd>
+      </div>
     </Button>
     
     <CommandDialog :open="open" @update:open="open = $event" :filter-function="(val: any[]) => val">
       <CommandInput 
         placeholder="Rechercher des films, jeux, livres..." 
         :model-value="query"
-        @input="(e: Event) => query = (e.target as HTMLInputElement).value"
+        @input="(e: Event) => query = (e.currentTarget as HTMLInputElement).value"
       />
       
-      <CommandList>
-        <CommandEmpty v-if="!isLoading && query.length >= 3">Aucun résultat trouvé.</CommandEmpty>
+      <CommandList ref="commandListRef" class="max-h-[300px] overflow-y-auto overflow-x-hidden p-2">
+        <div v-if="query.length < 3" class="py-6 text-center text-sm text-muted-foreground">
+          Tapez une commande ou recherchez...
+        </div>
+        <CommandEmpty v-if="!isLoading && query.length >= 3 && !hasResults" class="py-6 text-center text-sm">
+          Aucun résultat trouvé.
+        </CommandEmpty>
         <CommandEmpty v-if="isLoading" class="py-6 flex justify-center">
             <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
         </CommandEmpty>
@@ -159,6 +182,7 @@ function navigateToMedia(type: string, id: string) {
             v-for="item in results.games" 
             :key="item.id" 
             :value="item.title"
+            class="aria-selected:bg-accent aria-selected:text-accent-foreground"
             @select="handleSelect(item)"
           >
             <Gamepad2 class="mr-2 h-4 w-4" />
@@ -177,6 +201,7 @@ function navigateToMedia(type: string, id: string) {
               v-for="item in results.movies" 
               :key="item.id" 
               :value="item.title"
+              class="aria-selected:bg-accent aria-selected:text-accent-foreground"
               @select="handleSelect(item)"
             >
               <Film class="mr-2 h-4 w-4" />
@@ -195,6 +220,7 @@ function navigateToMedia(type: string, id: string) {
               v-for="item in results.shows" 
               :key="item.id" 
               :value="item.title"
+              class="aria-selected:bg-accent aria-selected:text-accent-foreground"
               @select="handleSelect(item)"
             >
               <Tv class="mr-2 h-4 w-4" />
@@ -213,6 +239,7 @@ function navigateToMedia(type: string, id: string) {
               v-for="item in results.books" 
               :key="item.id" 
               :value="item.title"
+              class="aria-selected:bg-accent aria-selected:text-accent-foreground"
               @select="handleSelect(item)"
             >
               <BookOpen class="mr-2 h-4 w-4" />
@@ -226,6 +253,27 @@ function navigateToMedia(type: string, id: string) {
         </CommandGroup>
 
       </CommandList>
+      
+      <div class="border-t px-4 py-2 text-xs text-muted-foreground flex items-center justify-end gap-x-4 bg-muted/40 h-10">
+        <div class="flex items-center gap-1">
+          <span class="text-xs">Aller à</span>
+          <kbd class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            <span class="text-xs">⏎</span>
+          </kbd>
+        </div>
+        <div class="flex items-center gap-1">
+            <span class="text-xs">Naviguer</span>
+            <kbd class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+              <span class="text-xs">↑↓</span>
+            </kbd>
+        </div>
+        <div class="flex items-center gap-1">
+            <span class="text-xs">Fermer</span>
+            <kbd class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+              <span class="text-xs">Esc</span>
+            </kbd>
+        </div>
+      </div>
     </CommandDialog>
   </div>
 </template>
