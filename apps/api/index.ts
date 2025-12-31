@@ -156,6 +156,9 @@ const port = Number(process.env.PORT) || 3000;
 // Wrap the fetch handler to initialize AsyncLocalStorage
 const originalFetch = app.fetch;
 const wrappedFetch = function (request: Request) {
+  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
+  let finalRequest = request; // Keep finalRequest if it was used, or simplify if not.
+
   return requestContext.run({ requestId }, () => {
     return originalFetch.call(app, finalRequest);
   });
