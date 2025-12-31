@@ -5,6 +5,15 @@ import { Job } from 'bullmq';
 
 describe('Import Media Processor', () => {
 
+    mock.module('@metacult/backend/infrastructure', () => ({
+        getDbConnection: () => ({ db: {} }),
+        requestContext: {
+            run: (_: any, cb: () => any) => cb(),
+            get: () => ({ requestId: 'test-id' }),
+            getRequestId: () => 'test-id'
+        }
+    }));
+
     // Mock Handler
     const mockExecute = mock((command) => Promise.resolve());
     const mockHandler = {

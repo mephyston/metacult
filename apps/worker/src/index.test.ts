@@ -27,7 +27,12 @@ mock.module('@metacult/backend/infrastructure', () => {
         DrizzleMediaRepository: class { },
         IgdbAdapter: class { },
         TmdbAdapter: class { },
-        GoogleBooksAdapter: class { }
+        GoogleBooksAdapter: class { },
+        requestContext: {
+            run: (_: any, cb: () => any) => cb(),
+            get: () => ({ requestId: 'test-id' }),
+            getRequestId: () => 'test-id'
+        }
     };
 });
 
