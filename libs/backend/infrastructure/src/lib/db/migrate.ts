@@ -51,4 +51,12 @@ async function runMigrations() {
     }
 }
 
-runMigrations();
+export { runMigrations };
+
+// Only run if called directly (script mode)
+// In Bun/Node, we verify if the current file is the entrypoint.
+// Start.sh calls "bun run ...migrate.ts", so it will run.
+// Importing it in index.ts won't trigger this block.
+if (import.meta.main) {
+    runMigrations();
+}

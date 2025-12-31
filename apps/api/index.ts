@@ -12,7 +12,14 @@ import { initCrons } from './src/cron/cron.service';
 import { GetActiveAdsHandler, GetActiveAdsQuery } from '@metacult/backend/marketing';
 
 // Apply logging patch
+// Apply logging patch
 patchConsole();
+
+// Import migration script programmatically
+// This ensures migrations run even if start.sh is bypassed (e.g. Railway default cmd)
+import { runMigrations } from '@metacult/backend/infrastructure/src/lib/db/migrate';
+
+await runMigrations();
 
 // Initialisation de la BDD (Composition Root)
 // Fusion des schémas pour garantir que le client DB satisfait tous les modules
