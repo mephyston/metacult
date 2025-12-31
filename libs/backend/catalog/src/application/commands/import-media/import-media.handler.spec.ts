@@ -17,6 +17,7 @@ describe('ImportMediaHandler', () => {
             create: mock(() => Promise.resolve()),
             findAll: mock(() => Promise.resolve([])),
             findByType: mock(() => Promise.resolve([])),
+            findByProviderId: mock(() => Promise.resolve(null)),
             nextId: mock(() => 'generated-uuid')
         };
         mockIgdb = { getMedia: mock(() => Promise.resolve(null)) };
@@ -26,13 +27,13 @@ describe('ImportMediaHandler', () => {
         handler = new ImportMediaHandler(mockRepo, mockIgdb, mockTmdb, mockGoogleBooks);
     });
 
-    it('should skip import if media already exists', async () => {
-        mockRepo.findById.mockResolvedValue({ id: '123' });
+    it('should throw MediaAlreadyExistsError if media already exists', async () => {
+        mockRepo.findByProviderId.mockResolvedValue({ id: '123' });
         const command: ImportMediaCommand = { mediaId: '123', type: MediaType.GAME };
 
-        await handler.execute(command);
+        await expect(handler.execute(command)).rejects.toThrow();
 
-        expect(mockRepo.findById).toHaveBeenCalledWith('123');
+        expect(mockRepo.findByProviderId).toHaveBeenCalledWith('igdb', '123');
         expect(mockIgdb.getMedia).not.toHaveBeenCalled();
         expect(mockRepo.create).not.toHaveBeenCalled();
     });

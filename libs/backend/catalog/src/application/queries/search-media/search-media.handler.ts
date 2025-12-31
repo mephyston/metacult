@@ -52,10 +52,11 @@ export class SearchMediaHandler {
 
         const localResults = await this.mediaRepository.searchViews({ search: searchTerm });
 
-        let shouldCallRemote = localResults.length < 5;
+        // eslint-disable-next-line prefer-const
+        const shouldCallRemote = localResults.length < 5;
         // Si filtre par type spécifique, on peut ajuster, mais ici on reste simple.
 
-        let groupedResponse = this.mapLocalToGrouped(localResults);
+        const groupedResponse = this.mapLocalToGrouped(localResults);
 
         if (shouldCallRemote) {
             console.log(`[Search] Résultats locaux insuffisants (${localResults.length}), appel providers distants...`);
@@ -80,7 +81,6 @@ export class SearchMediaHandler {
                 // TMDB retourne Movies et TV mélangés par l'adapter search() ? 
                 // Vérifions l'adapter... TmdbAdapter.search renvoie Media[] (Movie | TV).
                 // On doit les trier.
-                igdbRes.status /* Just to keep flow valid */
 
                 for (const media of tmdbRes.value) {
                     const item = this.mapRemoteToItem(media);

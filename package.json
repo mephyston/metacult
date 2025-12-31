@@ -95,6 +95,9 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "bun libs/backend/infrastructure/src/lib/db/seed.ts",
     "test": "bun test",
+    "lint:all": "nx run-many -t lint",
+    "test:all": "bun test",
+    "quality": "npm run lint:all && npm run test:all",
     "release": "nx release --skip-publish"
   }
 }

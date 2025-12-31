@@ -43,7 +43,7 @@ describe('fetchWithRetry', () => {
             await fetchWithRetry('https://api.example.com', { retries: 2, timeoutMs: 50 });
             expect(true).toBe(false); // Should not reach here
         } catch (e: any) {
-            expect(e.message).toContain('Failed to fetch');
+            expect(e.message).toContain('Server Error');
             expect(global.fetch).toHaveBeenCalledTimes(3); // Initial + 2 retries
         }
     });
