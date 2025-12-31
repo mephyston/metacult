@@ -57,7 +57,18 @@ onMounted(async () => {
     if (!localRecentMedias.value || localRecentMedias.value.length === 0) {
         try {
             // Use PUBLIC_API_URL if available, otherwise relative path (assuming proxy) or default localhost
-            const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
+            let rawApiUrl = import.meta.env.PUBLIC_API_URL;
+            // Fallback for local development if not set
+            if (!rawApiUrl) {
+                rawApiUrl = 'http://localhost:8080';
+            }
+            
+            // Ensure protocol to prevent relative path resolution (fixing 404 on staging)
+            let apiUrl = rawApiUrl;
+            if (!rawApiUrl.startsWith('http')) {
+                apiUrl = `https://${rawApiUrl}`;
+            }
+
             const res = await fetch(`${apiUrl}/api/media/recent`);
             if (res.ok) {
                 localRecentMedias.value = await res.json();
