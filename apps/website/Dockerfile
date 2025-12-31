@@ -13,6 +13,9 @@ RUN bun install
 FROM install AS build
 COPY --from=install /usr/src/app/node_modules ./node_modules
 COPY . .
+# ✅ Receive PUBLIC_API_URL from build args for Client-Side bundling
+ARG PUBLIC_API_URL
+ENV PUBLIC_API_URL=$PUBLIC_API_URL
 RUN cd apps/website && bun run build
 
 # Final image
