@@ -157,7 +157,12 @@ const port = Number(process.env.PORT) || 3000;
 const originalFetch = app.fetch;
 const wrappedFetch = function (request: Request) {
   const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
-  let finalRequest = request; // Keep finalRequest if it was used, or simplify if not.
+  const finalRequest = new Request(request.url, {
+    method: request.method,
+    headers: request.headers,
+    body: request.body,
+    // Add other properties if needed, e.g., referrer, mode, credentials, cache, redirect, integrity, keepalive
+  }); // Keep finalRequest if it was used, or simplify if not.
 
   return requestContext.run({ requestId }, () => {
     return originalFetch.call(app, finalRequest);

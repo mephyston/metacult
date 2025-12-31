@@ -1,5 +1,5 @@
 import { describe, it, expect, mock } from 'bun:test';
-import { IMPORT_QUEUE_NAME } from '@metacult/backend/infrastructure';
+
 
 // 1. Mock infrastructure to capture createWorker calls
 const mockCreateWorker = mock(() => ({
@@ -40,7 +40,8 @@ mock.module('@metacult/backend/infrastructure', () => {
 describe("Worker Configuration", () => {
     it("should initialize import-queue worker with rate limiting", async () => {
         // 2. Import the worker index
-        await import("./index");
+        const { startWorker } = await import("./index");
+        await startWorker;
 
         // 3. Verify createWorker was called
         expect(mockCreateWorker).toHaveBeenCalled();

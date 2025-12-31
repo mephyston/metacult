@@ -1,4 +1,4 @@
-import { getDbConnection, requestContext, type ImportJob } from '@metacult/backend/infrastructure';
+import type { ImportJob } from '@metacult/backend/infrastructure';
 import * as mediaSchema from '@metacult/backend/catalog';
 import {
     MediaType,
@@ -21,6 +21,8 @@ export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: stri
     const { type } = job.data;
 
     // --- TRACING WRAPPER ---
+    // --- TRACING WRAPPER ---
+    const { requestContext } = await import('@metacult/backend/infrastructure');
     const requestId = (job.data as any).requestId || crypto.randomUUID();
 
     return requestContext.run({ requestId }, async () => {
@@ -125,6 +127,7 @@ export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: stri
 
             if (!handler) {
                 console.log('🏭 [Worker] Initialisation des dépendances via la Factory...');
+                const { getDbConnection } = await import('@metacult/backend/infrastructure');
                 const { db } = getDbConnection(mediaSchema);
 
                 const config = {
