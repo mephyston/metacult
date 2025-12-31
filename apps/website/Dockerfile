@@ -19,16 +19,16 @@ ENV PUBLIC_API_URL=$PUBLIC_API_URL
 RUN cd apps/website && bun run build
 
 # Final image
-FROM node:20-slim AS release
+# Use full node image to ensure all shared libraries (glib, etc) required by sharp/libvips are present
+FROM node:20 AS release
 WORKDIR /usr/src/app
 
 COPY --from=build /usr/src/app/apps/website/dist ./dist
 # ✅ Copy node_modules to ensure all dependencies are available
-# Note: Dependencies installed by Bun are generally compatible with Node
 COPY --from=install /usr/src/app/node_modules ./node_modules
 
-# 🔧 Rebuild sharp to ensure native bindings match the Node.js runtime (Linux x64/ARM)
-RUN npm rebuild sharp
+# 🔧 Force fresh install of sharp to ensure correct native bindings
+RUN npm install sharp
 
 ENV HOST=0.0.0.0
 
