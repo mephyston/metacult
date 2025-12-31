@@ -130,6 +130,7 @@ const app = new Elysia()
     if (requestId) {
       set.headers['x-request-id'] = requestId;
     }
+    console.log(`[API] ${request.method} ${request.url}`);
   })
   .get('/', () => 'Hello Metacult API (Elysia)')
   .get('/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))

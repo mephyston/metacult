@@ -12,6 +12,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // https://astro.build/config
 export default defineConfig({
+    output: 'server',
     integrations: [
         tailwind(),
         vue()
