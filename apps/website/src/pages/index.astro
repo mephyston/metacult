@@ -18,7 +18,10 @@ try {
 		console.log('🔍 [Website DEBUG] Attempting to require sharp...');
 		const sharp = await import('sharp');
 		console.log('✅ [Website DEBUG] Sharp loaded successfully');
-		console.log('✅ [Website DEBUG] Sharp version:', sharp.default?.versions || sharp.versions);
+		console.log(
+			'✅ [Website DEBUG] Sharp version:',
+			sharp.default?.versions || sharp.versions,
+		);
 	} catch (err) {
 		console.error('❌ [Website DEBUG] FAILED to load sharp:', err);
 		console.error('❌ [Website DEBUG] Stack:', err.stack);
@@ -55,6 +58,11 @@ const heroBg = await getImage({
 	format: 'avif',
 	quality: 85,
 });
+console.log('🖼️ [Website] Generated Hero Image URL:', heroBg.src);
+console.log(
+	'🖼️ [Website] Hero Image Attributes:',
+	JSON.stringify(heroBg.attributes),
+);
 ---
 
 <Layout title="MetaCult - Le Radar Social">
