@@ -18,3 +18,4 @@ export * from './lib/redis/redis.client';
 export * from './lib/queue/queue.client';
 export * from './lib/auth/better-auth.service';
 export * from './lib/context/request-context';
+export * from './lib/logger/console-patch';

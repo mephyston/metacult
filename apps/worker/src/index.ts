@@ -1,5 +1,8 @@
-import { createWorker, IMPORT_QUEUE_NAME } from '@metacult/backend/infrastructure';
+import { createWorker, IMPORT_QUEUE_NAME, patchConsole } from '@metacult/backend/infrastructure';
 import { processImportMedia } from './processors/import-media.processor';
+
+// Apply logging patch
+patchConsole();
 
 console.log('🚀 Starting Metacult Worker Service...');
 

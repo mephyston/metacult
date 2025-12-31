@@ -6,10 +6,13 @@ import { createDiscoveryRoutes, FeedController, GetMixedFeedHandler } from '@met
 import { authRoutes } from './src/routes/auth.routes';
 import { importRoutes } from './src/routes/import.routes';
 import { debugRoutes } from './src/routes/debug.routes';
-import { getDbConnection, redisClient } from '@metacult/backend/infrastructure';
+import { getDbConnection, redisClient, requestContext, patchConsole } from '@metacult/backend/infrastructure';
 import * as infraSchema from '@metacult/backend/infrastructure';
 import { initCrons } from './src/cron/cron.service';
 import { GetActiveAdsHandler, GetActiveAdsQuery } from '@metacult/backend/marketing';
+
+// Apply logging patch
+patchConsole();
 
 // Initialisation de la BDD (Composition Root)
 // Fusion des schémas pour garantir que le client DB satisfait tous les modules
