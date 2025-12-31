@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { Hero } from '@metacult/shared-ui';
 import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
+import { getApiUrl } from '../utils/get-api-url';
 
 // Basic Server-Side Data Fetching
 let recentMedias = [];
