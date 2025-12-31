@@ -33,7 +33,8 @@
   ],
   "release": {
     "projects": [
-      "*"
+      "tag:type:app",
+      "tag:type:ui"
     ],
     "projectsRelationship": "fixed",
     "version": {
@@ -47,7 +48,8 @@
         "createReleaseAt": "github",
         "file": "CHANGELOG.md"
       },
-      "projectChangelogs": false
+      "projectChangelogs": false,
+      "automaticFromRef": true
     },
     "git": {
       "commit": true,
