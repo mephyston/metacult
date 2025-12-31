@@ -16,14 +16,21 @@ try {
 		import.meta.env.PUBLIC_API_URL;
 	let apiUrl = rawApiUrl;
 
-	// Ensure protocol is present
-	if (rawApiUrl && !rawApiUrl.startsWith('http')) {
-		// If it looks like an internal Railway URL, use HTTP (likely port 80 or specific port needed, but usually http internally)
-		// Otherwise default to HTTPS for public security.
-		if (rawApiUrl.includes('.internal')) {
-			apiUrl = `http://${rawApiUrl}`;
-		} else {
-			apiUrl = `https://${rawApiUrl}`;
+	// Ensure protocol is present and correct for internal Railway networking
+	if (rawApiUrl) {
+		if (!rawApiUrl.startsWith('http')) {
+			// Missing protocol
+			if (rawApiUrl.includes('.internal')) {
+				apiUrl = `http://${rawApiUrl}`;
+			} else {
+				apiUrl = `https://${rawApiUrl}`;
+			}
+		} else if (
+			rawApiUrl.includes('.internal') &&
+			rawApiUrl.startsWith('https://')
+		) {
+			// Force HTTP for internal domains to avoid ConnectionRefused (internal network is usually HTTP)
+			apiUrl = rawApiUrl.replace('https://', 'http://');
 		}
 	}
 
