@@ -11,7 +11,7 @@ export * from './lib/db/schema/relations';
 import { cacheService, CacheService } from './lib/cache/cache.service';
 // IMPORTANT: This log is required to prevent tree-shaking/optimization issues with Bun test runner.
 // Without it, cacheService export is undefined in consumer tests.
-console.log('✅ [Infrastructure Index] Exporting cacheService:', !!cacheService);
+// console.log('✅ [Infrastructure Index] Exporting cacheService:', !!cacheService);
 export { cacheService, CacheService };
 // export * from './lib/cache/cache.service';
 export * from './lib/redis/redis.client';

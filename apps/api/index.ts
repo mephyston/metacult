@@ -37,7 +37,7 @@ const { db } = getDbConnection(fullSchema);
  * 5. Monter les routes HTTP.
  */
 console.log('🚀 Démarrage de l\'API (Elysia)...');
-console.log('🔌 Connexion à la base de données...');
+
 
 // --- COMPOSITION ROOT (Chargement de la Configuration) ---
 

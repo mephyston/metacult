@@ -31,7 +31,6 @@ async function runMigrations() {
             await migrate(db, { migrationsFolder });
 
             console.log('✅ Migrations appliquées avec succès !');
-            console.log('✅ Migrations appliquées avec succès !');
             return;
         } catch (error: any) {
             console.error(`❌ Échec tentative de migration ${i} :`, error.message);

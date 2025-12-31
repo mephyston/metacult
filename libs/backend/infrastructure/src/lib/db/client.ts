@@ -43,9 +43,10 @@ export function getDbConnection<T extends Record<string, unknown>>(customSchema?
 
         // ... inside getDbConnection
         const finalSchema = customSchema ? { ...schema, ...authSchema, ...customSchema } : { ...schema, ...authSchema };
+        const enableLogger = process.env.NODE_ENV !== 'production' || process.env.DEBUG_SQL === 'true';
         db = drizzle(pool, {
             schema: finalSchema,
-            logger: new TracingLogger()
+            logger: enableLogger ? new TracingLogger() : undefined
         }) as any;
     }
     return { pool, db };
