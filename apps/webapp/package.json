@@ -1,23 +1,24 @@
 {
-    "name": "apps-webapp",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "build": "nuxt build",
-        "dev": "nx serve webapp",
-        "preview": "node .output/server/index.mjs"
-    },
-    "dependencies": {
-        "@metacult/shared-ui": "workspace:*",
-        "@vueuse/core": "^14.1.0",
-        "class-variance-authority": "^0.7.1",
-        "clsx": "^2.1.1",
-        "lucide-vue-next": "^0.562.0",
-        "radix-vue": "^1.9.17",
-        "tailwind-merge": "^3.4.0",
-        "tailwindcss-animate": "^1.0.7"
-    },
-    "devDependencies": {
-        "ofetch": "^1.5.1"
-    }
+  "name": "apps-webapp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nx serve webapp",
+    "preview": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "@metacult/shared-ui": "workspace:*",
+    "@vueuse/core": "^14.1.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.562.0",
+    "radix-vue": "^1.9.17",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "ofetch": "^1.5.1"
+  },
+  "version": "0.2.0"
 }

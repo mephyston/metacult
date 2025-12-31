@@ -1,6 +1,6 @@
 {
   "name": "@metacult/api",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "scripts": {
     "dev": "bun run --watch index.ts",
     "start": "bun run index.ts"

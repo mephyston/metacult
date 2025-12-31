@@ -1,14 +1,15 @@
 {
-    "name": "@metacult/worker",
-    "module": "src/index.ts",
-    "type": "module",
-    "dependencies": {
-        "bullmq": "*"
-    },
-    "devDependencies": {
-        "@types/node": "*"
-    },
-    "scripts": {
-        "test": "bun test"
-    }
+  "name": "@metacult/worker",
+  "module": "src/index.ts",
+  "type": "module",
+  "dependencies": {
+    "bullmq": "*"
+  },
+  "devDependencies": {
+    "@types/node": "*"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "version": "0.2.0"
 }
