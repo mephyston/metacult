@@ -43,7 +43,30 @@ withDefaults(defineProps<HeroProps>(), {
   recentMedias: () => []
 });
 
+import { ref, onMounted, watch } from 'vue';
 
+const localRecentMedias = ref(props.recentMedias || []);
+
+watch(() => props.recentMedias, (newVal) => {
+    if (newVal && newVal.length > 0) {
+        localRecentMedias.value = newVal;
+    }
+}, { immediate: true });
+
+onMounted(async () => {
+    if (!localRecentMedias.value || localRecentMedias.value.length === 0) {
+        try {
+            // Use PUBLIC_API_URL if available, otherwise relative path (assuming proxy) or default localhost
+            const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
+            const res = await fetch(`${apiUrl}/api/media/recent`);
+            if (res.ok) {
+                localRecentMedias.value = await res.json();
+            }
+        } catch (e) {
+            console.error('Failed to fetch recent medias client-side', e);
+        }
+    }
+});
 </script>
 
 <template>
@@ -86,10 +109,10 @@ withDefaults(defineProps<HeroProps>(), {
                       <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-background to-transparent"></div>
                       
                       <!-- Marquee Container -->
-                      <div class="flex overflow-hidden gap-[var(--gap)] select-none" style="--gap: 1rem; --duration: 40s;">
+                  <div class="flex overflow-hidden gap-[var(--gap)] select-none" style="--gap: 1rem; --duration: 40s;">
                           <div v-for="i in 2" :key="i" class="flex shrink-0 animate-marquee items-center justify-around gap-[var(--gap)] group-hover:[animation-play-state:paused]">
-                              <template v-if="recentMedias && recentMedias.length > 0">
-                                <div v-for="media in recentMedias" :key="`${i}-${media.id}`" class="bg-card text-card-foreground flex flex-col rounded-md border shadow-sm w-[160px] h-[240px] overflow-hidden group">
+                              <template v-if="localRecentMedias && localRecentMedias.length > 0">
+                                <div v-for="media in localRecentMedias" :key="`${i}-${media.id}`" class="bg-card text-card-foreground flex flex-col rounded-md border shadow-sm w-[160px] h-[240px] overflow-hidden group">
                                     <div class="relative h-[75%] w-full overflow-hidden bg-muted">
                                         <img 
                                             :src="media.posterUrl || 'https://images.unsplash.com/photo-1594322436404-5a0526db4d13?w=300&h=450&fit=crop'" 

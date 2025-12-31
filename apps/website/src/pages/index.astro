@@ -3,43 +3,10 @@ import Layout from '../layouts/Layout.astro';
 import { Hero } from '@metacult/shared-ui';
 import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
-import { getApiUrl } from '../utils/get-api-url';
 
-// Basic Server-Side Data Fetching
-let recentMedias = [];
-try {
-	const requestId = Astro.locals.requestId;
-	const apiUrl = getApiUrl();
-
-	console.log('🔗 [Website] Resolved API URL:', apiUrl);
-
-	// 🔍 DEBUG: Verify Sharp Availability in Runtime
-	try {
-		console.log('🔍 [Website DEBUG] Attempting to require sharp...');
-		const sharp = await import('sharp');
-		console.log('✅ [Website DEBUG] Sharp loaded successfully');
-		console.log(
-			'✅ [Website DEBUG] Sharp version:',
-			sharp.default?.versions || sharp.versions,
-		);
-	} catch (err) {
-		console.error('❌ [Website DEBUG] FAILED to load sharp:', err);
-		console.error('❌ [Website DEBUG] Stack:', err.stack);
-	}
-
-	const res = await fetch(`${apiUrl}/api/media/recent`, {
-		headers: {
-			'x-request-id': requestId || crypto.randomUUID(),
-		},
-	});
-	if (res.ok) {
-		recentMedias = await res.json();
-	} else {
-		console.error('Failed to fetch recent media:', res.statusText);
-	}
-} catch (e) {
-	console.error('Error fetching recent media:', e);
-}
+// Force Static Site Generation for this page
+// This ensures images are optimized at build time, avoiding runtime 500 errors in Docker.
+export const prerender = true;
 
 // Hero Content (Moved to variables to ensure clean strings)
 const heroBadge = 'Metacult';
@@ -51,26 +18,16 @@ const heroSecondaryCtaText = 'Se connecter';
 const heroImageSizes =
 	'(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1920px';
 
-// TODO: Re-enable optimization once /_image endpoint 500 error is resolved (Path resolution issue in Docker)
-// const heroBg = await getImage({
-// 	src: heroImage,
-// 	width: 1920,
-// 	height: 1080,
-// 	format: 'avif',
-// 	quality: 85,
-// });
+// Build-time Image Optimization
+const heroBg = await getImage({
+	src: heroImage,
+	width: 1920,
+	height: 1080,
+	format: 'avif',
+	quality: 85,
+});
 
-// Fallback: Use raw static image (served directly by Node adapter).
-// This avoids the 500 error on /_image endpoint.
-const heroBg = {
-	src: heroImage.src,
-	attributes: {},
-};
-console.log('🖼️ [Website] Generated Hero Image URL:', heroBg.src);
-console.log(
-	'🖼️ [Website] Hero Image Attributes:',
-	JSON.stringify(heroBg.attributes),
-);
+// console.log('🖼️ [Website] Generated Hero Image URL:', heroBg.src);
 ---
 
 <Layout title="MetaCult - Le Radar Social">
@@ -87,6 +44,6 @@ console.log(
 		image={heroBg.src}
 		imageSizes={heroImageSizes}
 		fetchpriority="high"
-		recentMedias={recentMedias}
+		recentMedias={[]}
 	/>
 </Layout>
