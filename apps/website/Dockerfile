@@ -13,23 +13,15 @@ RUN bun install
 FROM install AS build
 COPY --from=install /usr/src/app/node_modules ./node_modules
 COPY . .
-# ✅ Receive PUBLIC_API_URL from build args for Client-Side bundling
+# Pass build args to env for build-time fetching (SSG)
 ARG PUBLIC_API_URL
 ENV PUBLIC_API_URL=$PUBLIC_API_URL
 RUN cd apps/website && bun run build
 
 # Final image
-FROM node:20-slim AS release
-WORKDIR /usr/src/app
-
-COPY --from=build /usr/src/app/apps/website/dist ./dist
-# ✅ Copy node_modules to ensure all dependencies are available
-# Note: Dependencies installed by Bun are generally compatible with Node
-COPY --from=install /usr/src/app/node_modules ./node_modules
-
-# 🔧 Rebuild sharp to ensure native bindings match the Node.js runtime (Linux x64/ARM)
-RUN npm rebuild sharp
-
-ENV HOST=0.0.0.0
-
-CMD ["node", "./dist/server/entry.mjs"]
+FROM nginx:alpine AS release
+# Create a basic nginx config if one doesn't exist, or copy if it does
+# COPY apps/website/nginx.conf /etc/nginx/nginx.conf
+COPY --from=build /usr/src/app/apps/website/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
