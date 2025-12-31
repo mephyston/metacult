@@ -8,8 +8,12 @@ import heroImage from '../assets/hero.jpg';
 let recentMedias = [];
 try {
 	const requestId = Astro.locals.requestId;
-	// Prioritize Internal URL for SSR (Cost & Performance optimization on Railway)
-	const apiUrl = import.meta.env.API_URL || import.meta.env.PUBLIC_API_URL;
+	// Prioritize Runtime Env Vars (process.env) for SSR.
+	// This prevents "undefined" being baked in at build time if variables are missing during docker build.
+	const apiUrl =
+		process.env.API_URL ||
+		process.env.PUBLIC_API_URL ||
+		import.meta.env.PUBLIC_API_URL;
 	const res = await fetch(`${apiUrl}/api/media/recent`, {
 		headers: {
 			'x-request-id': requestId || crypto.randomUUID(),
