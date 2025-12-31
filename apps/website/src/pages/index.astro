@@ -21,8 +21,8 @@ try {
 		if (!rawApiUrl.startsWith('http')) {
 			// Missing protocol
 			if (rawApiUrl.includes('.internal')) {
-				// Internal networking usually requires the port (default 3000 for our API)
-				apiUrl = `http://${rawApiUrl}:3000`;
+				// Internal networking usually requires the port (Railway often defaults to 3000 or 8080, user suggests 8080)
+				apiUrl = `http://${rawApiUrl}:8080`;
 			} else {
 				apiUrl = `https://${rawApiUrl}`;
 			}
@@ -30,7 +30,7 @@ try {
 			// If internal domain, ensure HTTP and Port
 			let internalUrl = rawApiUrl.replace('https://', 'http://');
 			if (!internalUrl.includes(':')) {
-				internalUrl = `${internalUrl}:3000`;
+				internalUrl = `${internalUrl}:8080`;
 			}
 			apiUrl = internalUrl;
 		}
