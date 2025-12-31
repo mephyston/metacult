@@ -9,6 +9,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/node": "^9.5.1",
     "@fontsource/roboto": "^5.2.9",
     "@metacult/shared-ui": "workspace:*",
     "@vueuse/core": "^14.1.0",

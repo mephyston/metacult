@@ -26,7 +26,5 @@ COPY --from=build /usr/src/app/apps/website/dist ./dist
 # But static assets (client) need to be served or correctly mapped.
 
 ENV HOST=0.0.0.0
-ENV PORT=80
 
-EXPOSE 80
 CMD ["bun", "./dist/server/entry.mjs"]
