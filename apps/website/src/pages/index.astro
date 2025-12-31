@@ -9,12 +9,6 @@ import { getApiUrl } from '../utils/get-api-url';
 let recentMedias = [];
 try {
 	const requestId = Astro.locals.requestId;
-import { getApiUrl } from '../utils/get-api-url';
-
-// Basic Server-Side Data Fetching
-let recentMedias = [];
-try {
-	const requestId = Astro.locals.requestId;
 	const apiUrl = getApiUrl();
 
 	console.log('🔗 [Website] Resolved API URL:', apiUrl);
