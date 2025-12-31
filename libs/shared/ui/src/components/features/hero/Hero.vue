@@ -32,7 +32,9 @@ interface HeroProps {
   }>;
 }
 
-withDefaults(defineProps<HeroProps>(), {
+  recentMedias: () => []
+});
+const props = withDefaults(defineProps<HeroProps>(), {
   heading: 'Réservez votre prochaine expérience.',
   description: 'Donnez votre avis sur vos jeux vidéo, films, séries et BDs préférés en un simple geste. Rejoignez la communauté Metacult !',
   ctaText: 'Créez votre compte',
