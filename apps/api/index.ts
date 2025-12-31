@@ -156,18 +156,7 @@ const port = Number(process.env.PORT) || 3000;
 // Wrap the fetch handler to initialize AsyncLocalStorage
 const originalFetch = app.fetch;
 const wrappedFetch = function (request: Request) {
-  // DEBUG: Check if wrapper is called
-  console.log(`[DEBUG] Raw Request: ${request.method} ${request.url}`);
-
-  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
-  let finalRequest = request;
-
-  if (!request.headers.has('x-request-id')) {
-    // ... logic checks
-  }
-
   return requestContext.run({ requestId }, () => {
-    console.log(`[DEBUG] Context Initialized: ${requestId}`);
     return originalFetch.call(app, finalRequest);
   });
 };

@@ -18,13 +18,7 @@ async function runMigrations() {
     const migrationsFolder = path.join(process.cwd(), 'libs/backend/infrastructure/drizzle');
     console.log(`🔹 Dossier de migrations : ${migrationsFolder}`);
 
-    try {
-        const fs = await import('fs/promises');
-        const files = await fs.readdir(migrationsFolder);
-        console.log('📂 Fichiers trouvés :', files);
-    } catch (e: any) {
-        console.error('⚠️ Impossible de lire le dossier migrations :', e.message);
-    }
+
 
     for (let i = 1; i <= MAX_RETRIES; i++) {
         try {
