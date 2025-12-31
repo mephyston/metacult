@@ -26,9 +26,11 @@ WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/apps/website/dist ./dist
 # ✅ Copy node_modules to ensure all dependencies are available
 COPY --from=install /usr/src/app/node_modules ./node_modules
+# ✅ Copy package.json to satisfy npm context
+COPY --from=install /usr/src/app/package.json ./package.json
 
-# 🔧 Force fresh install of sharp to ensure correct native bindings
-RUN npm install sharp
+# 🔧 Rebuild sharp (proven effectively than install in mixed env)
+RUN npm rebuild sharp
 
 ENV HOST=0.0.0.0
 
