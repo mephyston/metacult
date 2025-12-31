@@ -25,7 +25,7 @@ export const GET: APIRoute = async () => {
 
         console.log('✅ [Debug/Sharp] Success! Generated buffer size:', buffer.length);
 
-        return new Response(buffer, {
+        return new Response(buffer as any, {
             status: 200,
             headers: {
                 'Content-Type': 'image/png'
@@ -34,11 +34,40 @@ export const GET: APIRoute = async () => {
 
     } catch (error: any) {
         console.error('❌ [Debug/Sharp] Failed:', error);
+
+        // 🔍 FS Debug: List files to help debug path issues if Sharp works but files are missing
+        let fsReport: any = {};
+        try {
+            const fs = await import('node:fs/promises');
+            const path = await import('node:path');
+            const root = process.cwd();
+
+            const listDir = async (dir: string) => {
+                try {
+                    return await fs.readdir(path.join(root, dir));
+                } catch (e: any) {
+                    return `Error: ${e.message}`;
+                }
+            };
+
+            fsReport = {
+                cwd: root,
+                './': await listDir('./'),
+                './dist': await listDir('./dist'),
+                './dist/client': await listDir('./dist/client'),
+                './dist/client/_astro': await listDir('./dist/client/_astro'),
+                './public': await listDir('./public'),
+            };
+        } catch (e) {
+            fsReport = { error: 'Could not run FS check' };
+        }
+
         return new Response(JSON.stringify({
             error: 'Sharp processing failed',
             details: error.message,
             stack: error.stack,
-            versions: (await import('sharp')).default?.versions
+            versions: (await import('sharp')).default?.versions,
+            fsReport
         }, null, 2), {
             status: 500,
             headers: {
