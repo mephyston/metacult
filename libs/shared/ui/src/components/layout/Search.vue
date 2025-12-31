@@ -82,7 +82,10 @@ const searchApi = async (q: string) => {
   
   isLoading.value = true;
   try {
-    const baseUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+    let baseUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+    if (!baseUrl.startsWith('http')) {
+        baseUrl = `https://${baseUrl}`;
+    }
     const res = await fetch(`${baseUrl}/api/media/search?q=${encodeURIComponent(q)}`);
     if (res.ok) {
       results.value = await res.json();
@@ -107,7 +110,10 @@ async function handleSelect(item: SearchResultItem) {
     // Import logic
     console.log('[Search] Importing item:', item);
     importingId.value = item.id;
-    const baseUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+    let baseUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+    if (!baseUrl.startsWith('http')) {
+        baseUrl = `https://${baseUrl}`;
+    }
     try {
       const res = await fetch(`${baseUrl}/api/media/import`, {
         method: 'POST',

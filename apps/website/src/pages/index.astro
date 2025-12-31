@@ -10,10 +10,17 @@ try {
 	const requestId = Astro.locals.requestId;
 	// Prioritize Runtime Env Vars (process.env) for SSR.
 	// This prevents "undefined" being baked in at build time if variables are missing during docker build.
-	const apiUrl =
+	let rawApiUrl =
 		process.env.API_URL ||
 		process.env.PUBLIC_API_URL ||
 		import.meta.env.PUBLIC_API_URL;
+	let apiUrl = rawApiUrl;
+	if (rawApiUrl && !rawApiUrl.startsWith('http')) {
+		// Fallback: Assume HTTPS for public or HTTP for internal if uncertain,
+		// but safely default to https for security unless it looks like an internal hostname.
+		apiUrl = `https://${rawApiUrl}`;
+	}
+
 	const res = await fetch(`${apiUrl}/api/media/recent`, {
 		headers: {
 			'x-request-id': requestId || crypto.randomUUID(),
