@@ -8,14 +8,14 @@ import heroImage from '../assets/hero.jpg';
 let recentMedias = [];
 try {
 	const requestId = Astro.locals.requestId;
-	const res = await fetch(
-		`${import.meta.env.PUBLIC_API_URL}/api/media/recent`,
-		{
-			headers: {
-				'x-request-id': requestId || crypto.randomUUID(),
-			},
+	// Prioritize Internal URL for SSR (Cost & Performance optimization on Railway)
+	const apiUrl =
+		import.meta.env.API_INTERNAL_URL || import.meta.env.PUBLIC_API_URL;
+	const res = await fetch(`${apiUrl}/api/media/recent`, {
+		headers: {
+			'x-request-id': requestId || crypto.randomUUID(),
 		},
-	);
+	});
 	if (res.ok) {
 		recentMedias = await res.json();
 	} else {
