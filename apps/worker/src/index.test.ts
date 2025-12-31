@@ -32,7 +32,8 @@ mock.module('@metacult/backend/infrastructure', () => {
             run: (_: any, cb: () => any) => cb(),
             get: () => ({ requestId: 'test-id' }),
             getRequestId: () => 'test-id'
-        }
+        },
+        patchConsole: () => { /* mock */ }
     };
 });
 
