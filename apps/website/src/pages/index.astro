@@ -13,6 +13,17 @@ try {
 
 	console.log('🔗 [Website] Resolved API URL:', apiUrl);
 
+	// 🔍 DEBUG: Verify Sharp Availability in Runtime
+	try {
+		console.log('🔍 [Website DEBUG] Attempting to require sharp...');
+		const sharp = await import('sharp');
+		console.log('✅ [Website DEBUG] Sharp loaded successfully');
+		console.log('✅ [Website DEBUG] Sharp version:', sharp.default?.versions || sharp.versions);
+	} catch (err) {
+		console.error('❌ [Website DEBUG] FAILED to load sharp:', err);
+		console.error('❌ [Website DEBUG] Stack:', err.stack);
+	}
+
 	const res = await fetch(`${apiUrl}/api/media/recent`, {
 		headers: {
 			'x-request-id': requestId || crypto.randomUUID(),
