@@ -17,7 +17,6 @@ try {
 	const requestId = Astro.locals.requestId;
 	const apiUrl = getApiUrl();
 
-	console.log('🔗 [Website] Raw API URL:', rawApiUrl);
 	console.log('🔗 [Website] Resolved API URL:', apiUrl);
 
 	const res = await fetch(`${apiUrl}/api/media/recent`, {
