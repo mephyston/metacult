@@ -39,6 +39,7 @@ export class MediaController {
      */
     async import(body: ImportMediaDto['body']) {
         const { mediaId, type } = body;
+        console.log(`[MediaController] Received import request for ${type}/${mediaId}`);
 
         await this.importHandler.execute({
             mediaId,
