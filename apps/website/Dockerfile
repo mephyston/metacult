@@ -29,10 +29,14 @@ COPY --from=install /usr/src/app/node_modules ./node_modules
 # ✅ Copy package.json to satisfy npm context
 COPY --from=install /usr/src/app/package.json ./package.json
 
-# 🔧 Force fresh install of sharp to ensure correct native bindings
-# We remove the sharp present in node_modules to force a fetch
+# 🔧 Install Bun to manage dependencies (avoiding npm Arborist crashes on mixed trees)
+RUN npm install -g bun
+
+# 🔧 Force fresh install of sharp using Bun
 RUN rm -rf node_modules/sharp
-RUN npm install sharp --platform=linux --arch=x64 --verbose
+RUN bun add sharp
+# Ensure native binaries are present
+RUN cd node_modules/sharp && npm run install
 
 ENV HOST=0.0.0.0
 
