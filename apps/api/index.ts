@@ -117,7 +117,7 @@ const discoveryRoutes = createDiscoveryRoutes(feedController);
 // Initialisation des tâches Cron
 initCrons().catch(console.error);
 
-import { requestContext } from '@metacult/backend/infrastructure';
+
 
 // ... (existing code)
 
@@ -149,34 +149,18 @@ const port = Number(process.env.PORT) || 3000;
 // Wrap the fetch handler to initialize AsyncLocalStorage
 const originalFetch = app.fetch;
 const wrappedFetch = function (request: Request) {
-  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
+  // DEBUG: Check if wrapper is called
+  console.log(`[DEBUG] Raw Request: ${request.method} ${request.url}`);
 
-  // We clone the request to ensure the header is present for Elysia (if it was generated)
-  // Note: Request cloning can be expensive on body, but necessary if we want to inject headers
-  // so that Elysia's context (req.headers) has it.
+  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
   let finalRequest = request;
+
   if (!request.headers.has('x-request-id')) {
-    finalRequest = new Request(request, {
-      headers: {
-        ...Object.fromEntries(request.headers),
-        'x-request-id': requestId
-      },
-      // Pass signal to avoid abort issues
-      signal: request.signal,
-      // We rely on Bun's Request handling.
-      // If body is used, this might consume it.
-      // Given Elysia reads body internally, we must optionally pass body.
-      // However, `new Request` might consume the stream of `request`.
-      // Safe bet: Do NOT clone request, just rely on ALS for backend logic 
-      // and set header on response manually.
-    });
-    // REVERTING CLONE STRATEGY: It's too risky for streams/bodies.
-    // We will just use the original request.
-    // The middleware `onRequest` will read from ALS if header is missing.
-    finalRequest = request;
+    // ... logic checks
   }
 
   return requestContext.run({ requestId }, () => {
+    console.log(`[DEBUG] Context Initialized: ${requestId}`);
     return originalFetch.call(app, finalRequest);
   });
 };
