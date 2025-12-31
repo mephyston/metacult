@@ -15,8 +15,8 @@ export const IMPORT_QUEUE_NAME = 'import-queue';
  * @typedef ImportJob
  */
 export type ImportJob =
-    | { type: 'game' | 'movie' | 'tv' | 'book'; id: string }
-    | { type: 'daily-global-sync'; id?: never };
+    | { type: 'game' | 'movie' | 'tv' | 'book'; id: string; requestId?: string }
+    | { type: 'daily-global-sync'; id?: never; requestId?: string };
 
 export const importQueue = new Queue<ImportJob>(IMPORT_QUEUE_NAME, {
     connection,

@@ -2,6 +2,22 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from './schema';
 import * as authSchema from './schema/auth.schema';
+import { DefaultLogger, type LogWriter } from 'drizzle-orm/logger';
+import { requestContext } from '../context/request-context';
+
+export class TracingLogger extends DefaultLogger {
+    constructor() {
+        super({ writer: new TracingLogWriter() });
+    }
+}
+
+class TracingLogWriter implements LogWriter {
+    write(message: string) {
+        const requestId = requestContext.getRequestId();
+        const prefix = requestId ? `[Req: ${requestId}] ` : '';
+        console.log(`${prefix}${message}`);
+    }
+}
 
 let pool: Pool;
 let db: ReturnType<typeof drizzle>;
@@ -25,8 +41,12 @@ export function getDbConnection<T extends Record<string, unknown>>(customSchema?
             ssl: isProduction ? { rejectUnauthorized: false } : undefined,
         });
 
+        // ... inside getDbConnection
         const finalSchema = customSchema ? { ...schema, ...authSchema, ...customSchema } : { ...schema, ...authSchema };
-        db = drizzle(pool, { schema: finalSchema }) as any;
+        db = drizzle(pool, {
+            schema: finalSchema,
+            logger: new TracingLogger()
+        }) as any;
     }
     return { pool, db };
 }

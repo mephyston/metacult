@@ -16,5 +16,8 @@
         "radix-vue": "^1.9.17",
         "tailwind-merge": "^3.4.0",
         "tailwindcss-animate": "^1.0.7"
+    },
+    "devDependencies": {
+        "ofetch": "^1.5.1"
     }
 }

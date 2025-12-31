@@ -1,4 +1,4 @@
-import { getDbConnection, type ImportJob } from '@metacult/backend/infrastructure';
+import { getDbConnection, requestContext, type ImportJob } from '@metacult/backend/infrastructure';
 import * as mediaSchema from '@metacult/backend/catalog';
 import {
     MediaType,
@@ -20,138 +20,146 @@ export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: stri
     const deps = typeof tokenOrDeps === 'object' ? tokenOrDeps : undefined;
     const { type } = job.data;
 
-    // --- DAILY SYNC LOGIC ---
-    if (type === 'daily-global-sync') {
-        console.log(`🔄 [Worker] Processing Cron Job ${job.id} | Type: ${type} `);
+    // --- TRACING WRAPPER ---
+    const requestId = (job.data as any).requestId || crypto.randomUUID();
 
-        const config = {
-            igdb: { clientId: process.env.IGDB_CLIENT_ID || '', clientSecret: process.env.IGDB_CLIENT_SECRET || '' },
-            tmdb: { apiKey: process.env.TMDB_API_KEY || '' },
-            googleBooks: { apiKey: process.env.GOOGLE_BOOKS_API_KEY || '' }
-        };
-
-        console.log('🔧 [Worker] Config loaded:', {
-            hasIgdb: !!config.igdb.clientId,
-            hasTmdb: !!config.tmdb.apiKey,
-            hasBooks: !!config.googleBooks.apiKey
-        });
-
-        try {
-            // 1. Queue Access
-            const { importQueue } = await import('@metacult/backend/infrastructure');
-
-            // 2. Instantiate Providers with Config
-            console.log('🏭 [Worker] Instantiating Providers...');
-            const tmdb = new TmdbProvider(config.tmdb.apiKey);
-            const igdb = new IgdbProvider(config.igdb.clientId, config.igdb.clientSecret);
-            const googleBooks = new GoogleBooksProvider(config.googleBooks.apiKey);
-
-            // 3. Fetch & Dispatch
-
-            // TMDB
-            if (config.tmdb.apiKey) {
-                console.log('🔍 [Worker] Fetching TMDB Trending...');
-                try {
-                    const tmdbResults = await tmdb.fetchTrending();
-                    console.log(`📊 [Sync] Found ${tmdbResults.length} trending items from TMDB`);
-                    for (const item of tmdbResults) {
-                        const mediaType = (item as any).media_type === 'movie' ? MediaType.MOVIE : MediaType.TV;
-                        await importQueue.add('import-trending-item', {
-                            type: mediaType === MediaType.MOVIE ? 'movie' : 'tv',
-                            id: item.id.toString()
-                        });
-                    }
-                } catch (e: any) {
-                    console.error('❌ [Worker] TMDB Fetch Failed:', e.message);
-                }
-            } else {
-                console.log('⚠️ [Worker] TMDB API Key missing, skipping.');
-            }
-
-            // IGDB
-            if (config.igdb.clientId) {
-                console.log('🔍 [Worker] Fetching IGDB Trending...');
-                try {
-                    const igdbResults = await igdb.fetchTrending();
-                    console.log(`📊 [Sync] Found ${igdbResults.length} trending items from IGDB`);
-                    for (const item of igdbResults) {
-                        await importQueue.add('import-trending-item', { type: 'game', id: item.id.toString() });
-                    }
-                } catch (e: any) {
-                    console.error('❌ [Worker] IGDB Fetch Failed:', e.message);
-                }
-            } else {
-                console.log('⚠️ [Worker] IGDB Credentials missing, skipping.');
-            }
-
-            // Google Books
-            if (config.googleBooks.apiKey) {
-                console.log('🔍 [Worker] Fetching Google Books Trending...');
-                try {
-                    const booksResults = await googleBooks.fetchTrending();
-                    console.log(`📊 [Sync] Found ${booksResults.length} trending items from Google Books`);
-                    for (const item of booksResults) {
-                        await importQueue.add('import-trending-item', { type: 'book', id: item.id });
-                    }
-                } catch (e: any) {
-                    console.error('❌ [Worker] Books Fetch Failed:', e.message);
-                }
-            } else {
-                console.log('⚠️ [Worker] Google Books API Key missing, skipping.');
-            }
-
-            console.log('✅ [Worker] Daily Global Sync completed successfully.');
-
-        } catch (err: any) {
-            console.error('💥 [Worker] Critical Error in Daily Global Sync:', err);
-        }
-
-        return;
-    }
-
-    // --- STANDARD IMPORT LOGIC ---
-    const id = (job.data as any).id;
-    console.log(`🔄 [Worker] Processing Import Job ${job.id} | Type: ${type} | ID: ${id} `);
-
-    try {
-        let handler = deps?.handler;
-
-        if (!handler) {
-            console.log('🏭 [Worker] Initialisation des dépendances via la Factory...');
-            const { db } = getDbConnection(mediaSchema);
+    return requestContext.run({ requestId }, async () => {
+        // --- DAILY SYNC LOGIC ---
+        if (type === 'daily-global-sync') {
+            // ... (keep existing logic but indented)
+            console.log(`🔄 [Worker] Processing Cron Job ${job.id} | Type: ${type} `);
 
             const config = {
-                igdb: {
-                    clientId: process.env.IGDB_CLIENT_ID || '',
-                    clientSecret: process.env.IGDB_CLIENT_SECRET || '',
-                },
-                tmdb: {
-                    apiKey: process.env.TMDB_API_KEY || '',
-                },
-                googleBooks: {
-                    apiKey: process.env.GOOGLE_BOOKS_API_KEY || '',
-                }
+                igdb: { clientId: process.env.IGDB_CLIENT_ID || '', clientSecret: process.env.IGDB_CLIENT_SECRET || '' },
+                tmdb: { apiKey: process.env.TMDB_API_KEY || '' },
+                googleBooks: { apiKey: process.env.GOOGLE_BOOKS_API_KEY || '' }
             };
 
-            handler = CatalogModuleFactory.createImportMediaHandler(db, config);
+            console.log('🔧 [Worker] Config loaded:', {
+                hasIgdb: !!config.igdb.clientId,
+                hasTmdb: !!config.tmdb.apiKey,
+                hasBooks: !!config.googleBooks.apiKey
+            });
+
+            try {
+                // 1. Queue Access
+                const { importQueue, requestContext: workerRequestContext } = await import('@metacult/backend/infrastructure');
+
+                // 2. Instantiate Providers with Config
+                console.log('🏭 [Worker] Instantiating Providers...');
+                const tmdb = new TmdbProvider(config.tmdb.apiKey);
+                const igdb = new IgdbProvider(config.igdb.clientId, config.igdb.clientSecret);
+                const googleBooks = new GoogleBooksProvider(config.googleBooks.apiKey);
+
+                // 3. Fetch & Dispatch
+                const currentRequestId = workerRequestContext.getRequestId();
+
+                // TMDB
+                if (config.tmdb.apiKey) {
+                    console.log('🔍 [Worker] Fetching TMDB Trending...');
+                    try {
+                        const tmdbResults = await tmdb.fetchTrending();
+                        console.log(`📊 [Sync] Found ${tmdbResults.length} trending items from TMDB`);
+                        for (const item of tmdbResults) {
+                            const mediaType = (item as any).media_type === 'movie' ? MediaType.MOVIE : MediaType.TV;
+                            await importQueue.add('import-trending-item', {
+                                type: mediaType === MediaType.MOVIE ? 'movie' : 'tv',
+                                id: item.id.toString(),
+                                requestId: currentRequestId
+                            });
+                        }
+                    } catch (e: any) {
+                        console.error('❌ [Worker] TMDB Fetch Failed:', e.message);
+                    }
+                } else {
+                    console.log('⚠️ [Worker] TMDB API Key missing, skipping.');
+                }
+
+                // IGDB
+                if (config.igdb.clientId) {
+                    console.log('🔍 [Worker] Fetching IGDB Trending...');
+                    try {
+                        const igdbResults = await igdb.fetchTrending();
+                        console.log(`📊 [Sync] Found ${igdbResults.length} trending items from IGDB`);
+                        for (const item of igdbResults) {
+                            await importQueue.add('import-trending-item', { type: 'game', id: item.id.toString(), requestId: currentRequestId });
+                        }
+                    } catch (e: any) {
+                        console.error('❌ [Worker] IGDB Fetch Failed:', e.message);
+                    }
+                } else {
+                    console.log('⚠️ [Worker] IGDB Credentials missing, skipping.');
+                }
+
+                // Google Books
+                if (config.googleBooks.apiKey) {
+                    console.log('🔍 [Worker] Fetching Google Books Trending...');
+                    try {
+                        const booksResults = await googleBooks.fetchTrending();
+                        console.log(`📊 [Sync] Found ${booksResults.length} trending items from Google Books`);
+                        for (const item of booksResults) {
+                            await importQueue.add('import-trending-item', { type: 'book', id: item.id, requestId: currentRequestId });
+                        }
+                    } catch (e: any) {
+                        console.error('❌ [Worker] Books Fetch Failed:', e.message);
+                    }
+                } else {
+                    console.log('⚠️ [Worker] Google Books API Key missing, skipping.');
+                }
+
+                console.log('✅ [Worker] Daily Global Sync completed successfully.');
+
+            } catch (err: any) {
+                console.error('💥 [Worker] Critical Error in Daily Global Sync:', err);
+            }
+
+            return;
         }
 
-        let mediaType: MediaType;
-        switch (type) {
-            case 'game': mediaType = MediaType.GAME; break;
-            case 'movie': mediaType = MediaType.MOVIE; break;
-            case 'tv': mediaType = MediaType.TV; break;
-            case 'book': mediaType = MediaType.BOOK; break;
-            default: throw new Error(`Unknown type ${type}`);
+        // --- STANDARD IMPORT LOGIC ---
+        const id = (job.data as any).id;
+        console.log(`🔄 [Worker] Processing Import Job ${job.id} | Type: ${type} | ID: ${id} `);
+
+        try {
+            let handler = deps?.handler;
+
+            if (!handler) {
+                console.log('🏭 [Worker] Initialisation des dépendances via la Factory...');
+                const { db } = getDbConnection(mediaSchema);
+
+                const config = {
+                    igdb: {
+                        clientId: process.env.IGDB_CLIENT_ID || '',
+                        clientSecret: process.env.IGDB_CLIENT_SECRET || '',
+                    },
+                    tmdb: {
+                        apiKey: process.env.TMDB_API_KEY || '',
+                    },
+                    googleBooks: {
+                        apiKey: process.env.GOOGLE_BOOKS_API_KEY || '',
+                    }
+                };
+
+                handler = CatalogModuleFactory.createImportMediaHandler(db, config);
+            }
+
+            let mediaType: MediaType;
+            switch (type) {
+                case 'game': mediaType = MediaType.GAME; break;
+                case 'movie': mediaType = MediaType.MOVIE; break;
+                case 'tv': mediaType = MediaType.TV; break;
+                case 'book': mediaType = MediaType.BOOK; break;
+                default: throw new Error(`Unknown type ${type}`);
+            }
+
+            const command = new ImportMediaCommand(id, mediaType);
+            await handler.execute(command);
+
+            console.log(`✅ [Worker] Job ${job.id} terminé avec succès.`);
+
+        } catch (error: any) {
+            console.error(`💥 [Error] Failed to process job ${job.id}: `, error.message);
+            throw error;
         }
-
-        const command = new ImportMediaCommand(id, mediaType);
-        await handler.execute(command);
-
-        console.log(`✅ [Worker] Job ${job.id} terminé avec succès.`);
-
-    } catch (error: any) {
-        console.error(`💥 [Error] Failed to process job ${job.id}: `, error.message);
-        throw error;
-    }
+    });
 };

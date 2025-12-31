@@ -114,9 +114,20 @@ const discoveryRoutes = createDiscoveryRoutes(feedController);
 // Initialisation des tâches Cron
 initCrons().catch(console.error);
 
+import { requestContext } from '@metacult/backend/infrastructure';
+
+// ... (existing code)
+
 const app = new Elysia()
   .use(swagger())
   .use(cors())
+  .onRequest(({ request, set }) => {
+    // Ensure response has the ID (retrieved from ALS or Header)
+    const requestId = requestContext.getRequestId() || request.headers.get('x-request-id');
+    if (requestId) {
+      set.headers['x-request-id'] = requestId;
+    }
+  })
   .get('/', () => 'Hello Metacult API (Elysia)')
   .get('/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
   // Montage des routes
@@ -131,9 +142,45 @@ const app = new Elysia()
 
 const port = Number(process.env.PORT) || 3000;
 
-app.listen({
+// Wrap the fetch handler to initialize AsyncLocalStorage
+const originalFetch = app.fetch;
+const wrappedFetch = function (request: Request) {
+  const requestId = request.headers.get('x-request-id') || crypto.randomUUID();
+
+  // We clone the request to ensure the header is present for Elysia (if it was generated)
+  // Note: Request cloning can be expensive on body, but necessary if we want to inject headers
+  // so that Elysia's context (req.headers) has it.
+  let finalRequest = request;
+  if (!request.headers.has('x-request-id')) {
+    finalRequest = new Request(request, {
+      headers: {
+        ...Object.fromEntries(request.headers),
+        'x-request-id': requestId
+      },
+      // Pass signal to avoid abort issues
+      signal: request.signal,
+      // We rely on Bun's Request handling.
+      // If body is used, this might consume it.
+      // Given Elysia reads body internally, we must optionally pass body.
+      // However, `new Request` might consume the stream of `request`.
+      // Safe bet: Do NOT clone request, just rely on ALS for backend logic 
+      // and set header on response manually.
+    });
+    // REVERTING CLONE STRATEGY: It's too risky for streams/bodies.
+    // We will just use the original request.
+    // The middleware `onRequest` will read from ALS if header is missing.
+    finalRequest = request;
+  }
+
+  return requestContext.run({ requestId }, () => {
+    return originalFetch.call(app, finalRequest);
+  });
+};
+
+const server = Bun.serve({
   port,
-  hostname: '0.0.0.0'
+  hostname: '0.0.0.0',
+  fetch: wrappedFetch
 });
 
-console.log(`🦊 Elysia tourne sur ${app.server?.hostname}:${app.server?.port}`);
+console.log(`🦊 Elysia tourne sur ${server.hostname}:${server.port}`);

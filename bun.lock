@@ -103,6 +103,9 @@
         "tailwind-merge": "^3.4.0",
         "tailwindcss-animate": "^1.0.7",
       },
+      "devDependencies": {
+        "ofetch": "^1.5.1",
+      },
     },
     "apps/website": {
       "name": "apps-website",
