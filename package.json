@@ -44,6 +44,7 @@
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-vue": "^9.16.1",
     "h3": "^1.8.2",
+    "husky": "^9.1.7",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
     "nuxt": "^4.0.0",
@@ -97,7 +98,8 @@
     "test": "bun test",
     "lint:all": "nx run-many -t lint",
     "test:all": "bun test",
-    "quality": "npm run lint:all && npm run test:all",
-    "release": "nx release --skip-publish"
+    "quality": "bun run lint:all && bun run test:all",
+    "release": "nx release --skip-publish",
+    "prepare": "husky"
   }
 }
