@@ -8,33 +8,13 @@ import heroImage from '../assets/hero.jpg';
 let recentMedias = [];
 try {
 	const requestId = Astro.locals.requestId;
-	// Prioritize Runtime Env Vars (process.env) for SSR.
-	// This prevents "undefined" being baked in at build time if variables are missing during docker build.
-	let rawApiUrl =
-		process.env.API_URL ||
-		process.env.PUBLIC_API_URL ||
-		import.meta.env.PUBLIC_API_URL;
-	let apiUrl = rawApiUrl;
+import { getApiUrl } from '../utils/get-api-url';
 
-	// Ensure protocol is present and correct for internal Railway networking
-	if (rawApiUrl) {
-		if (!rawApiUrl.startsWith('http')) {
-			// Missing protocol
-			if (rawApiUrl.includes('.internal')) {
-				// Internal networking usually requires the port (Railway often defaults to 3000 or 8080, user suggests 8080)
-				apiUrl = `http://${rawApiUrl}:8080`;
-			} else {
-				apiUrl = `https://${rawApiUrl}`;
-			}
-		} else if (rawApiUrl.includes('.internal')) {
-			// If internal domain, ensure HTTP and Port
-			let internalUrl = rawApiUrl.replace('https://', 'http://');
-			if (!internalUrl.includes(':')) {
-				internalUrl = `${internalUrl}:8080`;
-			}
-			apiUrl = internalUrl;
-		}
-	}
+// Basic Server-Side Data Fetching
+let recentMedias = [];
+try {
+	const requestId = Astro.locals.requestId;
+	const apiUrl = getApiUrl();
 
 	console.log('🔗 [Website] Raw API URL:', rawApiUrl);
 	console.log('🔗 [Website] Resolved API URL:', apiUrl);

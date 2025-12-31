@@ -29,8 +29,10 @@ COPY --from=install /usr/src/app/node_modules ./node_modules
 # ✅ Copy package.json to satisfy npm context
 COPY --from=install /usr/src/app/package.json ./package.json
 
-# 🔧 Rebuild sharp (proven effectively than install in mixed env)
-RUN npm rebuild sharp
+# 🔧 Force fresh install of sharp to ensure correct native bindings
+# We remove the sharp present in node_modules to force a fetch
+RUN rm -rf node_modules/sharp
+RUN npm install sharp --platform=linux --arch=x64 --verbose
 
 ENV HOST=0.0.0.0
 
