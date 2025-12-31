@@ -11,6 +11,11 @@ export * from './domain/errors/catalog.errors';
 // ===== DOMAIN SERVICES (Public API) =====
 export { MediaImportPolicy } from './domain/services/media-import.policy';
 
+// ===== INFRASTRUCTURE PROVIDERS (For Worker) =====
+export * from './infrastructure/providers/tmdb.provider';
+export * from './infrastructure/providers/igdb.provider';
+export * from './infrastructure/providers/google-books.provider';
+
 // ===== APPLICATION (Public API) =====
 export * from './application/queries/search-media/search-media.query';
 export * from './application/queries/search-media/search-media.handler';

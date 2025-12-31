@@ -20,7 +20,15 @@ const createRating = (val: number | undefined | null): Rating | null => {
 
 const createCoverUrl = (val: string | undefined | null): CoverUrl | null => {
     if (!val) return null;
-    try { return new CoverUrl(val.replace('//', 'https://')); } catch { return null; }
+    // Fix protocol: Replace http:// or // with https://
+    let secureUrl = val;
+    if (val.startsWith('http://')) {
+        secureUrl = val.replace('http://', 'https://');
+    } else if (val.startsWith('//')) {
+        secureUrl = `https:${val}`;
+    }
+
+    try { return new CoverUrl(secureUrl); } catch { return null; }
 };
 
 const createReleaseYear = (dateText: string | number | undefined | null): ReleaseYear | null => {

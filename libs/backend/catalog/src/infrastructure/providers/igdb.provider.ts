@@ -121,6 +121,49 @@ export class IgdbProvider {
     async getMedia(id: string): Promise<IgdbGameRaw | null> {
         return this.getGameDetails(id);
     }
+
+    /**
+     * Récupère les jeux tendance (Sortis récemment ou à venir).
+     * Critères: -3 mois < Date < +1 mois.
+     * Tri: Popularité desc.
+     */
+    async fetchTrending(): Promise<IgdbGameRaw[]> {
+        const token = await this.getAccessToken();
+        if (!token) return [];
+
+        const now = Math.floor(Date.now() / 1000);
+        const threeMonthsAgo = now - (90 * 24 * 60 * 60);
+        const oneMonthAhead = now + (30 * 24 * 60 * 60);
+
+        const body = `
+            fields name, cover.url, first_release_date, summary, aggregated_rating;
+            where first_release_date > ${threeMonthsAgo} & first_release_date < ${oneMonthAhead};
+            sort popularity desc;
+            limit 20;
+        `;
+
+        try {
+            const response = await fetch(`${this.apiUrl}/games`, {
+                method: 'POST',
+                headers: {
+                    'Client-ID': this.clientId,
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'text/plain'
+                },
+                body
+            });
+
+            if (!response.ok) {
+                console.warn(`[IGDB Provider] Fetch trending failed: ${response.statusText}`);
+                return [];
+            }
+
+            return (await response.json()) as IgdbGameRaw[];
+        } catch (error) {
+            console.error('⚠️ Erreur Trending IGDB :', error);
+            return [];
+        }
+    }
 }
 
 // export const igdbProvider = new IgdbProvider(); // Removed: Use CatalogModuleFactory

@@ -55,6 +55,32 @@ export class TmdbProvider {
 
         return (await response.json()) as TmdbMediaRaw;
     }
+
+    /**
+     * Récupère les tendances de la semaine (Films + Séries).
+     * Endpoint: /trending/movie/week & /trending/tv/week
+     */
+    async fetchTrending(): Promise<TmdbMediaRaw[]> {
+        if (!this.apiKey) return [];
+
+        const [moviesRes, tvRes] = await Promise.all([
+            fetch(`${this.apiUrl}/trending/movie/week?api_key=${this.apiKey}`),
+            fetch(`${this.apiUrl}/trending/tv/week?api_key=${this.apiKey}`)
+        ]);
+
+        if (!moviesRes.ok || !tvRes.ok) {
+            console.warn(`[TMDB Provider] Fetch trending failed. Movies: ${moviesRes.status}, TV: ${tvRes.status}`);
+            return [];
+        }
+
+        const moviesData = await moviesRes.json() as { results: any[] };
+        const tvData = await tvRes.json() as { results: any[] };
+
+        const movies = moviesData.results.map((m: any) => ({ ...m, media_type: 'movie' } as TmdbMovieRaw));
+        const tvs = tvData.results.map((t: any) => ({ ...t, media_type: 'tv' } as TmdbTvRaw));
+
+        return [...movies, ...tvs];
+    }
 }
 
 // export const tmdbProvider = new TmdbProvider(); // Removed: Use CatalogModuleFactory

@@ -5,6 +5,7 @@ import { createCatalogRoutes, CatalogModuleFactory, mediaSchema, type CatalogMod
 import { createDiscoveryRoutes, FeedController, GetMixedFeedHandler } from '@metacult/backend/discovery';
 import { authRoutes } from './src/routes/auth.routes';
 import { importRoutes } from './src/routes/import.routes';
+import { debugRoutes } from './src/routes/debug.routes';
 import { getDbConnection, redisClient } from '@metacult/backend/infrastructure';
 import * as infraSchema from '@metacult/backend/infrastructure';
 import { initCrons } from './src/cron/cron.service';
@@ -122,6 +123,8 @@ const app = new Elysia()
   .use(authRoutes)
   .group('/api', (app) => app
     .group('/import', (app) => app.use(importRoutes))
+    .use(debugRoutes)
+    .get('/debug/ping', () => 'pong')
     .use(catalogRoutesRouter)
     .use(discoveryRoutes)
   );

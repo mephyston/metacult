@@ -1,10 +1,13 @@
-import { getDbConnection, type ImportJob, IMPORT_QUEUE_NAME } from '@metacult/backend/infrastructure';
+import { getDbConnection, type ImportJob } from '@metacult/backend/infrastructure';
 import * as mediaSchema from '@metacult/backend/catalog';
 import {
     MediaType,
     ImportMediaHandler,
     ImportMediaCommand,
-    CatalogModuleFactory // Import Factory
+    CatalogModuleFactory,
+    TmdbProvider,
+    IgdbProvider,
+    GoogleBooksProvider
 } from '@metacult/backend/catalog';
 import { Job } from 'bullmq';
 
@@ -17,11 +20,96 @@ export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: stri
     const deps = typeof tokenOrDeps === 'object' ? tokenOrDeps : undefined;
     const { type } = job.data;
 
+    // --- DAILY SYNC LOGIC ---
     if (type === 'daily-global-sync') {
         console.log(`🔄 [Worker] Processing Cron Job ${job.id} | Type: ${type} `);
+
+        const config = {
+            igdb: { clientId: process.env.IGDB_CLIENT_ID || '', clientSecret: process.env.IGDB_CLIENT_SECRET || '' },
+            tmdb: { apiKey: process.env.TMDB_API_KEY || '' },
+            googleBooks: { apiKey: process.env.GOOGLE_BOOKS_API_KEY || '' }
+        };
+
+        console.log('🔧 [Worker] Config loaded:', {
+            hasIgdb: !!config.igdb.clientId,
+            hasTmdb: !!config.tmdb.apiKey,
+            hasBooks: !!config.googleBooks.apiKey
+        });
+
+        try {
+            // 1. Queue Access
+            const { importQueue } = await import('@metacult/backend/infrastructure');
+
+            // 2. Instantiate Providers with Config
+            console.log('🏭 [Worker] Instantiating Providers...');
+            const tmdb = new TmdbProvider(config.tmdb.apiKey);
+            const igdb = new IgdbProvider(config.igdb.clientId, config.igdb.clientSecret);
+            const googleBooks = new GoogleBooksProvider(config.googleBooks.apiKey);
+
+            // 3. Fetch & Dispatch
+
+            // TMDB
+            if (config.tmdb.apiKey) {
+                console.log('🔍 [Worker] Fetching TMDB Trending...');
+                try {
+                    const tmdbResults = await tmdb.fetchTrending();
+                    console.log(`📊 [Sync] Found ${tmdbResults.length} trending items from TMDB`);
+                    for (const item of tmdbResults) {
+                        const mediaType = (item as any).media_type === 'movie' ? MediaType.MOVIE : MediaType.TV;
+                        await importQueue.add('import-trending-item', {
+                            type: mediaType === MediaType.MOVIE ? 'movie' : 'tv',
+                            id: item.id.toString()
+                        });
+                    }
+                } catch (e: any) {
+                    console.error('❌ [Worker] TMDB Fetch Failed:', e.message);
+                }
+            } else {
+                console.log('⚠️ [Worker] TMDB API Key missing, skipping.');
+            }
+
+            // IGDB
+            if (config.igdb.clientId) {
+                console.log('🔍 [Worker] Fetching IGDB Trending...');
+                try {
+                    const igdbResults = await igdb.fetchTrending();
+                    console.log(`📊 [Sync] Found ${igdbResults.length} trending items from IGDB`);
+                    for (const item of igdbResults) {
+                        await importQueue.add('import-trending-item', { type: 'game', id: item.id.toString() });
+                    }
+                } catch (e: any) {
+                    console.error('❌ [Worker] IGDB Fetch Failed:', e.message);
+                }
+            } else {
+                console.log('⚠️ [Worker] IGDB Credentials missing, skipping.');
+            }
+
+            // Google Books
+            if (config.googleBooks.apiKey) {
+                console.log('🔍 [Worker] Fetching Google Books Trending...');
+                try {
+                    const booksResults = await googleBooks.fetchTrending();
+                    console.log(`📊 [Sync] Found ${booksResults.length} trending items from Google Books`);
+                    for (const item of booksResults) {
+                        await importQueue.add('import-trending-item', { type: 'book', id: item.id });
+                    }
+                } catch (e: any) {
+                    console.error('❌ [Worker] Books Fetch Failed:', e.message);
+                }
+            } else {
+                console.log('⚠️ [Worker] Google Books API Key missing, skipping.');
+            }
+
+            console.log('✅ [Worker] Daily Global Sync completed successfully.');
+
+        } catch (err: any) {
+            console.error('💥 [Worker] Critical Error in Daily Global Sync:', err);
+        }
+
         return;
     }
 
+    // --- STANDARD IMPORT LOGIC ---
     const id = (job.data as any).id;
     console.log(`🔄 [Worker] Processing Import Job ${job.id} | Type: ${type} | ID: ${id} `);
 
@@ -32,12 +120,6 @@ export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: stri
             console.log('🏭 [Worker] Initialisation des dépendances via la Factory...');
             const { db } = getDbConnection(mediaSchema);
 
-            // Validation des variables d'environnement
-            if (!process.env.IGDB_CLIENT_ID || !process.env.TMDB_API_KEY) {
-                console.warn('⚠️ [Worker] Credentials API manquants. Les imports risquent d\'échouer.');
-            }
-
-            // Création de la Configuration
             const config = {
                 igdb: {
                     clientId: process.env.IGDB_CLIENT_ID || '',
@@ -51,10 +133,6 @@ export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: stri
                 }
             };
 
-            // ✅ PRINCIPE: Inversion de Contrôle (IoC)
-            // Le Worker (Interface Layer) utilise la Factory pour obtenir une instance du Handler
-            // entièrement configurée (avec Repository et Adapters injectés).
-            // Le Worker ne connaît pas les détails d'implémentation (DB, API externes).
             handler = CatalogModuleFactory.createImportMediaHandler(db, config);
         }
 
@@ -67,12 +145,7 @@ export const processImportMedia = async (job: Job<ImportJob>, tokenOrDeps?: stri
             default: throw new Error(`Unknown type ${type}`);
         }
 
-        // ✅ PRINCIPE: Command Pattern
-        // Transformation de la requête brute du Job en une Commande d'Application (DTO).
-        // Cela découple le Worker (BullMQ) du code métier.
         const command = new ImportMediaCommand(id, mediaType);
-
-        // Exécution de la logique métier via le Handler
         await handler.execute(command);
 
         console.log(`✅ [Worker] Job ${job.id} terminé avec succès.`);

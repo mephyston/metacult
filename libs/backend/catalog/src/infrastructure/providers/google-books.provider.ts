@@ -47,6 +47,37 @@ export class GoogleBooksProvider {
 
         return (await response.json()) as GoogleBookRaw;
     }
+
+    /**
+     * Récupère les livres tendance via rotation de sujets.
+     * Sujets: ['fiction', 'thriller', 'fantasy', 'history', 'science', 'romance'].
+     * Stratégie: Sélectionne un sujet aléatoire à chaque appel.
+     * Tri: newest.
+     */
+    async fetchTrending(): Promise<GoogleBookRaw[]> {
+        if (!this.apiKey) return [];
+
+        const subjects = ['fiction', 'thriller', 'fantasy', 'history', 'science', 'romance'];
+        const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
+
+        console.log(`[GoogleBooks Provider] Surfing trend subject: ${randomSubject}`);
+
+        const url = `${this.apiUrl}?q=subject:${randomSubject}&orderBy=newest&maxResults=20&key=${this.apiKey}`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.warn(`[GoogleBooks Provider] Fetch trending failed for subject ${randomSubject}: ${response.status}`);
+                return [];
+            }
+
+            const data = (await response.json()) as { items?: any[] };
+            return (data.items || []).map((item: any) => item as GoogleBookRaw);
+        } catch (error) {
+            console.error('⚠️ Erreur Trending GoogleBooks :', error);
+            return [];
+        }
+    }
 }
 
 // export const googleBooksProvider = new GoogleBooksProvider(); // Removed: Use CatalogModuleFactory
