@@ -36,6 +36,9 @@ try {
 		}
 	}
 
+	console.log('🔗 [Website] Raw API URL:', rawApiUrl);
+	console.log('🔗 [Website] Resolved API URL:', apiUrl);
+
 	const res = await fetch(`${apiUrl}/api/media/recent`, {
 		headers: {
 			'x-request-id': requestId || crypto.randomUUID(),

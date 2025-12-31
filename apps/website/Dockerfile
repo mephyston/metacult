@@ -27,6 +27,9 @@ COPY --from=build /usr/src/app/apps/website/dist ./dist
 # Note: Dependencies installed by Bun are generally compatible with Node
 COPY --from=install /usr/src/app/node_modules ./node_modules
 
+# 🔧 Rebuild sharp to ensure native bindings match the Node.js runtime (Linux x64/ARM)
+RUN npm rebuild sharp
+
 ENV HOST=0.0.0.0
 
 CMD ["node", "./dist/server/entry.mjs"]
