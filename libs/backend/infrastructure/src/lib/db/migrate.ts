@@ -16,13 +16,10 @@ async function runMigrations() {
     // Assuming process.cwd() is the project root in Docker (/usr/src/app)
     // Or local project root
     const migrationsFolder = path.join(process.cwd(), 'libs/backend/infrastructure/drizzle');
-    console.log(`🔹 Dossier de migrations : ${migrationsFolder}`);
-
-
 
     for (let i = 1; i <= MAX_RETRIES; i++) {
         try {
-            console.log(`🔌 Connexion à la DB (Tentative ${i}/${MAX_RETRIES})...`);
+            // console.log(`🔌 Connexion à la DB (Tentative ${i}/${MAX_RETRIES})...`);
             const { db } = getDbConnection();
 
             // Test connection first
@@ -30,12 +27,12 @@ async function runMigrations() {
 
             await migrate(db, { migrationsFolder });
 
-            console.log('✅ Migrations appliquées avec succès !');
+            console.log('✅ Migrations DB à jour.');
             return;
         } catch (error: any) {
             console.error(`❌ Échec tentative de migration ${i} :`, error.message);
             if (i < MAX_RETRIES) {
-                console.log(`⏳ Nouvel essai dans ${RETRY_DELAY_MS / 1000}s...`);
+                // console.log(`⏳ Nouvel essai dans ${RETRY_DELAY_MS / 1000}s...`);
                 await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
             } else {
                 console.error('💥 Toutes les tentatives de migration ont échoué. Arrêt.');
