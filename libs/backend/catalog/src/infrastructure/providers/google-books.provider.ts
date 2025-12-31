@@ -1,8 +1,8 @@
+import { fetchWithRetry } from '@metacult/shared-core';
 import type { GoogleBookRaw } from '../types/raw-responses';
 
 /**
  * Provider Infrastructure pour l'API Google Books.
- * Gère la recherche et la récupération de livres.
  */
 export class GoogleBooksProvider {
     private apiKey: string;
@@ -14,65 +14,80 @@ export class GoogleBooksProvider {
 
     /**
      * Recherche de livres.
-     * @param {string} query 
+     *
+     * @param {string} query - Terme de recherche.
+     * @param {AbortSignal} [signal] - Token d'annulation.
      */
-    async searchBooks(query: string): Promise<GoogleBookRaw[]> {
+    async searchBooks(query: string, signal?: AbortSignal): Promise<GoogleBookRaw[]> {
         if (!this.apiKey) return [];
+        try {
+            const response = await fetchWithRetry(
+                `${this.apiUrl}?q=${encodeURIComponent(query)}&key=${this.apiKey}&maxResults=10&langRestrict=fr`,
+                {
+                    timeoutMs: 5000,
+                    externalSignal: signal
+                }
+            );
 
-        const url = `${this.apiUrl}?q=${encodeURIComponent(query)}&key=${this.apiKey}&maxResults=10`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`Erreur Provider [GoogleBooks] : ${response.status} ${response.statusText}`);
+            if (!response.ok) throw new Error(`GoogleBooks error: ${response.statusText}`);
+            const data = await response.json() as any;
+            return data.items || [];
+        } catch (error) {
+            console.error('⚠️ Erreur Recherche GoogleBooks :', error);
+            return [];
         }
-
-        const data = (await response.json()) as { items?: any[] };
-        return (data.items || []).map((item: any) => item as GoogleBookRaw);
     }
 
     /**
-     * Détails d'un livre par ID.
-     * @param {string} id - ID Volume Google.
+     * Récupère les détails d'un livre.
+     *
+     * @param {string} id - ID Google Books.
+     * @param {AbortSignal} [signal] - Token d'annulation.
      */
-    async getBookDetails(id: string): Promise<GoogleBookRaw | null> {
+    async getMedia(id: string, signal?: AbortSignal): Promise<GoogleBookRaw | null> {
         if (!this.apiKey) return null;
+        try {
+            const response = await fetchWithRetry(
+                `${this.apiUrl}/${id}?key=${this.apiKey}`,
+                {
+                    timeoutMs: 5000,
+                    externalSignal: signal
+                }
+            );
 
-        const url = `${this.apiUrl}/${id}?key=${this.apiKey}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            if (response.status === 404) return null;
-            throw new Error(`Erreur Provider [GoogleBooks] : ${response.status} ${response.statusText}`);
+            if (!response.ok) return null;
+            return (await response.json()) as GoogleBookRaw;
+        } catch (error) {
+            console.error('⚠️ Erreur Détails GoogleBooks :', error);
+            return null;
         }
-
-        return (await response.json()) as GoogleBookRaw;
     }
 
     /**
-     * Récupère les livres tendance via rotation de sujets.
-     * Sujets: ['fiction', 'thriller', 'fantasy', 'history', 'science', 'romance'].
-     * Stratégie: Sélectionne un sujet aléatoire à chaque appel.
-     * Tri: newest.
+     * Récupère les livres tendance (basé sur "fiction" en français).
+     *
+     * @param {AbortSignal} [signal] - Token d'annulation.
      */
-    async fetchTrending(): Promise<GoogleBookRaw[]> {
+    async fetchTrending(signal?: AbortSignal): Promise<GoogleBookRaw[]> {
         if (!this.apiKey) return [];
-
-        const subjects = ['fiction', 'thriller', 'fantasy', 'history', 'science', 'romance'];
-        const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
-
-        console.log(`[GoogleBooks Provider] Surfing trend subject: ${randomSubject}`);
-
-        const url = `${this.apiUrl}?q=subject:${randomSubject}&orderBy=newest&maxResults=20&key=${this.apiKey}`;
 
         try {
-            const response = await fetch(url);
+            // Google Books n'a pas de "trending" explicite, on cherche les nouveautés "subject:fiction"
+            const response = await fetchWithRetry(
+                `${this.apiUrl}?q=subject:fiction&orderBy=newest&key=${this.apiKey}&maxResults=20&langRestrict=fr`,
+                {
+                    timeoutMs: 5000,
+                    externalSignal: signal
+                }
+            );
+
             if (!response.ok) {
-                console.warn(`[GoogleBooks Provider] Fetch trending failed for subject ${randomSubject}: ${response.status}`);
+                console.warn(`[Google Books Provider] Fetch trending failed: ${response.statusText}`);
                 return [];
             }
 
-            const data = (await response.json()) as { items?: any[] };
-            return (data.items || []).map((item: any) => item as GoogleBookRaw);
+            const data = await response.json() as any;
+            return data.items || [];
         } catch (error) {
             console.error('⚠️ Erreur Trending GoogleBooks :', error);
             return [];

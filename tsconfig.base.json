@@ -15,6 +15,9 @@
       "@metacult/shared-ui": [
         "libs/shared/ui/src/index.ts"
       ],
+      "@metacult/shared-core": [
+        "libs/shared/core/src/index.ts"
+      ],
       "@metacult/shared-ui/styles/*": [
         "libs/shared/ui/src/styles/*"
       ],

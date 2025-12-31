@@ -1,3 +1,4 @@
+import { fetchWithRetry } from '@metacult/shared-core';
 import { redisClient, cacheService } from '@metacult/backend/infrastructure';
 import type { IgdbGameRaw } from '../types/raw-responses';
 
@@ -41,9 +42,10 @@ export class IgdbProvider {
         return cacheService.getOrSet('igdb_access_token', async () => {
             console.log('🔄 Rafraîchissement du Token d\'accès IGDB/Twitch...');
 
-            const response = await fetch(
+            // Short timeout for auth, it should be fast
+            const response = await fetchWithRetry(
                 `${this.authUrl}?client_id=${this.clientId}&client_secret=${this.clientSecret}&grant_type=client_credentials`,
-                { method: 'POST' }
+                { method: 'POST', timeoutMs: 5000, retries: 2 }
             );
 
             if (!response.ok) {
@@ -60,14 +62,15 @@ export class IgdbProvider {
      * Utilise le langage de requête Apicalypse.
      * 
      * @param {string} query - Terme de recherche.
+     * @param {AbortSignal} [signal] - Token d'annulation.
      * @returns {Promise<IgdbGameRaw[]>} Liste brute des jeux.
      */
-    async searchGames(query: string): Promise<IgdbGameRaw[]> {
+    async searchGames(query: string, signal?: AbortSignal): Promise<IgdbGameRaw[]> {
         const token = await this.getAccessToken();
         if (!token) return [];
 
         try {
-            const response = await fetch(`${this.apiUrl}/games`, {
+            const response = await fetchWithRetry(`${this.apiUrl}/games`, {
                 method: 'POST',
                 headers: {
                     'Client-ID': this.clientId,
@@ -75,6 +78,8 @@ export class IgdbProvider {
                     'Content-Type': 'text/plain',
                 },
                 body: `search "${query}"; fields name, cover.url, first_release_date, summary, total_rating; limit 10;`,
+                timeoutMs: 10000, // IGDB can be slow with complex queries
+                externalSignal: signal
             });
 
             if (!response.ok) throw new Error(`IGDB Search failed: ${response.statusText}`);
@@ -87,15 +92,16 @@ export class IgdbProvider {
 
     /**
      * Récupère les détails complets d'un jeu par son ID IGDB.
-     * 
+     *
      * @param {string} id - ID IGDB.
+     * @param {AbortSignal} [signal] - Token d'annulation.
      */
-    async getGameDetails(id: string): Promise<IgdbGameRaw | null> {
+    async getGameDetails(id: string, signal?: AbortSignal): Promise<IgdbGameRaw | null> {
         const token = await this.getAccessToken();
         if (!token) return null;
 
         try {
-            const response = await fetch(`${this.apiUrl}/games`, {
+            const response = await fetchWithRetry(`${this.apiUrl}/games`, {
                 method: 'POST',
                 headers: {
                     'Client-ID': this.clientId,
@@ -103,6 +109,8 @@ export class IgdbProvider {
                     'Content-Type': 'text/plain',
                 },
                 body: `fields name, cover.url, first_release_date, summary, total_rating, screenshots.url, genres.name, platforms.name, similar_games.name; where id = ${id};`,
+                timeoutMs: 10000,
+                externalSignal: signal
             });
 
             if (!response.ok) throw new Error(`IGDB Details failed: ${response.statusText}`);
@@ -118,8 +126,8 @@ export class IgdbProvider {
      * Alias pour `getGameDetails`.
      * Satisfait l'interface générique si besoin.
      */
-    async getMedia(id: string): Promise<IgdbGameRaw | null> {
-        return this.getGameDetails(id);
+    async getMedia(id: string, signal?: AbortSignal): Promise<IgdbGameRaw | null> {
+        return this.getGameDetails(id, signal);
     }
 
     /**
@@ -127,7 +135,7 @@ export class IgdbProvider {
      * Critères: -3 mois < Date < +1 mois.
      * Tri: Popularité desc.
      */
-    async fetchTrending(): Promise<IgdbGameRaw[]> {
+    async fetchTrending(signal?: AbortSignal): Promise<IgdbGameRaw[]> {
         const token = await this.getAccessToken();
         if (!token) return [];
 
@@ -143,14 +151,16 @@ export class IgdbProvider {
         `;
 
         try {
-            const response = await fetch(`${this.apiUrl}/games`, {
+            const response = await fetchWithRetry(`${this.apiUrl}/games`, {
                 method: 'POST',
                 headers: {
                     'Client-ID': this.clientId,
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'text/plain'
                 },
-                body
+                body,
+                timeoutMs: 10000,
+                externalSignal: signal
             });
 
             if (!response.ok) {

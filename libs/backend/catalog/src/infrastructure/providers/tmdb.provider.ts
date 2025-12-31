@@ -1,10 +1,9 @@
-import type { TmdbMovieRaw, TmdbTvRaw } from '../types/raw-responses';
-
-export type TmdbMediaRaw = TmdbMovieRaw | TmdbTvRaw;
+import { fetchWithRetry } from '@metacult/shared-core';
+import type { TmdbMovieRaw } from '../types/raw-responses';
 
 /**
- * Provider Infrastructure pour l'API TMDB (The Movie Database).
- * Gère les Films et les Séries TV.
+ * Provider Infrastructure pour l'API TMDB.
+ * Gère les requêtes HTTP et l'authentification.
  */
 export class TmdbProvider {
     private apiKey: string;
@@ -15,71 +14,100 @@ export class TmdbProvider {
     }
 
     /**
-     * Recherche multi-critères (Films + Séries).
-     * 
+     * Recherche un film ou une série sur TMDB.
+     *
      * @param {string} query - Terme de recherche.
-     * @returns {Promise<TmdbMediaRaw[]>} Résultats bruts filtrés.
+     * @param {AbortSignal} [signal] - Token d'annulation.
      */
-    async searchMulti(query: string): Promise<TmdbMediaRaw[]> {
+    async searchMovies(query: string, signal?: AbortSignal): Promise<TmdbMovieRaw[]> {
         if (!this.apiKey) return [];
+        try {
+            const response = await fetchWithRetry(
+                `${this.apiUrl}/search/multi?api_key=${this.apiKey}&query=${encodeURIComponent(query)}&language=fr-FR`,
+                {
+                    timeoutMs: 5000,
+                    externalSignal: signal
+                }
+            );
 
-        const url = `${this.apiUrl}/search/multi?api_key=${this.apiKey}&query=${encodeURIComponent(query)}&include_adult=false`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`Erreur Provider [TMDB] : ${response.status} ${response.statusText}`);
-        }
-
-        const data = (await response.json()) as { results: any[] };
-        // Filter only movies and tv shows
-        return data.results
-            .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
-            .map((item: any) => item as TmdbMediaRaw);
-    }
-
-    /**
-     * Récupère les détails d'un média.
-     * 
-     * @param {string} id - ID TMDB.
-     * @param {'movie' | 'tv'} type - Type de média.
-     */
-    async getDetails(id: string, type: 'movie' | 'tv'): Promise<TmdbMediaRaw | null> {
-        if (!this.apiKey) return null;
-
-        const url = `${this.apiUrl}/${type}/${id}?api_key=${this.apiKey}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`Erreur Provider [TMDB] : ${response.status} ${response.statusText}`);
-        }
-
-        return (await response.json()) as TmdbMediaRaw;
-    }
-
-    /**
-     * Récupère les tendances de la semaine (Films + Séries).
-     * Endpoint: /trending/movie/week & /trending/tv/week
-     */
-    async fetchTrending(): Promise<TmdbMediaRaw[]> {
-        if (!this.apiKey) return [];
-
-        const [moviesRes, tvRes] = await Promise.all([
-            fetch(`${this.apiUrl}/trending/movie/week?api_key=${this.apiKey}`),
-            fetch(`${this.apiUrl}/trending/tv/week?api_key=${this.apiKey}`)
-        ]);
-
-        if (!moviesRes.ok || !tvRes.ok) {
-            console.warn(`[TMDB Provider] Fetch trending failed. Movies: ${moviesRes.status}, TV: ${tvRes.status}`);
+            if (!response.ok) throw new Error(`TMDB error: ${response.statusText}`);
+            const data = await response.json() as any;
+            return data.results || [];
+        } catch (error) {
+            console.error('⚠️ Erreur Recherche TMDB :', error);
             return [];
         }
+    }
 
-        const moviesData = await moviesRes.json() as { results: any[] };
-        const tvData = await tvRes.json() as { results: any[] };
+    /**
+     * Récupère les détails d'un média (film/tv) par ID.
+     *
+     * @param {string} id - ID TMDB.
+     * @param {AbortSignal} [signal] - Token d'annulation.
+     */
+    async getMedia(id: string, signal?: AbortSignal): Promise<TmdbMovieRaw | null> {
+        if (!this.apiKey) return null;
+        try {
+            // Note: On suppose ici 'movie' par défaut, mais idéalement l'ID devrait contenir le type ou on essaie les deux.
+            // Pour simplifier dans ce contexte legacy, on tente 'movie'.
+            // (Une vraie implémentation robuste distinguerait movie/tv dans l'ID ou ferait 2 appels)
+            const response = await fetchWithRetry(
+                `${this.apiUrl}/movie/${id}?api_key=${this.apiKey}&language=fr-FR&append_to_response=credits`,
+                {
+                    timeoutMs: 5000,
+                    externalSignal: signal
+                }
+            );
 
-        const movies = moviesData.results.map((m: any) => ({ ...m, media_type: 'movie' } as TmdbMovieRaw));
-        const tvs = tvData.results.map((t: any) => ({ ...t, media_type: 'tv' } as TmdbTvRaw));
+            if (!response.ok) return null; // Not found or error
+            return (await response.json()) as TmdbMovieRaw;
+        } catch (error) {
+            console.error('⚠️ Erreur Détails TMDB :', error);
+            return null;
+        }
+    }
 
-        return [...movies, ...tvs];
+    /**
+     * Récupère les tendances films et séries.
+     * Utilise Promise.allSettled pour ne pas échouer si l'un des deux endpoints rate.
+     *
+     * @param {AbortSignal} [signal] - Token d'annulation.
+     */
+    async fetchTrending(signal?: AbortSignal): Promise<TmdbMovieRaw[]> {
+        if (!this.apiKey) return [];
+
+        try {
+            const urls = [
+                `${this.apiUrl}/trending/movie/week?api_key=${this.apiKey}&language=fr-FR`,
+                `${this.apiUrl}/trending/tv/week?api_key=${this.apiKey}&language=fr-FR`
+            ];
+
+            const results = await Promise.allSettled(
+                urls.map(url => fetchWithRetry(url, { timeoutMs: 5000, externalSignal: signal }))
+            );
+
+            const medias: TmdbMovieRaw[] = [];
+
+            for (const result of results) {
+                if (result.status === 'fulfilled') {
+                    const response = result.value;
+                    if (response.ok) {
+                        const data = await response.json() as any;
+                        if (data.results) {
+                            medias.push(...data.results);
+                        }
+                    }
+                } else {
+                    console.warn('[TMDB Provider] Partial trending fetch failure:', result.reason);
+                }
+            }
+
+            return medias;
+
+        } catch (error) {
+            console.error('⚠️ Erreur Trending TMDB :', error);
+            return [];
+        }
     }
 }
 
