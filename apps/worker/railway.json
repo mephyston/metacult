@@ -7,7 +7,6 @@
             "apps/worker/**",
             "libs/backend/infrastructure/**",
             "package.json",
-            "bun.lock",
             "tsconfig.base.json"
         ]
     },

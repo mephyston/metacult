@@ -8,7 +8,6 @@
             "libs/backend/**",
             "libs/shared/**",
             "package.json",
-            "bun.lock",
             "tsconfig.base.json"
         ]
     },
