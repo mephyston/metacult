@@ -22,6 +22,7 @@ COPY --from=install /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app .
 
 # Run the worker
+ENV NODE_ENV=production
 USER bun
 ENTRYPOINT []
 CMD [ "bun", "apps/worker/src/index.ts" ]
