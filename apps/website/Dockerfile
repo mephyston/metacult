@@ -2,7 +2,7 @@
 # Install dependencies
 # trigger build fix deps
 # Install dependencies
-FROM oven/bun:1-alpine AS install
+FROM oven/bun:1 AS install
 WORKDIR /usr/src/app
 COPY package.json bun.lock nx.json tsconfig.base.json ./
 COPY apps/website/package.json ./apps/website/package.json
@@ -19,8 +19,7 @@ ENV PUBLIC_API_URL=$PUBLIC_API_URL
 RUN cd apps/website && bun run build
 
 # Final image
-# Final image
-FROM oven/bun:1-alpine AS release
+FROM oven/bun:1 AS release
 WORKDIR /usr/src/app
 
 COPY --from=build /usr/src/app/apps/website/dist ./dist
