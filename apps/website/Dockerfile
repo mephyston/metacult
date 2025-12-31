@@ -21,6 +21,8 @@ FROM oven/bun:1-alpine AS release
 WORKDIR /usr/src/app
 
 COPY --from=build /usr/src/app/apps/website/dist ./dist
+# ✅ Copy node_modules to ensure all dependencies are available (VueUse, etc.)
+COPY --from=install /usr/src/app/node_modules ./node_modules
 # Astro Node adapter requires node_modules for some dependencies (e.g. Sharp if used, or bindings)
 # Usually standalone mode bundles everything, but let's check config.
 # Config says mode: 'standalone', so it should be self-contained for the server entry.
