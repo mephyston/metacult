@@ -21,16 +21,18 @@ try {
 		if (!rawApiUrl.startsWith('http')) {
 			// Missing protocol
 			if (rawApiUrl.includes('.internal')) {
-				apiUrl = `http://${rawApiUrl}`;
+				// Internal networking usually requires the port (default 3000 for our API)
+				apiUrl = `http://${rawApiUrl}:3000`;
 			} else {
 				apiUrl = `https://${rawApiUrl}`;
 			}
-		} else if (
-			rawApiUrl.includes('.internal') &&
-			rawApiUrl.startsWith('https://')
-		) {
-			// Force HTTP for internal domains to avoid ConnectionRefused (internal network is usually HTTP)
-			apiUrl = rawApiUrl.replace('https://', 'http://');
+		} else if (rawApiUrl.includes('.internal')) {
+			// If internal domain, ensure HTTP and Port
+			let internalUrl = rawApiUrl.replace('https://', 'http://');
+			if (!internalUrl.includes(':')) {
+				internalUrl = `${internalUrl}:3000`;
+			}
+			apiUrl = internalUrl;
 		}
 	}
 
