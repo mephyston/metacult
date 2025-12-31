@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-
+import node from '@astrojs/node';
 import tailwind from '@astrojs/tailwind';
 import vue from '@astrojs/vue';
 import path from 'path';
@@ -13,7 +13,10 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // https://astro.build/config
 export default defineConfig({
-
+    output: 'server',
+    adapter: node({
+        mode: 'standalone'
+    }),
     integrations: [
         tailwind(),
         vue()
@@ -40,6 +43,7 @@ export default defineConfig({
         },
     },
     server: {
-        port: 8085,
+        port: process.env.PORT ? Number(process.env.PORT) : 8085,
+        host: true
     },
 });
