@@ -171,7 +171,7 @@ const wrappedFetch = function (request: Request) {
 
 const server = Bun.serve({
   port,
-  hostname: '0.0.0.0', // Revert to standard bind, assuming container networking handles routing
+  hostname: '::', // Bind to IPv6 ([::]) to listen on both IPv4 and IPv6 (Railway Private Net)
   fetch: wrappedFetch
 });
 
