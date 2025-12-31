@@ -51,13 +51,21 @@ const heroSecondaryCtaText = 'Se connecter';
 const heroImageSizes =
 	'(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1920px';
 
-const heroBg = await getImage({
-	src: heroImage,
-	width: 1920,
-	height: 1080,
-	format: 'avif',
-	quality: 85,
-});
+// TODO: Re-enable optimization once /_image endpoint 500 error is resolved (Path resolution issue in Docker)
+// const heroBg = await getImage({
+// 	src: heroImage,
+// 	width: 1920,
+// 	height: 1080,
+// 	format: 'avif',
+// 	quality: 85,
+// });
+
+// Fallback: Use raw static image (served directly by Node adapter).
+// This avoids the 500 error on /_image endpoint.
+const heroBg = {
+	src: heroImage.src,
+	attributes: {},
+};
 console.log('🖼️ [Website] Generated Hero Image URL:', heroBg.src);
 console.log(
 	'🖼️ [Website] Hero Image Attributes:',
