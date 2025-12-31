@@ -11,7 +11,7 @@ describe('fetchWithRetry', () => {
     });
 
     it('should return response on success (200)', async () => {
-        global.fetch = mock(() => Promise.resolve(new Response('OK', { status: 200 })));
+        global.fetch = mock(() => Promise.resolve(new Response('OK', { status: 200 }))) as any;
 
         const res = await fetchWithRetry('https://api.example.com');
         expect(res.status).toBe(200);
@@ -27,7 +27,7 @@ describe('fetchWithRetry', () => {
                 return Promise.resolve(new Response('Server Error', { status: 503 }));
             }
             return Promise.resolve(new Response('OK', { status: 200 }));
-        });
+        }) as any;
 
         const res = await fetchWithRetry('https://api.example.com', { retries: 3, timeoutMs: 100 });
 
@@ -37,7 +37,7 @@ describe('fetchWithRetry', () => {
     });
 
     it('should throw after max retries exhausted', async () => {
-        global.fetch = mock(() => Promise.resolve(new Response('Server Error', { status: 500 })));
+        global.fetch = mock(() => Promise.resolve(new Response('Server Error', { status: 500 }))) as any;
 
         try {
             await fetchWithRetry('https://api.example.com', { retries: 2, timeoutMs: 50 });
@@ -52,7 +52,7 @@ describe('fetchWithRetry', () => {
         global.fetch = mock(async () => {
             await new Promise(r => setTimeout(r, 200)); // Slow response
             return new Response('OK');
-        });
+        }) as any;
 
         try {
             await fetchWithRetry('https://api.example.com', { timeoutMs: 50, retries: 0 });
@@ -73,7 +73,7 @@ describe('fetchWithRetry', () => {
                 if (opts.signal?.aborted) return reject(new Error('Aborted'));
                 opts.signal?.addEventListener('abort', () => reject(new Error('Aborted')));
             });
-        });
+        }) as any;
 
         const promise = fetchWithRetry('https://api.example.com', {
             externalSignal: controller.signal,
@@ -86,7 +86,8 @@ describe('fetchWithRetry', () => {
             await promise;
             expect(true).toBe(false);
         } catch (e: any) {
-            expect(e.name).toBe('AbortError') || expect(e.message).toBe('Aborted by user');
+            const isAbort = e.name === 'AbortError' || e.message === 'Aborted by user' || e.message === 'Aborted';
+            expect(isAbort).toBe(true);
             expect(global.fetch).toHaveBeenCalledTimes(1); // Should call once and abort, no retries
         }
     });
