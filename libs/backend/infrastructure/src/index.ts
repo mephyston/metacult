@@ -19,3 +19,4 @@ export * from './lib/queue/queue.client';
 export * from './lib/auth/better-auth.service';
 export * from './lib/context/request-context';
 export * from './lib/logger/console-patch';
+export * from './lib/db/migrate';

@@ -17,7 +17,7 @@ patchConsole();
 
 // Import migration script programmatically
 // This ensures migrations run even if start.sh is bypassed (e.g. Railway default cmd)
-import { runMigrations } from '@metacult/backend/infrastructure/src/lib/db/migrate';
+import { runMigrations } from '@metacult/backend/infrastructure';
 
 await runMigrations();
 
