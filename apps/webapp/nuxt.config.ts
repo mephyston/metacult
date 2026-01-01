@@ -3,9 +3,12 @@ import tailwindcss from '@tailwindcss/vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineNuxtConfig } from 'nuxt/config';
 
+import { themeScript } from '../../libs/shared/ui/src/lib/theme-script';
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   workspaceDir: '../../',
+  srcDir: 'app',
   devtools: { enabled: true },
   devServer: {
     host: 'localhost',
@@ -13,6 +16,13 @@ export default defineNuxtConfig({
   },
   app: {
     // google-fonts handles the font links now
+    head: {
+      script: [
+        {
+          innerHTML: themeScript
+        }
+      ]
+    }
   },
   typescript: {
     typeCheck: false,
@@ -23,7 +33,7 @@ export default defineNuxtConfig({
   imports: {
     autoImport: true,
   },
-  css: ['~/assets/css/styles.css', '@metacult/shared-ui/styles/global.css'],
+  css: ['@metacult/shared-ui/styles/global.css'],
   vite: {
     plugins: [nxViteTsPaths(), tailwindcss()],
     build: {

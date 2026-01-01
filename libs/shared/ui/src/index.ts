@@ -11,6 +11,7 @@ export * from './components/ui/text-rotator';
 export * from './components/ui/tooltip';
 export * from './components/ui/theme-toggle';
 export * from './components/ui/theme-switcher';
+export * from './lib/theme-script';
 export * from './components/ui/command';
 export * from './components/ui/dialog';
 

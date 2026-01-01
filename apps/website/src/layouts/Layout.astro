@@ -31,28 +31,7 @@ const { title, bodyClass = '' } = Astro.props;
     </head>
     <body class={`font-sans min-h-screen flex flex-col ${bodyClass}`}>
         <Header client:load>
-            <div slot="nav" class="flex gap-8 items-center">
-                <a
-                    href="/"
-                    class="text-sm font-medium hover:text-primary transition-colors"
-                    >Home</a
-                >
-                <a
-                    href="/games"
-                    class="text-sm font-medium hover:text-primary transition-colors"
-                    >Games</a
-                >
-                <a
-                    href="/movies"
-                    class="text-sm font-medium hover:text-primary transition-colors"
-                    >Movies</a
-                >
-                <a
-                    href="/ds"
-                    class="text-sm font-medium text-gray-500 hover:text-white transition-colors"
-                    >Design System</a
-                >
-            </div>
+            <!-- Shared Navigation from default slot -->
             <div slot="search" class="contents">
                 <Search client:load />
             </div>

@@ -10,7 +10,7 @@ export function getApiUrl(): string {
     let rawApiUrl = import.meta.env.PUBLIC_API_URL;
     // Fallback for local development if not set
     if (!rawApiUrl) {
-        rawApiUrl = 'http://localhost:8080';
+        rawApiUrl = 'http://localhost:3000';
     }
 
     // Ensure protocol to prevent relative path resolution (fixing 404 on staging)
