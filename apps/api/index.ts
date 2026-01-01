@@ -23,7 +23,8 @@ await runMigrations();
 
 // Initialisation de la BDD (Composition Root)
 // Fusion des schémas pour garantir que le client DB satisfait tous les modules
-const fullSchema = { ...infraSchema, ...mediaSchema };
+import * as interactionSchema from 'interaction';
+const fullSchema = { ...infraSchema, ...mediaSchema, ...interactionSchema };
 // Initialisation du Singleton
 const { db } = getDbConnection(fullSchema);
 
