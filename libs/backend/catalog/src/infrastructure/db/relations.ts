@@ -1,6 +1,5 @@
 import { relations } from 'drizzle-orm';
 import { medias, games, movies, tv, books, tags, mediasToTags } from './media.schema'; // Local
-import { userInteractions } from './interactions.schema'; // Local
 import { users } from '@metacult/backend/infrastructure'; // Direct relative import to fix resolution
 
 /** Relations du schéma DB (Drizzle ORM). */
@@ -23,7 +22,6 @@ export const mediasRelations = relations(medias, ({ one, many }) => ({
         references: [books.id],
     }),
     tags: many(mediasToTags),
-    interactions: many(userInteractions),
 }));
 
 export const gamesRelations = relations(games, ({ one }) => ({
@@ -71,17 +69,17 @@ export const mediasToTagsRelations = relations(mediasToTags, ({ one }) => ({
 
 // This Relation extends the User entity with Interactions
 // It should be registered in the Schema passed to Drizzle
-export const usersRelations = relations(users, ({ many }) => ({
-    interactions: many(userInteractions),
-}));
+// export const usersRelations = relations(users, ({ many }) => ({
+//     interactions: many(userInteractions),
+// }));
 
-export const userInteractionsRelations = relations(userInteractions, ({ one }) => ({
-    user: one(users, {
-        fields: [userInteractions.userId],
-        references: [users.id],
-    }),
-    media: one(medias, {
-        fields: [userInteractions.mediaId],
-        references: [medias.id],
-    }),
-}));
+// export const userInteractionsRelations = relations(userInteractions, ({ one }) => ({
+//     user: one(users, {
+//         fields: [userInteractions.userId],
+//         references: [users.id],
+//     }),
+//     media: one(medias, {
+//         fields: [userInteractions.mediaId],
+//         references: [medias.id],
+//     }),
+// }));

@@ -22,7 +22,7 @@ describe('Media Mappers', () => {
                 runtime: 148
             };
 
-            const result = mapMovieToEntity(mockTmdbMovie as any);
+            const result = mapMovieToEntity(mockTmdbMovie as any, '123');
 
             expect(result.type).toBe(MediaType.MOVIE);
             expect(result.title).toBe('Inception');
@@ -49,7 +49,7 @@ describe('Media Mappers', () => {
                 number_of_seasons: 5
             };
 
-            const result = mapTvToEntity(mockTmdbTv as any);
+            const result = mapTvToEntity(mockTmdbTv as any, '123');
 
             expect(result.type).toBe(MediaType.TV);
             expect(result.title).toBe('Breaking Bad');
@@ -67,7 +67,7 @@ describe('Media Mappers', () => {
                 poster_path: null
             };
 
-            const result = mapMovieToEntity(mockTmdbMovie as any);
+            const result = mapMovieToEntity(mockTmdbMovie as any, '123');
             expect(result.title).toBe('Unknown Movie');
             expect(result.coverUrl).toBeNull();
         });
@@ -83,7 +83,7 @@ describe('Media Mappers', () => {
                 platforms: [{ name: 'PC' }]
             };
 
-            const result = mapGameToEntity(mockIgdbGame as any);
+            const result = mapGameToEntity(mockIgdbGame as any, '123');
 
             expect(result.type).toBe(MediaType.GAME);
             expect(result.title).toBe('The Witcher 3');

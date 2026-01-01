@@ -15,6 +15,20 @@
       "when": 1767283214367,
       "tag": "0001_thankful_arclight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767307100543,
+      "tag": "0002_married_bromley",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1767307449103,
+      "tag": "0003_solid_robin_chapel",
+      "breakpoints": true
     }
   ]
 }
