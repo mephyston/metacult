@@ -1,7 +1,15 @@
 CREATE SCHEMA IF NOT EXISTS "auth";
 --> statement-breakpoint
-CREATE TYPE "public"."interaction_type" AS ENUM('RATING', 'BACKLOG', 'DUEL_WIN', 'DUEL_LOSS');--> statement-breakpoint
-CREATE TYPE "public"."media_type" AS ENUM('GAME', 'MOVIE', 'TV', 'BOOK');--> statement-breakpoint
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'interaction_type') THEN
+        CREATE TYPE "public"."interaction_type" AS ENUM('RATING', 'BACKLOG', 'DUEL_WIN', 'DUEL_LOSS');
+    END IF;
+END $$;--> statement-breakpoint
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'media_type') THEN
+        CREATE TYPE "public"."media_type" AS ENUM('GAME', 'MOVIE', 'TV', 'BOOK');
+    END IF;
+END $$;--> statement-breakpoint
 CREATE TABLE "user_interactions" (
 	"user_id" uuid NOT NULL,
 	"media_id" uuid NOT NULL,
