@@ -1,4 +1,4 @@
-import { Queue, Worker, type Processor, type WorkerOptions, type QueueOptions } from 'bullmq';
+import { Queue, Worker, type Processor, type WorkerOptions } from 'bullmq';
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 

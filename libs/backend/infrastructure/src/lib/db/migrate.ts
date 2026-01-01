@@ -30,8 +30,9 @@ async function runMigrations() {
 
             console.log('✅ Migrations DB à jour.');
             return;
-        } catch (error: any) {
-            console.error(`❌ Échec tentative de migration ${i} :`, error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.error(`❌ Échec tentative de migration ${i} :`, message);
             if (i < MAX_RETRIES) {
                 // console.log(`⏳ Nouvel essai dans ${RETRY_DELAY_MS / 1000}s...`);
                 await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
