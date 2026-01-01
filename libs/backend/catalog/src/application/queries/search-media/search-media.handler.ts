@@ -52,7 +52,6 @@ export class SearchMediaHandler {
 
         const localResults = await this.mediaRepository.searchViews({ search: searchTerm });
 
-        // eslint-disable-next-line prefer-const
         const shouldCallRemote = localResults.length < 5;
         // Si filtre par type spécifique, on peut ajuster, mais ici on reste simple.
 
