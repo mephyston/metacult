@@ -2,7 +2,8 @@
 <script setup lang="ts">
 import { ArrowRight, Calendar, MapPin, ThumbsUp, MessageSquare, MoreVertical } from 'lucide-vue-next';
 import { Badge } from '../../ui/badge'; // Keeping original path for consistency
-import { Button } from '../../ui/button'; // Keeping original import { cn } from '../../../lib/utils'
+import { Button } from '../../ui/button'; // Keeping original import type { Media } from '@metacult/shared-ui';
+import { getApiUrl } from '../../../lib/utils';
 import { TextRotator } from '../../ui/text-rotator';
 import {
   Tooltip,
@@ -56,19 +57,7 @@ watch(() => props.recentMedias, (newVal) => {
 onMounted(async () => {
     if (!localRecentMedias.value || localRecentMedias.value.length === 0) {
         try {
-            // Use PUBLIC_API_URL if available, otherwise relative path (assuming proxy) or default localhost
-            let rawApiUrl = import.meta.env.PUBLIC_API_URL;
-            // Fallback for local development if not set
-            if (!rawApiUrl) {
-                rawApiUrl = 'http://localhost:8080';
-            }
-            
-            // Ensure protocol to prevent relative path resolution (fixing 404 on staging)
-            let apiUrl = rawApiUrl;
-            if (!rawApiUrl.startsWith('http')) {
-                apiUrl = `https://${rawApiUrl}`;
-            }
-
+            const apiUrl = getApiUrl();
             const res = await fetch(`${apiUrl}/api/media/recent`);
             if (res.ok) {
                 localRecentMedias.value = await res.json();
