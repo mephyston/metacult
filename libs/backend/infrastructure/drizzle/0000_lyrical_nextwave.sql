@@ -10,7 +10,7 @@ DO $$ BEGIN
         CREATE TYPE "public"."media_type" AS ENUM('GAME', 'MOVIE', 'TV', 'BOOK');
     END IF;
 END $$;--> statement-breakpoint
-CREATE TABLE "user_interactions" (
+CREATE TABLE IF NOT EXISTS "user_interactions" (
 	"user_id" uuid NOT NULL,
 	"media_id" uuid NOT NULL,
 	"type" "interaction_type" NOT NULL,
@@ -18,20 +18,20 @@ CREATE TABLE "user_interactions" (
 	"comments" text
 );
 --> statement-breakpoint
-CREATE TABLE "books" (
+CREATE TABLE IF NOT EXISTS "books" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"author" text,
 	"pages" integer
 );
 --> statement-breakpoint
-CREATE TABLE "games" (
+CREATE TABLE IF NOT EXISTS "games" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"platform" json DEFAULT '[]'::json,
 	"developer" text,
 	"time_to_beat" integer
 );
 --> statement-breakpoint
-CREATE TABLE "medias" (
+CREATE TABLE IF NOT EXISTS "medias" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"type" "media_type" NOT NULL,
 	"title" text NOT NULL,
@@ -41,18 +41,18 @@ CREATE TABLE "medias" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "medias_to_tags" (
+CREATE TABLE IF NOT EXISTS "medias_to_tags" (
 	"media_id" uuid NOT NULL,
 	"tag_id" uuid NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "movies" (
+CREATE TABLE IF NOT EXISTS "movies" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"director" text,
 	"duration_minutes" integer
 );
 --> statement-breakpoint
-CREATE TABLE "tags" (
+CREATE TABLE IF NOT EXISTS "tags" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"slug" text NOT NULL,
 	"label" text NOT NULL,
@@ -60,14 +60,14 @@ CREATE TABLE "tags" (
 	CONSTRAINT "tags_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
-CREATE TABLE "tv" (
+CREATE TABLE IF NOT EXISTS "tv" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"creator" text,
 	"episodes_count" integer,
 	"seasons_count" integer
 );
 --> statement-breakpoint
-CREATE TABLE "auth"."account" (
+CREATE TABLE IF NOT EXISTS "auth"."account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
 	"provider_id" text NOT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE "auth"."account" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "auth"."session" (
+CREATE TABLE IF NOT EXISTS "auth"."session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expires_at" timestamp NOT NULL,
 	"token" text NOT NULL,
@@ -95,7 +95,7 @@ CREATE TABLE "auth"."session" (
 	CONSTRAINT "session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
-CREATE TABLE "auth"."user" (
+CREATE TABLE IF NOT EXISTS "auth"."user" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"email" text NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE "auth"."user" (
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE "auth"."verification" (
+CREATE TABLE IF NOT EXISTS "auth"."verification" (
 	"id" text PRIMARY KEY NOT NULL,
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
