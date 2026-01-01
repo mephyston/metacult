@@ -2,7 +2,7 @@
 // Force Railway Rebuild
 import { defineConfig } from 'astro/config';
 import node from '@astrojs/node';
-import tailwind from '@astrojs/tailwind';
+import tailwindcss from '@tailwindcss/vite';
 import vue from '@astrojs/vue';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -19,14 +19,13 @@ export default defineConfig({
         mode: 'standalone'
     }),
     integrations: [
-        tailwind(),
         vue()
     ],
     image: {
         domains: ['images.unsplash.com', 'images.igdb.com', 'image.tmdb.org'],
     },
     vite: {
-        plugins: [nxViteTsPaths()],
+        plugins: [nxViteTsPaths(), tailwindcss()],
         ssr: {
             noExternal: isProduction
                 ? ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'vue', '@astrojs/vue']

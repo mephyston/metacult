@@ -10,6 +10,7 @@ export * from './components/ui/logo';
 export * from './components/ui/text-rotator';
 export * from './components/ui/tooltip';
 export * from './components/ui/theme-toggle';
+export * from './components/ui/theme-switcher';
 export * from './components/ui/command';
 export * from './components/ui/dialog';
 

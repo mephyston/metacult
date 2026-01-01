@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'url';
+import tailwindcss from '@tailwindcss/vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineNuxtConfig } from 'nuxt/config';
 
@@ -24,7 +25,7 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/styles.css', '@metacult/shared-ui/styles/global.css'],
   vite: {
-    plugins: [nxViteTsPaths()],
+    plugins: [nxViteTsPaths(), tailwindcss()],
     build: {
       target: 'esnext',
     },
@@ -39,7 +40,7 @@ export default defineNuxtConfig({
       },
     },
   },
-  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/google-fonts'],
+  modules: ['@nuxtjs/google-fonts'],
   // @ts-expect-error: googleFonts property is added by the module but types are not inferred without build
   googleFonts: {
     families: {

@@ -2,6 +2,14 @@ CREATE SCHEMA IF NOT EXISTS "auth";
 --> statement-breakpoint
 CREATE TYPE "public"."interaction_type" AS ENUM('RATING', 'BACKLOG', 'DUEL_WIN', 'DUEL_LOSS');--> statement-breakpoint
 CREATE TYPE "public"."media_type" AS ENUM('GAME', 'MOVIE', 'TV', 'BOOK');--> statement-breakpoint
+CREATE TABLE "user_interactions" (
+	"user_id" uuid NOT NULL,
+	"media_id" uuid NOT NULL,
+	"type" "interaction_type" NOT NULL,
+	"value" integer,
+	"comments" text
+);
+--> statement-breakpoint
 CREATE TABLE "books" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"author" text,
@@ -49,22 +57,6 @@ CREATE TABLE "tv" (
 	"creator" text,
 	"episodes_count" integer,
 	"seasons_count" integer
-);
---> statement-breakpoint
-CREATE TABLE "user_interactions" (
-	"user_id" uuid NOT NULL,
-	"media_id" uuid NOT NULL,
-	"type" "interaction_type" NOT NULL,
-	"value" integer,
-	"comments" text
-);
---> statement-breakpoint
-CREATE TABLE "users" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"email" text NOT NULL,
-	"username" text NOT NULL,
-	CONSTRAINT "users_email_unique" UNIQUE("email"),
-	CONSTRAINT "users_username_unique" UNIQUE("username")
 );
 --> statement-breakpoint
 CREATE TABLE "auth"."account" (
@@ -115,13 +107,21 @@ CREATE TABLE "auth"."verification" (
 	"updated_at" timestamp
 );
 --> statement-breakpoint
+CREATE TABLE "users" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"email" text NOT NULL,
+	"username" text NOT NULL,
+	CONSTRAINT "users_email_unique" UNIQUE("email"),
+	CONSTRAINT "users_username_unique" UNIQUE("username")
+);
+--> statement-breakpoint
+ALTER TABLE "user_interactions" ADD CONSTRAINT "user_interactions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user_interactions" ADD CONSTRAINT "user_interactions_media_id_medias_id_fk" FOREIGN KEY ("media_id") REFERENCES "public"."medias"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "books" ADD CONSTRAINT "books_id_medias_id_fk" FOREIGN KEY ("id") REFERENCES "public"."medias"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "games" ADD CONSTRAINT "games_id_medias_id_fk" FOREIGN KEY ("id") REFERENCES "public"."medias"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "medias_to_tags" ADD CONSTRAINT "medias_to_tags_media_id_medias_id_fk" FOREIGN KEY ("media_id") REFERENCES "public"."medias"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "medias_to_tags" ADD CONSTRAINT "medias_to_tags_tag_id_tags_id_fk" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "movies" ADD CONSTRAINT "movies_id_medias_id_fk" FOREIGN KEY ("id") REFERENCES "public"."medias"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tv" ADD CONSTRAINT "tv_id_medias_id_fk" FOREIGN KEY ("id") REFERENCES "public"."medias"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_interactions" ADD CONSTRAINT "user_interactions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_interactions" ADD CONSTRAINT "user_interactions_media_id_medias_id_fk" FOREIGN KEY ("media_id") REFERENCES "public"."medias"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "auth"."account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "auth"."session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "auth"."user"("id") ON DELETE cascade ON UPDATE no action;

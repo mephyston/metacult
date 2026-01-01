@@ -1,6 +1,7 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { getDbConnection } from './client';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const MAX_RETRIES = 10;
 const RETRY_DELAY_MS = 2000;
@@ -13,9 +14,9 @@ const RETRY_DELAY_MS = 2000;
 async function runMigrations() {
     console.log('📦 Exécution des Migrations Base de Données...');
 
-    // Assuming process.cwd() is the project root in Docker (/usr/src/app)
-    // Or local project root
-    const migrationsFolder = path.join(process.cwd(), 'libs/backend/infrastructure/drizzle');
+    // Use absolute path resolution relative to this file to avoid CWD issues
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const migrationsFolder = path.resolve(__dirname, '../../../drizzle');
 
     for (let i = 1; i <= MAX_RETRIES; i++) {
         try {
