@@ -41,6 +41,7 @@ export class Media {
     constructor(
         public readonly id: string,
         public readonly title: string,
+        public readonly slug: string,
         public readonly description: string | null,
         public readonly type: MediaType,
         public readonly coverUrl: CoverUrl | null,
@@ -85,9 +86,11 @@ export class Game extends Media {
      * @param {string | null} developer - Studio de développement.
      * @param {number | null} timeToBeat - Temps moyen pour finir le jeu (en heures).
      */
+    // Update Game
     constructor(
         id: string,
         title: string,
+        slug: string,
         description: string | null,
         coverUrl: CoverUrl | null,
         rating: Rating | null,
@@ -97,7 +100,7 @@ export class Game extends Media {
         public readonly developer: string | null,
         public readonly timeToBeat: number | null
     ) {
-        super(id, title, description, MediaType.GAME, coverUrl, rating, releaseYear, externalReference);
+        super(id, title, slug, description, MediaType.GAME, coverUrl, rating, releaseYear, externalReference);
     }
 }
 
@@ -111,6 +114,7 @@ export class Movie extends Media {
     /**
      * @param {string} id - UUID.
      * @param {string} title - Titre.
+     * @param {string} slug - Slug URL.
      * @param {string | null} description - Synopsis.
      * @param {CoverUrl | null} coverUrl - Affiche.
      * @param {Rating | null} rating - Note.
@@ -122,6 +126,7 @@ export class Movie extends Media {
     constructor(
         id: string,
         title: string,
+        slug: string,
         description: string | null,
         coverUrl: CoverUrl | null,
         rating: Rating | null,
@@ -130,7 +135,7 @@ export class Movie extends Media {
         public readonly director: string | null,
         public readonly durationMinutes: number | null
     ) {
-        super(id, title, description, MediaType.MOVIE, coverUrl, rating, releaseYear, externalReference);
+        super(id, title, slug, description, MediaType.MOVIE, coverUrl, rating, releaseYear, externalReference);
     }
 }
 
@@ -144,6 +149,7 @@ export class TV extends Media {
     /**
      * @param {string} id - UUID.
      * @param {string} title - Titre.
+     * @param {string} slug - Slug URL.
      * @param {string | null} description - Synopsis.
      * @param {CoverUrl | null} coverUrl - Affiche.
      * @param {Rating | null} rating - Note.
@@ -156,6 +162,7 @@ export class TV extends Media {
     constructor(
         id: string,
         title: string,
+        slug: string,
         description: string | null,
         coverUrl: CoverUrl | null,
         rating: Rating | null,
@@ -165,7 +172,7 @@ export class TV extends Media {
         public readonly episodesCount: number | null,
         public readonly seasonsCount: number | null
     ) {
-        super(id, title, description, MediaType.TV, coverUrl, rating, releaseYear, externalReference);
+        super(id, title, slug, description, MediaType.TV, coverUrl, rating, releaseYear, externalReference);
     }
 }
 
@@ -179,6 +186,7 @@ export class Book extends Media {
     /**
      * @param {string} id - UUID.
      * @param {string} title - Titre.
+     * @param {string} slug - Slug URL.
      * @param {string | null} description - Quatrième de couverture.
      * @param {CoverUrl | null} coverUrl - Couverture.
      * @param {Rating | null} rating - Note.
@@ -190,6 +198,7 @@ export class Book extends Media {
     constructor(
         id: string,
         title: string,
+        slug: string,
         description: string | null,
         coverUrl: CoverUrl | null,
         rating: Rating | null,
@@ -198,7 +207,7 @@ export class Book extends Media {
         public readonly author: string | null,
         public readonly pages: number | null
     ) {
-        super(id, title, description, MediaType.BOOK, coverUrl, rating, releaseYear, externalReference);
+        super(id, title, slug, description, MediaType.BOOK, coverUrl, rating, releaseYear, externalReference);
     }
 }
 

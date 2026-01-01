@@ -49,5 +49,12 @@ export const createCatalogRoutes = (controller: MediaController) => {
         })
         .get('/recent', () => {
             return controller.getRecent();
+        })
+        .get('/:id', ({ params }) => {
+            return controller.getById(params.id);
+        }, {
+            params: t.Object({
+                id: t.String()
+            })
         });
 };

@@ -36,6 +36,18 @@ const createReleaseYear = (dateText: string | number | undefined | null): Releas
     const year = typeof dateText === 'string' ? new Date(dateText).getFullYear() : new Date(dateText * 1000).getFullYear();
     try { return new ReleaseYear(year); } catch { return null; }
 };
+// Helper for SEO Slugs
+const slugify = (text: string): string => {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')     // Replace spaces with -
+        .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+        .replace(/\-\-+/g, '-');  // Replace multiple - with single -
+};
+
+// ... existing helpers ...
 
 /**
  * Mappers : Transforment les réponses brutes des APIs externes en Entités du Domaine.
@@ -52,6 +64,7 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
     return new Game(
         id,
         raw.name,
+        slugify(raw.name),
         raw.summary || null,
         createCoverUrl(raw.cover?.url),
         createRating(rating),
@@ -73,6 +86,7 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
     return new Movie(
         id,
         raw.title,
+        slugify(raw.title),
         raw.overview || null,
         createCoverUrl(posterUrl),
         createRating(raw.vote_average),
@@ -93,6 +107,7 @@ export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
     return new TV(
         id,
         raw.name,
+        slugify(raw.name),
         raw.overview || null,
         createCoverUrl(posterUrl),
         createRating(raw.vote_average),
@@ -114,6 +129,7 @@ export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
     return new Book(
         id,
         info.title,
+        slugify(info.title),
         info.description || null,
         createCoverUrl(info.imageLinks?.thumbnail),
         null, // No rating

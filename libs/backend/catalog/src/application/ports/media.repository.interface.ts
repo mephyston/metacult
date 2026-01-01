@@ -30,6 +30,13 @@ export interface IMediaRepository {
     findById(id: string): Promise<Media | null>;
 
     /**
+     * Recherche un média par son slug URL.
+     * @param {string} slug - Slug unique.
+     * @returns {Promise<Media | null>} L'entité Média ou null si non trouvée.
+     */
+    findBySlug(slug: string): Promise<Media | null>;
+
+    /**
      * Recherche des médias correspondant aux filtres.
      * @param {MediaSearchFilters} filters - Critères de recherche.
      * @returns {Promise<Media[]>} Liste d'entités du domaine.

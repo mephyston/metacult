@@ -45,9 +45,9 @@ export class ImportMediaHandler {
      * @throws {MediaNotFoundInProviderError} Si l'ID externe est invalide.
      * @throws {ProviderUnavailableError} En cas d'échec technique de l'API externe.
      * @throws {UnsupportedMediaTypeError} Si le type de média n'est pas géré.
-     * @returns {Promise<void>}
+     * @returns {Promise<{ id: string, slug: string }>} L'UUID et le Slug du nouveau média créé.
      */
-    async execute(command: ImportMediaCommand): Promise<void> {
+    async execute(command: ImportMediaCommand): Promise<{ id: string, slug: string }> {
         const { mediaId, type } = command;
 
         console.log(`[ImportMediaHandler] Traitement ${type} ID: ${mediaId}`);
@@ -62,9 +62,12 @@ export class ImportMediaHandler {
         // 2. Orchestration Infrastructure (Récupération Données)
         // Appel au port (Interface) pour récupérer les données externes
         console.log('[ImportMediaHandler] Step 2: Fetching from Provider...');
+
         let media;
+        // Generate ID ahead of time
+        const newId = this.mediaRepository.nextId();
+
         try {
-            const newId = this.mediaRepository.nextId();
             switch (type) {
                 case MediaType.GAME:
                     media = await this.igdbAdapter.getMedia(mediaId, type, newId);
@@ -104,6 +107,8 @@ export class ImportMediaHandler {
         console.log('[ImportMediaHandler] Step 3: Persisting to Repository...');
         await this.mediaRepository.create(media);
         console.log(`[ImportMediaHandler] Succès import de ${media.title}`);
+
+        return { id: newId, slug: media.slug };
     }
 
     private mapTypeToProviderName(type: MediaType): string {

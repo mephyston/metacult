@@ -9,6 +9,7 @@ import { ExternalReference } from '../../domain/value-objects/external-reference
 import * as schema from '../db/media.schema';
 import type { ProviderMetadata } from '../types/raw-responses';
 import { ProviderMetadataMapper } from '../mappers/provider-metadata.mapper';
+import type { MediaReadDto } from '../../application/queries/search-media/media-read.dto';
 
 // Helper to safely create VOs from DB data
 const createRating = (val: number | null): Rating | null => {
@@ -32,30 +33,15 @@ type Db = NodePgDatabase<typeof schema>;
 /**
  * Implémentation Drizzle du port de persistance `IMediaRepository`.
  * Gère le mapping entre les Entités du Domaine et le schéma relationnel SQL.
- * 
- * @class DrizzleMediaRepository
- * @implements {IMediaRepository}
  */
 export class DrizzleMediaRepository implements IMediaRepository {
-    /**
-     * @param {Db} db - L'instance de connexion Drizzle (injectée).
-     */
     constructor(private readonly db: Db) { }
 
     nextId(): string {
         return crypto.randomUUID();
     }
 
-    /**
-     * Récupère un média par ID en chargeant les données spécifiques à son type (Polymorphisme).
-     * Utilise des LEFT JOIN pour tout récupérer en une seule requête SQL.
-     * 
-     * @param {string} id - UUID cible.
-     * @returns {Promise<Media | null>} L'entité pleinement hydratée.
-     */
     async findById(id: string): Promise<Media | null> {
-        // Fetch Polymorphique : On utilise des LEFT JOINs pour hydrater les champs spécifiques du type
-        // Cela permet de reconstruire l'Entité complète (Ex: Game avec ses champs de jeu) en une seule requête.
         const rows = await this.db
             .select()
             .from(schema.medias)
@@ -71,8 +57,23 @@ export class DrizzleMediaRepository implements IMediaRepository {
         return this.mapRowToEntity(rows[0]);
     }
 
+    async findBySlug(slug: string): Promise<Media | null> {
+        const rows = await this.db
+            .select()
+            .from(schema.medias)
+            .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
+            .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
+            .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
+            .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
+            .where(eq(schema.medias.slug, slug))
+            .limit(1);
+
+        if (rows.length === 0 || !rows[0]) return null;
+
+        return this.mapRowToEntity(rows[0]);
+    }
+
     async search(filters: MediaSearchFilters): Promise<Media[]> {
-        console.log('🔍 REPO: Exécution recherche (Entités)');
         const query = this.db
             .select()
             .from(schema.medias)
@@ -80,7 +81,6 @@ export class DrizzleMediaRepository implements IMediaRepository {
             .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
             .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
             .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
-            // Join tags if filtering by tag
             .leftJoin(schema.mediasToTags, eq(schema.medias.id, schema.mediasToTags.mediaId))
             .leftJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id));
 
@@ -102,12 +102,10 @@ export class DrizzleMediaRepository implements IMediaRepository {
             query.where(and(...conditions));
         }
 
-        // Order by latest
         query.orderBy(desc(schema.medias.createdAt));
 
         const rows = await query.execute();
 
-        // Deduplicate rows in memory (because joined tags create duplicates)
         const uniqueMediasMap = new Map<string, Media>();
         for (const row of rows) {
             if (!uniqueMediasMap.has(row.medias.id)) {
@@ -118,21 +116,16 @@ export class DrizzleMediaRepository implements IMediaRepository {
         return Array.from(uniqueMediasMap.values());
     }
 
-    async searchViews(filters: MediaSearchFilters): Promise<import('../../application/queries/search-media/media-read.dto').MediaReadDto[]> {
-        console.log('🔍 REPO: Exécution recherche (DTOs)');
+    async searchViews(filters: MediaSearchFilters): Promise<MediaReadDto[]> {
         const query = this.db
             .select({
                 id: schema.medias.id,
+                slug: schema.medias.slug,
                 title: schema.medias.title,
                 type: schema.medias.type,
                 rating: schema.medias.globalRating,
                 releaseYear: schema.medias.releaseDate,
-                // description: schema.medias.description, // Not in schema yet, assumed null
-                coverUrl: schema.medias.providerMetadata, // Extracting first image if possible, or null for now. Schema doesn't have direct coverUrl column? 
-                // Wait, Entity has coverUrl. Where does it come from? 
-                // In mapRowToEntity: "const coverUrl = createCoverUrl(null);" -> It seems coverUrl is effectively null in current implementation??
-                // Checking schema.medias definition might be useful.
-                // For now, returning null to match current behavior.
+                providerMetadata: schema.medias.providerMetadata,
             })
             .from(schema.medias)
             .leftJoin(schema.mediasToTags, eq(schema.medias.id, schema.mediasToTags.mediaId))
@@ -160,18 +153,24 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
         const rows = await query.execute();
 
-        // Raw aggregation to avoid duplication
-        const unique = new Map<string, import('../../application/queries/search-media/media-read.dto').MediaReadDto>();
+        const unique = new Map<string, MediaReadDto>();
         for (const row of rows) {
             if (!unique.has(row.id)) {
+                let coverUrl: string | null = null;
+                const metadata = row.providerMetadata as any;
+                if (metadata && metadata.coverUrl) {
+                    coverUrl = metadata.coverUrl;
+                }
+
                 unique.set(row.id, {
                     id: row.id,
+                    slug: row.slug,
                     title: row.title,
                     type: row.type.toLowerCase() as any,
                     rating: row.rating,
                     releaseYear: row.releaseYear ? row.releaseYear.getFullYear() : null,
-                    description: null, // Schema missing description
-                    coverUrl: null, // Schema missing coverUrl column
+                    description: null,
+                    coverUrl: coverUrl,
                     isImported: true
                 });
             }
@@ -179,80 +178,64 @@ export class DrizzleMediaRepository implements IMediaRepository {
         return Array.from(unique.values());
     }
 
-    async findMostRecent(limit: number): Promise<import('../../application/queries/search-media/media-read.dto').MediaReadDto[]> {
-        try {
-            // 1. Fetch recent medias
-            const rows = await this.db.select()
-                .from(schema.medias)
-                .orderBy(desc(schema.medias.createdAt))
-                .limit(limit);
+    async findMostRecent(limit: number): Promise<MediaReadDto[]> {
+        const rows = await this.db.select()
+            .from(schema.medias)
+            .orderBy(desc(schema.medias.createdAt))
+            .limit(limit);
 
-            if (rows.length === 0) return [];
+        if (rows.length === 0) return [];
 
-            // 2. Fetch tags for these medias
-            const mediaIds = rows.map(r => r.id);
-            const tagsRows = await this.db.select({
-                mediaId: schema.mediasToTags.mediaId,
-                tagSlug: schema.tags.slug,
-                tagLabel: schema.tags.label
-            })
-                .from(schema.mediasToTags)
-                .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
-                .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
+        const mediaIds = rows.map(r => r.id);
+        const tagsRows = await this.db.select({
+            mediaId: schema.mediasToTags.mediaId,
+            tagSlug: schema.tags.slug,
+            tagLabel: schema.tags.label
+        })
+            .from(schema.mediasToTags)
+            .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
+            .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
 
-            // 3. Map tags by Media ID
-            const tagsMap = new Map<string, string[]>();
-            for (const tagRow of tagsRows) {
-                if (!tagsMap.has(tagRow.mediaId)) {
-                    tagsMap.set(tagRow.mediaId, []);
+        const tagsMap = new Map<string, string[]>();
+        for (const tagRow of tagsRows) {
+            if (!tagsMap.has(tagRow.mediaId)) {
+                tagsMap.set(tagRow.mediaId, []);
+            }
+            tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
+        }
+
+        return rows.map(row => {
+            let coverUrl: string | null = null;
+            const metadata = row.providerMetadata as any;
+
+            if (metadata) {
+                if (metadata.coverUrl) {
+                    coverUrl = metadata.coverUrl;
+                } else if (metadata.poster_path) {
+                    const path = metadata.poster_path.startsWith('/') ? metadata.poster_path : `/${metadata.poster_path}`;
+                    coverUrl = `https://image.tmdb.org/t/p/original${path}`;
+                } else if (metadata.image_id) {
+                    coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
                 }
-                tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
             }
 
-            return rows.map(row => {
-                let coverUrl: string | null = null;
-                const metadata = row.providerMetadata as any;
-
-                if (metadata) {
-                    if (metadata.coverUrl) {
-                        coverUrl = metadata.coverUrl;
-                    } else if (metadata.poster_path) {
-                        const path = metadata.poster_path.startsWith('/') ? metadata.poster_path : `/${metadata.poster_path}`;
-                        coverUrl = `https://image.tmdb.org/t/p/original${path}`;
-                    } else if (metadata.image_id) {
-                        coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
-                    }
-                }
-
-                return {
-                    id: row.id,
-                    title: row.title,
-                    type: row.type.toLowerCase() as any,
-                    rating: row.globalRating,
-                    releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
-                    coverUrl: coverUrl,
-                    isImported: true,
-                    tags: tagsMap.get(row.id) || [] // New field
-                } as any;
-            });
-        } catch (e) {
-            console.error('🔥 REPO ERROR:', e);
-            throw e;
-        }
+            return {
+                id: row.id,
+                slug: row.slug,
+                title: row.title,
+                type: row.type.toLowerCase() as any,
+                rating: row.globalRating,
+                releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
+                coverUrl: coverUrl,
+                description: null,
+                isImported: true,
+                tags: tagsMap.get(row.id) || []
+            };
+        });
     }
 
-    /**
-     * Recherche un média via ses identifiants fournisseurs stockés en JSONB.
-     * Cette méthode traduit les concepts du domaine ('igdb', 'tmdb') vers
-     * les requêtes SQL spécifiques au schéma `providerMetadata`.
-     * 
-     * @param {string} provider - Nom du provider normalisé.
-     * @param {string} externalId - ID externe.
-     * @returns {Promise<Media | null>}
-     */
     async findByProviderId(provider: string, externalId: string): Promise<Media | null> {
         let condition;
-        // Mappage des concepts du Domaine (Provider) vers le schéma de persistence (JSONB)
         if (provider === 'igdb') {
             condition = and(
                 eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'IGDB'),
@@ -287,18 +270,10 @@ export class DrizzleMediaRepository implements IMediaRepository {
         return this.mapRowToEntity(rows[0]);
     }
 
-    /**
-     * Persiste (ou met à jour) un aggrégat Media complet.
-     * Gère la transaction pour sauvegarder dans `medias` et la table de sous-type correspondante.
-     * 
-     * @param {Media} media - L'entité à sauvegarder.
-     */
     async create(media: Media): Promise<void> {
         await this.db.transaction(async (tx) => {
-            // Map ReleaseYear VO to Date (approximate)
             const releaseDate = media.releaseYear ? new Date(media.releaseYear.getValue(), 0, 1) : null;
 
-            // Map ProviderMetadata and inject CoverURL
             let mediaTypeContext: 'movie' | 'tv' | undefined;
             if (media.type === MediaType.MOVIE) mediaTypeContext = 'movie';
             if (media.type === MediaType.TV) mediaTypeContext = 'tv';
@@ -308,7 +283,6 @@ export class DrizzleMediaRepository implements IMediaRepository {
                 mediaTypeContext
             );
 
-            // ✅ INJECTION DU COVER URL (Fix: Persistence manquante)
             if (media.coverUrl) {
                 providerMetadataRaw.coverUrl = media.coverUrl.getValue();
             }
@@ -316,14 +290,14 @@ export class DrizzleMediaRepository implements IMediaRepository {
             const mediaRow: typeof schema.medias.$inferInsert = {
                 id: media.id,
                 title: media.title,
-                type: media.type.toUpperCase() as any, // DB expects UPPERCASE enum
+                slug: media.slug,
+                type: media.type.toUpperCase() as any,
                 releaseDate: releaseDate,
                 globalRating: media.rating ? media.rating.getValue() : null,
                 providerMetadata: providerMetadataRaw,
                 createdAt: new Date(),
             };
 
-            // 1. Insert/Update medias table
             await tx
                 .insert(schema.medias)
                 .values(mediaRow)
@@ -331,14 +305,13 @@ export class DrizzleMediaRepository implements IMediaRepository {
                     target: schema.medias.id,
                     set: {
                         title: mediaRow.title,
+                        slug: mediaRow.slug,
                         releaseDate: mediaRow.releaseDate,
                         globalRating: mediaRow.globalRating,
-                        providerMetadata: mediaRow.providerMetadata, // Met à jour les métadonnées
+                        providerMetadata: mediaRow.providerMetadata,
                     },
                 });
-            // (Subtype insertion follows...)
 
-            // 2. Insert/Update into subtype table
             switch (media.type) {
                 case MediaType.GAME: {
                     if (media instanceof Game) {
@@ -421,6 +394,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     }): Media {
         const id = row.medias.id;
         const title = row.medias.title;
+        const slug = row.medias.slug;
         const description = null;
 
         // Use mapper to convert ProviderMetadata back to ExternalReference
@@ -437,7 +411,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
             externalReference = new ExternalReference('unknown', 'unknown');
         }
 
-        const coverUrl = createCoverUrl(null);
+        const coverUrl = createCoverUrl(metadata?.coverUrl || null);
         const rating = createRating(row.medias.globalRating);
         const releaseYear = createReleaseYear(row.medias.releaseDate);
 
@@ -445,7 +419,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
             case 'GAME':
                 if (!row.games) throw new Error(`Data integrity error: Media ${id} is TYPE GAME but has no games record.`);
                 return new Game(
-                    id, title, description, coverUrl, rating, releaseYear, externalReference,
+                    id, title, slug, description, coverUrl, rating, releaseYear, externalReference,
                     row.games.platform as string[],
                     row.games.developer,
                     row.games.timeToBeat
@@ -454,7 +428,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
             case 'MOVIE':
                 if (!row.movies) throw new Error(`Data integrity error: Media ${id} is TYPE MOVIE but has no movies record.`);
                 return new Movie(
-                    id, title, description, coverUrl, rating, releaseYear, externalReference,
+                    id, title, slug, description, coverUrl, rating, releaseYear, externalReference,
                     row.movies.director,
                     row.movies.durationMinutes
                 );
@@ -462,7 +436,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
             case 'TV':
                 if (!row.tv) throw new Error(`Data integrity error: Media ${id} is TYPE TV but has no tv record.`);
                 return new TV(
-                    id, title, description, coverUrl, rating, releaseYear, externalReference,
+                    id, title, slug, description, coverUrl, rating, releaseYear, externalReference,
                     row.tv.creator,
                     row.tv.episodesCount,
                     row.tv.seasonsCount
@@ -471,7 +445,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
             case 'BOOK':
                 if (!row.books) throw new Error(`Data integrity error: Media ${id} is TYPE BOOK but has no books record.`);
                 return new Book(
-                    id, title, description, coverUrl, rating, releaseYear, externalReference,
+                    id, title, slug, description, coverUrl, rating, releaseYear, externalReference,
                     row.books.author,
                     row.books.pages
                 );

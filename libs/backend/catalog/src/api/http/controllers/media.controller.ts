@@ -1,6 +1,8 @@
 import { SearchMediaHandler } from '../../../application/queries/search-media/search-media.handler';
 import { ImportMediaHandler } from '../../../application/commands/import-media/import-media.handler';
 import { GetRecentMediaHandler } from '../../../application/queries/get-recent-media/get-recent-media.handler';
+import { GetMediaByIdQuery } from '../../../application/queries/get-media-by-id/get-media-by-id.query';
+import { GetMediaByIdHandler } from '../../../application/queries/get-media-by-id/get-media-by-id.handler';
 import type { SearchMediaDto, ImportMediaDto } from '../dtos/media.dtos';
 import { MediaType } from '../../../domain/entities/media.entity';
 
@@ -11,9 +13,10 @@ import { MediaType } from '../../../domain/entities/media.entity';
  */
 export class MediaController {
     constructor(
-        private readonly searchHandler: SearchMediaHandler,
-        private readonly importHandler: ImportMediaHandler,
-        private readonly recentMediaHandler: GetRecentMediaHandler
+        private readonly searchMediaHandler: SearchMediaHandler,
+        private readonly importMediaHandler: ImportMediaHandler,
+        private readonly getRecentMediaHandler: GetRecentMediaHandler,
+        private readonly getMediaByIdHandler: GetMediaByIdHandler
     ) { }
 
     /**
@@ -24,7 +27,7 @@ export class MediaController {
         const { q, type, tag } = query;
         const mediaType = type as MediaType | undefined;
 
-        const medias = await this.searchHandler.execute({
+        const medias = await this.searchMediaHandler.execute({
             search: q,
             type: mediaType,
             tag
@@ -41,18 +44,26 @@ export class MediaController {
         const { mediaId, type } = body;
         console.log(`[MediaController] Received import request for ${type}/${mediaId}`);
 
-        await this.importHandler.execute({
+        const { id, slug } = await this.importMediaHandler.execute({
             mediaId,
             type: type as MediaType
         });
 
-        return { success: true, message: `Imported ${type}: ${mediaId}` };
+        return { success: true, message: `Imported ${type}: ${mediaId}`, id, slug };
     }
 
     /**
      * Récupère les médias récemment ajoutés.
      */
     async getRecent() {
-        return this.recentMediaHandler.execute({ limit: 10 });
+        return this.getRecentMediaHandler.execute({ limit: 10 });
+    }
+
+    /**
+     * Récupère un média par son identifiant.
+     * @param id UUID du média.
+     */
+    async getById(id: string) {
+        return this.getMediaByIdHandler.execute(new GetMediaByIdQuery(id));
     }
 }

@@ -17,6 +17,7 @@ export const mediaTypeEnum = pgEnum('media_type', [
 export const medias = pgTable('medias', {
     id: uuid('id').defaultRandom().primaryKey(),
     type: mediaTypeEnum('type').notNull(),
+    slug: text('slug').unique().notNull(),
     title: text('title').notNull(),
     releaseDate: timestamp('release_date', { mode: 'date' }),
     globalRating: real('global_rating'),

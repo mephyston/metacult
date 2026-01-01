@@ -4,6 +4,7 @@ import { IgdbProvider } from '../../infrastructure/providers/igdb.provider';
 import { TmdbProvider } from '../../infrastructure/providers/tmdb.provider';
 import { GoogleBooksProvider } from '../../infrastructure/providers/google-books.provider';
 import { IgdbAdapter, TmdbAdapter, GoogleBooksAdapter } from '../../infrastructure/adapters/media.adapters';
+import { GetMediaByIdHandler } from '../queries/get-media-by-id/get-media-by-id.handler';
 
 // ✅ Configuration injectée (pas d'accès direct à process.env)
 export interface CatalogModuleConfig {
@@ -114,6 +115,11 @@ export class CatalogModuleFactory {
         return new GetRecentMediaHandler(repository, redis);
     }
 
+    static createGetMediaByIdHandler(db: any, redis: any): GetMediaByIdHandler {
+        const repository = new DrizzleMediaRepository(db);
+        return new GetMediaByIdHandler(repository, redis);
+    }
+
     /**
      * Crée le Contrôleur HTTP (pour Elysia).
      * Assemble tous les Handlers.
@@ -127,9 +133,11 @@ export class CatalogModuleFactory {
         return new MediaController(
             this.createSearchMediaHandler(db, config, redis),
             this.createImportMediaHandler(db, config),
-            this.createGetRecentMediaHandler(db, redis)
+            this.createGetRecentMediaHandler(db, redis),
+            this.createGetMediaByIdHandler(db, redis)
         );
     }
+
 }
 import { MediaController } from '../../api/http/controllers/media.controller';
 import { SearchMediaHandler } from '../queries/search-media/search-media.handler';

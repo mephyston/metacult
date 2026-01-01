@@ -5,6 +5,7 @@
  */
 export interface MediaReadDto {
     id: string;
+    slug: string; // Added slug
     title: string;
     type: 'game' | 'movie' | 'tv' | 'book';
     coverUrl: string | null;

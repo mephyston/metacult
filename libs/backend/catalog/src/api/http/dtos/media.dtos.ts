@@ -44,6 +44,7 @@ export type ImportMediaDto = Static<typeof ImportMediaSchema>;
 export const SearchResultItemSchema = t.Object({
     id: t.String(),
     title: t.String(),
+    slug: t.Union([t.String(), t.Null()]), // Added slug
     year: t.Union([t.Number(), t.Null()]),
     poster: t.Union([t.String(), t.Null()]),
     type: MediaTypeEnum,
