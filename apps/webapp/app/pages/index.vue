@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ReviewDeck } from '@metacult/shared-ui';
+import { SwipeCard } from '@metacult/shared-ui';
+import { ref, computed } from 'vue';
 
 const items = [
     {
@@ -25,8 +26,17 @@ const items = [
     }
 ];
 
-function handleVote({ item, direction }: { item: { title: string }, direction: string }) {
-    console.log(`Voted ${direction} on ${item.title}`);
+const currentIndex = ref(0);
+const currentItem = computed(() => items[currentIndex.value]);
+
+function handleSwipe(payload: { action: string; sentiment?: string }) {
+    console.log(`Swiped on ${currentItem.value?.title}:`, payload);
+    // Move to next card
+    currentIndex.value += 1;
+}
+
+function resetDeck() {
+    currentIndex.value = 0;
 }
 </script>
 
@@ -36,7 +46,20 @@ function handleVote({ item, direction }: { item: { title: string }, direction: s
         <main class="flex-1 flex flex-col items-center justify-center p-4">
             <h1 class="text-2xl font-bold text-foreground mb-8 text-center">Your Daily Mix</h1>
 
-            <ReviewDeck :items="items" @vote="handleVote" />
+            <!-- Simple Deck Simulation for SwipeCard Demo -->
+            <div class="relative w-80 h-[28rem] flex items-center justify-center">
+                <div v-if="currentItem" class="absolute inset-0">
+                    <SwipeCard :media="{
+                        id: String(currentItem.id),
+                        title: currentItem.title,
+                        poster: currentItem.image
+                    }" @swipe="handleSwipe" />
+                </div>
+                <div v-else class="text-center text-muted-foreground">
+                    <p class="text-xl">All caught up!</p>
+                    <button @click="resetDeck" class="mt-4 text-primary hover:underline">Start Over</button>
+                </div>
+            </div>
         </main>
 
     </div>
