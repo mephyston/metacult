@@ -11,6 +11,8 @@
         ]
     },
     "deploy": {
-        "restartPolicyType": "ON_FAILURE"
+        "startCommand": "bun dist/server/entry.mjs",
+        "restartPolicyType": "ON_FAILURE",
+        "rootDirectory": "/"
     }
 }
