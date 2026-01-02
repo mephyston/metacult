@@ -111,8 +111,9 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     await expect(submitButton).toBeEnabled();
     
     // Déclencher l'événement submit manuellement (Vue @submit.prevent ne fonctionne pas avec requestSubmit)
+    const signupForm = page.locator('form[data-testid="signup-form"]');
     console.log('🖱️  Triggering Vue submit event...');
-    await signupForm.evaluate((form: HTMLFormElement) => {
+    await signupForm.evaluate((form) => {
       const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
       form.dispatchEvent(submitEvent);
     });
