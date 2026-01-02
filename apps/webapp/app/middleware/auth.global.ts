@@ -1,28 +1,31 @@
-/**
- * Auth Middleware - Nuxt 3
- * Protège les routes nécessitant une authentification
- */
-import { defineNuxtRouteMiddleware, navigateTo } from 'nuxt/app'
-import { useAuthSession } from '../composables/useAuthSession'
+import { defineNuxtRouteMiddleware, navigateTo } from 'nuxt/app';
+import { useAuthSession } from '../composables/useAuthSession';
 
 export default defineNuxtRouteMiddleware(async (to) => {
-    // Skip middleware for public routes
-    const publicRoutes = ['/', '/login', '/register']
-    if (publicRoutes.includes(to.path)) {
-        return
-    }
+  const { user, isLoading, refreshSession } = useAuthSession();
 
-    const { user, isLoading, refreshSession } = useAuthSession()
+  // Liste des routes publiques accessibles sans connexion
+  // On inclut /auth/callback pour les redirections OAuth
+  const publicRoutes = ['/login', '/register', '/auth/callback'];
 
-    // Rafraîchir la session si pas encore chargée
-    if (isLoading.value) {
-        await refreshSession()
-    }
+  // Vérifie si la route actuelle commence par une des routes publiques
+  const isPublicRoute = publicRoutes.some((route) => to.path.startsWith(route));
 
-    // Rediriger vers login si non authentifié
-    if (!user.value) {
-        return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`, {
-            redirectCode: 302
-        })
+  // Si la session est en chargement, on attend (ou on force un rafraîchissement si nécessaire)
+  if (isLoading.value) {
+    await refreshSession();
+  }
+
+  // 1. Protection : Redirection vers Login si non authentifié et sur une page privée
+  if (!user.value && !isPublicRoute) {
+    return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
+  }
+
+  // 2. Redirection UX : Si déjà connecté et tente d'aller sur Login/Register -> Dashboard
+  if (user.value && isPublicRoute) {
+    // On évite de rediriger /auth/callback car c'est une route technique
+    if (!to.path.startsWith('/auth/callback')) {
+      return navigateTo('/');
     }
-})
+  }
+});
