@@ -8,7 +8,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '../ui/dropdown-menu';
-import Navigation from './Navigation.vue';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from '../ui/navigation-menu';
+
 import { cn } from '../../lib/utils';
 import { authClient } from '../../lib/auth-client';
 
@@ -20,9 +29,13 @@ interface User {
 
 interface Props {
   user?: User | null;
+  context?: 'website' | 'app';
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  context: 'website',
+});
+
 const emit = defineEmits<{
   logout: [];
 }>();
@@ -31,20 +44,14 @@ const isOpen = ref(false);
 const sessionUser = ref<User | null>(null);
 const isLoadingSession = ref(true);
 
-// User actuel : priorité à la prop, sinon session locale
 const currentUser = computed(() => props.user ?? sessionUser.value);
-
 const isMounted = ref(false);
 
-// Fetch session au montage
 onMounted(async () => {
   isMounted.value = true;
   if (props.user === undefined) {
     try {
-      console.log('[Header] Fetching session...');
-      const { data, error } = await authClient.getSession();
-      console.log('[Header] Session result:', { data, error });
-
+      const { data } = await authClient.getSession();
       if (data?.user) {
         sessionUser.value = {
           name: data.user.name ?? undefined,
@@ -62,16 +69,15 @@ onMounted(async () => {
   }
 });
 
-// URLs pour l'authentification (webapp Nuxt)
 const webappUrl = import.meta.env.PUBLIC_WEBAPP_URL || 'http://localhost:4201';
 const loginUrl = `${webappUrl}/login`;
 const registerUrl = `${webappUrl}/register`;
+const appUrl = `${webappUrl}/`;
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value;
 };
 
-// Compute user initials for avatar fallback
 const userInitials = computed(() => {
   const user = currentUser.value;
   if (!user?.name) return 'U';
@@ -88,14 +94,8 @@ const handleLogout = async () => {
   } catch (error) {
     console.error('[Header] Logout failed:', error);
   } finally {
-    // 1. Clear local state
     sessionUser.value = null;
-
-    // 2. Notify parents
     emit('logout');
-
-    // 3. Remove hard hard redirection to allow parent to handle it
-    // window.location.href = loginUrl;
   }
 };
 </script>
@@ -117,10 +117,164 @@ const handleLogout = async () => {
             >
           </a>
 
-          <div class="hidden md:flex">
-            <slot name="nav">
-              <Navigation />
-            </slot>
+          <!-- Navigation (Website Only) -->
+          <div v-if="context === 'website'" class="hidden md:flex">
+            <NavigationMenu>
+              <NavigationMenuList>
+                <!-- Explorer Item -->
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Explorer</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul
+                      class="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]"
+                    >
+                      <li class="row-span-3">
+                        <NavigationMenuLink as-child>
+                          <a
+                            class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-6 no-underline outline-none focus:shadow-md"
+                            href="/trends"
+                          >
+                            <div class="mb-2 mt-4 text-3xl">🔥</div>
+                            <div class="mb-2 text-lg font-medium">
+                              Tendances
+                            </div>
+                            <p
+                              class="text-sm leading-tight text-muted-foreground"
+                            >
+                              Découvrez les jeux, films et séries qui font le
+                              buzz en ce moment (Top ELO).
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink as-child>
+                          <a
+                            href="/catalog?type=game"
+                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div class="text-sm font-medium leading-none">
+                              🎮 Jeux Vidéo
+                            </div>
+                            <p
+                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                            >
+                              Explorez notre collection de jeux culte.
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink as-child>
+                          <a
+                            href="/catalog?type=movie"
+                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div class="text-sm font-medium leading-none">
+                              🎬 Films & Séries
+                            </div>
+                            <p
+                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                            >
+                              Les grands classiques du cinéma.
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink as-child>
+                          <a
+                            href="/catalog?type=book"
+                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div class="text-sm font-medium leading-none">
+                              📚 Livres & BD
+                            </div>
+                            <p
+                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                            >
+                              Romans, mangas et comics.
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                <!-- Classements Item -->
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Classements</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul
+                      class="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]"
+                    >
+                      <li>
+                        <NavigationMenuLink as-child>
+                          <a
+                            href="/rankings/hall-of-fame"
+                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div class="text-sm font-medium leading-none">
+                              🏆 Hall of Fame
+                            </div>
+                            <p
+                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                            >
+                              Le classement ultime par ELO.
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink as-child>
+                          <a
+                            href="/rankings/hidden-gems"
+                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div class="text-sm font-medium leading-none">
+                              💎 Pépites Cachées
+                            </div>
+                            <p
+                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                            >
+                              D'excellentes notes mais peu de vues.
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink as-child>
+                          <a
+                            href="/rankings/controversial"
+                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div class="text-sm font-medium leading-none">
+                              📉 Les Controversés
+                            </div>
+                            <p
+                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                            >
+                              Ils divisent la communauté.
+                            </p>
+                          </a>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                <!-- À Propos Item -->
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    href="/about"
+                    :class="navigationMenuTriggerStyle()"
+                  >
+                    À Propos
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
         </div>
 
@@ -131,11 +285,27 @@ const handleLogout = async () => {
             <slot name="search" />
           </div>
 
-          <!-- Actions -->
+          <!-- Actions Slot -->
           <slot name="actions" />
 
-          <!-- User Menu (if authenticated) -->
+          <!-- AUTHENTICATED USER -->
           <div v-if="isMounted && currentUser" class="flex items-center gap-2">
+            <!-- WEBSITE CONTEXT: Show 'Open App' Button -->
+            <Button
+              v-if="context === 'website'"
+              variant="default"
+              as="a"
+              :href="appUrl"
+              class="hidden md:flex"
+            >
+              Ouvrir l'App
+            </Button>
+
+            <!-- APP CONTEXT: Show User Menu (Logout) -->
+            <!-- Or Website context: Show User Menu as well for consistency but maybe simpler? -->
+            <!-- Requirement says: "Website: Affiche Logo et NavigationMenu". "App: Affiche logo et deconnexion". -->
+            <!-- I will keep User Menu for both for consistency, but prioritize 'Open App' on Website -->
+
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
                 <button
@@ -161,6 +331,7 @@ const handleLogout = async () => {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" class="w-56">
+                <!-- User Info -->
                 <div class="flex items-center justify-start gap-2 p-2">
                   <div class="flex flex-col space-y-1 leading-none">
                     <p v-if="currentUser.name" class="font-medium">
@@ -175,6 +346,13 @@ const handleLogout = async () => {
                   </div>
                 </div>
                 <hr class="my-1 border-border" />
+
+                <DropdownMenuItem v-if="context === 'website'" as-child>
+                  <a :href="appUrl" class="cursor-pointer w-full font-medium"
+                    >Ouvrir l'App</a
+                  >
+                </DropdownMenuItem>
+
                 <DropdownMenuItem
                   class="cursor-pointer text-destructive focus:text-destructive"
                   @click="handleLogout"
@@ -185,20 +363,23 @@ const handleLogout = async () => {
             </DropdownMenu>
           </div>
 
-          <!-- Auth Buttons (if not authenticated) - Hidden on mobile -->
+          <!-- GUEST USER -->
           <div
             v-else-if="isMounted && !isLoadingSession"
             class="hidden md:flex items-center gap-2"
           >
-            <Button variant="ghost" size="sm" as="a" :href="loginUrl">
-              Connexion
-            </Button>
-            <Button variant="default" size="sm" as="a" :href="registerUrl">
-              Inscription
-            </Button>
+            <!-- Website Context: Login/Register -->
+            <template v-if="context === 'website'">
+              <Button variant="ghost" size="sm" as="a" :href="loginUrl">
+                Connexion
+              </Button>
+              <Button variant="default" size="sm" as="a" :href="registerUrl">
+                Inscription
+              </Button>
+            </template>
           </div>
 
-          <!-- Unified Theme Control (Toggle + Hover Switcher) -->
+          <!-- Unified Theme Control -->
           <ThemeToggle
             class="text-foreground hover:bg-accent hover:text-accent-foreground"
           />
@@ -227,17 +408,48 @@ const handleLogout = async () => {
       </div>
     </div>
 
-    <!-- Mobile Nav -->
+    <!-- Mobile Nav (simplified for now, logic roughly same) -->
     <div
       v-show="isOpen"
       class="md:hidden border-t border-border bg-background absolute w-full left-0 top-20 shadow-xl z-50"
     >
       <nav class="flex flex-col p-4 gap-4">
+        <!-- Replicate Website links for Mobile -->
+        <div v-if="context === 'website'" class="flex flex-col gap-2">
+          <h4 class="font-bold text-muted-foreground uppercase text-xs">
+            Explorer
+          </h4>
+          <a href="/trends" class="text-foreground py-2">🔥 Tendances</a>
+          <a href="/catalog?type=game" class="text-foreground py-2"
+            >🎮 Jeux Vidéo</a
+          >
+          <a href="/catalog?type=movie" class="text-foreground py-2"
+            >🎬 Films & Séries</a
+          >
+          <a href="/catalog?type=book" class="text-foreground py-2"
+            >📚 Livres & BD</a
+          >
+
+          <h4 class="font-bold text-muted-foreground uppercase text-xs mt-4">
+            Classements
+          </h4>
+          <a href="/rankings/hall-of-fame" class="text-foreground py-2"
+            >🏆 Hall of Fame</a
+          >
+          <a href="/rankings/hidden-gems" class="text-foreground py-2"
+            >💎 Pépites Cachées</a
+          >
+
+          <a href="/about" class="text-foreground py-2 font-medium mt-2"
+            >À Propos</a
+          >
+        </div>
+
         <slot name="mobile-nav" />
 
-        <!-- Auth buttons in mobile menu (if not authenticated) -->
+        <!-- Auth buttons in mobile menu -->
         <div
-          v-if="!currentUser && !isLoadingSession"
+          v-if="!currentUser && !isLoadingSession && context === 'website'"
           class="flex flex-col gap-2 pt-2 border-t border-border"
         >
           <Button
@@ -260,34 +472,20 @@ const handleLogout = async () => {
           </Button>
         </div>
 
-        <!-- User info in mobile menu (if authenticated) -->
         <div
           v-if="currentUser"
           class="flex flex-col gap-2 pt-2 border-t border-border"
         >
-          <div class="flex items-center gap-3 p-2">
-            <div
-              class="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden bg-primary text-primary-foreground"
-            >
-              <span v-if="!currentUser.avatar" class="text-sm font-semibold">
-                {{ userInitials }}
-              </span>
-              <img
-                v-else
-                :src="currentUser.avatar"
-                :alt="currentUser.name || 'User avatar'"
-                class="h-full w-full !rounded-full object-cover"
-              />
-            </div>
-            <div class="flex flex-col flex-1">
-              <p v-if="currentUser.name" class="font-medium text-sm">
-                {{ currentUser.name }}
-              </p>
-              <p v-if="currentUser.email" class="text-xs text-muted-foreground">
-                {{ currentUser.email }}
-              </p>
-            </div>
-          </div>
+          <Button
+            v-if="context === 'website'"
+            variant="default"
+            size="sm"
+            as="a"
+            :href="appUrl"
+            class="w-full justify-center"
+          >
+            Ouvrir l'App
+          </Button>
           <Button
             variant="destructive"
             size="sm"
@@ -302,6 +500,4 @@ const handleLogout = async () => {
   </header>
 </template>
 
-<style lang="postcss">
-/* Removed legacy nav styles in favor of Tailwind classes in NavigationMenu */
-</style>
+<style lang="postcss"></style>
