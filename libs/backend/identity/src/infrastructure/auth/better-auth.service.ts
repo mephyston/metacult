@@ -12,7 +12,7 @@ const { db } = getDbConnection();
  * En développement : `localhost`
  */
 const rootDomain = process.env['ROOT_DOMAIN'];
-const cookiePrefix = process.env['AUTH_COOKIE_PREFIX'] || 'metacult';
+const cookiePrefix = process.env['PUBLIC_AUTH_COOKIE_PREFIX'] || process.env['AUTH_COOKIE_PREFIX'] || 'metacult';
 
 /**
  * Configuration du service d'authentification (Better Auth).
