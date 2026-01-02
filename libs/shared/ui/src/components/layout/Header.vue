@@ -113,42 +113,44 @@ const handleLogout = async () => {
                     <slot name="actions" />
 
                     <!-- User Menu (if authenticated) -->
-                    <div v-if="currentUser" class="flex items-center gap-2">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger as-child>
-                                <button
-                                    class="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                    <span v-if="!currentUser.avatar" class="text-sm font-semibold">
-                                        {{ userInitials }}
-                                    </span>
-                                    <img v-else :src="currentUser.avatar" :alt="currentUser.name || 'User avatar'"
-                                        class="h-full w-full rounded-full object-cover" />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="w-56">
-                                <div class="flex items-center justify-start gap-2 p-2">
-                                    <div class="flex flex-col space-y-1 leading-none">
-                                        <p v-if="currentUser.name" class="font-medium">{{ currentUser.name }}</p>
-                                        <p v-if="currentUser.email" class="text-sm text-muted-foreground">{{ currentUser.email }}</p>
+                    <ClientOnly>
+                        <div v-if="currentUser" class="flex items-center gap-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger as-child>
+                                    <button
+                                        class="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                        <span v-if="!currentUser.avatar" class="text-sm font-semibold">
+                                            {{ userInitials }}
+                                        </span>
+                                        <img v-else :src="currentUser.avatar" :alt="currentUser.name || 'User avatar'"
+                                            class="h-full w-full rounded-full object-cover" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" class="w-56">
+                                    <div class="flex items-center justify-start gap-2 p-2">
+                                        <div class="flex flex-col space-y-1 leading-none">
+                                            <p v-if="currentUser.name" class="font-medium">{{ currentUser.name }}</p>
+                                            <p v-if="currentUser.email" class="text-sm text-muted-foreground">{{ currentUser.email }}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <hr class="my-1 border-border" />
-                                <DropdownMenuItem @click="handleLogout" class="cursor-pointer text-destructive focus:text-destructive">
-                                    Déconnexion
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-
-                    <!-- Auth Buttons (if not authenticated) - Hidden on mobile -->
-                    <div v-else-if="!isLoadingSession" class="hidden md:flex items-center gap-2">
-                        <Button variant="ghost" size="sm" as="a" :href="loginUrl">
-                            Connexion
-                        </Button>
-                        <Button variant="default" size="sm" as="a" :href="registerUrl">
-                            Inscription
-                        </Button>
-                    </div>
+                                    <hr class="my-1 border-border" />
+                                    <DropdownMenuItem @click="handleLogout" class="cursor-pointer text-destructive focus:text-destructive">
+                                        Déconnexion
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+    
+                        <!-- Auth Buttons (if not authenticated) - Hidden on mobile -->
+                        <div v-else-if="!isLoadingSession" class="hidden md:flex items-center gap-2">
+                            <Button variant="ghost" size="sm" as="a" :href="loginUrl">
+                                Connexion
+                            </Button>
+                            <Button variant="default" size="sm" as="a" :href="registerUrl">
+                                Inscription
+                            </Button>
+                        </div>
+                    </ClientOnly>
 
                     <!-- Unified Theme Control (Toggle + Hover Switcher) -->
                     <ThemeToggle class="text-foreground hover:bg-accent hover:text-accent-foreground" />

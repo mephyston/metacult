@@ -30,6 +30,7 @@ export default defineNuxtConfig({
     public: {
       // Utilise PUBLIC_API_URL (même variable qu'Astro)
       apiUrl: process.env.PUBLIC_API_URL || 'http://localhost:3000',
+      authCookiePrefix: process.env.PUBLIC_AUTH_COOKIE_PREFIX || 'metacult',
     },
   },
   typescript: {
