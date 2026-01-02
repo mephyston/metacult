@@ -21,31 +21,63 @@ const heroImageSizes =
 // Demo Games for SwipeDeck
 const demoGames = [
 	{
-		id: '1',
+		id: '11111111-1111-1111-1111-111111111111', // UUID valid required by backend
 		title: 'Elden Ring',
-		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg'
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg',
 	},
 	{
-		id: '2',
+		id: '22222222-2222-2222-2222-222222222222',
 		title: 'The Legend of Zelda: Tears of the Kingdom',
-		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5vmg.jpg'
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5vmg.jpg',
 	},
 	{
-		id: '3',
+		id: '33333333-3333-3333-3333-333333333333',
 		title: 'Hollow Knight',
-		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2ash.jpg'
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2ash.jpg',
 	},
 	{
-		id: '4',
+		id: '44444444-4444-4444-4444-444444444444',
 		title: 'Hades',
-		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2i0f.jpg'
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2i0f.jpg',
 	},
 	{
-		id: '5',
+		id: '55555555-5555-5555-5555-555555555555',
 		title: 'Cyberpunk 2077',
-		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co49x5.jpg'
-	}
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co49x5.jpg',
+	},
 ];
+
+// Fetch Real Media from Discovery API
+let interactions: any[] = [];
+try {
+	const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+	// Utilisation de fetch normal (Astro build context)
+	const response = await fetch(`${apiUrl}/api/discovery/feed`);
+	if (response.ok) {
+		const data = await response.json();
+		if (Array.isArray(data)) {
+			// Mapping MediaReadDto -> SwipeItem
+			interactions = data.slice(0, 5).map((item: any) => ({
+				id: item.data?.id || item.id,
+				title: item.data?.title || item.title,
+				image:
+					item.data?.coverUrl ||
+					item.coverUrl ||
+					'https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg', // Fallback
+				type: item.type,
+			}));
+		}
+	} else {
+		console.error('Failed to fetch discovery feed:', response.status);
+	}
+} catch (e) {
+	console.error('Error loading discovery feed:', e);
+}
+
+// Fallback to demo if API failed or empty
+if (interactions.length === 0) {
+	interactions = demoGames;
+}
 
 // Build-time Image Optimization
 const heroBg = await getImage({
@@ -55,6 +87,9 @@ const heroBg = await getImage({
 	format: 'avif',
 	quality: 85,
 });
+
+// App URL for redirection (Register/Login)
+const appUrl = import.meta.env.PUBLIC_WEBAPP_URL || 'http://localhost:4201';
 ---
 
 <Layout title="MetaCult - Le Radar Social">
@@ -66,9 +101,9 @@ const heroBg = await getImage({
 		heading={heroHeading}
 		description={heroDescription}
 		ctaText={heroCtaText}
-		ctaLink="/auth/register"
+		ctaLink={`${appUrl}/register`}
 		secondaryCtaText={heroSecondaryCtaText}
-		secondaryCtaLink="/auth/login"
+		secondaryCtaLink={`${appUrl}/login`}
 		image={heroBg.src}
 		imageSizes={heroImageSizes}
 		fetchpriority="high"
@@ -77,22 +112,13 @@ const heroBg = await getImage({
 		<!-- Slot pour remplacer la carte statique par SwipeDeck -->
 		<div slot="interactive-card" class="relative w-full max-w-sm mx-auto">
 			<!-- @ts-expect-error - Astro client directives are not part of component props -->
-			<SwipeDeck 
-				client:visible 
-				items={demoGames} 
+			<SwipeDeck
+				client:visible
+				items={interactions}
 				guestMode={true}
-			>
-				<div slot="empty" class="flex flex-col items-center justify-center h-full min-h-[520px] bg-card/50 backdrop-blur rounded-xl p-6 text-center border border-border">
-					<h3 class="text-xl font-bold mb-2">Pas mal ! 🎮</h3>
-					<p class="text-muted-foreground mb-4 text-sm">Crée ton compte pour sauvegarder ton profil.</p>
-					<a 
-						href="https://app.metacult.gg/register" 
-						class="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors inline-block"
-					>
-						C'est parti
-					</a>
-				</div>
-			</SwipeDeck>
+				signupUrl={`${appUrl}/register`}
+				loginUrl={`${appUrl}/login`}
+			/>
 		</div>
 	</Hero>
 </Layout>

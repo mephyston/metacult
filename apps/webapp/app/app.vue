@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import { Header, Footer, Search } from '@metacult/shared-ui';
 import { useAuthSession } from './composables/useAuthSession';
+import { useGuestSync } from './composables/useGuestSync';
 
 const { user, clearSession } = useAuthSession();
+const { initSync } = useGuestSync();
+
+// Initialisation de la synchro invité (vérifie l'URL)
+initSync();
 
 // Gérer le logout depuis le Header
-const handleLogout = () => {
-    clearSession();
+const handleLogout = async () => {
+  clearSession();
+
+  // Force clean state by redirecting to Marketing Home
+  // This is better for UX (Start Over)
+  const websiteUrl = import.meta.env.PUBLIC_WEBSITE_URL || 'http://localhost:4444'; // Fallback dev port
+  window.location.href = websiteUrl;
 };
 </script>
 

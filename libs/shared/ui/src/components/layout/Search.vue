@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useMagicKeys, useDebounceFn } from '@vueuse/core';
 import {
   Search as SearchIcon,
@@ -62,14 +62,19 @@ watch(query, () => {
   }
 });
 
-const { Meta_K, Ctrl_K } = useMagicKeys({
-  passive: false,
-  onEventFired(e) {
-    if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      open.value = !open.value;
-    }
-  },
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    open.value = !open.value;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
 });
 
 function handleOpen() {

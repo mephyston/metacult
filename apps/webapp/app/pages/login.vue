@@ -7,8 +7,12 @@ import { Input } from '@metacult/shared-ui';
 import { Label } from '@metacult/shared-ui';
 import { Button } from '@metacult/shared-ui';
 
+import { useGuestSync } from '../composables/useGuestSync';
+import { useAuthSession } from '../composables/useAuthSession';
+
 const router = useRouter();
 const { refreshSession } = useAuthSession();
+const { flushSync } = useGuestSync();
 
 const email = ref('');
 const password = ref('');
@@ -32,7 +36,10 @@ const handleSubmit = async () => {
 
     // Rafraîchir la session dans le state global
     await refreshSession();
-    
+
+    // Synchroniser les swipes en attente s'il y en a
+    await flushSync();
+
     // Navigation SPA (pas de reload)
     router.push('/');
   } catch (err: any) {
@@ -56,25 +63,13 @@ const handleSubmit = async () => {
         <form @submit.prevent="handleSubmit" class="space-y-4">
           <div class="space-y-2">
             <Label for="email">Email</Label>
-            <Input
-              id="email"
-              v-model="email"
-              type="email"
-              placeholder="vous@exemple.com"
-              required
-              :disabled="loading"
-            />
+            <Input id="email" v-model="email" type="email" placeholder="vous@exemple.com" required
+              :disabled="loading" />
           </div>
           <div class="space-y-2">
             <Label for="password">Mot de passe</Label>
-            <Input
-              id="password"
-              v-model="password"
-              type="password"
-              placeholder="••••••••"
-              required
-              :disabled="loading"
-            />
+            <Input id="password" v-model="password" type="password" placeholder="••••••••" required
+              :disabled="loading" />
           </div>
           <div v-if="error" class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
             {{ error }}

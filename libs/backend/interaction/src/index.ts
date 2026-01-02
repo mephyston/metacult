@@ -8,3 +8,6 @@ export * from './application/ports/interaction.repository.interface';
 export * from './infrastructure/db/interactions.schema';
 export * from './infrastructure/repositories/drizzle-interaction.repository';
 
+
+// API
+export * from './api/http/controllers/interaction.controller';

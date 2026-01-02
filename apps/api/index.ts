@@ -4,6 +4,7 @@ import { swagger } from '@elysiajs/swagger';
 import { createCatalogRoutes, CatalogModuleFactory, mediaSchema, type CatalogModuleConfig } from '@metacult/backend/catalog';
 import { createDiscoveryRoutes, FeedController, GetMixedFeedHandler } from '@metacult/backend/discovery';
 import { createAuthRoutes } from '@metacult/backend-identity';
+import { interactionController as interactionRoutes } from '@metacult/backend/interaction';
 import { importRoutes } from './src/routes/import.routes';
 import { debugRoutes } from './src/routes/debug.routes';
 import { getDbConnection, redisClient, requestContext, patchConsole } from '@metacult/backend/infrastructure';
@@ -23,8 +24,8 @@ await runMigrations();
 
 // Initialisation de la BDD (Composition Root)
 // Fusion des schémas pour garantir que le client DB satisfait tous les modules
-import * as interactionSchema from 'interaction';
-const fullSchema = { ...infraSchema, ...mediaSchema, ...interactionSchema };
+import { userInteractions, actionEnum, sentimentEnum } from '@metacult/backend/interaction';
+const fullSchema = { ...infraSchema, ...mediaSchema, userInteractions, actionEnum, sentimentEnum };
 // Initialisation du Singleton
 const { db } = getDbConnection(fullSchema);
 
@@ -75,7 +76,7 @@ if (!catalogConfig.googleBooks.apiKey) {
 // ✅ Injection de la configuration dans la Factory (Principe Clean Architecture)
 // Injection de redisClient pour le caching
 const catalogController = CatalogModuleFactory.createController(db, catalogConfig, redisClient);
-const catalogRoutesRouter = createCatalogRoutes(catalogController);
+const catalogRoutes = createCatalogRoutes(catalogController);
 
 // Discovery a besoin de `SearchMediaHandler`.
 const searchHandler = CatalogModuleFactory.createSearchMediaHandler(db, catalogConfig, redisClient);
@@ -134,7 +135,11 @@ initCrons().catch(console.error);
 
 const app = new Elysia()
   .use(swagger())
-  .use(cors())
+  .use(cors({
+    origin: true, // Allow all origins in dev, or specify ['http://localhost:5173', 'http://localhost:4200']
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-request-id'],
+  }))
   .onRequest(({ request, set }) => {
     // Ensure response has the ID (retrieved from ALS or Header)
     const requestId = requestContext.getRequestId() || request.headers.get('x-request-id');
@@ -150,9 +155,9 @@ const app = new Elysia()
   .group('/api', (app) => app
     .group('/import', (app) => app.use(importRoutes))
     .use(debugRoutes)
-    .get('/debug/ping', () => 'pong')
-    .use(catalogRoutesRouter)
+    .use(catalogRoutes)
     .use(discoveryRoutes)
+    .use(interactionRoutes)
   );
 
 const port = Number(process.env.PORT) || 3000;

@@ -20,6 +20,7 @@
 // --- API Layer (Routes & Middleware) ---
 export { createAuthRoutes } from './api/auth.routes';
 export { isAuthenticated, type AuthenticatedContext, type ProtectedRoute } from './api/middleware/auth.middleware';
+export { resolveUserOrThrow } from './api/helpers/auth.helper';
 
 // --- Infrastructure Layer (Better Auth & Schemas) ---
 export { auth, type AuthClient } from './infrastructure/auth/better-auth.service';

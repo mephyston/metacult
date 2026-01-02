@@ -44,11 +44,18 @@ export interface AuthenticatedContext {
  * @see https://better-auth.com/docs/concepts/sessions
  */
 export const isAuthenticated = new Elysia({ name: 'auth-guard' })
-    .derive(async ({ headers }) => {
+    .derive(async ({ headers, request }) => {
+        const cookie = request.headers.get('cookie');
+        console.log('[AuthGuard] Request URL:', request.url);
+        console.log('[AuthGuard] Origin:', request.headers.get('origin'));
+        console.log('[AuthGuard] Cookie length:', cookie ? cookie.length : 0);
+
         // Récupère la session depuis les headers (Cookie ou Authorization Bearer)
         const sessionData = await auth.api.getSession({
             headers: headers as HeadersInit
         });
+
+        console.log('[AuthGuard] Session found:', !!sessionData?.user);
 
         // Injecte user et session dans le contexte (ou null si pas authentifié)
         return {

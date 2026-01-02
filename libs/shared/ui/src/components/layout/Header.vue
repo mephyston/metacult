@@ -80,9 +80,17 @@ const userInitials = computed(() => {
 const handleLogout = async () => {
     try {
         await authClient.signOut();
-        emit('logout');
     } catch (error) {
         console.error('[Header] Logout failed:', error);
+    } finally {
+        // 1. Clear local state
+        sessionUser.value = null;
+
+        // 2. Notify parents
+        emit('logout');
+
+        // 3. Remove hard hard redirection to allow parent to handle it
+        // window.location.href = loginUrl;
     }
 };
 </script>
@@ -122,13 +130,16 @@ const handleLogout = async () => {
                     <div v-if="isMounted && currentUser" class="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <button style="background-color: var(--primary); color: var(--primary-foreground)"
-                                    class="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                    <span v-if="!currentUser.avatar" class="text-sm font-semibold">
-                                        {{ userInitials }}
-                                    </span>
-                                    <img v-else :src="currentUser.avatar" :alt="currentUser.name || 'User avatar'"
-                                        class="h-full w-full rounded-full object-cover" />
+                                <button type="button"
+                                    class="relative flex h-9 w-9 shrink-0 items-center justify-center !rounded-full overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors !p-[2px]">
+                                    <div
+                                        class="h-full w-full flex items-center justify-center bg-primary text-primary-foreground !rounded-full overflow-hidden">
+                                        <span v-if="!currentUser.avatar" class="text-sm font-semibold">
+                                            {{ userInitials }}
+                                        </span>
+                                        <img v-else :src="currentUser.avatar" :alt="currentUser.name || 'User avatar'"
+                                            class="h-full w-full object-cover !rounded-full" />
+                                    </div>
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" class="w-56">
@@ -193,12 +204,12 @@ const handleLogout = async () => {
                 <div v-if="currentUser" class="flex flex-col gap-2 pt-2 border-t border-border">
                     <div class="flex items-center gap-3 p-2">
                         <div
-                            class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                            class="flex h-10 w-10 items-center justify-center rounded-full overflow-hidden bg-primary text-primary-foreground">
                             <span v-if="!currentUser.avatar" class="text-sm font-semibold">
                                 {{ userInitials }}
                             </span>
                             <img v-else :src="currentUser.avatar" :alt="currentUser.name || 'User avatar'"
-                                class="h-full w-full rounded-full object-cover" />
+                                class="h-full w-full !rounded-full object-cover" />
                         </div>
                         <div class="flex flex-col flex-1">
                             <p v-if="currentUser.name" class="font-medium text-sm">{{ currentUser.name }}</p>

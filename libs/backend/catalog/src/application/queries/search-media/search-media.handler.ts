@@ -26,7 +26,14 @@ export class SearchMediaHandler {
      */
     async execute(query: SearchMediaQuery): Promise<GroupedSearchResponseDto> {
         const searchTerm = query.search?.trim();
-        if (!searchTerm || searchTerm.length < 3) {
+
+        // FEATURE: If search is empty, return "Discovery" feed (Most Recent)
+        if (!searchTerm) {
+            const recent = await this.mediaRepository.findMostRecent(20);
+            return this.mapLocalToGrouped(recent);
+        }
+
+        if (searchTerm.length < 3) {
             return this.emptyResponse();
         }
 
