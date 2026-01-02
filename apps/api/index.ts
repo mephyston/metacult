@@ -16,14 +16,9 @@ import { GetActiveAdsHandler, GetActiveAdsQuery } from '@metacult/backend/market
 // Apply logging patch
 patchConsole();
 
-// Import migration script programmatically
-// This ensures migrations run even if start.sh is bypassed (e.g. Railway default cmd)
-import { runMigrations } from '@metacult/backend/infrastructure';
+// Migrations are now handled via Init Service or Start Command (migrate-prod.ts)
+// See apps/api/railway.json
 
-// Safe migration runner (Non-blocking to allow Healthcheck to pass)
-runMigrations()
-  .then(() => console.log('✅ Migrations executed successfully'))
-  .catch((error) => console.error('❌ Failed to run migrations:', error));
 
 // Initialisation de la BDD (Composition Root)
 // Fusion des schémas pour garantir que le client DB satisfait tous les modules
