@@ -16,16 +16,20 @@ async function runSafeMigrations() {
     const migrationsFolder = process.env.MIGRATIONS_FOLDER || path.resolve(__dirname, '../../../drizzle');
 
     console.log(`📂 Migrations Folder: ${migrationsFolder}`);
-    console.log(`Checking DATABASE_URL: ${process.env.DATABASE_URL ? 'Defined' : 'UNDEFINED'}`);
+
+    // Masked URL debug
+    const dbUrl = process.env.DATABASE_URL || '';
+    const maskedUrl = dbUrl.replace(/:([^:@]+)@/, ':****@');
+    console.log(`Checking DATABASE_URL: ${maskedUrl}`);
 
     for (let i = 1; i <= MAX_RETRIES; i++) {
         try {
             console.log(`🔌 [Step 1] Getting DB Connection (Try ${i})...`);
-            const { db } = getDbConnection();
+            const { db, pool } = getDbConnection();
 
-            console.log('📡 [Step 2] Pinging DB (SELECT 1)...');
-            // 1. Connection check
-            await db.execute('SELECT 1');
+            console.log('📡 [Step 2] Pinging DB directly via Pool (SELECT 1)...');
+            // Use pool directly to get raw error from pg
+            await pool.query('SELECT 1');
             console.log('✅ [Step 2] DB is reachable.');
 
             console.log(`🔒 [Step 3] Acquiring Advisory Lock (ID: ${LOCK_ID})...`);
@@ -45,9 +49,12 @@ async function runSafeMigrations() {
             console.log('✅ Migrations terminées avec succès (Verrou relâché).');
             process.exit(0);
 
-        } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
-            console.error(`❌ Erreur (Tentative ${i}/${MAX_RETRIES}) :`, message);
+        } catch (error: any) {
+            console.error(`❌ Erreur (Tentative ${i}/${MAX_RETRIES})`, error);
+            // Log specific PG error properties if present
+            if (error.code) console.error(`   -> Code: ${error.code}`);
+            if (error.address) console.error(`   -> Address: ${error.address}`);
+            if (error.port) console.error(`   -> Port: ${error.port}`);
 
             if (i < MAX_RETRIES) {
                 await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
