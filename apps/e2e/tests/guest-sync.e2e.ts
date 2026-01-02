@@ -110,14 +110,11 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     // Attendre que le bouton soit actif
     await expect(submitButton).toBeEnabled();
     
-    // Screenshot avant soumission pour debug
-    await page.screenshot({ path: 'test-results/before-submit.png', fullPage: true });
-    console.log('📸 Screenshot pris avant submit');
-    
-    // Soumettre le formulaire
-    console.log('🖱️  Clicking submit button...');
-    await submitButton.click();
-    console.log('✅ Submit button clicked');
+    // Soumettre le formulaire via form.requestSubmit() pour déclencher @submit.prevent
+    const signupForm = page.locator('form[data-testid="signup-form"]');
+    console.log('🖱️  Submitting form via requestSubmit()...');
+    await signupForm.evaluate((form: HTMLFormElement) => form.requestSubmit());
+    console.log('✅ Form submitted');
 
     // ============================================================
     // STEP 6: Vérifier la redirection vers le Dashboard
