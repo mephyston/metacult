@@ -110,6 +110,10 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     // Attendre que le bouton soit actif
     await expect(submitButton).toBeEnabled();
     
+    // Attendre que Vue soit complètement hydraté (important pour les SPAs)
+    await page.waitForTimeout(2000);
+    console.log('⏳ Waited for Vue hydration');
+    
     // Cliquer sur le bouton et attendre la navigation
     console.log('🖱️  Clicking submit button and waiting for navigation...');
     await Promise.all([
