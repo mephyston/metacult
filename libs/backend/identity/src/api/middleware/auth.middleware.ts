@@ -44,38 +44,28 @@ export interface AuthenticatedContext {
  * @see https://better-auth.com/docs/concepts/sessions
  */
 export const isAuthenticated = new Elysia({ name: 'auth-guard' })
-    .derive(async ({ headers, set }) => {
-        try {
-            // Récupère la session depuis les headers (Cookie ou Authorization Bearer)
-            const sessionData = await auth.api.getSession({
-                headers: headers as HeadersInit
-            });
+    .derive(async ({ headers }) => {
+        // Récupère la session depuis les headers (Cookie ou Authorization Bearer)
+        const sessionData = await auth.api.getSession({
+            headers: headers as HeadersInit
+        });
 
-            // Si pas de session valide, retourne 401
-            if (!sessionData?.user || !sessionData?.session) {
-                set.status = 401;
-                return {
-                    error: 'Unauthorized',
-                    message: 'Valid authentication required'
-                };
-            }
-
-            // Injecte user et session dans le contexte
-            return {
-                user: sessionData.user,
-                session: sessionData.session
-            } as AuthenticatedContext;
-
-        } catch (error) {
-            console.error('[Auth Middleware] Error:', error);
+        // Injecte user et session dans le contexte (ou null si pas authentifié)
+        return {
+            user: sessionData?.user || null,
+            session: sessionData?.session || null
+        };
+    })
+    .onBeforeHandle(({ user, session, set }): void | { error: string; message: string } => {
+        // Vérifie que l'utilisateur est bien authentifié
+        if (!user || !session) {
             set.status = 401;
             return {
                 error: 'Unauthorized',
-                message: 'Authentication verification failed'
+                message: 'Valid authentication required'
             };
         }
-    })
-    .as('plugin');
+    });
 
 /**
  * Type helper pour les routes protégées.
