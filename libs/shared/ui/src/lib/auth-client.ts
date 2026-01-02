@@ -8,7 +8,15 @@ import { createAuthClient } from 'better-auth/vue';
 
 // Récupération de l'URL API depuis PUBLIC_API_URL (convention unifiée)
 // Utilisé par Astro et Nuxt
-const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+const getApiUrl = () => {
+    let url = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+    if (!url.startsWith('http')) {
+        url = `https://${url}`;
+    }
+    return url;
+}
+
+const apiUrl = getApiUrl();
 
 export const authClient = createAuthClient({
     baseURL: `${apiUrl}/api/auth`,
