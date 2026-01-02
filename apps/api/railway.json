@@ -14,7 +14,6 @@
     "deploy": {
         "startCommand": "bun apps/api/index.ts",
         "healthcheckPath": "/health",
-        "restartPolicyType": "ON_FAILURE",
-        "root": "/"
+        "restartPolicyType": "ON_FAILURE"
     }
 }

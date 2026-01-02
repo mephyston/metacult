@@ -12,7 +12,6 @@
     },
     "deploy": {
         "startCommand": "bun apps/worker/src/index.ts",
-        "restartPolicyType": "ON_FAILURE",
-        "root": "/"
+        "restartPolicyType": "ON_FAILURE"
     }
 }
