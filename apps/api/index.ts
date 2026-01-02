@@ -180,7 +180,7 @@ const wrappedFetch = function (request: Request) {
 
 const server = Bun.serve({
   port,
-  hostname: '::', // Bind to IPv6 ([::]) to listen on both IPv4 and IPv6 (Railway Private Net)
+  hostname: '0.0.0.0', // Bind to 0.0.0.0 for IPv4 compatibility (Railway/Docker)
   fetch: wrappedFetch
 });
 
