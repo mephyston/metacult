@@ -1,24 +1,56 @@
-import type { Context } from 'elysia';
+/* eslint-disable */
+import { Elysia } from 'elysia';
 import { GetMixedFeedHandler } from '../../../application/queries/get-mixed-feed/get-mixed-feed.handler';
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import type { IInteractionRepository } from '@metacult/backend/interaction';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { isAuthenticated } from '@metacult/backend-identity';
 
 /**
  * Contrôleur HTTP pour le flux de découverte (Feed).
  * Expose les endpoints liés à l'exploration du catalogue (Mixed Feed).
  */
 export class FeedController {
-  constructor(private readonly getMixedFeedHandler: GetMixedFeedHandler) { }
+  constructor(
+    private readonly getMixedFeedHandler: GetMixedFeedHandler,
+    private readonly interactionRepository: IInteractionRepository
+  ) { }
 
   /**
-   * Récupère un flux mélangé de contenus (Jeux, Films, etc.).
-   * 
-   * @param {Object} params - Paramètres de requête.
-   * @param {string} [params.q] - Terme de recherche optionnel.
-   * @returns {Promise<MediaReadDto[]>} Liste de médias.
+   * Routes definition to be mounted by Elysia
    */
-  async getMixedFeed(params: { q?: string }) {
-    const searchTerm = params.q || '';
-    const feed = await this.getMixedFeedHandler.execute(new GetMixedFeedQuery(searchTerm));
-    return feed;
+  public routes() {
+    return new Elysia({ prefix: '/feed' })
+      .use(isAuthenticated) // Adds user to context (optional or required depending on config, here we handle both)
+      .get('/', async (context) => {
+        const { user, query } = context as any; // Type assertion needed for user
+        const searchTerm = query?.q || '';
+        const userId = user?.id;
+
+        let excludedMediaIds: string[] = [];
+        let limit = 5; // Default (Guest)
+
+        if (userId) {
+          // User logic
+          try {
+            excludedMediaIds = await this.interactionRepository.getSwipedMediaIds(userId);
+          } catch (e) {
+            console.error('[FeedController] Failed to fetch blacklist:', e);
+          }
+          limit = 10;
+        }
+
+        // Create Query with Context
+        const feedQuery = new GetMixedFeedQuery(
+          searchTerm,
+          userId,
+          excludedMediaIds,
+          limit
+        );
+
+        const feed = await this.getMixedFeedHandler.execute(feedQuery);
+        return feed;
+      });
   }
 }

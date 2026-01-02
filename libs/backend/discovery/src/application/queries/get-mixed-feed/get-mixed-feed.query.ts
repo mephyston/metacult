@@ -8,5 +8,10 @@ export class GetMixedFeedQuery {
     /**
      * @param {string} search - Terme de recherche ou contexte pour générer le flux.
      */
-    constructor(public readonly search: string) { }
+    constructor(
+        public readonly search: string,
+        public readonly userId?: string,
+        public readonly excludedMediaIds?: string[],
+        public readonly limit: number = 10
+    ) { }
 }

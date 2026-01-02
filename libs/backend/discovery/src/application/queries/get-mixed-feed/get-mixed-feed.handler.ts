@@ -39,20 +39,34 @@ export class GetMixedFeedHandler {
      */
     async execute(query: GetMixedFeedQuery): Promise<MixedFeedItem[]> {
         const normalizedSearch = query.search.trim().toLowerCase();
+        // Le cache key doit inclure les exclusions si on veut vraiment cacher... 
+        // MAIS le cache est surtout utile pour le feed générique.
+        // Si on fait du user-specific (exclusion), le cache global devient gênant ou doit être ignoré/prefixé user.
+        // Pour l'instant, si userId est présent (feed personnalisé), on BYPASS le cache global de feed (ou on utilise un cache user).
+        // Stratégie simple: Cache Off si User context.
+
+        let shouldCache = !query.userId && (!query.excludedMediaIds || query.excludedMediaIds.length === 0);
         const cacheKey = `discovery:feed:${normalizedSearch}`;
 
-        // 1. Check Redis Cache
-        const cached = await this.redis.get(cacheKey);
-        if (cached) {
-            console.log(`[MixedFeed] Cache Hit pour "${query.search}"`);
-            return JSON.parse(cached);
+        // 1. Check Redis Cache (Only for public generic feeds)
+        if (shouldCache) {
+            const cached = await this.redis.get(cacheKey);
+            if (cached) {
+                console.log(`[MixedFeed] Cache Hit pour "${query.search}"`);
+                return JSON.parse(cached);
+            }
         }
 
-        console.log(`[MixedFeed] Cache Miss pour "${query.search}" - Fetching dependencies...`);
+        console.log(`[MixedFeed] Cache Miss/User Context pour "${query.search}" - Fetching dependencies...`);
 
         // 2. Fetch Dependencies (Resilient)
         const results = await Promise.allSettled([
-            this.mediaSearcher.search(query.search),
+            this.mediaSearcher.search(query.search, {
+                excludedIds: query.excludedMediaIds,
+                limit: query.limit,
+                // Si pas de recherche textuelle, on veut explicitement du Random
+                orderBy: !normalizedSearch ? 'random' : undefined
+            }),
             this.adsProvider.getAds()
         ]);
 
@@ -86,9 +100,11 @@ export class GetMixedFeedHandler {
             }
         }
 
-        // 4. Set Cache (TTL 1h)
-        await this.redis.set(cacheKey, JSON.stringify(mixedFeed), 'EX', 3600);
-        console.log(`[MixedFeed] Cached ${mixedFeed.length} items`);
+        // 4. Set Cache (TTL 1h) - Only for public generic feeds
+        if (shouldCache) {
+            await this.redis.set(cacheKey, JSON.stringify(mixedFeed), 'EX', 3600);
+            console.log(`[MixedFeed] Cached ${mixedFeed.length} items`);
+        }
 
         return mixedFeed;
     }

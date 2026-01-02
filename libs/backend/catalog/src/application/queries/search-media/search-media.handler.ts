@@ -27,6 +27,16 @@ export class SearchMediaHandler {
     async execute(query: SearchMediaQuery): Promise<GroupedSearchResponseDto> {
         const searchTerm = query.search?.trim();
 
+        // FEATURE: Random Feed support
+        if (query.orderBy === 'random') {
+            return this.mapLocalToGrouped(
+                await this.mediaRepository.findRandom({
+                    excludedIds: query.excludedIds,
+                    limit: query.limit ?? 10
+                })
+            );
+        }
+
         // FEATURE: If search is empty, return "Discovery" feed (Most Recent)
         if (!searchTerm) {
             const recent = await this.mediaRepository.findMostRecent(20);

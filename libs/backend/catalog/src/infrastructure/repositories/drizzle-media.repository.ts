@@ -1,4 +1,4 @@
-import { eq, ilike, and, desc, sql } from 'drizzle-orm';
+import { eq, ilike, and, desc, sql, notInArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { IMediaRepository, MediaSearchFilters } from '../../application/ports/media.repository.interface';
 import { MediaType, Media, Game, Movie, TV, Book } from '../../domain/entities/media.entity';
@@ -149,7 +149,20 @@ export class DrizzleMediaRepository implements IMediaRepository {
             query.where(and(...conditions));
         }
 
-        query.orderBy(desc(schema.medias.createdAt));
+        if (filters.excludedIds && filters.excludedIds.length > 0) {
+            query.where(notInArray(schema.medias.id, filters.excludedIds));
+        }
+
+        if (filters.orderBy === 'random') {
+            query.orderBy(sql`RANDOM()`);
+        } else {
+            // Default to Recent
+            query.orderBy(desc(schema.medias.createdAt));
+        }
+
+        if (filters.limit) {
+            query.limit(filters.limit);
+        }
 
         const rows = await query.execute();
 
@@ -187,6 +200,73 @@ export class DrizzleMediaRepository implements IMediaRepository {
         if (rows.length === 0) return [];
 
         const mediaIds = rows.map(r => r.id);
+        const tagsRows = await this.db.select({
+            mediaId: schema.mediasToTags.mediaId,
+            tagSlug: schema.tags.slug,
+            tagLabel: schema.tags.label
+        })
+            .from(schema.mediasToTags)
+            .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
+            .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
+
+        const tagsMap = new Map<string, string[]>();
+        for (const tagRow of tagsRows) {
+            if (!tagsMap.has(tagRow.mediaId)) {
+                tagsMap.set(tagRow.mediaId, []);
+            }
+            tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
+        }
+
+        return rows.map(row => {
+            let coverUrl: string | null = null;
+            const metadata = row.providerMetadata as any;
+
+            if (metadata) {
+                if (metadata.coverUrl) {
+                    coverUrl = metadata.coverUrl;
+                } else if (metadata.poster_path) {
+                    const path = metadata.poster_path.startsWith('/') ? metadata.poster_path : `/${metadata.poster_path}`;
+                    coverUrl = `https://image.tmdb.org/t/p/original${path}`;
+                } else if (metadata.image_id) {
+                    coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
+                }
+            }
+
+            return {
+                id: row.id,
+                slug: row.slug,
+                title: row.title,
+                type: row.type.toLowerCase() as any,
+                rating: row.globalRating,
+                releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
+                coverUrl: coverUrl,
+                description: null,
+                isImported: true,
+                tags: tagsMap.get(row.id) || []
+            };
+        });
+    }
+
+    async findRandom(filters: MediaSearchFilters): Promise<MediaReadDto[]> {
+        const query = this.db.select()
+            .from(schema.medias)
+            .orderBy(sql`RANDOM()`);
+
+        if (filters.excludedIds && filters.excludedIds.length > 0) {
+            query.where(notInArray(schema.medias.id, filters.excludedIds));
+        }
+
+        if (filters.limit) {
+            query.limit(filters.limit);
+        }
+
+        const rows = await query.execute();
+
+        if (rows.length === 0) return [];
+
+        const mediaIds = rows.map(r => r.id);
+
+        // Fetch Tags separately to avoid JOIN limit issues
         const tagsRows = await this.db.select({
             mediaId: schema.mediasToTags.mediaId,
             tagSlug: schema.tags.slug,

@@ -22,6 +22,8 @@ export const medias = pgTable('medias', {
     releaseDate: timestamp('release_date', { mode: 'date' }),
     globalRating: real('global_rating'),
     providerMetadata: jsonb('provider_metadata').$type<ProviderMetadata>(),
+    eloScore: integer('elo_score').notNull().default(1500),
+    matchCount: integer('match_count').notNull().default(0),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

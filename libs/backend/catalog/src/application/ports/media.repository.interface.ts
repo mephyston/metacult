@@ -11,6 +11,12 @@ export interface MediaSearchFilters {
     tag?: string;
     /** Recherche textuelle (titre) */
     search?: string;
+    /** IDs à exclure (Blacklist/Déjà vus) */
+    excludedIds?: string[];
+    /** Limite de résultats (pagination/feed) */
+    limit?: number;
+    /** Tri des résultats */
+    orderBy?: 'random' | 'recent' | 'popularity';
 }
 
 import type { MediaReadDto } from '../queries/search-media/media-read.dto';
@@ -76,6 +82,11 @@ export interface IMediaRepository {
      * @param limit Nombre de médias à récupérer.
      */
     findMostRecent(limit: number): Promise<MediaReadDto[]>;
+
+    /**
+     * Récupère des médias aléatoires en respectant les filtres.
+     */
+    findRandom(filters: MediaSearchFilters): Promise<MediaReadDto[]>;
 
     nextId(): string;
 }

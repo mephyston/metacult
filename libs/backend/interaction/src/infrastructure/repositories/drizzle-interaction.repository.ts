@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { IInteractionRepository } from '../../application/ports/interaction.repository.interface';
 import { UserInteraction, InteractionAction, InteractionSentiment } from '../../domain/entities/user-interaction.entity';
@@ -42,6 +42,21 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
             .where(eq(userInteractions.userId, userId));
 
         return results.map(this.mapToEntity);
+    }
+
+    async getSwipedMediaIds(userId: string): Promise<string[]> {
+        const results = await this.db.select({ mediaId: userInteractions.mediaId })
+            .from(userInteractions)
+            .where(and(
+                eq(userInteractions.userId, userId),
+                // Exclure la Wishlist car ces items peuvent réapparaître dans d'autres contextes (mais pas en Swipe pur, à voir selon règles produit. 
+                // La demande est explicite: "à l'exception de la Wishlist")
+                // En SQL: AND action != 'WISHLIST'
+                // Note: Drizzle `ne` means Not Equal
+                sql`${userInteractions.action} != 'WISHLIST'`
+            ));
+
+        return results.map(r => r.mediaId);
     }
 
     private mapToEntity(raw: any): UserInteraction {

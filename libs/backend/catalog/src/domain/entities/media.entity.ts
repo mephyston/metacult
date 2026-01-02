@@ -37,6 +37,8 @@ export class Media {
      * @param {Rating | null} rating - Note moyenne (Value Object).
      * @param {ReleaseYear | null} releaseYear - Année de sortie (Value Object).
      * @param {ExternalReference} externalReference - Lien vers la source de données externe (Value Object).
+     * @param {number} eloScore - Score ELO (défault 1500).
+     * @param {number} matchCount - Nombre de matchs joués.
      */
     constructor(
         public readonly id: string,
@@ -47,7 +49,9 @@ export class Media {
         public readonly coverUrl: CoverUrl | null,
         public readonly rating: Rating | null,
         public readonly releaseYear: ReleaseYear | null,
-        public readonly externalReference: ExternalReference
+        public readonly externalReference: ExternalReference,
+        public readonly eloScore: number = 1500,
+        public readonly matchCount: number = 0
     ) { }
 }
 
@@ -98,9 +102,11 @@ export class Game extends Media {
         externalReference: ExternalReference,
         public readonly platform: string[],
         public readonly developer: string | null,
-        public readonly timeToBeat: number | null
+        public readonly timeToBeat: number | null,
+        eloScore?: number,
+        matchCount?: number
     ) {
-        super(id, title, slug, description, MediaType.GAME, coverUrl, rating, releaseYear, externalReference);
+        super(id, title, slug, description, MediaType.GAME, coverUrl, rating, releaseYear, externalReference, eloScore, matchCount);
     }
 }
 
@@ -133,9 +139,11 @@ export class Movie extends Media {
         releaseYear: ReleaseYear | null,
         externalReference: ExternalReference,
         public readonly director: string | null,
-        public readonly durationMinutes: number | null
+        public readonly durationMinutes: number | null,
+        eloScore?: number,
+        matchCount?: number
     ) {
-        super(id, title, slug, description, MediaType.MOVIE, coverUrl, rating, releaseYear, externalReference);
+        super(id, title, slug, description, MediaType.MOVIE, coverUrl, rating, releaseYear, externalReference, eloScore, matchCount);
     }
 }
 
@@ -170,9 +178,11 @@ export class TV extends Media {
         externalReference: ExternalReference,
         public readonly creator: string | null,
         public readonly episodesCount: number | null,
-        public readonly seasonsCount: number | null
+        public readonly seasonsCount: number | null,
+        eloScore?: number,
+        matchCount?: number
     ) {
-        super(id, title, slug, description, MediaType.TV, coverUrl, rating, releaseYear, externalReference);
+        super(id, title, slug, description, MediaType.TV, coverUrl, rating, releaseYear, externalReference, eloScore, matchCount);
     }
 }
 
@@ -205,9 +215,11 @@ export class Book extends Media {
         releaseYear: ReleaseYear | null,
         externalReference: ExternalReference,
         public readonly author: string | null,
-        public readonly pages: number | null
+        public readonly pages: number | null,
+        eloScore?: number,
+        matchCount?: number
     ) {
-        super(id, title, slug, description, MediaType.BOOK, coverUrl, rating, releaseYear, externalReference);
+        super(id, title, slug, description, MediaType.BOOK, coverUrl, rating, releaseYear, externalReference, eloScore, matchCount);
     }
 }
 

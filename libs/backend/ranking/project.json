@@ -1,0 +1,29 @@
+{
+    "name": "backend-ranking",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/backend/ranking/src",
+    "projectType": "library",
+    "tags": [
+        "scope:ranking",
+        "type:domain"
+    ],
+    "targets": {
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": [
+                "{options.outputFile}"
+            ],
+            "options": {
+                "lintFilePatterns": [
+                    "libs/backend/ranking/**/*.ts"
+                ]
+            }
+        },
+        "test": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "bun test libs/backend/ranking"
+            }
+        }
+    }
+}

@@ -28,7 +28,7 @@ runMigrations()
 
 // Initialisation de la BDD (Composition Root)
 // Fusion des schémas pour garantir que le client DB satisfait tous les modules
-import { userInteractions, actionEnum, sentimentEnum } from '@metacult/backend/interaction';
+import { userInteractions, actionEnum, sentimentEnum, DrizzleInteractionRepository } from '@metacult/backend/interaction';
 const fullSchema = { ...infraSchema, ...mediaSchema, userInteractions, actionEnum, sentimentEnum };
 // Initialisation du Singleton
 const { db } = getDbConnection(fullSchema);
@@ -91,10 +91,15 @@ const adsHandler = new GetActiveAdsHandler(redisClient);
 
 // 3. Module Discovery (Relie Catalog & Marketing)
 const mediaSearchAdapter = {
-  search: async (q: string) => {
+  search: async (q: string, options: { excludedIds?: string[], limit?: number, orderBy?: 'random' }) => {
     // Adaptateur: String -> SearchQuery -> DTO
     // Le handler retourne maintenant une réponse groupée. On doit l'aplatir pour le module Discovery.
-    const grouped = await searchHandler.execute({ search: q });
+    const grouped = await searchHandler.execute({
+      search: q,
+      excludedIds: options?.excludedIds,
+      limit: options?.limit,
+      orderBy: options?.orderBy
+    });
     const all = [
       ...grouped.games,
       ...grouped.movies,
@@ -124,7 +129,8 @@ const adsAdapter = {
 };
 
 const mixedFeedHandler = new GetMixedFeedHandler(redisClient, mediaSearchAdapter, adsAdapter);
-const feedController = new FeedController(mixedFeedHandler);
+const interactionRepo = new DrizzleInteractionRepository(db);
+const feedController = new FeedController(mixedFeedHandler, interactionRepo);
 const discoveryRoutes = createDiscoveryRoutes(feedController);
 
 // 4. Module Identity (Auth routes)

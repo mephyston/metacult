@@ -21,18 +21,27 @@ export const startWorker = (async () => {
         },
     });
 
+    // --- Ranking Worker ---
+    // Pas de rate limit strict nécessaire pour les updates SQL, mais on garde une bonne concurrence
+    const { processRankingUpdate } = await import('./processors/ranking.processor');
+    const { RANKING_QUEUE_NAME } = await import('@metacult/backend/ranking');
+
+    const rankingWorker = createWorker(RANKING_QUEUE_NAME, processRankingUpdate, {
+        concurrency: 10, // Traitement rapide en parallèle
+    });
+
     // Daemon mode checks
     process.on('SIGINT', async () => {
-        console.log('🛑 Shutting down worker...');
-        await worker.close();
+        console.log('🛑 Shutting down workers...');
+        await Promise.all([worker.close(), rankingWorker.close()]);
         process.exit(0);
     });
 
     process.on('SIGTERM', async () => {
-        console.log('🛑 Shutting down worker...');
-        await worker.close();
+        console.log('🛑 Shutting down workers...');
+        await Promise.all([worker.close(), rankingWorker.close()]);
         process.exit(0);
     });
 
-    console.log(`👷 Worker listening on queue: ${IMPORT_QUEUE_NAME}`);
+    console.log(`👷 Worker listening on queues: ${IMPORT_QUEUE_NAME}, ${RANKING_QUEUE_NAME}`);
 })();
