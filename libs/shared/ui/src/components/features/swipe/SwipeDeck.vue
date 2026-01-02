@@ -99,6 +99,20 @@ function getSyncUrl(targetUrl: string): string {
   }
 }
 
+// Computed URLs that update when totalProcessed changes (= when user swipes)
+const signupUrlWithSync = computed(() => {
+  if (!props.signupUrl) return ''
+  // Force recomputation by accessing totalProcessed
+  const _ = totalProcessed.value
+  return getSyncUrl(props.signupUrl)
+})
+
+const loginUrlWithSync = computed(() => {
+  if (!props.loginUrl) return ''
+  const _ = totalProcessed.value
+  return getSyncUrl(props.loginUrl)
+})
+
 // --- Handlers ---
 function handleSwipe(payload: SwipePayload) {
   if (!currentCard.value) return
@@ -206,7 +220,7 @@ defineExpose({
               Vous avez swipé {{ totalProcessed }} cartes
             </p>
             <div v-if="guestMode && signupUrl" class="flex flex-col gap-2">
-              <a data-testid="btn-signup" :href="getSyncUrl(signupUrl)"
+              <a data-testid="btn-signup" :href="signupUrlWithSync"
                 class="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium inline-block">
                 Créer un compte pour sauvegarder
               </a>
@@ -214,7 +228,7 @@ defineExpose({
               <div class="text-sm text-muted-foreground mt-2">
                 <span v-if="loginUrl">
                   Déjà un compte ?
-                  <a :href="getSyncUrl(loginUrl)" class="text-primary hover:underline font-medium">
+                  <a :href="loginUrlWithSync" class="text-primary hover:underline font-medium">
                     Se connecter
                   </a>
                   ou
