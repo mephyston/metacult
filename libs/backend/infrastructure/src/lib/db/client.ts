@@ -1,7 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from './schema';
-import * as authSchema from './schema/auth.schema';
 import { DefaultLogger, type LogWriter } from 'drizzle-orm/logger';
 import { requestContext } from '../context/request-context';
 
@@ -42,7 +41,7 @@ export function getDbConnection<T extends Record<string, unknown>>(customSchema?
         });
 
         // ... inside getDbConnection
-        const finalSchema = customSchema ? { ...schema, ...authSchema, ...customSchema } : { ...schema, ...authSchema };
+        const finalSchema = customSchema ? { ...schema, ...customSchema } : schema;
         const enableLogger = process.env.NODE_ENV !== 'production' || process.env.DEBUG_SQL === 'true';
         db = drizzle(pool, {
             schema: finalSchema,

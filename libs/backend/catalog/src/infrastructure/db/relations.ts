@@ -1,6 +1,5 @@
 import { relations } from 'drizzle-orm';
 import { medias, games, movies, tv, books, tags, mediasToTags } from './media.schema'; // Local
-import { users } from '@metacult/backend/infrastructure'; // Direct relative import to fix resolution
 
 /** Relations du schéma DB (Drizzle ORM). */
 

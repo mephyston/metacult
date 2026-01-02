@@ -1,8 +1,5 @@
 // DB (Generic exports remain, Media schema moved, Auth moved to Identity)
 export * from './lib/db/client';
-// Use star exports again, relative import in consumer will obtain it
-export * from './lib/db/schema/users.schema';
-export * from './lib/db/schema/relations';
 // export * from './db/seed.ts'; 
 // export * from './db/migrate.ts'; 
 
