@@ -29,7 +29,8 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build the API to a standalone bundle
-RUN bun build apps/api/index.ts --target=bun --outfile apps/api/dist/server.js
+RUN ls -R apps/api
+RUN bun build ./apps/api/index.ts --target=bun --outfile apps/api/dist/server.js
 
 # --------------------------------------------------------
 # Stage 3: Runner
