@@ -37,7 +37,11 @@ export function getDbConnection<T extends Record<string, unknown>>(customSchema?
         pool = new Pool({
             connectionString,
             ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+            connectionTimeoutMillis: 5000, // Fail fast (5s) to allow retries
+            idleTimeoutMillis: 30000,
         });
+
+        console.log(`🔌 DB Config: SSL=${isProduction}, Timeout=5000ms`);
 
         // Schema is now provided by the caller (apps/api merges all schemas)
         const enableLogger = process.env['NODE_ENV'] !== 'production' || process.env['DEBUG_SQL'] === 'true';
