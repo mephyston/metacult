@@ -103,8 +103,11 @@ function getSyncUrl(targetUrl: string): string {
 const signupUrlWithSync = computed(() => {
   if (!props.signupUrl) return ''
   // Force recomputation by accessing totalProcessed
-  const _ = totalProcessed.value
-  return getSyncUrl(props.signupUrl)
+  const count = totalProcessed.value
+  console.log(`[SwipeDeck] Computing signupUrlWithSync. totalProcessed=${count}`)
+  const url = getSyncUrl(props.signupUrl)
+  console.log(`[SwipeDeck] Computed URL:`, url)
+  return url
 })
 
 const loginUrlWithSync = computed(() => {
