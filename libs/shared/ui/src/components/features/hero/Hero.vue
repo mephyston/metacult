@@ -236,7 +236,7 @@ onMounted(async () => {
                                           </TooltipContent>
                                       </Tooltip>
 
-                                      <span class="relative inline-block h-10 w-10 rounded-full ring-2 ring-background bg-muted flex items-center justify-center text-[10px] font-medium z-0">+5</span>
+                                      <span class="relative flex h-10 w-10 rounded-full ring-2 ring-background bg-muted items-center justify-center text-[10px] font-medium z-0">+5</span>
                                   </div>
                               </TooltipProvider>
                           </div>
