@@ -15,14 +15,20 @@ async function runSafeMigrations() {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const migrationsFolder = process.env.MIGRATIONS_FOLDER || path.resolve(__dirname, '../../../drizzle');
 
+    console.log(`📂 Migrations Folder: ${migrationsFolder}`);
+    console.log(`Checking DATABASE_URL: ${process.env.DATABASE_URL ? 'Defined' : 'UNDEFINED'}`);
+
     for (let i = 1; i <= MAX_RETRIES; i++) {
         try {
+            console.log(`🔌 [Step 1] Getting DB Connection (Try ${i})...`);
             const { db } = getDbConnection();
 
+            console.log('📡 [Step 2] Pinging DB (SELECT 1)...');
             // 1. Connection check
             await db.execute('SELECT 1');
+            console.log('✅ [Step 2] DB is reachable.');
 
-            console.log(`🔒 Tentative d'acquisition du verrou global (ID: ${LOCK_ID})...`);
+            console.log(`🔒 [Step 3] Acquiring Advisory Lock (ID: ${LOCK_ID})...`);
 
             // 2. Transactional Migration with Advisory Lock
             await db.transaction(async (tx) => {
@@ -30,7 +36,7 @@ async function runSafeMigrations() {
                 // pg_advisory_xact_lock releases automatically at end of transaction.
                 await tx.execute(sql`SELECT pg_advisory_xact_lock(${LOCK_ID})`);
 
-                console.log('🔓 Verrou acquis. Démarrage de la migration...');
+                console.log('🔓Verrou acquis! Starting migration...');
 
                 // Run Drizzle migrations
                 await migrate(tx, { migrationsFolder });
