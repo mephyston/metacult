@@ -3,10 +3,6 @@ export * from './lib/db/client';
 // export * from './db/seed.ts'; 
 // export * from './db/migrate.ts'; 
 
-// Auth (Re-exported depuis @metacult/backend-identity pour compatibilité)
-// DEPRECATED: Importer directement depuis @metacult/backend-identity
-export { auth, type AuthClient } from '@metacult/backend-identity';
-
 // Cache & Queue (Shared)
 import { cacheService, CacheService } from './lib/cache/cache.service';
 // IMPORTANT: This log is required to prevent tree-shaking/optimization issues with Bun test runner.
