@@ -4,7 +4,7 @@
     "projectType": "library",
     "sourceRoot": "libs/backend/infrastructure/src",
     "tags": [
-        "type:util",
+        "type:lib",
         "scope:shared",
         "layer:backend"
     ],
