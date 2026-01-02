@@ -70,6 +70,10 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     // Attendre la navigation vers la Webapp (Nuxt sur port 4201)
     await page.waitForURL(/localhost:4201\/register/, { timeout: 10000 });
     
+    // Attendre que la page soit complètement chargée et que Vue soit hydraté
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1500);
+    
     // Vérifier la présence du paramètre sync dans l'URL
     const currentUrl = page.url();
     expect(currentUrl).toMatch(/[?&]sync=/);
@@ -110,9 +114,9 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     // Attendre que le bouton soit actif
     await expect(submitButton).toBeEnabled();
     
-    // Attendre que Vue soit complètement hydraté (important pour les SPAs)
-    await page.waitForTimeout(2000);
-    console.log('⏳ Waited for Vue hydration');
+    // Attendre que Vue soit complètement hydraté (augmenté à 3s pour sécurité)
+    await page.waitForTimeout(3000);
+    console.log('⏳ Vue hydration complete');
     
     // Cliquer sur le bouton et attendre la navigation vers le dashboard
     console.log('🖱️  Clicking submit button and waiting for navigation...');
@@ -177,6 +181,8 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     await signupButton.click();
 
     await page.waitForURL(/localhost:4201\/register/);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1500);
 
     // Tenter de soumettre avec un email invalide (mais tous les champs requis)
     const nameInput = page.locator('input[data-testid="input-name"]');
