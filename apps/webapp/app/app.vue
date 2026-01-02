@@ -21,7 +21,7 @@ const handleLogout = () => {
     </Header>
 
     <main class="flex-1">
-      <NuxtPage />
+      <NuxtPage :keepalive="{ max: 10 }" />
     </main>
 
     <Footer />

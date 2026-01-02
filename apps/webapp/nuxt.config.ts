@@ -22,7 +22,9 @@ export default defineNuxtConfig({
           innerHTML: themeScript
         }
       ]
-    }
+    },
+    pageTransition: false,
+    layoutTransition: false
   },
   runtimeConfig: {
     public: {
