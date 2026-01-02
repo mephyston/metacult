@@ -16,8 +16,14 @@ import { GetActiveAdsHandler, GetActiveAdsQuery } from '@metacult/backend/market
 // Apply logging patch
 patchConsole();
 
-// Migrations are now handled via Init Service or Start Command (migrate-prod.ts)
-// See apps/api/railway.json
+// Import migration script programmatically
+import { runMigrations } from '@metacult/backend/infrastructure';
+
+// Safe migration runner (Non-blocking to allow Healthcheck to pass)
+runMigrations()
+  .then(() => console.log('✅ Migrations executed successfully'))
+  .catch((error) => console.error('❌ Failed to run migrations:', error));
+
 
 
 // Initialisation de la BDD (Composition Root)
