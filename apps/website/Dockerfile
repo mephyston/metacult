@@ -1,32 +1,41 @@
-
-# Install dependencies
-# trigger build fix deps
-# Install dependencies
-FROM oven/bun:1 AS install
-WORKDIR /usr/src/app
-COPY package.json bun.lock nx.json tsconfig.base.json ./
-COPY apps/website/package.json ./apps/website/package.json
-COPY libs/shared/ui/package.json ./libs/shared/ui/package.json
-RUN bun install
-
-# Build
-FROM install AS build
-COPY --from=install /usr/src/app/node_modules ./node_modules
+# --------------------------------------------------------
+# Stage 1: Pruner
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS pruner
+WORKDIR /app
 COPY . .
-# ✅ Receive PUBLIC_API_URL from build args for Client-Side bundling
-ARG PUBLIC_API_URL
-ENV PUBLIC_API_URL=$PUBLIC_API_URL
-RUN cd apps/website && bun run build
+RUN find . -type f -not -name 'package.json' -not -name 'bun.lockb' -not -name 'tsconfig.json' -delete
 
-# Final image
-# Use alpine for minimal footprint since we don't need runtime image processing (sharp) anymore
-FROM node:20-alpine AS release
-WORKDIR /usr/src/app
+# --------------------------------------------------------
+# Stage 2: Builder
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS builder
+WORKDIR /app
 
-COPY --from=build /usr/src/app/apps/website/dist ./dist
-# Copy node_modules to ensure all dependencies are available
-COPY --from=install /usr/src/app/node_modules ./node_modules
+# Copy pruned workspace
+COPY --from=pruner /app .
+RUN bun install --frozen-lockfile
 
+# Copy source code
+COPY . .
+
+# Build Astro App
+WORKDIR /app/apps/website
+# Astro Node Adapter -> dist/
+RUN bun run build
+
+# --------------------------------------------------------
+# Stage 3: Runner
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
 ENV HOST=0.0.0.0
+ENV PORT=8085
 
-CMD ["node", "./dist/server/entry.mjs"]
+# Copy output from builder
+COPY --from=builder /app/apps/website/dist /app/dist
+
+# Entry point for Astro Node Adapter in standalone mode
+CMD ["bun", "dist/server/entry.mjs"]

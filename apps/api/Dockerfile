@@ -1,30 +1,53 @@
-FROM oven/bun:1-alpine AS base
-WORKDIR /usr/src/app
+# --------------------------------------------------------
+# Stage 1: Pruner
+# Isolate package.json/lockfiles to optimize cache
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS pruner
+WORKDIR /app
 
-# Install dependencies (using cache)
-FROM base AS install
-COPY package.json bun.lock ./
-COPY apps/api/package.json ./apps/api/package.json
-RUN bun install
-
-# Build stage
-FROM base AS build
-COPY --from=install /usr/src/app/node_modules ./node_modules
-# ✅ Copy source code AFTER dependencies
+# Copy all files
 COPY . .
 
-# Run Tests during build to prevent bad deployments
-RUN bun test apps/api
+# Delete everything that is NOT a package.json, lockfile, or tsconfig
+# This preserves the workspace directory structure
+RUN find . -type f -not -name 'package.json' -not -name 'bun.lockb' -not -name 'tsconfig.json' -delete
 
-# Final image
-FROM base AS release
-COPY --from=install /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app .
+# --------------------------------------------------------
+# Stage 2: Builder
+# Install dependencies and build the app
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS builder
+WORKDIR /app
 
-# Run the app
+# Copy pruned workspace structure (deps definitions only)
+COPY --from=pruner /app .
+
+# Install dependencies (cached if package.json/lockfile unchanged)
+RUN bun install --frozen-lockfile
+
+# Copy source code (this layer changes frequently)
+COPY . .
+
+# Build the API to a standalone bundle
+RUN bun build apps/api/index.ts --target=bun --outfile apps/api/dist/server.js
+
+# --------------------------------------------------------
+# Stage 3: Runner
+# Minimal runtime image
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS runner
+WORKDIR /app
+
+# Configuration
 ENV NODE_ENV=production
-USER bun
-ENV PORT=3000
-EXPOSE 3000/tcp
-ENTRYPOINT []
-CMD ["bun", "apps/api/index.ts"]
+ENV MIGRATIONS_FOLDER=/app/drizzle
+
+# Copy the bundled server
+COPY --from=builder /app/apps/api/dist/server.js /app/server.js
+
+# Copy Migrations (Drizzle SQL files)
+# Infrastructure lib expects migrations in a folder, passed via env var
+COPY --from=builder /app/libs/backend/infrastructure/drizzle /app/drizzle
+
+# Run
+CMD ["bun", "server.js"]

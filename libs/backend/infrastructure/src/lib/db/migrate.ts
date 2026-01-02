@@ -16,7 +16,8 @@ async function runMigrations() {
 
     // Use absolute path resolution relative to this file to avoid CWD issues
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const migrationsFolder = path.resolve(__dirname, '../../../drizzle');
+    // Allow overriding via ENV (for Docker), otherwise use relative dev path
+    const migrationsFolder = process.env.MIGRATIONS_FOLDER || path.resolve(__dirname, '../../../drizzle');
 
     for (let i = 1; i <= MAX_RETRIES; i++) {
         try {

@@ -1,21 +1,40 @@
-# Install dependencies
-FROM oven/bun:1 AS install
-WORKDIR /usr/src/app
-COPY package.json bun.lock nx.json tsconfig.base.json ./
-COPY apps/webapp/package.json ./apps/webapp/package.json
-COPY libs/shared/ui/package.json ./libs/shared/ui/package.json
-RUN bun install
-
-# Build
-FROM install AS build
-COPY --from=install /usr/src/app/node_modules ./node_modules
+# --------------------------------------------------------
+# Stage 1: Pruner
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS pruner
+WORKDIR /app
 COPY . .
-RUN cd apps/webapp && bun run build
+RUN find . -type f -not -name 'package.json' -not -name 'bun.lockb' -not -name 'tsconfig.json' -delete
 
-# Final image
-FROM oven/bun:1-alpine AS release
-WORKDIR /usr/src/app
-COPY --from=build /usr/src/app/apps/webapp/.output ./.output
+# --------------------------------------------------------
+# Stage 2: Builder
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS builder
+WORKDIR /app
 
-EXPOSE 3000/tcp
-ENTRYPOINT [ "bun", ".output/server/index.mjs" ]
+# Copy pruned workspace
+COPY --from=pruner /app .
+RUN bun install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build Nuxt App
+# Nuxt output -> .output/
+WORKDIR /app/apps/webapp
+RUN bun run build
+
+# --------------------------------------------------------
+# Stage 3: Runner
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
+
+# Copy output from builder
+COPY --from=builder /app/apps/webapp/.output /app/.output
+
+CMD ["bun", ".output/server/index.mjs"]

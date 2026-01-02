@@ -1,28 +1,42 @@
-FROM oven/bun:1-alpine AS base
-WORKDIR /usr/src/app
+# --------------------------------------------------------
+# Stage 1: Pruner
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS pruner
+WORKDIR /app
+COPY . .
+RUN find . -type f -not -name 'package.json' -not -name 'bun.lockb' -not -name 'tsconfig.json' -delete
 
-# Install dependencies (using cache)
-FROM base AS install
-COPY package.json bun.lock ./
-COPY apps/worker/package.json ./apps/worker/package.json
-RUN bun install
+# --------------------------------------------------------
+# Stage 2: Builder
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS builder
+WORKDIR /app
 
-# Build stage (Optimized cache)
-FROM base AS build
-COPY --from=install /usr/src/app/node_modules ./node_modules
-# ✅ Copy source code AFTER dependencies
+# Copy pruned workspace
+COPY --from=pruner /app .
+
+# Install dependencies
+RUN bun install --frozen-lockfile
+
+# Copy source code
 COPY . .
 
-# Run Tests during build
-RUN bun test apps/worker
+# Build Worker
+RUN bun build apps/worker/src/index.ts --target=bun --outfile apps/worker/dist/worker.js
 
-# Final image
-FROM base AS release
-COPY --from=install /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app .
+# --------------------------------------------------------
+# Stage 3: Runner
+# --------------------------------------------------------
+FROM oven/bun:1-alpine AS runner
+WORKDIR /app
 
-# Run the worker
 ENV NODE_ENV=production
-USER bun
-ENTRYPOINT []
-CMD [ "bun", "apps/worker/src/index.ts" ]
+ENV MIGRATIONS_FOLDER=/app/drizzle
+
+# Copy the bundled worker
+COPY --from=builder /app/apps/worker/dist/worker.js /app/worker.js
+
+# Copy Migrations (Worker needs them for imports usually, or just DB access)
+COPY --from=builder /app/libs/backend/infrastructure/drizzle /app/drizzle
+
+CMD ["bun", "worker.js"]
