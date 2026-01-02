@@ -23,6 +23,15 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
   });
 
   test('should sync guest interactions after signup', async ({ page }) => {
+    // Écouter les logs console du navigateur
+    page.on('console', msg => {
+      console.log(`[BROWSER ${msg.type()}]: ${msg.text()}`);
+    });
+    
+    page.on('pageerror', err => {
+      console.error(`[BROWSER ERROR]: ${err.message}`);
+    });
+
     // ============================================================
     // STEP 1: Vérifier la présence du SwipeDeck sur la Home Page
     // ============================================================
@@ -93,11 +102,22 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     await emailInput.fill(uniqueEmail);
     await passwordInput.fill(password);
     
+    // Vérifier que les valeurs sont bien remplies
+    await expect(nameInput).toHaveValue(userName);
+    await expect(emailInput).toHaveValue(uniqueEmail);
+    await expect(passwordInput).toHaveValue(password);
+    
     // Attendre que le bouton soit actif
     await expect(submitButton).toBeEnabled();
     
+    // Screenshot avant soumission pour debug
+    await page.screenshot({ path: 'test-results/before-submit.png', fullPage: true });
+    console.log('📸 Screenshot pris avant submit');
+    
     // Soumettre le formulaire
+    console.log('🖱️  Clicking submit button...');
     await submitButton.click();
+    console.log('✅ Submit button clicked');
 
     // ============================================================
     // STEP 6: Vérifier la redirection vers le Dashboard
