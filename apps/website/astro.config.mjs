@@ -47,4 +47,4 @@ export default defineConfig({
         host: true
     },
 });
-// Trigger deploy: 2026-01-02-poke
+// Trigger deploy: 2026-01-02-force-rebuild-root-fix
