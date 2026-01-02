@@ -32,11 +32,12 @@ export function getDbConnection<T extends Record<string, unknown>>(customSchema?
         // console.log('🔌 Connexion à la base de données...'); // Too verbose
         const isProduction = process.env['NODE_ENV'] === 'production';
         const connectionString = process.env['DATABASE_URL'];
-        // console.log(`🔌 Connexion DB (taille URL: ${connectionString?.length || 0})`);
+        // Default to SSL in prod, but allow explicit disable (e.g. for private networks)
+        const useSsl = isProduction && process.env['DB_SSL'] !== 'false';
 
         pool = new Pool({
             connectionString,
-            ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+            ssl: useSsl ? { rejectUnauthorized: false } : undefined,
             connectionTimeoutMillis: 5000, // Fail fast (5s) to allow retries
             idleTimeoutMillis: 30000,
         });
