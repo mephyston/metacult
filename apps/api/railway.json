@@ -15,6 +15,6 @@
         "startCommand": "bun apps/api/index.ts",
         "healthcheckPath": "/health",
         "restartPolicyType": "ON_FAILURE",
-        "rootDirectory": "/"
+        "root": "/"
     }
 }

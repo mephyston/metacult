@@ -13,6 +13,6 @@
     "deploy": {
         "startCommand": "bun dist/server/entry.mjs",
         "restartPolicyType": "ON_FAILURE",
-        "rootDirectory": "/"
+        "root": "/"
     }
 }
