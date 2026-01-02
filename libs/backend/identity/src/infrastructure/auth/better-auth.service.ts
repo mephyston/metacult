@@ -11,8 +11,8 @@ const { db } = getDbConnection();
  * En staging Railway : undefined (pas de cross-domain possible entre .up.railway.app différents)
  * En développement : `localhost`
  */
-const rootDomain = process.env['ROOT_DOMAIN'] || undefined;
-const enableCrossSubdomain = !!rootDomain;
+const rootDomain = process.env['ROOT_DOMAIN'];
+const cookiePrefix = process.env['AUTH_COOKIE_PREFIX'] || 'metacult';
 
 /**
  * Configuration du service d'authentification (Better Auth).
@@ -30,7 +30,8 @@ export const auth = betterAuth({
     trustedOrigins: [
         'http://localhost:3333', // API
         'http://localhost:5173', // Webapp dev
-        'http://localhost:4444', // Website dev
+        'http://localhost:4440', // Website dev
+        'http://localhost:4444', // Website dev fallback
         'http://localhost:4201'  // Webapp Nuxt
     ],
     database: drizzleAdapter(db, {
@@ -47,17 +48,11 @@ export const auth = betterAuth({
         autoSignIn: true,
     },
     advanced: {
-        cookiePrefix: 'metacult',
-        // Configuration cross-subdomain cookies (activé uniquement si ROOT_DOMAIN est défini)
-        // Staging Railway : pas de ROOT_DOMAIN → cookies isolés par domaine
-        // Production : ROOT_DOMAIN=.metacult.gg → session partagée entre sous-domaines
+        cookiePrefix: cookiePrefix,
         useSecureCookies: process.env['NODE_ENV'] === 'production',
-        ...(enableCrossSubdomain && {
-            crossSubDomainCookies: {
-                enabled: true,
-                domain: rootDomain
-            }
-        })
+        defaultCookieAttributes: {
+            domain: rootDomain // Permet le partage cross-subdomain si défini
+        }
     }
 });
 
