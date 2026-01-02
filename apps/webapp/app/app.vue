@@ -15,18 +15,21 @@ const handleLogout = async () => {
 
   // Force clean state by redirecting to Marketing Home
   // This is better for UX (Start Over)
-  const websiteUrl = import.meta.env.PUBLIC_WEBSITE_URL || 'http://localhost:4444'; // Fallback dev port
+  const websiteUrl =
+    import.meta.env.PUBLIC_WEBSITE_URL || 'http://localhost:4444'; // Fallback dev port
   window.location.href = websiteUrl;
 };
 </script>
 
 <template>
-  <div class="font-sans min-h-screen flex flex-col bg-background text-foreground">
+  <div
+    class="font-sans min-h-screen flex flex-col bg-background text-foreground"
+  >
     <Header :user="user" @logout="handleLogout">
-        <template #search>
-          <div class="contents">
-            <Search />
-          </div>
+      <template #search>
+        <div class="contents">
+          <Search />
+        </div>
       </template>
     </Header>
 

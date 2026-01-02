@@ -2,9 +2,9 @@
 import { Elysia } from 'elysia';
 import { GetMixedFeedHandler } from '../../../application/queries/get-mixed-feed/get-mixed-feed.handler';
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+
 import type { IInteractionRepository } from '@metacult/backend/interaction';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+
 import { isAuthenticated } from '@metacult/backend-identity';
 
 /**
@@ -14,8 +14,8 @@ import { isAuthenticated } from '@metacult/backend-identity';
 export class FeedController {
   constructor(
     private readonly getMixedFeedHandler: GetMixedFeedHandler,
-    private readonly interactionRepository: IInteractionRepository
-  ) { }
+    private readonly interactionRepository: IInteractionRepository,
+  ) {}
 
   /**
    * Routes definition to be mounted by Elysia
@@ -28,7 +28,12 @@ export class FeedController {
         const searchTerm = query?.q || '';
         const userId = user?.id;
 
-        console.log('[FeedController] GET /feed - User:', userId || 'Guest', 'Search:', searchTerm);
+        console.log(
+          '[FeedController] GET /feed - User:',
+          userId || 'Guest',
+          'Search:',
+          searchTerm,
+        );
 
         let excludedMediaIds: string[] = [];
         let limit = 5; // Default (Guest)
@@ -36,8 +41,12 @@ export class FeedController {
         if (userId) {
           // User logic
           try {
-            excludedMediaIds = await this.interactionRepository.getSwipedMediaIds(userId);
-            console.log('[FeedController] Excluded media IDs:', excludedMediaIds.length);
+            excludedMediaIds =
+              await this.interactionRepository.getSwipedMediaIds(userId);
+            console.log(
+              '[FeedController] Excluded media IDs:',
+              excludedMediaIds.length,
+            );
           } catch (e) {
             console.error('[FeedController] Failed to fetch blacklist:', e);
           }
@@ -49,7 +58,7 @@ export class FeedController {
           searchTerm,
           userId,
           excludedMediaIds,
-          limit
+          limit,
         );
 
         const feed = await this.getMixedFeedHandler.execute(feedQuery);

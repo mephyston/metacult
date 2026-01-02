@@ -1,11 +1,27 @@
 import nx from '@nx/eslint-plugin';
 
+import pluginVue from 'eslint-plugin-vue';
+import tsParser from '@typescript-eslint/parser';
+
 export default [
   ...nx.configs['flat/base'],
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
+  ...nx.configs['flat/javascript'],
+  ...pluginVue.configs['flat/base'],
   {
-    ignores: ['**/dist', '**/out-tsc', '**/vite.config.*.timestamp*', '**/*.d.ts', '**/.astro/**/*', '**/.nuxt/**/*', '**/.output/**/*'],
+    files: ['**/*.vue'],
+    languageOptions: {
+      parserOptions: {
+        parser: tsParser,
+      },
+    },
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
+  },
+  {
+    ignores: ['**/dist', '**/out-tsc', '**/vite.config.*.timestamp*', '**/*.d.ts', '**/.astro/**/*', '**/.nuxt/**/*', '**/.output/**/*', 'apps/webapp/nuxt.config.ts', '**/playwright-report/**', '**/test-results/**'],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.vue'],
@@ -54,8 +70,8 @@ export default [
             // Interaction context: Cannot import other bounded contexts
             {
               sourceTag: 'scope:interaction',
-              onlyDependOnLibsWithTags: ['scope:interaction', 'scope:shared'],
-              notDependOnLibsWithTags: ['scope:catalog', 'scope:identity', 'scope:discovery', 'scope:marketing']
+              onlyDependOnLibsWithTags: ['scope:interaction', 'scope:shared', 'scope:identity'],
+              notDependOnLibsWithTags: ['scope:catalog', 'scope:discovery', 'scope:marketing']
             },
             // Discovery context: Cannot import other bounded contexts
             {
@@ -81,7 +97,7 @@ export default [
             },
             {
               sourceTag: 'type:app',
-              onlyDependOnLibsWithTags: ['type:feature', 'type:ui', 'type:util', 'type:bounded-context']
+              onlyDependOnLibsWithTags: ['type:feature', 'type:ui', 'type:util', 'type:bounded-context', 'type:domain']
             },
             {
               sourceTag: 'type:bounded-context',

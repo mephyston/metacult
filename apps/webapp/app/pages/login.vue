@@ -2,7 +2,14 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { signIn } from '../lib/auth-client';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@metacult/shared-ui';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@metacult/shared-ui';
 import { Input } from '@metacult/shared-ui';
 import { Label } from '@metacult/shared-ui';
 import { Button } from '@metacult/shared-ui';
@@ -54,24 +61,39 @@ const handleSubmit = async () => {
   <div class="flex min-h-screen items-center justify-center bg-background px-4">
     <Card class="w-full max-w-md">
       <CardHeader>
-        <CardTitle class="text-2xl">Connexion</CardTitle>
+        <CardTitle class="text-2xl"> Connexion </CardTitle>
         <CardDescription>
           Connectez-vous à votre compte Metacult
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form @submit.prevent="handleSubmit" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="handleSubmit">
           <div class="space-y-2">
             <Label for="email">Email</Label>
-            <Input id="email" v-model="email" type="email" placeholder="vous@exemple.com" required
-              :disabled="loading" />
+            <Input
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="vous@exemple.com"
+              required
+              :disabled="loading"
+            />
           </div>
           <div class="space-y-2">
             <Label for="password">Mot de passe</Label>
-            <Input id="password" v-model="password" type="password" placeholder="••••••••" required
-              :disabled="loading" />
+            <Input
+              id="password"
+              v-model="password"
+              type="password"
+              placeholder="••••••••"
+              required
+              :disabled="loading"
+            />
           </div>
-          <div v-if="error" class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          <div
+            v-if="error"
+            class="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+          >
             {{ error }}
           </div>
           <Button type="submit" class="w-full" :disabled="loading">

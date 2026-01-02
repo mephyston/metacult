@@ -22,7 +22,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <span class="inline-flex relative overflow-hidden h-[1.2em] w-fit translate-y-[0.2em] align-bottom">
+  <span
+    class="inline-flex relative overflow-hidden h-[1.2em] w-fit translate-y-[0.2em] align-bottom"
+  >
     <Transition
       enter-active-class="transition-all duration-500 ease-out"
       leave-active-class="transition-all duration-500 ease-in absolute top-0 left-0"
@@ -31,7 +33,10 @@ onUnmounted(() => {
       leave-from-class="translate-y-0 opacity-100"
       leave-to-class="-translate-y-full opacity-0"
     >
-      <span :key="currentWord" class="block font-bold text-primary whitespace-nowrap">
+      <span
+        :key="currentWord"
+        class="block font-bold text-primary whitespace-nowrap"
+      >
         {{ currentWord }}
       </span>
     </Transition>

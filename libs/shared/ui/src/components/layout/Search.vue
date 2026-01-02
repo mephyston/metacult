@@ -9,7 +9,7 @@ import {
   Film,
   Tv,
   BookOpen,
-  Database
+  Database,
 } from 'lucide-vue-next';
 import {
   CommandDialog,
@@ -18,7 +18,7 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
-  CommandSeparator
+  CommandSeparator,
 } from '../ui/command';
 import { Button } from '../ui/button';
 
@@ -44,15 +44,22 @@ interface GroupedSearchResponse {
 const open = ref(false);
 const query = ref('');
 const isLoading = ref(false);
-const results = ref<GroupedSearchResponse>({ games: [], movies: [], shows: [], books: [] });
+const results = ref<GroupedSearchResponse>({
+  games: [],
+  movies: [],
+  shows: [],
+  books: [],
+});
 const importingId = ref<string | null>(null);
 const commandListRef = ref<any>(null);
 
 const hasResults = computed(() => {
-  return results.value.games.length > 0 ||
+  return (
+    results.value.games.length > 0 ||
     results.value.movies.length > 0 ||
     results.value.shows.length > 0 ||
-    results.value.books.length > 0;
+    results.value.books.length > 0
+  );
 });
 
 // Reset scroll on query change
@@ -93,7 +100,9 @@ const searchApi = async (q: string) => {
     if (!baseUrl.startsWith('http')) {
       baseUrl = `https://${baseUrl}`;
     }
-    const res = await fetch(`${baseUrl}/api/media/search?q=${encodeURIComponent(q)}`);
+    const res = await fetch(
+      `${baseUrl}/api/media/search?q=${encodeURIComponent(q)}`,
+    );
     if (res.ok) {
       results.value = await res.json();
     }
@@ -128,8 +137,8 @@ async function handleSelect(item: SearchResultItem) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mediaId: item.externalId || item.id, // Use External Provider ID for import
-          type: item.type
-        })
+          type: item.type,
+        }),
       });
 
       if (res.ok) {
@@ -158,32 +167,57 @@ function navigateToMedia(type: string, idOrSlug: string) {
 
 <template>
   <div>
-    <Button variant="outline" class="relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2"
-      @click="handleOpen">
+    <Button
+      variant="outline"
+      class="relative h-9 w-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2"
+      @click="handleOpen"
+    >
       <SearchIcon class="h-4 w-4 xl:mr-2" />
       <span class="hidden xl:inline-flex">Rechercher...</span>
       <span class="sr-only">Rechercher</span>
-      <div class="pointer-events-none absolute right-1.5 top-2 hidden select-none items-center gap-1 xl:flex">
+      <div
+        class="pointer-events-none absolute right-1.5 top-2 hidden select-none items-center gap-1 xl:flex"
+      >
         <kbd
-          class="inline-flex h-6 w-6 items-center justify-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+          class="inline-flex h-6 w-6 items-center justify-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+        >
           <span class="text-xs">⌘</span>
         </kbd>
         <kbd
-          class="inline-flex h-6 w-6 items-center justify-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+          class="inline-flex h-6 w-6 items-center justify-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+        >
           K
         </kbd>
       </div>
     </Button>
 
-    <CommandDialog :open="open" @update:open="open = $event" :filter-function="(val: any[]) => val">
-      <CommandInput placeholder="Rechercher des films, jeux, livres..." :model-value="query"
-        @input="(e: Event) => query = (e.currentTarget as HTMLInputElement).value" />
+    <CommandDialog
+      :open="open"
+      :filter-function="(val: any[]) => val"
+      @update:open="open = $event"
+    >
+      <CommandInput
+        placeholder="Rechercher des films, jeux, livres..."
+        :model-value="query"
+        @input="
+          (e: Event) => (query = (e.currentTarget as HTMLInputElement).value)
+        "
+      />
 
-      <CommandList ref="commandListRef" class="max-h-[300px] overflow-y-auto overflow-x-hidden p-2">
-        <div v-if="query.length < 3" class="py-6 text-center text-sm text-muted-foreground">
+      <CommandList
+        ref="commandListRef"
+        class="max-h-[300px] overflow-y-auto overflow-x-hidden p-2"
+      >
+        <div
+          v-if="query.length < 3"
+          class="py-6 text-center text-sm text-muted-foreground"
+        >
           Tapez une commande ou recherchez...
         </div>
-        <CommandEmpty v-if="!isLoading && query.length >= 3 && !hasResults" class="py-6 text-center text-sm">
+        <CommandEmpty
+          v-if="!isLoading && query.length >= 3 && !hasResults"
+          class="py-6 text-center text-sm"
+        >
           Aucun résultat trouvé.
         </CommandEmpty>
         <CommandEmpty v-if="isLoading" class="py-6 flex justify-center">
@@ -192,86 +226,153 @@ function navigateToMedia(type: string, idOrSlug: string) {
 
         <!-- Games -->
         <CommandGroup v-if="results.games.length > 0" heading="Jeux Vidéo">
-          <CommandItem v-for="item in results.games" :key="item.id" :value="item.title"
-            class="aria-selected:bg-accent aria-selected:text-accent-foreground" @select="handleSelect(item)">
+          <CommandItem
+            v-for="item in results.games"
+            :key="item.id"
+            :value="item.title"
+            class="aria-selected:bg-accent aria-selected:text-accent-foreground"
+            @select="handleSelect(item)"
+          >
             <Gamepad2 class="mr-2 h-4 w-4" />
             <span>{{ item.title }}</span>
-            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs">({{ item.year }})</span>
+            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs"
+              >({{ item.year }})</span
+            >
             <div class="ml-auto flex items-center">
-              <Loader2 v-if="importingId === item.id" class="h-4 w-4 animate-spin" />
-              <Database v-else-if="item.isImported" class="h-4 w-4 text-primary" />
-              <CloudDownload v-else class="h-4 w-4 text-muted-foreground opacity-70" />
+              <Loader2
+                v-if="importingId === item.id"
+                class="h-4 w-4 animate-spin"
+              />
+              <Database
+                v-else-if="item.isImported"
+                class="h-4 w-4 text-primary"
+              />
+              <CloudDownload
+                v-else
+                class="h-4 w-4 text-muted-foreground opacity-70"
+              />
             </div>
           </CommandItem>
         </CommandGroup>
 
         <!-- Movies -->
         <CommandGroup v-if="results.movies.length > 0" heading="Films">
-          <CommandItem v-for="item in results.movies" :key="item.id" :value="item.title"
-            class="aria-selected:bg-accent aria-selected:text-accent-foreground" @select="handleSelect(item)">
+          <CommandItem
+            v-for="item in results.movies"
+            :key="item.id"
+            :value="item.title"
+            class="aria-selected:bg-accent aria-selected:text-accent-foreground"
+            @select="handleSelect(item)"
+          >
             <Film class="mr-2 h-4 w-4" />
             <span>{{ item.title }}</span>
-            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs">({{ item.year }})</span>
+            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs"
+              >({{ item.year }})</span
+            >
             <div class="ml-auto flex items-center">
-              <Loader2 v-if="importingId === item.id" class="h-4 w-4 animate-spin" />
-              <Database v-else-if="item.isImported" class="h-4 w-4 text-primary" />
-              <CloudDownload v-else class="h-4 w-4 text-muted-foreground opacity-70" />
+              <Loader2
+                v-if="importingId === item.id"
+                class="h-4 w-4 animate-spin"
+              />
+              <Database
+                v-else-if="item.isImported"
+                class="h-4 w-4 text-primary"
+              />
+              <CloudDownload
+                v-else
+                class="h-4 w-4 text-muted-foreground opacity-70"
+              />
             </div>
           </CommandItem>
         </CommandGroup>
 
         <!-- Shows -->
         <CommandGroup v-if="results.shows.length > 0" heading="Séries TV">
-          <CommandItem v-for="item in results.shows" :key="item.id" :value="item.title"
-            class="aria-selected:bg-accent aria-selected:text-accent-foreground" @select="handleSelect(item)">
+          <CommandItem
+            v-for="item in results.shows"
+            :key="item.id"
+            :value="item.title"
+            class="aria-selected:bg-accent aria-selected:text-accent-foreground"
+            @select="handleSelect(item)"
+          >
             <Tv class="mr-2 h-4 w-4" />
             <span>{{ item.title }}</span>
-            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs">({{ item.year }})</span>
+            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs"
+              >({{ item.year }})</span
+            >
             <div class="ml-auto flex items-center">
-              <Loader2 v-if="importingId === item.id" class="h-4 w-4 animate-spin" />
-              <Database v-else-if="item.isImported" class="h-4 w-4 text-primary" />
-              <CloudDownload v-else class="h-4 w-4 text-muted-foreground opacity-70" />
+              <Loader2
+                v-if="importingId === item.id"
+                class="h-4 w-4 animate-spin"
+              />
+              <Database
+                v-else-if="item.isImported"
+                class="h-4 w-4 text-primary"
+              />
+              <CloudDownload
+                v-else
+                class="h-4 w-4 text-muted-foreground opacity-70"
+              />
             </div>
           </CommandItem>
         </CommandGroup>
 
         <!-- Books -->
         <CommandGroup v-if="results.books.length > 0" heading="Livres">
-          <CommandItem v-for="item in results.books" :key="item.id" :value="item.title"
-            class="aria-selected:bg-accent aria-selected:text-accent-foreground" @select="handleSelect(item)">
+          <CommandItem
+            v-for="item in results.books"
+            :key="item.id"
+            :value="item.title"
+            class="aria-selected:bg-accent aria-selected:text-accent-foreground"
+            @select="handleSelect(item)"
+          >
             <BookOpen class="mr-2 h-4 w-4" />
             <span>{{ item.title }}</span>
-            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs">({{ item.year }})</span>
+            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs"
+              >({{ item.year }})</span
+            >
             <div class="ml-auto flex items-center">
-              <Loader2 v-if="importingId === item.id" class="h-4 w-4 animate-spin" />
-              <Database v-else-if="item.isImported" class="h-4 w-4 text-primary" />
-              <CloudDownload v-else class="h-4 w-4 text-muted-foreground opacity-70" />
+              <Loader2
+                v-if="importingId === item.id"
+                class="h-4 w-4 animate-spin"
+              />
+              <Database
+                v-else-if="item.isImported"
+                class="h-4 w-4 text-primary"
+              />
+              <CloudDownload
+                v-else
+                class="h-4 w-4 text-muted-foreground opacity-70"
+              />
             </div>
           </CommandItem>
         </CommandGroup>
-
       </CommandList>
 
       <div
-        class="border-t px-4 py-2 text-xs text-muted-foreground flex items-center justify-end gap-x-4 bg-muted/40 h-10">
+        class="border-t px-4 py-2 text-xs text-muted-foreground flex items-center justify-end gap-x-4 bg-muted/40 h-10"
+      >
         <div class="flex items-center gap-1">
           <span class="text-xs">Aller à</span>
           <kbd
-            class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+          >
             <span class="text-xs">⏎</span>
           </kbd>
         </div>
         <div class="flex items-center gap-1">
           <span class="text-xs">Naviguer</span>
           <kbd
-            class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+          >
             <span class="text-xs">↑↓</span>
           </kbd>
         </div>
         <div class="flex items-center gap-1">
           <span class="text-xs">Fermer</span>
           <kbd
-            class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            class="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"
+          >
             <span class="text-xs">Esc</span>
           </kbd>
         </div>

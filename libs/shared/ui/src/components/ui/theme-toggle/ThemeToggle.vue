@@ -53,21 +53,40 @@ const setTheme = (theme: string) => {
 </script>
 
 <template>
-  <div class="relative inline-block" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+  <div
+    class="relative inline-block"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
+  >
     <DropdownMenu :open="isOpen" :modal="false">
       <DropdownMenuTrigger as-child>
         <Button variant="ghost" size="icon" @click="toggleDark()">
           <!-- Sun Icon: Visible in Light Mode. Ensure contrast if needed. -->
           <Sun
-            class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-foreground dark:text-foreground" />
+            class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-foreground dark:text-foreground"
+          />
           <Moon
-            class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-foreground dark:text-foreground" />
+            class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-foreground dark:text-foreground"
+          />
           <span class="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent :side-offset="0" align="end" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-        <div class="h-full w-full" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-          <DropdownMenuItem v-for="theme in themes" :key="theme.value" @click="setTheme(theme.value)">
+      <DropdownMenuContent
+        :side-offset="0"
+        align="end"
+        @mouseenter="onMouseEnter"
+        @mouseleave="onMouseLeave"
+      >
+        <div
+          class="h-full w-full"
+          @mouseenter="onMouseEnter"
+          @mouseleave="onMouseLeave"
+        >
+          <DropdownMenuItem
+            v-for="theme in themes"
+            :key="theme.value"
+            @click="setTheme(theme.value)"
+          >
             {{ theme.name }}
           </DropdownMenuItem>
         </div>

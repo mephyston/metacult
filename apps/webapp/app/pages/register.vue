@@ -3,7 +3,14 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { signUp } from '../lib/auth-client';
 import { useAuthSession } from '../composables/useAuthSession';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@metacult/shared-ui';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@metacult/shared-ui';
 import { Input } from '@metacult/shared-ui';
 import { Label } from '@metacult/shared-ui';
 import { Button } from '@metacult/shared-ui';
@@ -40,7 +47,7 @@ const handleSubmit = async () => {
 
     // Rafraîchir la session dans le state global
     await refreshSession();
-    
+
     // Navigation SPA (pas de reload)
     router.push('/');
   } catch (err: any) {
@@ -56,19 +63,23 @@ const handleSubmit = async () => {
   <div class="flex min-h-screen items-center justify-center bg-background px-4">
     <Card class="w-full max-w-md">
       <CardHeader>
-        <CardTitle class="text-2xl">Créer un compte</CardTitle>
+        <CardTitle class="text-2xl"> Créer un compte </CardTitle>
         <CardDescription>
           Rejoignez Metacult et découvrez vos prochains favoris
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form data-testid="signup-form" @submit.prevent="handleSubmit" class="space-y-4">
+        <form
+          data-testid="signup-form"
+          class="space-y-4"
+          @submit.prevent="handleSubmit"
+        >
           <div class="space-y-2">
             <Label for="name">Pseudo</Label>
             <Input
-              data-testid="input-name"
               id="name"
               v-model="name"
+              data-testid="input-name"
               type="text"
               placeholder="Votre pseudo"
               required
@@ -78,9 +89,9 @@ const handleSubmit = async () => {
           <div class="space-y-2">
             <Label for="email">Email</Label>
             <Input
-              data-testid="input-email"
               id="email"
               v-model="email"
+              data-testid="input-email"
               type="email"
               name="email"
               placeholder="vous@exemple.com"
@@ -91,20 +102,22 @@ const handleSubmit = async () => {
           <div class="space-y-2">
             <Label for="password">Mot de passe</Label>
             <Input
-              data-testid="input-password"
               id="password"
               v-model="password"
+              data-testid="input-password"
               type="password"
               name="password"
               placeholder="••••••••"
               required
               :disabled="loading"
             />
-            <p class="text-xs text-muted-foreground">
-              Minimum 8 caractères
-            </p>
+            <p class="text-xs text-muted-foreground">Minimum 8 caractères</p>
           </div>
-          <div v-if="error" data-testid="error-message" class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          <div
+            v-if="error"
+            data-testid="error-message"
+            class="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+          >
             {{ error }}
           </div>
           <Button type="submit" class="w-full" :disabled="loading">
