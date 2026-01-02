@@ -3,7 +3,7 @@ import { cors } from '@elysiajs/cors';
 import { swagger } from '@elysiajs/swagger';
 import { createCatalogRoutes, CatalogModuleFactory, mediaSchema, type CatalogModuleConfig } from '@metacult/backend/catalog';
 import { createDiscoveryRoutes, FeedController, GetMixedFeedHandler } from '@metacult/backend/discovery';
-import { authRoutes } from './src/routes/auth.routes';
+import { createAuthRoutes } from '@metacult/backend-identity';
 import { importRoutes } from './src/routes/import.routes';
 import { debugRoutes } from './src/routes/debug.routes';
 import { getDbConnection, redisClient, requestContext, patchConsole } from '@metacult/backend/infrastructure';
@@ -121,6 +121,9 @@ const adsAdapter = {
 const mixedFeedHandler = new GetMixedFeedHandler(redisClient, mediaSearchAdapter, adsAdapter);
 const feedController = new FeedController(mixedFeedHandler);
 const discoveryRoutes = createDiscoveryRoutes(feedController);
+
+// 4. Module Identity (Auth routes)
+const authRoutes = createAuthRoutes();
 
 // Initialisation des tâches Cron
 initCrons().catch(console.error);
