@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { Hero, SwipeDeck } from '@metacult/shared-ui';
 import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
+import { getApiUrl } from '../utils/get-api-url';
 
 // Force Static Site Generation for this page
 // This ensures images are optimized at build time, avoiding runtime 500 errors in Docker.
@@ -50,22 +51,31 @@ const demoGames = [
 // Fetch Real Media from Discovery API
 let interactions: any[] = [];
 try {
-	const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
-	// Utilisation de fetch normal (Astro build context)
-	const response = await fetch(`${apiUrl}/api/discovery/feed`);
+	const apiUrl = getApiUrl();
+	console.log('[Home] Fetching feed from:', `${apiUrl}/feed`);
+
+	const response = await fetch(`${apiUrl}/feed`);
 	if (response.ok) {
 		const data = await response.json();
 		if (Array.isArray(data)) {
 			// Mapping MediaReadDto -> SwipeItem
-			interactions = data.slice(0, 5).map((item: any) => ({
-				id: item.data?.id || item.id,
-				title: item.data?.title || item.title,
-				image:
-					item.data?.coverUrl ||
-					item.coverUrl ||
-					'https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg', // Fallback
-				type: item.type,
-			}));
+			interactions = data.slice(0, 5).map((item: any) => {
+				// Determine cover image (support both 'data' wrapper and flat structure if changed)
+				const media = item.data || item;
+				const image =
+					media.coverUrl ||
+					media.poster ||
+					'https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg';
+
+				return {
+					id: media.id,
+					title: media.title,
+					image: image,
+					type: item.type,
+					// Keep original data for sync if needed
+					...media,
+				};
+			});
 		}
 	} else {
 		console.error('Failed to fetch discovery feed:', response.status);

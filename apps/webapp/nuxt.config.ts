@@ -1,3 +1,4 @@
+/* eslint-disable @nx/enforce-module-boundaries */
 import { fileURLToPath } from 'url';
 import tailwindcss from '@tailwindcss/vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
@@ -10,6 +11,7 @@ export default defineNuxtConfig({
   workspaceDir: '../../',
   srcDir: 'app',
   devtools: { enabled: true },
+  ssr: false, // SPA mode - pas besoin de SSR pour une app authentifiée
   devServer: {
     host: 'localhost',
     port: 4201,
@@ -42,7 +44,12 @@ export default defineNuxtConfig({
   imports: {
     autoImport: true,
   },
-  css: ['@metacult/shared-ui/styles/global.css'],
+  router: {
+    options: {
+      // Enable global middleware
+    }
+  },
+  css: ['../../libs/shared/ui/src/styles/global.css'],
   vite: {
     plugins: [nxViteTsPaths(), tailwindcss()],
     build: {
@@ -70,7 +77,6 @@ export default defineNuxtConfig({
     preconnect: true,
   },
   alias: {
-    '@metacult/shared-ui/styles': fileURLToPath(new URL('../../libs/shared/ui/src/styles', import.meta.url)),
     '@metacult/shared-ui': fileURLToPath(new URL('../../libs/shared/ui/src/index.ts', import.meta.url)),
   },
 });

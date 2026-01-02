@@ -28,6 +28,8 @@ export class FeedController {
         const searchTerm = query?.q || '';
         const userId = user?.id;
 
+        console.log('[FeedController] GET /feed - User:', userId || 'Guest', 'Search:', searchTerm);
+
         let excludedMediaIds: string[] = [];
         let limit = 5; // Default (Guest)
 
@@ -35,6 +37,7 @@ export class FeedController {
           // User logic
           try {
             excludedMediaIds = await this.interactionRepository.getSwipedMediaIds(userId);
+            console.log('[FeedController] Excluded media IDs:', excludedMediaIds.length);
           } catch (e) {
             console.error('[FeedController] Failed to fetch blacklist:', e);
           }
@@ -50,6 +53,7 @@ export class FeedController {
         );
 
         const feed = await this.getMixedFeedHandler.execute(feedQuery);
+        console.log('[FeedController] Returning', feed.length, 'items');
         return feed;
       });
   }

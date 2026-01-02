@@ -9,8 +9,11 @@ import { syncInteractions } from '../../../application/commands/sync-interaction
 export const interactionController = new Elysia({ prefix: '/interactions' })
     .use(isAuthenticated) // Middleware d'authentification
     .post('/', async (ctx) => {
-        const { body, user, error } = ctx as any; // Cast temporaire ou utilisation du type ProtectedRoute si disponible
+        const { body, set } = ctx as any; // Cast temporaire
         try {
+            // Use helper to resolve user or throw 401
+            const user = await resolveUserOrThrow(ctx);
+
             const interaction = await saveInteraction({
                 userId: user.id,
                 mediaId: body.mediaId,
@@ -24,11 +27,12 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
             };
         } catch (e: any) {
             console.error('[InteractionController] Error saving interaction:', e);
-            return error(500, {
+            set.status = 500;
+            return {
                 success: false,
                 message: 'Failed to save interaction',
                 error: e.message
-            });
+            };
         }
     }, {
         body: t.Object({
@@ -53,7 +57,7 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
     })
 
     .post('/sync', async (ctx) => {
-        const { body, error } = ctx as any;
+        const { body, set } = ctx as any;
 
         // Use helper to resolve user or throw 401
         const user = await resolveUserOrThrow(ctx);
@@ -65,11 +69,12 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
             };
         } catch (e: any) {
             console.error('[InteractionController] Error syncing interactions:', e);
-            return error(500, {
+            set.status = 500;
+            return {
                 success: false,
                 message: 'Failed to sync interactions',
                 error: e.message
-            });
+            };
         }
     }, {
         body: t.Array(t.Object({

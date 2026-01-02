@@ -33,6 +33,12 @@ const components: { title: string; href: string; description: string }[] = [
     <NavigationMenu>
         <NavigationMenuList>
             <NavigationMenuItem>
+                <NavigationMenuLink href="/discover"
+                    :class="cn(navigationMenuTriggerStyle(), 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-accent focus:bg-accent')">
+                    Découvrir
+                </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
                 <NavigationMenuTrigger
                     class="bg-transparent text-muted-foreground hover:text-foreground hover:bg-accent focus:bg-accent data-[active]:bg-accent data-[state=open]:bg-accent">
                     Jeux

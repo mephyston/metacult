@@ -23,10 +23,10 @@ const handleLogout = async () => {
 <template>
   <div class="font-sans min-h-screen flex flex-col bg-background text-foreground">
     <Header :user="user" @logout="handleLogout">
-      <template #search>
-        <div class="contents">
-          <Search />
-        </div>
+        <template #search>
+          <div class="contents">
+            <Search />
+          </div>
       </template>
     </Header>
 
