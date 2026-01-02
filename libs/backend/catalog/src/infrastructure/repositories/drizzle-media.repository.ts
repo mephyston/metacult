@@ -334,6 +334,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
         coverUrl: coverUrl,
         description: null,
         isImported: true,
+        eloScore: row.eloScore,
         tags: tagsMap.get(row.id) || [],
       };
     });
