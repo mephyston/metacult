@@ -21,12 +21,12 @@ export default defineNuxtConfig({
     head: {
       script: [
         {
-          innerHTML: themeScript
-        }
-      ]
+          innerHTML: themeScript,
+        },
+      ],
     },
     pageTransition: false,
-    layoutTransition: false
+    layoutTransition: false,
   },
   runtimeConfig: {
     public: {
@@ -47,7 +47,7 @@ export default defineNuxtConfig({
   router: {
     options: {
       // Enable global middleware
-    }
+    },
   },
   css: ['../../libs/shared/ui/src/styles/global.css'],
   vite: {
@@ -65,6 +65,9 @@ export default defineNuxtConfig({
         target: 'esnext',
       },
     },
+    routeRules: {
+      '/api/**': { proxy: 'http://localhost:3000/api/**' },
+    },
   },
   modules: ['@nuxtjs/google-fonts'],
   // @ts-expect-error: googleFonts property is added by the module but types are not inferred without build
@@ -77,6 +80,8 @@ export default defineNuxtConfig({
     preconnect: true,
   },
   alias: {
-    '@metacult/shared-ui': fileURLToPath(new URL('../../libs/shared/ui/src/index.ts', import.meta.url)),
+    '@metacult/shared-ui': fileURLToPath(
+      new URL('../../libs/shared/ui/src/index.ts', import.meta.url),
+    ),
   },
 });
