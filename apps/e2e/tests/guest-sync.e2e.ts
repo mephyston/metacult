@@ -110,11 +110,16 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     // Attendre que le bouton soit actif
     await expect(submitButton).toBeEnabled();
     
-    // Soumettre le formulaire via form.requestSubmit() pour déclencher @submit.prevent
-    const signupForm = page.locator('form[data-testid="signup-form"]');
-    console.log('🖱️  Submitting form via requestSubmit()...');
-    await signupForm.evaluate((form: HTMLFormElement) => form.requestSubmit());
-    console.log('✅ Form submitted');
+    // Déclencher l'événement submit manuellement (Vue @submit.prevent ne fonctionne pas avec requestSubmit)
+    console.log('🖱️  Triggering Vue submit event...');
+    await signupForm.evaluate((form: HTMLFormElement) => {
+      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      form.dispatchEvent(submitEvent);
+    });
+    console.log('✅ Submit event dispatched');
+    
+    // Attendre un peu pour que Vue traite l'événement
+    await page.waitForTimeout(1000);
 
     // ============================================================
     // STEP 6: Vérifier la redirection vers le Dashboard

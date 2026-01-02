@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { signUp } from '../lib/auth-client';
+import { useAuthSession } from '../composables/useAuthSession';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@metacult/shared-ui';
 import { Input } from '@metacult/shared-ui';
 import { Label } from '@metacult/shared-ui';
