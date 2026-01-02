@@ -29,11 +29,17 @@ const isLoadingSession = ref(true);
 // User actuel : priorité à la prop, sinon session locale
 const currentUser = computed(() => props.user ?? sessionUser.value);
 
+const isMounted = ref(false);
+
 // Fetch session au montage
 onMounted(async () => {
+    isMounted.value = true;
     if (props.user === undefined) {
         try {
-            const { data } = await authClient.getSession();
+            console.log('[Header] Fetching session...');
+            const { data, error } = await authClient.getSession();
+            console.log('[Header] Session result:', { data, error });
+
             if (data?.user) {
                 sessionUser.value = {
                     name: data.user.name ?? undefined,
@@ -113,44 +119,44 @@ const handleLogout = async () => {
                     <slot name="actions" />
 
                     <!-- User Menu (if authenticated) -->
-                    <ClientOnly>
-                        <div v-if="currentUser" class="flex items-center gap-2">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger as-child>
-                                    <button
-                                        class="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                        <span v-if="!currentUser.avatar" class="text-sm font-semibold">
-                                            {{ userInitials }}
-                                        </span>
-                                        <img v-else :src="currentUser.avatar" :alt="currentUser.name || 'User avatar'"
-                                            class="h-full w-full rounded-full object-cover" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" class="w-56">
-                                    <div class="flex items-center justify-start gap-2 p-2">
-                                        <div class="flex flex-col space-y-1 leading-none">
-                                            <p v-if="currentUser.name" class="font-medium">{{ currentUser.name }}</p>
-                                            <p v-if="currentUser.email" class="text-sm text-muted-foreground">{{ currentUser.email }}</p>
-                                        </div>
+                    <div v-if="isMounted && currentUser" class="flex items-center gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <button
+                                    class="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                    <span v-if="!currentUser.avatar" class="text-sm font-semibold">
+                                        {{ userInitials }}
+                                    </span>
+                                    <img v-else :src="currentUser.avatar" :alt="currentUser.name || 'User avatar'"
+                                        class="h-full w-full rounded-full object-cover" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-56">
+                                <div class="flex items-center justify-start gap-2 p-2">
+                                    <div class="flex flex-col space-y-1 leading-none">
+                                        <p v-if="currentUser.name" class="font-medium">{{ currentUser.name }}</p>
+                                        <p v-if="currentUser.email" class="text-sm text-muted-foreground">{{
+                                            currentUser.email }}</p>
                                     </div>
-                                    <hr class="my-1 border-border" />
-                                    <DropdownMenuItem @click="handleLogout" class="cursor-pointer text-destructive focus:text-destructive">
-                                        Déconnexion
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-    
-                        <!-- Auth Buttons (if not authenticated) - Hidden on mobile -->
-                        <div v-else-if="!isLoadingSession" class="hidden md:flex items-center gap-2">
-                            <Button variant="ghost" size="sm" as="a" :href="loginUrl">
-                                Connexion
-                            </Button>
-                            <Button variant="default" size="sm" as="a" :href="registerUrl">
-                                Inscription
-                            </Button>
-                        </div>
-                    </ClientOnly>
+                                </div>
+                                <hr class="my-1 border-border" />
+                                <DropdownMenuItem @click="handleLogout"
+                                    class="cursor-pointer text-destructive focus:text-destructive">
+                                    Déconnexion
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
+                    <!-- Auth Buttons (if not authenticated) - Hidden on mobile -->
+                    <div v-else-if="isMounted && !isLoadingSession" class="hidden md:flex items-center gap-2">
+                        <Button variant="ghost" size="sm" as="a" :href="loginUrl">
+                            Connexion
+                        </Button>
+                        <Button variant="default" size="sm" as="a" :href="registerUrl">
+                            Inscription
+                        </Button>
+                    </div>
 
                     <!-- Unified Theme Control (Toggle + Hover Switcher) -->
                     <ThemeToggle class="text-foreground hover:bg-accent hover:text-accent-foreground" />
@@ -172,7 +178,7 @@ const handleLogout = async () => {
             class="md:hidden border-t border-border bg-background absolute w-full left-0 top-20 shadow-xl z-50">
             <nav class="flex flex-col p-4 gap-4">
                 <slot name="mobile-nav" />
-                
+
                 <!-- Auth buttons in mobile menu (if not authenticated) -->
                 <div v-if="!currentUser && !isLoadingSession" class="flex flex-col gap-2 pt-2 border-t border-border">
                     <Button variant="ghost" size="sm" as="a" :href="loginUrl" class="w-full justify-center">
@@ -186,7 +192,8 @@ const handleLogout = async () => {
                 <!-- User info in mobile menu (if authenticated) -->
                 <div v-if="currentUser" class="flex flex-col gap-2 pt-2 border-t border-border">
                     <div class="flex items-center gap-3 p-2">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                             <span v-if="!currentUser.avatar" class="text-sm font-semibold">
                                 {{ userInitials }}
                             </span>
@@ -195,7 +202,8 @@ const handleLogout = async () => {
                         </div>
                         <div class="flex flex-col flex-1">
                             <p v-if="currentUser.name" class="font-medium text-sm">{{ currentUser.name }}</p>
-                            <p v-if="currentUser.email" class="text-xs text-muted-foreground">{{ currentUser.email }}</p>
+                            <p v-if="currentUser.email" class="text-xs text-muted-foreground">{{ currentUser.email }}
+                            </p>
                         </div>
                     </div>
                     <Button variant="destructive" size="sm" @click="handleLogout" class="w-full justify-center">
