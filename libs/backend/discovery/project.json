@@ -4,9 +4,9 @@
     "projectType": "library",
     "sourceRoot": "libs/backend/discovery/src",
     "tags": [
-        "type:feature",
         "scope:discovery",
-        "layer:backend"
+        "layer:backend",
+        "type:bounded-context"
     ],
     "targets": {
         "lint": {

@@ -4,9 +4,9 @@
     "projectType": "library",
     "sourceRoot": "libs/backend/catalog/src",
     "tags": [
-        "type:feature",
         "scope:catalog",
-        "layer:backend"
+        "layer:backend",
+        "type:bounded-context"
     ],
     "targets": {
         "lint": {

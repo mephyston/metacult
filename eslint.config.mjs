@@ -16,14 +16,61 @@ export default [
           enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
+            // === Clean Architecture Layer Constraints ===
+            // Domain layer: Pure business logic, NO external dependencies
+            {
+              sourceTag: 'layer:domain',
+              onlyDependOnLibsWithTags: ['layer:domain', 'scope:shared']
+            },
+            // Application layer: Use Cases, can depend on Domain
+            {
+              sourceTag: 'layer:application',
+              onlyDependOnLibsWithTags: ['layer:domain', 'layer:application', 'scope:shared']
+            },
+            // Infrastructure layer: Adapters, can depend on Domain and Application
+            {
+              sourceTag: 'layer:infrastructure',
+              onlyDependOnLibsWithTags: ['layer:domain', 'layer:application', 'layer:infrastructure', 'scope:shared']
+            },
+            // API layer: HTTP/Controllers, can depend on Application (Commands/Queries)
+            {
+              sourceTag: 'layer:api',
+              onlyDependOnLibsWithTags: ['layer:application', 'layer:api', 'scope:shared']
+            },
+
+            // === Bounded Context Isolation ===
+            // Catalog context: Cannot import Identity or Interaction directly
             {
               sourceTag: 'scope:catalog',
-              onlyDependOnLibsWithTags: ['scope:catalog', 'scope:shared']
+              onlyDependOnLibsWithTags: ['scope:catalog', 'scope:shared'],
+              notDependOnLibsWithTags: ['scope:identity', 'scope:interaction']
             },
+            // Identity context: Cannot import Catalog or Interaction directly
+            {
+              sourceTag: 'scope:identity',
+              onlyDependOnLibsWithTags: ['scope:identity', 'scope:shared'],
+              notDependOnLibsWithTags: ['scope:catalog', 'scope:interaction']
+            },
+            // Interaction context: Cannot import other bounded contexts
+            {
+              sourceTag: 'scope:interaction',
+              onlyDependOnLibsWithTags: ['scope:interaction', 'scope:shared'],
+              notDependOnLibsWithTags: ['scope:catalog', 'scope:identity', 'scope:discovery', 'scope:marketing']
+            },
+            // Discovery context: Cannot import other bounded contexts
             {
               sourceTag: 'scope:discovery',
-              onlyDependOnLibsWithTags: ['scope:discovery', 'scope:shared']
+              onlyDependOnLibsWithTags: ['scope:discovery', 'scope:shared'],
+              notDependOnLibsWithTags: ['scope:catalog', 'scope:identity', 'scope:interaction', 'scope:marketing']
             },
+            // Marketing context: Cannot import other bounded contexts
+            {
+              sourceTag: 'scope:marketing',
+              onlyDependOnLibsWithTags: ['scope:marketing', 'scope:shared'],
+              notDependOnLibsWithTags: ['scope:catalog', 'scope:identity', 'scope:interaction', 'scope:discovery']
+            },
+
+            // === Legacy constraints (to migrate) ===
             {
               sourceTag: 'layer:backend',
               onlyDependOnLibsWithTags: ['layer:backend', 'scope:shared']
@@ -34,11 +81,11 @@ export default [
             },
             {
               sourceTag: 'type:app',
-              onlyDependOnLibsWithTags: ['type:feature', 'type:ui', 'type:util']
+              onlyDependOnLibsWithTags: ['type:feature', 'type:ui', 'type:util', 'type:bounded-context']
             },
             {
-              sourceTag: 'type:feature',
-              onlyDependOnLibsWithTags: ['type:feature', 'type:util']
+              sourceTag: 'type:bounded-context',
+              onlyDependOnLibsWithTags: ['type:bounded-context', 'type:util', 'scope:shared']
             },
             {
               sourceTag: 'type:ui',

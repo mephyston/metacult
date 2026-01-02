@@ -4,9 +4,9 @@
     "projectType": "library",
     "sourceRoot": "libs/backend/marketing/src",
     "tags": [
-        "type:feature",
         "scope:marketing",
-        "layer:backend"
+        "layer:backend",
+        "type:bounded-context"
     ],
     "targets": {
         "lint": {
