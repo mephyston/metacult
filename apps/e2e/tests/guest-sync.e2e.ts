@@ -30,17 +30,19 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     await expect(swipeDeck).toBeVisible({ timeout: 10000 });
 
     // ============================================================
-    // STEP 2: Simuler 3 interactions "Like" (clics sur le bouton Like)
+    // STEP 2: Swiper toutes les cartes pour déclencher l'empty state
     // ============================================================
     const likeButton = page.locator('[data-testid="btn-like"]');
     
-    for (let i = 0; i < 3; i++) {
-      await expect(likeButton).toBeVisible();
+    // Swiper jusqu'à ce que le bouton Like disparaisse (toutes les cartes swipées)
+    let swipeCount = 0;
+    while (await likeButton.isVisible() && swipeCount < 10) {
       await likeButton.click();
-      
-      // Attendre que l'animation de swipe se termine
       await page.waitForTimeout(500);
+      swipeCount++;
     }
+    
+    console.log(`✅ ${swipeCount} cartes swipées`);
 
     // ============================================================
     // STEP 3: Vérifier que le bouton "Créer un compte" apparaît
@@ -81,8 +83,14 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     const passwordInput = page.locator('input[data-testid="input-password"]');
     const submitButton = page.locator('form[data-testid="signup-form"] button[type="submit"]');
     
+    await expect(emailInput).toBeVisible();
+    await expect(passwordInput).toBeVisible();
+    
     await emailInput.fill(uniqueEmail);
     await passwordInput.fill(password);
+    
+    // Attendre que le bouton soit actif
+    await expect(submitButton).toBeEnabled();
     
     // Soumettre le formulaire
     await submitButton.click();
@@ -90,7 +98,8 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     // ============================================================
     // STEP 6: Vérifier la redirection vers le Dashboard
     // ============================================================
-    await page.waitForURL(/localhost:4201\/(dashboard|home|app)?/, { 
+    // Après signup, Better Auth redirige vers la page d'accueil (/)
+    await page.waitForURL(/localhost:4201\/$/, { 
       timeout: 15000 
     });
     
