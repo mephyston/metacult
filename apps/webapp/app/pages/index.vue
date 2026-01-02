@@ -158,7 +158,7 @@ const gamepadActions = [
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-background p-4 gap-6 md:gap-10">
+  <div data-testid="dashboard" class="flex flex-col items-center justify-center min-h-screen bg-background p-4 gap-6 md:gap-10">
     
     <!-- Header -->
     <div class="text-center">

@@ -57,7 +57,7 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     await signupButton.click();
     
     // Attendre la navigation vers la Webapp (Nuxt)
-    await page.waitForURL(/localhost:4200\/signup/, { timeout: 10000 });
+    await page.waitForURL(/localhost:4200\/register/, { timeout: 10000 });
     
     // Vérifier la présence du paramètre sync dans l'URL
     const currentUrl = page.url();
@@ -77,11 +77,9 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     const password = 'Test123!@#';
     
     // Remplir le formulaire
-    const emailInput = page.locator('input[type="email"], input[name="email"]');
-    const passwordInput = page.locator('input[type="password"], input[name="password"]');
-    const submitButton = page.locator('button[type="submit"]', {
-      hasText: /créer|s'inscrire|sign up/i
-    });
+    const emailInput = page.locator('input[data-testid="input-email"]');
+    const passwordInput = page.locator('input[data-testid="input-password"]');
+    const submitButton = page.locator('form[data-testid="signup-form"] button[type="submit"]');
     
     await emailInput.fill(uniqueEmail);
     await passwordInput.fill(password);
@@ -140,11 +138,11 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     const signupButton = page.locator('[data-testid="btn-signup"]');
     await signupButton.click();
 
-    await page.waitForURL(/localhost:4200\/signup/);
+    await page.waitForURL(/localhost:4200\/register/);
 
     // Tenter de soumettre avec un email invalide
-    const emailInput = page.locator('input[type="email"]');
-    const submitButton = page.locator('button[type="submit"]');
+    const emailInput = page.locator('input[data-testid="input-email"]');
+    const submitButton = page.locator('form[data-testid="signup-form"] button[type="submit"]');
 
     await emailInput.fill('invalid-email');
     await submitButton.click();

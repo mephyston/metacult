@@ -60,7 +60,7 @@ const handleSubmit = async () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form @submit.prevent="handleSubmit" class="space-y-4">
+        <form data-testid="signup-form" @submit.prevent="handleSubmit" class="space-y-4">
           <div class="space-y-2">
             <Label for="name">Pseudo</Label>
             <Input
@@ -75,9 +75,11 @@ const handleSubmit = async () => {
           <div class="space-y-2">
             <Label for="email">Email</Label>
             <Input
+              data-testid="input-email"
               id="email"
               v-model="email"
               type="email"
+              name="email"
               placeholder="vous@exemple.com"
               required
               :disabled="loading"
@@ -86,9 +88,11 @@ const handleSubmit = async () => {
           <div class="space-y-2">
             <Label for="password">Mot de passe</Label>
             <Input
+              data-testid="input-password"
               id="password"
               v-model="password"
               type="password"
+              name="password"
               placeholder="••••••••"
               required
               :disabled="loading"

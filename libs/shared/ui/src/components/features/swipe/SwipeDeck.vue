@@ -186,7 +186,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="relative flex flex-col items-center justify-center w-full h-full gap-6">
+  <div data-testid="swipe-deck" class="relative flex flex-col items-center justify-center w-full h-full gap-6">
 
     <!-- Card Display Area -->
     <div class="relative w-full max-w-sm h-[65vh] md:h-[550px] flex items-center justify-center">
@@ -206,7 +206,7 @@ defineExpose({
               Vous avez swipé {{ totalProcessed }} cartes
             </p>
             <div v-if="guestMode && signupUrl" class="flex flex-col gap-2">
-              <a :href="getSyncUrl(signupUrl)"
+              <a data-testid="btn-signup" :href="getSyncUrl(signupUrl)"
                 class="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium inline-block">
                 Créer un compte pour sauvegarder
               </a>
@@ -237,7 +237,7 @@ defineExpose({
     <!-- Action Buttons -->
     <div v-if="currentCard" class="flex items-center justify-center gap-3 md:gap-5">
       <!-- Dislike -->
-      <button @click="triggerSwipe('DISLIKE')"
+      <button data-testid="btn-dislike" @click="triggerSwipe('DISLIKE')"
         class="group flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-red-500/10 hover:bg-red-500/20 border-2 border-red-500/30 transition-all active:scale-95 hover:scale-110"
         title="Pas pour moi (←)" aria-label="Dislike">
         <X class="w-6 h-6 text-red-500" stroke-width="2.5" />
@@ -258,7 +258,7 @@ defineExpose({
       </button>
 
       <!-- Like (Good) -->
-      <button @click="triggerSwipe('LIKE', 'GOOD')"
+      <button data-testid="btn-like" @click="triggerSwipe('LIKE', 'GOOD')"
         class="group flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-green-500/10 hover:bg-green-500/20 border-2 border-green-500/30 transition-all active:scale-95 hover:scale-110"
         title="Bien (→)" aria-label="Like">
         <ThumbsUp class="w-6 h-6 text-green-500" stroke-width="2.5" />
