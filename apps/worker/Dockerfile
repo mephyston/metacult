@@ -7,21 +7,14 @@ COPY . .
 RUN find . -type f -not -name 'package.json' -not -name 'bun.lockb' -not -name 'tsconfig.json' -delete
 
 # --------------------------------------------------------
-# Stage 2: Builder
+# Stage 2: Installer
 # --------------------------------------------------------
-FROM oven/bun:1-alpine AS builder
+FROM oven/bun:1-alpine AS installer
 WORKDIR /app
 
 # Copy pruned workspace
 COPY --from=pruner /app .
 RUN bun install --frozen-lockfile
-
-# Copy source code
-COPY . .
-
-# Build Worker
-WORKDIR /app/apps/worker
-RUN bun build src/index.ts --target=bun --outfile dist/worker.js
 
 # --------------------------------------------------------
 # Stage 3: Runner
@@ -30,12 +23,13 @@ FROM oven/bun:1-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV MIGRATIONS_FOLDER=/app/drizzle
+ENV MIGRATIONS_FOLDER=/app/libs/backend/infrastructure/drizzle
 
-# Copy the bundled worker
-COPY --from=builder /app/apps/worker/dist/worker.js /app/worker.js
+# Copy all node_modules
+COPY --from=installer /app/node_modules ./node_modules
 
-# Copy Migrations
-COPY --from=builder /app/libs/backend/infrastructure/drizzle /app/drizzle
+# Copy source code
+COPY . .
 
-CMD ["bun", "worker.js"]
+# Run directly with Bun
+CMD ["bun", "apps/worker/src/index.ts"]
