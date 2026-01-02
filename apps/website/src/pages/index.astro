@@ -59,6 +59,7 @@ const heroBg = await getImage({
 
 <Layout title="MetaCult - Le Radar Social">
 	<!-- HERO SECTION -->
+	<!-- @ts-expect-error - Astro client directives are not part of component props -->
 	<Hero
 		client:load
 		badge={heroBadge}
@@ -75,6 +76,7 @@ const heroBg = await getImage({
 	>
 		<!-- Slot pour remplacer la carte statique par SwipeDeck -->
 		<div slot="interactive-card" class="relative w-full max-w-sm mx-auto">
+			<!-- @ts-expect-error - Astro client directives are not part of component props -->
 			<SwipeDeck 
 				client:visible 
 				items={demoGames} 

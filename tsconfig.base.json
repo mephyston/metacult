@@ -29,5 +29,12 @@
       "interaction": ["libs/backend/interaction/src/index.ts"],
       "identity": ["libs/backend/identity/src/index.ts"]
     }
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    ".nx",
+    "tmp"
+  ]
 }

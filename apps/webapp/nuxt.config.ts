@@ -24,6 +24,12 @@ export default defineNuxtConfig({
       ]
     }
   },
+  runtimeConfig: {
+    public: {
+      // Utilise PUBLIC_API_URL (même variable qu'Astro)
+      apiUrl: process.env.PUBLIC_API_URL || 'http://localhost:3000',
+    },
+  },
   typescript: {
     typeCheck: false,
     tsConfig: {

@@ -1,6 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import * as schema from './schema';
 import { DefaultLogger, type LogWriter } from 'drizzle-orm/logger';
 import { requestContext } from '../context/request-context';
 
@@ -31,8 +30,8 @@ let db: ReturnType<typeof drizzle>;
 export function getDbConnection<T extends Record<string, unknown>>(customSchema?: T) {
     if (!pool) {
         // console.log('🔌 Connexion à la base de données...'); // Too verbose
-        const isProduction = process.env.NODE_ENV === 'production';
-        const connectionString = process.env.DATABASE_URL;
+        const isProduction = process.env['NODE_ENV'] === 'production';
+        const connectionString = process.env['DATABASE_URL'];
         // console.log(`🔌 Connexion DB (taille URL: ${connectionString?.length || 0})`);
 
         pool = new Pool({
@@ -40,11 +39,10 @@ export function getDbConnection<T extends Record<string, unknown>>(customSchema?
             ssl: isProduction ? { rejectUnauthorized: false } : undefined,
         });
 
-        // ... inside getDbConnection
-        const finalSchema = customSchema ? { ...schema, ...customSchema } : schema;
-        const enableLogger = process.env.NODE_ENV !== 'production' || process.env.DEBUG_SQL === 'true';
+        // Schema is now provided by the caller (apps/api merges all schemas)
+        const enableLogger = process.env['NODE_ENV'] !== 'production' || process.env['DEBUG_SQL'] === 'true';
         db = drizzle(pool, {
-            schema: finalSchema,
+            schema: customSchema,
             logger: enableLogger ? new TracingLogger() : undefined
         }) as any;
     }
