@@ -74,18 +74,22 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     // STEP 5: Remplir le formulaire d'inscription
     // ============================================================
     
-    // Générer un email unique pour éviter les conflits
+    // Générer des données uniques pour éviter les conflits
     const uniqueEmail = `e2e-test-${Date.now()}@example.com`;
+    const userName = `E2E User ${Date.now()}`;
     const password = 'Test123!@#';
     
-    // Remplir le formulaire
+    // Remplir le formulaire (3 champs requis: name, email, password)
+    const nameInput = page.locator('input#name');
     const emailInput = page.locator('input[data-testid="input-email"]');
     const passwordInput = page.locator('input[data-testid="input-password"]');
     const submitButton = page.locator('form[data-testid="signup-form"] button[type="submit"]');
     
+    await expect(nameInput).toBeVisible();
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
     
+    await nameInput.fill(userName);
     await emailInput.fill(uniqueEmail);
     await passwordInput.fill(password);
     
@@ -142,18 +146,29 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     await expect(swipeDeck).toBeVisible();
 
     const likeButton = page.locator('[data-testid="btn-like"]');
-    await likeButton.click();
+    
+    // Swiper toutes les cartes pour déclencher l'empty state
+    let swipeCount = 0;
+    while (await likeButton.isVisible() && swipeCount < 10) {
+      await likeButton.click();
+      await page.waitForTimeout(500);
+      swipeCount++;
+    }
 
     const signupButton = page.locator('[data-testid="btn-signup"]');
     await signupButton.click();
 
     await page.waitForURL(/localhost:4201\/register/);
 
-    // Tenter de soumettre avec un email invalide
+    // Tenter de soumettre avec un email invalide (mais tous les champs requis)
+    const nameInput = page.locator('input#name');
     const emailInput = page.locator('input[data-testid="input-email"]');
+    const passwordInput = page.locator('input[data-testid="input-password"]');
     const submitButton = page.locator('form[data-testid="signup-form"] button[type="submit"]');
 
+    await nameInput.fill('Test User');
     await emailInput.fill('invalid-email');
+    await passwordInput.fill('Test123!@#');
     await submitButton.click();
 
     // Vérifier qu'un message d'erreur apparaît
