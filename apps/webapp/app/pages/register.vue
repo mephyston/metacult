@@ -64,6 +64,7 @@ const handleSubmit = async () => {
           <div class="space-y-2">
             <Label for="name">Pseudo</Label>
             <Input
+              data-testid="input-name"
               id="name"
               v-model="name"
               type="text"

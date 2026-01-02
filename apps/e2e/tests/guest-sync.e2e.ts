@@ -80,7 +80,7 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     const password = 'Test123!@#';
     
     // Remplir le formulaire (3 champs requis: name, email, password)
-    const nameInput = page.locator('input#name');
+    const nameInput = page.locator('input[data-testid="input-name"]');
     const emailInput = page.locator('input[data-testid="input-email"]');
     const passwordInput = page.locator('input[data-testid="input-password"]');
     const submitButton = page.locator('form[data-testid="signup-form"] button[type="submit"]');
@@ -161,7 +161,7 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     await page.waitForURL(/localhost:4201\/register/);
 
     // Tenter de soumettre avec un email invalide (mais tous les champs requis)
-    const nameInput = page.locator('input#name');
+    const nameInput = page.locator('input[data-testid="input-name"]');
     const emailInput = page.locator('input[data-testid="input-email"]');
     const passwordInput = page.locator('input[data-testid="input-password"]');
     const submitButton = page.locator('form[data-testid="signup-form"] button[type="submit"]');
