@@ -114,24 +114,19 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     await page.waitForTimeout(2000);
     console.log('⏳ Waited for Vue hydration');
     
-    // Cliquer sur le bouton et attendre la navigation
+    // Cliquer sur le bouton et attendre la navigation vers le dashboard
     console.log('🖱️  Clicking submit button and waiting for navigation...');
     await Promise.all([
-      page.waitForURL(/localhost:4201\//, { timeout: 15000 }),
+      page.waitForURL(/localhost:4201\/$/, { timeout: 15000 }),
       submitButton.click()
     ]);
     console.log('✅ Navigation completed');
 
     // ============================================================
-    // STEP 6: Vérifier la redirection vers le Dashboard
+    // STEP 6: Vérifier que nous sommes bien sur le Dashboard
     // ============================================================
-    // Après signup, Better Auth redirige vers la page d'accueil (/)
-    await page.waitForURL(/localhost:4201\/$/, { 
-      timeout: 15000 
-    });
-    
     const dashboardUrl = page.url();
-    console.log(`✅ Redirection vers Dashboard: ${dashboardUrl}`);
+    console.log(`✅ Sur le Dashboard: ${dashboardUrl}`);
 
     // Vérifier que l'utilisateur est bien connecté (présence d'un élément du dashboard)
     const dashboardElement = page.locator('[data-testid="dashboard"], [data-testid="user-menu"], h1');
