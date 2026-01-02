@@ -32,8 +32,16 @@ export function getDbConnection<T extends Record<string, unknown>>(customSchema?
         // console.log('🔌 Connexion à la base de données...'); // Too verbose
         const isProduction = process.env['NODE_ENV'] === 'production';
         const connectionString = process.env['DATABASE_URL'];
-        // Default to SSL in prod, but allow explicit disable (e.g. for private networks)
-        const useSsl = isProduction && process.env['DB_SSL'] !== 'false';
+
+        // Smart SSL: Disable for Railway Internal URLs (they don't need/support it usually)
+        // Can be forced via DB_SSL=true/false
+        const isRailwayInternal = connectionString?.includes('.railway.internal');
+        const dbSslEnv = process.env['DB_SSL'];
+
+        let useSsl = isProduction;
+        if (isRailwayInternal) useSsl = false;
+        if (dbSslEnv === 'true') useSsl = true;
+        if (dbSslEnv === 'false') useSsl = false;
 
         pool = new Pool({
             connectionString,
@@ -42,7 +50,7 @@ export function getDbConnection<T extends Record<string, unknown>>(customSchema?
             idleTimeoutMillis: 30000,
         });
 
-        console.log(`🔌 DB Config: SSL=${isProduction}, Timeout=5000ms`);
+        console.log(`🔌 DB Config: SSL=${useSsl} (Internal=${isRailwayInternal}), Timeout=5000ms`);
 
         // Schema is now provided by the caller (apps/api merges all schemas)
         const enableLogger = process.env['NODE_ENV'] !== 'production' || process.env['DEBUG_SQL'] === 'true';
