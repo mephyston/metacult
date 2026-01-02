@@ -11,9 +11,13 @@ import { createAuthClient } from 'better-auth/vue';
 import { getApiUrl } from './utils';
 
 const apiUrl = getApiUrl();
+const cookiePrefix = import.meta.env.PUBLIC_AUTH_COOKIE_PREFIX || 'metacult';
 
 export const authClient = createAuthClient({
     baseURL: `${apiUrl}/api/auth`,
+    advanced: {
+        cookiePrefix
+    }
 });
 
 // Export des composables Vue pour utilisation dans les composants
