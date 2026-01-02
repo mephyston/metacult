@@ -96,10 +96,12 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "bun libs/backend/infrastructure/src/lib/db/seed.ts",
     "test": "bun test --ignore='apps/e2e/**'",
-    "test:e2e": "bunx nx run e2e:test",
+    "test:e2e": "cd apps/e2e && bunx playwright test --reporter=list",
+    "test:e2e:ui": "cd apps/e2e && bunx playwright test --ui",
     "lint:all": "nx run-many -t lint -p shared-core backend-catalog backend-discovery backend-infrastructure backend-marketing worker api",
     "test:all": "bun test --ignore='apps/e2e/**'",
     "quality": "bun run lint:all && bun run test:all",
+    "quality:full": "bun run lint:all && bun run test:all && bun run test:e2e",
     "release": "nx release --skip-publish",
     "prepare": "husky"
   }

@@ -18,17 +18,13 @@ const loading = ref(false);
 const error = ref('');
 
 const handleSubmit = async () => {
-  console.log('[Register] Form submit triggered', { name: name.value, email: email.value, hasPassword: !!password.value });
-  
   if (!name.value || !email.value || !password.value) {
     error.value = 'Veuillez remplir tous les champs';
-    console.error('[Register] Missing fields');
     return;
   }
 
   if (password.value.length < 8) {
     error.value = 'Le mot de passe doit contenir au moins 8 caractères';
-    console.error('[Register] Password too short');
     return;
   }
 
@@ -36,21 +32,16 @@ const handleSubmit = async () => {
   error.value = '';
 
   try {
-    console.log('[Register] Calling signUp.email...');
     await signUp.email({
       email: email.value,
       password: password.value,
       name: name.value,
     });
-    console.log('[Register] signUp.email succeeded');
 
     // Rafraîchir la session dans le state global
-    console.log('[Register] Refreshing session...');
     await refreshSession();
-    console.log('[Register] Session refreshed');
     
     // Navigation SPA (pas de reload)
-    console.log('[Register] Navigating to /');
     router.push('/');
   } catch (err: any) {
     console.error('[Register] Error:', err);

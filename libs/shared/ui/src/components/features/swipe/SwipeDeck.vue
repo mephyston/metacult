@@ -83,7 +83,6 @@ function getSyncUrl(targetUrl: string): string {
         sentiment: s.sentiment
       }))
 
-    console.log('[SwipeDeck] Generated Payload:', optimizedSwipes)
 
     // Encode optimized swipes to Base64
     const b64 = btoa(JSON.stringify(optimizedSwipes))
@@ -103,11 +102,8 @@ function getSyncUrl(targetUrl: string): string {
 const signupUrlWithSync = computed(() => {
   if (!props.signupUrl) return ''
   // Force recomputation by accessing totalProcessed
-  const count = totalProcessed.value
-  console.log(`[SwipeDeck] Computing signupUrlWithSync. totalProcessed=${count}`)
-  const url = getSyncUrl(props.signupUrl)
-  console.log(`[SwipeDeck] Computed URL:`, url)
-  return url
+  const _ = totalProcessed.value
+  return getSyncUrl(props.signupUrl)
 })
 
 const loginUrlWithSync = computed(() => {
@@ -119,9 +115,6 @@ const loginUrlWithSync = computed(() => {
 // --- Handlers ---
 function handleSwipe(payload: SwipePayload) {
   if (!currentCard.value) return
-
-  console.log('[SwipeDeck] currentCard.value:', currentCard.value)
-  console.log('[SwipeDeck] currentCard.value.id:', currentCard.value.id)
 
   const interaction: InteractionPayload = {
     mediaId: currentCard.value.id,
