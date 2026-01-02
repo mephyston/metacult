@@ -6,7 +6,7 @@
         "watchPatterns": [
             "apps/api/**",
             "libs/backend/**",
-            "libs/shared/**",
+            "libs/shared/core/**",
             "package.json",
             "tsconfig.base.json"
         ]
