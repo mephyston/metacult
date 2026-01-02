@@ -122,7 +122,7 @@ const handleLogout = async () => {
                     <div v-if="isMounted && currentUser" class="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <button
+                                <button style="background-color: var(--primary); color: var(--primary-foreground)"
                                     class="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                                     <span v-if="!currentUser.avatar" class="text-sm font-semibold">
                                         {{ userInitials }}
