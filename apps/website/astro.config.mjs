@@ -47,3 +47,4 @@ export default defineConfig({
         host: true
     },
 });
+// Trigger deploy: 2026-01-02-poke
