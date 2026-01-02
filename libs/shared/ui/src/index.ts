@@ -23,4 +23,5 @@ export { default as Search } from './components/layout/Search.vue';
 export { default as ReviewDeck } from './components/features/review/ReviewDeck.vue';
 export { default as Hero } from './components/features/hero/Hero.vue';
 export { default as SwipeCard } from './components/features/swipe/SwipeCard.vue';
+export { default as SwipeDeck } from './components/features/swipe/SwipeDeck.vue';
 

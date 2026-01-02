@@ -164,23 +164,25 @@ onMounted(async () => {
               </svg>
 
               <!-- Main Floating Card -->
-              <div class="relative w-full max-w-sm animate-in zoom-in-50 fade-in duration-1000 ease-out fill-mode-both">
-                  <!-- Glow Behind Card -->
-                  <div class="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-purple-500/20 rounded-[2rem] blur-xl -z-10 opacity-70 dark:opacity-30 dark:from-primary/10"></div>
+              <slot name="interactive-card">
+                  <!-- Default Static Card (fallback si pas de slot fourni) -->
+                  <div class="relative w-full max-w-sm animate-in zoom-in-50 fade-in duration-1000 ease-out fill-mode-both">
+                      <!-- Glow Behind Card -->
+                      <div class="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-purple-500/20 rounded-[2rem] blur-xl -z-10 opacity-70 dark:opacity-30 dark:from-primary/10"></div>
 
-                  <div class="bg-card text-card-foreground flex flex-col h-[520px] rounded-2xl border shadow-xl p-0 relative overflow-hidden group">
-                      
-                      <!-- Image Section (Occupies ~72% of space) -->
-                      <div class="relative h-[72%] w-full overflow-hidden rounded-t-2xl">
-                          <img :src="image || 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=1000&auto=format&fit=crop'" :sizes="imageSizes" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" alt="Review Media" />
+                      <div class="bg-card text-card-foreground flex flex-col h-[520px] rounded-2xl border shadow-xl p-0 relative overflow-hidden group">
                           
-                          <!-- Media Type Tag -->
-                          <div class="absolute top-4 left-4">
-                              <Badge variant="secondary" class="bg-background/90 backdrop-blur-md text-foreground border-white/10 shadow-sm font-semibold px-3 py-1">
-                                  Jeu Vidéo
-                              </Badge>
+                          <!-- Image Section (Occupies ~72% of space) -->
+                          <div class="relative h-[72%] w-full overflow-hidden rounded-t-2xl">
+                              <img :src="image || 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=1000&auto=format&fit=crop'" :sizes="imageSizes" class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" alt="Review Media" />
+                              
+                              <!-- Media Type Tag -->
+                              <div class="absolute top-4 left-4">
+                                  <Badge variant="secondary" class="bg-background/90 backdrop-blur-md text-foreground border-white/10 shadow-sm font-semibold px-3 py-1">
+                                      Jeu Vidéo
+                                  </Badge>
+                              </div>
                           </div>
-                      </div>
 
                       <!-- Content Section -->
                       <div class="flex flex-col justify-between flex-1 p-5">
@@ -241,6 +243,7 @@ onMounted(async () => {
                       </div>
                   </div>
               </div>
+              </slot>
           </div>
       </div>
   </section>

@@ -1,248 +1,338 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useDraggable, useWindowSize } from '@vueuse/core';
-import {
-    Bookmark,
-    Flame,
-    ThumbsUp,
-    Smile,
-    Clock,
-    X
-} from 'lucide-vue-next';
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useWindowSize } from '@vueuse/core'
+import { 
+  Heart, X, Clock, ThumbsUp, Flame, Bookmark, 
+  Smile, HelpCircle 
+} from 'lucide-vue-next'
 
-// --- Props & Events ---
+// --- Props & Emits ---
 const props = defineProps<{
-    media: {
-        id: string;
-        title: string;
-        poster: string;
-    };
-}>();
+  item?: {
+    id: string
+    title: string
+    image: string
+  }
+}>()
 
 const emit = defineEmits<{
-    (e: 'swipe', payload: { action: string; sentiment?: string }): void;
-}>();
+  (e: 'swipe', payload: { action: 'LIKE' | 'DISLIKE' | 'WISHLIST' | 'SKIP', sentiment?: 'BANGER' | 'GOOD' | 'OKAY' }): void
+}>()
 
-// --- Constants ---
-const THRESHOLD_DISTANCE = 100; // px to trigger release
-const RETURN_SPRING_TENSION = 0.1; // physics factor (implied via CSS transition)
+// --- Refs & State ---
+const cardRef = ref<HTMLElement | null>(null)
+const { width: windowWidth } = useWindowSize()
 
-// --- State ---
-const cardRef = ref<HTMLElement | null>(null);
-// Initial position needs to be center of screen or container. 
-// For simplicity in this isolated component, we track delta from initial.
-const { x, y, isDragging } = useDraggable(cardRef, {
-    initialValue: { x: 0, y: 0 },
-    preventDefault: true,
-    onEnd: handleRelease
-});
+// Configuration physique
+const THRESHOLD = 100 // Distance min pour valider
+const MAX_ROTATION = 15 // Degrés max de rotation
 
-// Since useDraggable gives absolute coordinates, we need to calculate generic delta behaviors
-// But for a tinder-like card, we usually want "transform: translate(x, y)" relative to start.
-// A simpler approach with useDraggable is to reset position on release if not swiped.
-// Let's track the *offset* from the starting point.
-const startPos = ref({ x: 0, y: 0 });
-const currentDelta = computed(() => {
-    if (!isDragging.value) return { x: 0, y: 0 };
-    // This logic depends on when startPos is set. 
-    // Actually, usePointerSwipe might be better for "swipe" gestures than useDraggable which is for "moving stuff around indefinitely".
-    // However, the prompt suggested useDraggable or usePointerSwipe.
-    // Let's use logic: x.value is current position.
-    return { x: x.value - startPos.value.x, y: y.value - startPos.value.y };
-});
+// État du drag (delta depuis le point de départ)
+const x = ref(0)
+const y = ref(0)
+const isDragging = ref(false)
+const startPos = ref({ x: 0, y: 0 })
 
-// We need to capture start position on drag start to calculate delta reliably 
-// or clean x,y on mount. 
-// A more robust way for "Joystick" feel is often custom touch handling or useDraggable with `position: relative` logic.
-// Let's rely on standard style binding for visual transform.
+// Gestion manuelle du drag pour avoir le delta
+const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+  const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+  const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+  
+  startPos.value = { x: clientX, y: clientY }
+  x.value = 0
+  y.value = 0
+  isDragging.value = true
+  
+  e.preventDefault()
+}
 
-// --- Trigonometry & Zones ---
+const handlePointerMove = (e: MouseEvent | TouchEvent) => {
+  if (!isDragging.value) return
+  
+  const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+  const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+  
+  x.value = clientX - startPos.value.x
+  y.value = clientY - startPos.value.y
+  
+  e.preventDefault()
+}
+
+const handlePointerUp = () => {
+  if (!isDragging.value) return
+  
+  isDragging.value = false
+  handleRelease()
+}
+
+// Attache les listeners au montage
+onMounted(() => {
+  if (!cardRef.value) return
+  
+  // Pointers events
+  cardRef.value.addEventListener('mousedown', handlePointerDown)
+  cardRef.value.addEventListener('touchstart', handlePointerDown, { passive: false })
+  
+  document.addEventListener('mousemove', handlePointerMove)
+  document.addEventListener('touchmove', handlePointerMove, { passive: false })
+  
+  document.addEventListener('mouseup', handlePointerUp)
+  document.addEventListener('touchend', handlePointerUp)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('mousemove', handlePointerMove)
+  document.removeEventListener('touchmove', handlePointerMove)
+  document.removeEventListener('mouseup', handlePointerUp)
+  document.removeEventListener('touchend', handlePointerUp)
+})
+
+// --- Computed Physics ---
+
+// Distance du centre (0,0)
+const distance = computed(() => Math.hypot(x.value, y.value))
+
+// Opacité de l'overlay (0 à 1)
+const overlayOpacity = computed(() => {
+  return Math.min(distance.value / (THRESHOLD * 1.5), 0.8)
+})
+
+// Angle actuel (en degrés, 0 = Est, -90 = Nord)
 const angle = computed(() => {
-    // Math.atan2(y, x) returns radians. -PI to +PI.
-    // 0 is Right (3h). -PI/2 is Top (12h). PI/2 is Bottom (6h). PI/-PI is Left (9h).
-    // We flip y because screen coords: y increases downwards.
-    return Math.atan2(currentDelta.value.y, currentDelta.value.x) * (180 / Math.PI);
-});
+  if (distance.value < 10) return 0
+  return (Math.atan2(y.value, x.value) * 180) / Math.PI
+})
 
-const distance = computed(() => {
-    return Math.sqrt(currentDelta.value.x ** 2 + currentDelta.value.y ** 2);
-});
+// Rotation de la carte (Tilt)
+const cardTransform = computed(() => {
+  // N'applique RIEN si x et y sont à 0 ou quasi-0
+  if (distance.value < 3) {
+    return {}
+  }
+  
+  const rotate = (x.value / (windowWidth.value / 2)) * MAX_ROTATION
+  
+  return {
+    transform: `translate3d(${x.value}px, ${y.value}px, 0) rotate(${rotate}deg)`,
+    transition: isDragging.value ? 'none' : 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Spring effect au retour
+    cursor: isDragging.value ? 'grabbing' : 'grab'
+  }
+})
 
-// Active Zone Detection
+// --- Zone Logic ---
+
+type Zone = {
+  id: string
+  label: string
+  icon: any
+  color: string // Tailwind class approx or hex
+  bgGradient: string
+  action: 'LIKE' | 'DISLIKE' | 'WISHLIST' | 'SKIP'
+  sentiment?: 'BANGER' | 'GOOD' | 'OKAY'
+  range: [number, number] // [minDeg, maxDeg]
+}
+
+const zones: Zone[] = [
+  { 
+    id: 'wishlist', label: 'Wishlist', icon: Bookmark, 
+    color: 'text-blue-400', bgGradient: 'from-blue-500/50',
+    action: 'WISHLIST', range: [-110, -70] // Haut (12h) - Ajusté large
+  },
+  { 
+    id: 'banger', label: 'Banger!', icon: Flame, 
+    color: 'text-purple-400', bgGradient: 'from-purple-500/50',
+    action: 'LIKE', sentiment: 'BANGER', range: [-69, -20] // Haut-Droite
+  },
+  { 
+    id: 'good', label: 'Bien', icon: ThumbsUp, 
+    color: 'text-green-400', bgGradient: 'from-green-500/50',
+    action: 'LIKE', sentiment: 'GOOD', range: [-19, 20] // Droite
+  },
+  { 
+    id: 'okay', label: 'Sympa', icon: Smile, 
+    color: 'text-yellow-400', bgGradient: 'from-yellow-500/50',
+    action: 'LIKE', sentiment: 'OKAY', range: [21, 70] // Bas-Droite
+  },
+  { 
+    id: 'skip', label: 'Plus tard', icon: Clock, 
+    color: 'text-gray-400', bgGradient: 'from-gray-500/50',
+    action: 'SKIP', range: [71, 110] // Bas
+  },
+  { 
+    id: 'dislike', label: 'Pas pour moi', icon: X, 
+    color: 'text-red-500', bgGradient: 'from-red-500/50',
+    action: 'DISLIKE', range: [111, 180] // Gauche (et -180 à -111 géré par logique)
+  }
+]
+
+// Détection de la zone active
 const activeZone = computed(() => {
-    if (distance.value < 20) return null; // Deadzone in center
+  if (distance.value < 40) return null // Deadzone au centre
 
-    // Angle ranges (approximate for 6 slices)
-    // 12h (Top): -90 deg. Range: -120 to -60
-    // 2h (Top-Right): -30 deg. Range: -60 to -10
-    // 3h (Right): 0 deg. Range: -10 to +45  (ThumbsUp) 
-    // ... Adjusting to match user request spec specifically:
+  // Normalisation de l'angle pour gérer le saut 180/-180
+  let normalizedAngle = angle.value
+  
+  // Cas spécial pour la gauche (Dislike) qui couvre la coupure +180/-180
+  if (normalizedAngle > 110 || normalizedAngle < -110) {
+    return zones.find(z => z.id === 'dislike')
+  }
 
-    // "Zone Banger (-70 to -20)" -> 2h approx? No, 2h is -60deg (30deg * 2 from right? No, 0 is right. -90 is top.)
-    // 12h: -90
-    // 2h: -30 (Right is 0, Top is -90. So 2h is roughly -60? Wait. 12h to 3h is 90 deg. 1h=30, 2h=60 offset from 12h? 
-    // 0 deg = 3h. -30 deg = 2h. -60 deg = 1h. -90 deg = 12h.
-    // Let's map strict angles:
-    // 12h (Wishlist): -110 to -70
-    // 2h (Banger): -70 to -20
-    // 3h (Good): -20 to +20
-    // 4h (Smile): +20 to +70
-    // 6h (Skip): +70 to +110 OR just "Down"
-    // 9h (Dislike): Abs > 150 or similar (Left)
+  return zones.find(z => normalizedAngle >= z.range[0] && normalizedAngle <= z.range[1])
+})
 
-    const a = angle.value;
+// --- Actions ---
 
-    if (a >= -110 && a < -70) return 'WISHLIST'; // Top (12h is -90)
-    if (a >= -70 && a < -20) return 'BANGER';    // Top-Right (2h is -30 ish)
-    if (a >= -20 && a < 20) return 'GOOD';       // Right (3h is 0)
-    if (a >= 20 && a < 70) return 'OKAY';        // Bottom-Right (4h-ish)
-    if (a >= 70 && a < 110) return 'SKIP';       // Bottom (6h is 90)
-    if (a >= 135 || a <= -135) return 'DISLIKE'; // Left (9h is 180/-180)
-
-    return null;
-});
-
-// --- Visual Feedback ---
-const overlayColor = computed(() => {
-    if (!activeZone.value) return 'rgba(0,0,0,0.5)';
-    switch (activeZone.value) {
-        case 'WISHLIST': return 'rgba(59, 130, 246, 0.6)'; // Blue
-        case 'BANGER': return 'rgba(236, 72, 153, 0.6)';   // Pink/Purple
-        case 'GOOD': return 'rgba(34, 197, 94, 0.6)';      // Green
-        case 'OKAY': return 'rgba(234, 179, 8, 0.6)';      // Yellow
-        case 'SKIP': return 'rgba(107, 114, 128, 0.6)';    // Gray
-        case 'DISLIKE': return 'rgba(239, 68, 68, 0.6)';   // Red
-        default: return 'rgba(0,0,0,0.5)';
+const handleRelease = () => {
+  if (activeZone.value && distance.value > THRESHOLD) {
+    // Validé ! On envoie la carte au loin
+    const endX = Math.cos(angle.value * Math.PI / 180) * 1000
+    const endY = Math.sin(angle.value * Math.PI / 180) * 1000
+    
+    // Animation de sortie manuelle via style direct avant reset
+    if (cardRef.value) {
+      cardRef.value.style.transition = 'transform 0.4s ease-out'
+      cardRef.value.style.transform = `translate3d(${endX}px, ${endY}px, 0) rotate(${MAX_ROTATION}deg)`
     }
-});
 
-const getIconScale = (zone: string) => {
-    return activeZone.value === zone ? 1.5 : 1;
-};
-
-const getIconOpacity = (zone: string) => {
-    return activeZone.value === zone ? 1 : 0.5;
-};
-
-// --- Physics & Handlers ---
-function handleRelease() {
-    if (distance.value > THRESHOLD_DISTANCE && activeZone.value) {
-        // Swipe Triggered
-        emit('swipe', {
-            action: mapZoneToAction(activeZone.value),
-            sentiment: mapZoneToSentiment(activeZone.value)
-        });
-        // Reset visually or animate out (parent handles removal usually, but we reset for demo)
-        // x.value = startPos.value.x; 
-        // y.value = startPos.value.y;
-    } else {
-        // Spring back
-        x.value = startPos.value.x; // naive reset, rely on useDraggable mechanics
-        y.value = startPos.value.y;
+    // Emit event après court délai visuel
+    setTimeout(() => {
+      emit('swipe', { 
+        action: activeZone.value!.action, 
+        sentiment: activeZone.value!.sentiment 
+      })
+      // Reset position pour la prochaine carte (recyclage du composant)
+      x.value = 0
+      y.value = 0
+      // IMPORTANT: Reset les styles inline pour éviter que la carte reste invisible
+      if (cardRef.value) {
+        cardRef.value.style.transform = ''
+        cardRef.value.style.transition = ''
+      }
+    }, 200)
+  } else {
+    // Annulé : Retour au centre (géré par le CSS transition dans computed)
+    x.value = 0
+    y.value = 0
+    // Nettoie les styles inline pour éviter les interférences avec cardTransform
+    if (cardRef.value) {
+      cardRef.value.style.transform = ''
+      cardRef.value.style.transition = ''
     }
+  }
 }
 
-function mapZoneToAction(zone: string) {
-    if (zone === 'WISHLIST') return 'WISHLIST';
-    if (['BANGER', 'GOOD', 'OKAY'].includes(zone)) return 'LIKE';
-    if (zone === 'SKIP') return 'SKIP';
-    if (zone === 'DISLIKE') return 'DISLIKE';
-    return 'SKIP';
+// Méthode exposée pour déclencher le swipe programmatiquement
+const triggerSwipe = (action: 'LIKE' | 'DISLIKE' | 'WISHLIST' | 'SKIP', sentiment?: 'BANGER' | 'GOOD' | 'OKAY') => {
+  if (!cardRef.value) return
+
+  // Détermine la direction selon l'action
+  let endX = 0
+  let endY = 0
+  let rotation = MAX_ROTATION
+
+  switch (action) {
+    case 'WISHLIST':
+      endX = 0
+      endY = -1000
+      rotation = 0
+      break
+    case 'SKIP':
+      endX = 0
+      endY = 1000
+      rotation = 0
+      break
+    case 'DISLIKE':
+      endX = -1000
+      endY = 0
+      rotation = -MAX_ROTATION
+      break
+    case 'LIKE':
+      endX = 1000
+      endY = sentiment === 'BANGER' ? -200 : 0
+      rotation = MAX_ROTATION
+      break
+  }
+
+  // Applique l'animation de sortie
+  cardRef.value.style.transition = 'transform 0.4s ease-out'
+  cardRef.value.style.transform = `translate3d(${endX}px, ${endY}px, 0) rotate(${rotation}deg)`
+
+  // Émet l'event après l'animation
+  setTimeout(() => {
+    emit('swipe', { action, sentiment })
+    // Reset pour la prochaine carte
+    x.value = 0
+    y.value = 0
+    if (cardRef.value) {
+      cardRef.value.style.transform = ''
+      cardRef.value.style.transition = ''
+    }
+  }, 200)
 }
 
-function mapZoneToSentiment(zone: string) {
-    if (zone === 'BANGER') return 'BANGER';
-    if (zone === 'GOOD') return 'GOOD';
-    if (zone === 'OKAY') return 'OKAY';
-    return undefined;
-}
-
-// Reset start pos on mount logic omitted for brevity, utilizing useDraggable default
-// Actually, to make "rubber band" work with useDraggable properly in a component flow:
-// We often fix the element and use `style` transform based on delta.
-// Let's assume the wrapper centers it.
-
+// Expose la méthode pour usage externe
+defineExpose({
+  triggerSwipe
+})
 </script>
 
 <template>
-    <div ref="cardRef"
-        class="relative w-80 h-[28rem] rounded-3xl overflow-hidden shadow-2xl touch-none select-none cursor-grab active:cursor-grabbing transition-transform"
-        :style="{
-            transform: `translate(${x - startPos.x}px, ${y - startPos.y}px) rotate(${(x - startPos.x) * 0.1}deg)`
-        }">
-        <!-- Background Image -->
-        <img :src="media.poster" :alt="media.title" class="w-full h-full object-cover pointer-events-none" />
-
-        <!-- Gradient Overlay for Text -->
-        <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/90 to-transparent pointer-events-none">
-        </div>
-
-        <!-- Content -->
-        <div class="absolute bottom-6 left-6 pointer-events-none">
-            <h2 class="text-3xl font-bold text-white mb-1 drop-shadow-lg">{{ media.title }}</h2>
-            <p class="text-white/80 text-sm">Action Movie • 2024</p>
-        </div>
-
-        <!-- Joystick Overlay (Visible on Drag) -->
-        <div v-if="isDragging"
-            class="absolute inset-0 transition-colors duration-300 flex items-center justify-center z-10"
-            :style="{ backgroundColor: overlayColor }">
-            <!-- Icons Circle Container -->
-            <div class="relative w-64 h-64 border border-white/10 rounded-full animate-pulse-slow">
-
-                <!-- 12h: Wishlist -->
-                <div class="absolute top-2 left-1/2 -translate-x-1/2 transition-all duration-200"
-                    :style="{ transform: `translateX(-50%) scale(${getIconScale('WISHLIST')})`, opacity: getIconOpacity('WISHLIST') }">
-                    <Bookmark class="text-blue-400 w-10 h-10 drop-shadow-glow" />
-                    <span v-if="activeZone === 'WISHLIST'"
-                        class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-white text-xs font-bold tracking-widest uppercase">Wishlist</span>
-                </div>
-
-                <!-- 2h: Banger -->
-                <div class="absolute top-12 right-6 transition-all duration-200"
-                    :style="{ transform: `scale(${getIconScale('BANGER')})`, opacity: getIconOpacity('BANGER') }">
-                    <Flame class="text-pink-500 w-10 h-10 drop-shadow-glow" />
-                </div>
-
-                <!-- 3h: Good -->
-                <div class="absolute top-1/2 right-2 -translate-y-1/2 transition-all duration-200"
-                    :style="{ transform: `translateY(-50%) scale(${getIconScale('GOOD')})`, opacity: getIconOpacity('GOOD') }">
-                    <ThumbsUp class="text-green-400 w-10 h-10 drop-shadow-glow" />
-                </div>
-
-                <!-- 4h: Okay -->
-                <div class="absolute bottom-12 right-6 transition-all duration-200"
-                    :style="{ transform: `scale(${getIconScale('OKAY')})`, opacity: getIconOpacity('OKAY') }">
-                    <Smile class="text-yellow-400 w-10 h-10 drop-shadow-glow" />
-                </div>
-
-                <!-- 6h: Skip -->
-                <div class="absolute bottom-2 left-1/2 -translate-x-1/2 transition-all duration-200"
-                    :style="{ transform: `translateX(-50%) scale(${getIconScale('SKIP')})`, opacity: getIconOpacity('SKIP') }">
-                    <Clock class="text-gray-400 w-10 h-10 drop-shadow-glow" />
-                    <span v-if="activeZone === 'SKIP'"
-                        class="absolute -top-6 left-1/2 -translate-x-1/2 text-white text-xs font-bold tracking-widest uppercase">Skip</span>
-                </div>
-
-                <!-- 9h: Dislike -->
-                <div class="absolute top-1/2 left-2 -translate-y-1/2 transition-all duration-200"
-                    :style="{ transform: `translateY(-50%) scale(${getIconScale('DISLIKE')})`, opacity: getIconOpacity('DISLIKE') }">
-                    <X class="text-red-500 w-10 h-10 drop-shadow-glow" />
-                    <span v-if="activeZone === 'DISLIKE'"
-                        class="absolute -right-6 top-1/2 -translate-y-1/2 text-white text-xs font-bold tracking-widest uppercase rotate-90 origin-left">No</span>
-                </div>
-
-            </div>
-        </div>
+  <div class="relative flex items-center justify-center w-full h-full select-none" style="touch-action: none;">
+    
+    <div v-if="!item" class="absolute text-muted-foreground animate-pulse">
+      Chargement du deck...
     </div>
+
+    <div
+      v-else
+      ref="cardRef"
+      class="relative w-full max-w-sm aspect-[3/4] bg-card rounded-2xl shadow-2xl overflow-hidden border border-border/50 cursor-grab active:cursor-grabbing will-change-transform z-10"
+      :style="cardTransform"
+    >
+      <img 
+        :src="item.image" 
+        :alt="item.title"
+        class="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        draggable="false"
+      />
+      
+      <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 to-transparent pointer-events-none"></div>
+
+      <div class="absolute bottom-6 left-6 right-6 pointer-events-none">
+        <h2 class="text-3xl font-black text-white leading-tight drop-shadow-md">
+          {{ item.title }}
+        </h2>
+      </div>
+
+      <div 
+        class="absolute inset-0 flex flex-col items-center justify-center transition-colors duration-200 pointer-events-none"
+        :class="activeZone ? `bg-gradient-to-tr ${activeZone.bgGradient} to-transparent` : 'bg-black/40'"
+        :style="{ opacity: isDragging ? overlayOpacity : 0 }"
+      >
+        <div 
+          v-if="activeZone"
+          class="transform transition-all duration-200 scale-150 p-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-xl"
+        >
+          <component 
+            :is="activeZone.icon" 
+            class="w-16 h-16" 
+            :class="activeZone.color"
+            stroke-width="2.5"
+          />
+        </div>
+        
+        <p v-if="activeZone" class="mt-4 text-2xl font-bold text-white tracking-widest uppercase drop-shadow-lg">
+          {{ activeZone.label }}
+        </p>
+      </div>
+
+      <div v-if="isDragging && distance < 50" class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+        <div class="grid grid-cols-2 gap-24">
+           <X class="text-red-500" />
+           <ThumbsUp class="text-green-500" />
+        </div>
+      </div>
+
+    </div>
+  </div>
 </template>
-
-<style scoped>
-.drop-shadow-glow {
-    filter: drop-shadow(0 0 10px currentColor);
-}
-
-.animate-pulse-slow {
-    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-</style>

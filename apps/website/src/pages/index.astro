@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { Hero } from '@metacult/shared-ui';
+import { Hero, SwipeDeck } from '@metacult/shared-ui';
 import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
 
@@ -17,6 +17,35 @@ const heroCtaText = 'Créer un compte';
 const heroSecondaryCtaText = 'Se connecter';
 const heroImageSizes =
 	'(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1920px';
+
+// Demo Games for SwipeDeck
+const demoGames = [
+	{
+		id: '1',
+		title: 'Elden Ring',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg'
+	},
+	{
+		id: '2',
+		title: 'The Legend of Zelda: Tears of the Kingdom',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5vmg.jpg'
+	},
+	{
+		id: '3',
+		title: 'Hollow Knight',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2ash.jpg'
+	},
+	{
+		id: '4',
+		title: 'Hades',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2i0f.jpg'
+	},
+	{
+		id: '5',
+		title: 'Cyberpunk 2077',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co49x5.jpg'
+	}
+];
 
 // Build-time Image Optimization
 const heroBg = await getImage({
@@ -43,5 +72,25 @@ const heroBg = await getImage({
 		imageSizes={heroImageSizes}
 		fetchpriority="high"
 		recentMedias={[]}
-	/>
+	>
+		<!-- Slot pour remplacer la carte statique par SwipeDeck -->
+		<div slot="interactive-card" class="relative w-full max-w-sm mx-auto">
+			<SwipeDeck 
+				client:visible 
+				items={demoGames} 
+				guestMode={true}
+			>
+				<div slot="empty" class="flex flex-col items-center justify-center h-full min-h-[520px] bg-card/50 backdrop-blur rounded-xl p-6 text-center border border-border">
+					<h3 class="text-xl font-bold mb-2">Pas mal ! 🎮</h3>
+					<p class="text-muted-foreground mb-4 text-sm">Crée ton compte pour sauvegarder ton profil.</p>
+					<a 
+						href="https://app.metacult.gg/register" 
+						class="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors inline-block"
+					>
+						C'est parti
+					</a>
+				</div>
+			</SwipeDeck>
+		</div>
+	</Hero>
 </Layout>
