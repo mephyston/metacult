@@ -20,7 +20,8 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build API
-RUN bun build apps/api/index.ts --target=bun --outfile apps/api/dist/server.js
+WORKDIR /app/apps/api
+RUN bun build index.ts --target=bun --outfile dist/server.js
 
 # --------------------------------------------------------
 # Stage 3: Runner

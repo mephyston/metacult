@@ -20,7 +20,8 @@ RUN bun install --frozen-lockfile
 COPY . .
 
 # Build Worker
-RUN bun build apps/worker/src/index.ts --target=bun --outfile apps/worker/dist/worker.js
+WORKDIR /app/apps/worker
+RUN bun build src/index.ts --target=bun --outfile dist/worker.js
 
 # --------------------------------------------------------
 # Stage 3: Runner
