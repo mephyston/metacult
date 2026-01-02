@@ -4,9 +4,9 @@ import { defineConfig, devices } from '@playwright/test';
  * Configuration Playwright pour tests E2E Metacult
  * 
  * Les serveurs doivent être lancés manuellement avant les tests:
- * - Website (Astro): bun run --filter=website dev (localhost:4321)
- * - Webapp (Nuxt): bun run --filter=webapp dev (localhost:4200)
- * - API (ElysiaJS): bun run --filter=api dev (localhost:3000)
+ * - Website (Astro): bunx nx run website:dev (localhost:4321 par défaut, peut varier)
+ * - Webapp (Nuxt): bunx nx run webapp:dev (localhost:4201)
+ * - API (ElysiaJS): bunx nx run api:dev (localhost:3000)
  * 
  * Ou utiliser docker-compose pour tout lancer d'un coup.
  */
@@ -34,7 +34,7 @@ export default defineConfig({
   // Configuration globale des tests
   use: {
     // Base URL pour la navigation
-    baseURL: 'http://localhost:4321',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:4444',
     
     // Prendre des screenshots uniquement en cas d'échec
     screenshot: 'only-on-failure',

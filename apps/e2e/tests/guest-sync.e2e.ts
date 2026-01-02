@@ -4,10 +4,10 @@ import { test, expect } from '@playwright/test';
  * Test E2E: Guest Sync Flow
  * 
  * Scénario critique d'acquisition utilisateur:
- * 1. Un utilisateur non connecté (Guest) visite la Home Page (Astro)
+ * 1. Un utilisateur non connecté (Guest) visite la Home Page (Astro - port 4446)
  * 2. Il swipe sur des médias (3 "Likes")
  * 3. Le bouton "Créer un compte" apparaît
- * 4. Il clique et est redirigé vers la Webapp (Nuxt) avec le paramètre ?sync=...
+ * 4. Il clique et est redirigé vers la Webapp (Nuxt - port 4201) avec le paramètre ?sync=...
  * 5. Il crée un compte via le formulaire d'inscription
  * 6. Il est redirigé vers le Dashboard
  * 7. Ses 3 swipes sont sauvegardés en DB
@@ -56,8 +56,8 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     // ============================================================
     await signupButton.click();
     
-    // Attendre la navigation vers la Webapp (Nuxt)
-    await page.waitForURL(/localhost:4200\/register/, { timeout: 10000 });
+    // Attendre la navigation vers la Webapp (Nuxt sur port 4201)
+    await page.waitForURL(/localhost:4201\/register/, { timeout: 10000 });
     
     // Vérifier la présence du paramètre sync dans l'URL
     const currentUrl = page.url();
@@ -90,7 +90,7 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     // ============================================================
     // STEP 6: Vérifier la redirection vers le Dashboard
     // ============================================================
-    await page.waitForURL(/localhost:4200\/(dashboard|home|app)/, { 
+    await page.waitForURL(/localhost:4201\/(dashboard|home|app)?/, { 
       timeout: 15000 
     });
     
@@ -138,7 +138,7 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     const signupButton = page.locator('[data-testid="btn-signup"]');
     await signupButton.click();
 
-    await page.waitForURL(/localhost:4200\/register/);
+    await page.waitForURL(/localhost:4201\/register/);
 
     // Tenter de soumettre avec un email invalide
     const emailInput = page.locator('input[data-testid="input-email"]');
@@ -159,9 +159,9 @@ test.describe('Guest Sync Flow - Acquisition Funnel', () => {
     await likeButton.click();
     await page.waitForTimeout(500);
 
-    // Récupérer le localStorage
+    // Récupérer le localStorage (clé utilisée par SwipeDeck: 'guest_swipes')
     const guestData = await page.evaluate(() => {
-      return localStorage.getItem('guest-swipes') || localStorage.getItem('guestInteractions');
+      return localStorage.getItem('guest_swipes');
     });
 
     expect(guestData).toBeTruthy();
