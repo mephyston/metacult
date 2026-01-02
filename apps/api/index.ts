@@ -20,7 +20,14 @@ patchConsole();
 // This ensures migrations run even if start.sh is bypassed (e.g. Railway default cmd)
 import { runMigrations } from '@metacult/backend/infrastructure';
 
-await runMigrations();
+// Safe migration runner to prevent crash loop on startup
+try {
+  await runMigrations();
+  console.log('✅ Migrations executed successfully');
+} catch (error) {
+  console.error('❌ Failed to run migrations:', error);
+  // Do not exit, allow server to start for Healthcheck/Logging
+}
 
 // Initialisation de la BDD (Composition Root)
 // Fusion des schémas pour garantir que le client DB satisfait tous les modules
