@@ -12,7 +12,7 @@
         ]
     },
     "deploy": {
-        "startCommand": "bun apps/api/index.ts",
+        "startCommand": "bun run db:migrate:release && bun apps/api/index.ts",
         "healthcheckPath": "/health",
         "restartPolicyType": "ON_FAILURE"
     }
