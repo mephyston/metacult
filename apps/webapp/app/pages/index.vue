@@ -22,6 +22,8 @@ import { useAuthSession } from '../composables/useAuthSession';
 // --- Auth & User Data ---
 const { user } = useAuthSession();
 const apiUrl = import.meta.env.NUXT_PUBLIC_API_URL || 'http://localhost:3000';
+const websiteUrl =
+  import.meta.env.NUXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444';
 
 // --- Mock Stats (à remplacer par API si disponible) ---
 const stats = ref({
@@ -246,10 +248,13 @@ onMounted(() => {
           v-else-if="trends.length > 0"
           class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"
         >
-          <div
+          <a
             v-for="trend in trends"
             :key="trend.id"
-            class="group relative overflow-hidden rounded-lg border-2 border-border hover:border-primary transition-all hover:shadow-lg cursor-pointer"
+            :href="`${websiteUrl}/media/${trend.slug}`"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group relative overflow-hidden rounded-lg border-2 border-border hover:border-primary transition-all hover:shadow-lg cursor-pointer block"
           >
             <div class="aspect-[2/3] relative">
               <img
@@ -278,7 +283,7 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-          </div>
+          </a>
         </div>
 
         <div v-else class="text-center py-12 text-muted-foreground">
