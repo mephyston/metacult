@@ -3,19 +3,14 @@
  * Configure la connexion au backend API pour l'authentification
  */
 import { createAuthClient } from 'better-auth/vue';
+import { getApiUrl } from '@metacult/shared-ui';
 
-// Configuration de l'URL API depuis les variables d'environnement
-// Nuxt expose les variables public via import.meta.env
-const baseURL = import.meta.env.NUXT_PUBLIC_API_URL || 'http://localhost:3000';
+// Use shared robust logic (Split Horizon + Domain Inference)
+const baseURL = getApiUrl();
 
 export const authClient = createAuthClient({
   baseURL: `${baseURL}/api/auth`,
 });
 
 // Export des composables Vue pour utilisation dans les composants
-export const {
-  useSession,
-  signIn,
-  signUp,
-  signOut,
-} = authClient;
+export const { useSession, signIn, signUp, signOut } = authClient;
