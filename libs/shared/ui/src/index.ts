@@ -25,3 +25,5 @@ export { default as Hero } from './components/features/hero/Hero.vue';
 export { default as SwipeCard } from './components/features/swipe/SwipeCard.vue';
 export { default as SwipeDeck } from './components/features/swipe/SwipeDeck.vue';
 
+// Export Utils
+export * from './lib/utils';
