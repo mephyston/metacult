@@ -18,7 +18,7 @@ import {
   navigationMenuTriggerStyle,
 } from '../ui/navigation-menu';
 
-import { cn } from '../../lib/utils';
+import { cn, getWebappUrl } from '../../lib/utils';
 import { authClient } from '../../lib/auth-client';
 
 interface User {
@@ -69,13 +69,6 @@ onMounted(async () => {
   }
 });
 
-const getWebappUrl = () => {
-  const url = import.meta.env.PUBLIC_WEBAPP_URL || 'http://localhost:4201';
-  if (!url.startsWith('http')) {
-    return `https://${url}`;
-  }
-  return url;
-};
 const webappUrl = getWebappUrl();
 const loginUrl = `${webappUrl}/login`;
 const registerUrl = `${webappUrl}/register`;

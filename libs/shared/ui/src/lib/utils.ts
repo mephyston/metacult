@@ -19,3 +19,14 @@ export function getApiUrl(): string {
   }
   return rawApiUrl;
 }
+
+export function getWebappUrl(): string {
+  let rawUrl = import.meta.env.PUBLIC_WEBAPP_URL;
+  if (!rawUrl) {
+    rawUrl = 'http://localhost:4201';
+  }
+  if (!rawUrl.startsWith('http')) {
+    return `https://${rawUrl}`;
+  }
+  return rawUrl;
+}
