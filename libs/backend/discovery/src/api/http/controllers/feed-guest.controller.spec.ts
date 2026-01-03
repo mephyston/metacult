@@ -5,50 +5,60 @@ import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/g
 
 // --- Mocks ---
 const mockGetMixedFeedHandler = {
-    execute: mock(() => Promise.resolve([{ id: '1', title: 'Test Media', type: 'movie' }]))
+  execute: mock(() =>
+    Promise.resolve([{ id: '1', title: 'Test Media', type: 'movie' }]),
+  ),
 };
 
 const mockInteractionRepository = {
-    getSwipedMediaIds: mock(() => Promise.resolve(['exclude-1']))
+  getSwipedMediaIds: mock(() => Promise.resolve(['exclude-1'])),
 };
 
-// Fake Auth Middleware - GUEST VERSION (No User)
+// Standardized mock for @metacult/backend-identity - GUEST VERSION (No User)
 mock.module('@metacult/backend-identity', () => ({
-    isAuthenticated: (app: any) => app // Do nothing, so context.user is undefined
+  isAuthenticated: (app: any) => app, // Passthrough - no user injection for guest
+  resolveUserOrThrow: async (ctx: any) => {
+    throw new Error('Unauthorized'); // Guest should fail auth
+  },
+  auth: {
+    api: {
+      getSession: mock(() => Promise.resolve({ user: null, session: null })),
+    },
+  },
 }));
 
 describe('Feed Controller (Guest)', () => {
-    let controller: FeedController;
-    let app: Elysia;
+  let controller: FeedController;
+  let app: Elysia;
 
-    beforeEach(() => {
-        mockGetMixedFeedHandler.execute.mockClear();
-        mockInteractionRepository.getSwipedMediaIds.mockClear();
+  beforeEach(() => {
+    mockGetMixedFeedHandler.execute.mockClear();
+    mockInteractionRepository.getSwipedMediaIds.mockClear();
 
-        controller = new FeedController(
-            mockGetMixedFeedHandler as any,
-            mockInteractionRepository as any
-        );
+    controller = new FeedController(
+      mockGetMixedFeedHandler as any,
+      mockInteractionRepository as any,
+    );
 
-        app = new Elysia().use(controller.routes() as any);
-    });
+    app = new Elysia().use(controller.routes() as any);
+  });
 
-    it('GET /feed should return limited feed for guest', async () => {
-        const response = await app.handle(new Request('http://localhost/feed'));
+  it('GET /feed should return limited feed for guest', async () => {
+    const response = await app.handle(new Request('http://localhost/feed'));
 
-        expect(response.status).toBe(200);
+    expect(response.status).toBe(200);
 
-        expect(mockInteractionRepository.getSwipedMediaIds).not.toHaveBeenCalled();
+    expect(mockInteractionRepository.getSwipedMediaIds).not.toHaveBeenCalled();
 
-        // Cast to any to bypass strict tuple [ ] inference type error
-        const calls = mockGetMixedFeedHandler.execute.mock.calls as any[];
-        const lastCallArgs = calls[0]?.[0] as GetMixedFeedQuery | undefined;
+    // Cast to any to bypass strict tuple [ ] inference type error
+    const calls = mockGetMixedFeedHandler.execute.mock.calls as any[];
+    const lastCallArgs = calls[0]?.[0] as GetMixedFeedQuery | undefined;
 
-        expect(lastCallArgs).toBeDefined();
-        if (lastCallArgs) {
-            expect(lastCallArgs.userId).toBeUndefined();
-            expect(lastCallArgs.limit).toBe(5); // Guest limit
-            expect(lastCallArgs.excludedMediaIds).toEqual([]);
-        }
-    });
+    expect(lastCallArgs).toBeDefined();
+    if (lastCallArgs) {
+      expect(lastCallArgs.userId).toBeUndefined();
+      expect(lastCallArgs.limit).toBe(5); // Guest limit
+      expect(lastCallArgs.excludedMediaIds).toEqual([]);
+    }
+  });
 });

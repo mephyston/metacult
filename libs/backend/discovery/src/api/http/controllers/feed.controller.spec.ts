@@ -15,8 +15,13 @@ const mockInteractionRepository = {
   getSwipedMediaIds: mock(() => Promise.resolve(['exclude-1', 'exclude-2'])),
 };
 
-// Fake Auth Service Mock
+// Standardized mock for @metacult/backend-identity
 mock.module('@metacult/backend-identity', () => ({
+  isAuthenticated: (app: any) =>
+    app.derive(() => ({
+      user: { id: 'test-user-id' },
+    })),
+  resolveUserOrThrow: async (ctx: any) => ({ id: 'test-user-id' }),
   auth: {
     api: {
       getSession: mock(() =>

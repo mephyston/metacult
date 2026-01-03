@@ -15,7 +15,7 @@ mock.module(
   },
 );
 
-// Also keep the alias mock just in case
+// Standardized mock for @metacult/backend-identity
 mock.module('@metacult/backend-identity', () => {
   return {
     isAuthenticated: (app: any) =>
@@ -23,6 +23,16 @@ mock.module('@metacult/backend-identity', () => {
         user: { id: 'test-user-id' },
       })),
     resolveUserOrThrow: async (ctx: any) => ({ id: 'test-user-id' }),
+    auth: {
+      api: {
+        getSession: mock(() =>
+          Promise.resolve({
+            user: { id: 'test-user-id' },
+            session: { id: 'session-id' },
+          }),
+        ),
+      },
+    },
   };
 });
 
