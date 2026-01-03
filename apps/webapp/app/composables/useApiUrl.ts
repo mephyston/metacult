@@ -3,8 +3,10 @@
  * Gère le "Split Horizon" :
  * - SSR (Server) : Utilise `internalApiUrl` (Réseau Docker/Railway privé)
  * - Client (Browser) : Utilise `public.apiUrl` (Réseau Public)
- */
-export const useApiUrl = () => {
+ *//**
+ * Nuxt composable for resolving API URL based on context (SSR vs Client)
+ * Uses Split Horizon architecture: internal URL for SSR, public URL for client
+ */export const useApiUrl = () => {
     const config = useRuntimeConfig();
 
     if (import.meta.server) {

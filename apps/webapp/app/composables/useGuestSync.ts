@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
-import { getApiUrl } from '@metacult/shared-ui';
+import { useApiUrl } from './useApiUrl';
 
 /**
  * Composable pour gérer la synchronisation des interactions (swipes) faites en mode invité.
@@ -67,9 +67,7 @@ export const useGuestSync = () => {
       // Si le backend est sur 3000 et Nuxt sur 4200, il faut un proxy ou CORS.
       // Better Auth gère CORS.
 
-      const config = useRuntimeConfig();
-      // On utilise l'URL API publique configurée
-      const apiUrl = getApiUrl();
+      const apiUrl = useApiUrl();
       // Sanitize payload:
       // 1. Remove timestamp/extra fields
       // 2. Allow any non-empty string as mediaId (Backend handles validation/foreign keys)

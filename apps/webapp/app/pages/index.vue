@@ -8,7 +8,6 @@ import {
   CardContent,
   Button,
   Badge,
-  getApiUrl,
 } from '@metacult/shared-ui';
 import {
   Eye,
@@ -19,13 +18,13 @@ import {
   Sparkles,
 } from 'lucide-vue-next';
 import { useAuthSession } from '../composables/useAuthSession';
+import { useApiUrl, useWebsiteUrl } from '../composables/useApiUrl';
 
 // --- Auth & User Data ---
 const { user } = useAuthSession();
-// Use shared robust logic (Split Horizon + Domain Inference)
-const apiUrl = getApiUrl();
-const websiteUrl =
-  import.meta.env.NUXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444';
+// Use Nuxt composable for Split Horizon URL resolution
+const apiUrl = useApiUrl();
+const websiteUrl = useWebsiteUrl();
 
 // --- Mock Stats (à remplacer par API si disponible) ---
 const stats = ref({

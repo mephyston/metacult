@@ -7,12 +7,12 @@ import {
   CardContent,
   Badge,
   SwipeDeck,
-  getApiUrl,
 } from '@metacult/shared-ui';
 import { useAuthSession } from '../composables/useAuthSession';
+import { useApiUrl } from '../composables/useApiUrl';
 
 // Get API URL from environment
-const apiUrl = getApiUrl();
+const apiUrl = useApiUrl();
 
 const { user } = useAuthSession();
 const isLoading = ref(false);

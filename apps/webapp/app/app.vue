@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Header, Footer, Search, getWebsiteUrl } from '@metacult/shared-ui';
+import { Header, Footer, Search } from '@metacult/shared-ui';
 import { useAuthSession } from './composables/useAuthSession';
 import { useGuestSync } from './composables/useGuestSync';
+import { useWebsiteUrl } from './composables/useApiUrl';
 
 const { user, clearSession } = useAuthSession();
 const { initSync } = useGuestSync();
@@ -15,7 +16,7 @@ const handleLogout = async () => {
 
   // Force clean state by redirecting to Marketing Home
   // This is better for UX (Start Over)
-  const websiteUrl = getWebsiteUrl();
+  const websiteUrl = useWebsiteUrl();
   window.location.href = websiteUrl;
 };
 </script>

@@ -5,6 +5,7 @@ import { GetMediaByIdQuery } from '../../../application/queries/get-media-by-id/
 import { GetMediaByIdHandler } from '../../../application/queries/get-media-by-id/get-media-by-id.handler';
 import type { SearchMediaDto, ImportMediaDto } from '../dtos/media.dtos';
 import { MediaType } from '../../../domain/entities/media.entity';
+import { logger } from '@metacult/backend/infrastructure';
 
 import { GetTopRatedMediaHandler } from '../../../application/queries/get-top-rated-media/get-top-rated-media.handler';
 
@@ -45,9 +46,7 @@ export class MediaController {
    */
   async import(body: ImportMediaDto['body']) {
     const { mediaId, type } = body;
-    console.log(
-      `[MediaController] Received import request for ${type}/${mediaId}`,
-    );
+    logger.info({ mediaId, type }, '[MediaController] Import request received');
 
     const { id, slug } = await this.importMediaHandler.execute({
       mediaId,

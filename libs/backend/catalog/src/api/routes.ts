@@ -1,6 +1,11 @@
 import { Elysia, t } from 'elysia';
 import type { MediaController } from './http/controllers/media.controller';
 import { SearchMediaSchema, ImportMediaSchema } from './http/dtos/media.dtos';
+import {
+  NotFoundError,
+  ConflictError,
+  InfrastructureError,
+} from '@metacult/shared/core';
 
 import {
   MediaNotFoundInProviderError,
@@ -18,29 +23,25 @@ import {
  */
 export const createCatalogRoutes = (controller: MediaController) => {
   return new Elysia({ prefix: '/media' })
-    .onError(({ code, error, set }) => {
-      if (code === 'VALIDATION') {
-        set.status = 400;
-        return { message: 'Validation Error', details: error };
-      }
+    .onError(({ error }) => {
+      // Transform domain errors to HTTP errors
       if (error instanceof MediaNotFoundInProviderError) {
-        set.status = 404;
-        return { message: error.message };
+        throw new NotFoundError('MEDIA_NOT_FOUND_IN_PROVIDER', error.message);
       }
       if (error instanceof ProviderUnavailableError) {
-        set.status = 503;
-        return { message: error.message, cause: error.cause };
+        throw new InfrastructureError(
+          'PROVIDER_UNAVAILABLE',
+          error.message,
+          error.cause,
+        );
       }
       if (error instanceof MediaAlreadyExistsError) {
-        set.status = 409;
-        return {
-          message: error.message,
+        throw new ConflictError('MEDIA_ALREADY_EXISTS', error.message, {
           existingId: error.internalId,
-        };
+        });
       }
-      console.error('[CatalogRoutes] Unhandled Error:', error);
-      set.status = 500;
-      return { message: 'Internal Server Error' };
+      // Let global error middleware handle the rest
+      throw error;
     })
     .get(
       '/search',

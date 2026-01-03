@@ -4,7 +4,6 @@ import { swagger } from '@elysiajs/swagger';
 import {
   createCatalogRoutes,
   CatalogModuleFactory,
-  mediaSchema,
   type CatalogModuleConfig,
 } from '@metacult/backend/catalog';
 import {
@@ -24,29 +23,27 @@ import {
   getDbConnection,
   redisClient,
   requestContext,
-  patchConsole,
+  logger,
 } from '@metacult/backend/infrastructure';
 import * as infraSchema from '@metacult/backend/infrastructure';
 import { initCrons } from './src/cron/cron.service';
+import { errorMiddleware } from './src/middlewares/error.middleware';
 import {
   GetActiveAdsHandler,
   GetActiveAdsQuery,
 } from '@metacult/backend/marketing';
 
-// Apply logging patch
-// Apply logging patch
-patchConsole();
-
-// Import migration script programmatically
 import { runMigrations } from '@metacult/backend/infrastructure';
 
 // Safe migration runner (Non-blocking to allow Healthcheck to pass)
 runMigrations()
-  .then(() => console.log('✅ Migrations executed successfully'))
-  .catch((error) => console.error('❌ Failed to run migrations:', error));
+  .then(() => logger.info('✅ Migrations executed successfully'))
+  .catch((error) =>
+    logger.error({ err: error }, '❌ Failed to run migrations'),
+  );
 
 // Initialisation de la BDD (Composition Root)
-// Fusion des schémas pour garantir que le client DB satisfait tous les modules
+import { mediaSchema, DrizzleMediaRepository } from '@metacult/backend/catalog';
 import {
   userInteractions,
   actionEnum,
@@ -78,7 +75,7 @@ console.log("🚀 Démarrage de l'API (Elysia)...");
 import { configService } from '@metacult/backend/infrastructure';
 
 // ✅ Lecture de la configuration via le service validé
-console.log(`🔌 API Config: NODE_ENV=${configService.get('NODE_ENV')}`);
+logger.info(`🔌 API Config: NODE_ENV=${configService.get('NODE_ENV')}`);
 
 const catalogConfig: CatalogModuleConfig = {
   igdb: {
@@ -173,6 +170,7 @@ initCrons().catch(console.error);
 // ... (existing code)
 
 const app = new Elysia()
+  .use(errorMiddleware) // ✅ Global error handling FIRST
   .use(swagger())
   .use(
     cors({
@@ -188,7 +186,7 @@ const app = new Elysia()
     if (requestId) {
       set.headers['x-request-id'] = requestId;
     }
-    console.log(`[API] ${request.method} ${request.url}`);
+    logger.debug({ method: request.method, url: request.url }, '[API Request]');
   })
   .get('/', () => 'Hello Metacult API (Elysia)')
   .get('/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
@@ -206,7 +204,7 @@ const app = new Elysia()
       .use(rankingRoutes),
   );
 
-const port = configService.get('PORT');
+const port = configService.get('API_PORT');
 
 // Wrap the fetch handler to initialize AsyncLocalStorage
 const originalFetch = app.fetch;
@@ -230,4 +228,5 @@ const server = Bun.serve({
   fetch: wrappedFetch,
 });
 
-console.log(`🦊 Elysia tourne sur ${server.hostname}:${server.port}`);
+logger.info({ port, hostname: server.hostname }, `✅ Elysia API running`);
+logger.info(`📖 Swagger: http://localhost:${port}/swagger`);

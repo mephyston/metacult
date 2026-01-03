@@ -2,7 +2,7 @@ import { processImportMedia } from './processors/import-media.processor';
 import {
   createWorker,
   IMPORT_QUEUE_NAME,
-  patchConsole,
+  logger,
 } from '@metacult/backend/infrastructure';
 import { processRankingUpdate } from './processors/ranking.processor';
 import { RANKING_QUEUE_NAME } from '@metacult/backend/ranking';
