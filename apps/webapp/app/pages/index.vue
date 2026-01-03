@@ -251,7 +251,7 @@ onMounted(() => {
           <a
             v-for="trend in trends"
             :key="trend.id"
-            :href="`${websiteUrl}/media/${trend.slug}`"
+            :href="`${websiteUrl}/catalog/${trend.type}/${trend.slug}`"
             target="_blank"
             rel="noopener noreferrer"
             class="group relative overflow-hidden rounded-lg border-2 border-border hover:border-primary transition-all hover:shadow-lg cursor-pointer block"
