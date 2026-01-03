@@ -28,8 +28,8 @@ export default defineConfig({
         plugins: [nxViteTsPaths(), tailwindcss()],
         ssr: {
             noExternal: isProduction
-                ? ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'vue', '@astrojs/vue']
-                : ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next'],
+                ? ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'vue', '@astrojs/vue', 'better-auth', '@vueuse/core']
+                : ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'better-auth', '@vueuse/core'],
         },
         optimizeDeps: {
             include: ['vue', 'radix-vue', 'lucide-vue-next', 'class-variance-authority', 'clsx', 'tailwind-merge'],

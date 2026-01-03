@@ -13,6 +13,7 @@ import {
   TmdbProvider,
   IgdbProvider,
   GoogleBooksProvider,
+  MediaAlreadyExistsError,
 } from '@metacult/backend/catalog';
 import { Job } from 'bullmq';
 
@@ -208,6 +209,13 @@ export const processImportMedia = async (
 
       console.log(`✅ [Worker] Job ${job.id} terminé avec succès.`);
     } catch (error: any) {
+      if (error instanceof MediaAlreadyExistsError) {
+        console.warn(
+          `ℹ️ [Worker] Job ${job.id} skipped (Duplicate): ${error.message}`,
+        );
+        return;
+      }
+
       console.error(
         `💥 [Error] Failed to process job ${job.id}: `,
         error.message,
