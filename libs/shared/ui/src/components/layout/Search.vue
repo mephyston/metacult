@@ -21,6 +21,7 @@ import {
   CommandSeparator,
 } from '../ui/command';
 import { Button } from '../ui/button';
+import { getApiUrl, getWebappUrl } from '../../lib/utils';
 
 // Types (simplified version of DTO)
 interface SearchResultItem {
@@ -96,10 +97,7 @@ const searchApi = async (q: string) => {
 
   isLoading.value = true;
   try {
-    let baseUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
-    if (!baseUrl.startsWith('http')) {
-      baseUrl = `https://${baseUrl}`;
-    }
+    const baseUrl = getApiUrl();
     const res = await fetch(
       `${baseUrl}/api/media/search?q=${encodeURIComponent(q)}`,
     );
@@ -127,10 +125,7 @@ async function handleSelect(item: SearchResultItem) {
     // Import logic
     console.log('[Search] Importing item:', item);
     importingId.value = item.id;
-    let baseUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
-    if (!baseUrl.startsWith('http')) {
-      baseUrl = `https://${baseUrl}`;
-    }
+    const baseUrl = getApiUrl();
     try {
       const res = await fetch(`${baseUrl}/api/media/import`, {
         method: 'POST',
@@ -173,11 +168,7 @@ async function handleSelect(item: SearchResultItem) {
 
 function navigateToMedia(type: string, idOrSlug: string) {
   open.value = false;
-  let websiteUrl =
-    import.meta.env.PUBLIC_WEBSITE_URL || 'http://localhost:4444';
-  if (!websiteUrl.startsWith('http')) {
-    websiteUrl = `https://${websiteUrl}`;
-  }
+  const websiteUrl = getWebappUrl();
   window.location.href = `${websiteUrl}/catalog/${type}/${idOrSlug}`;
 }
 </script>
