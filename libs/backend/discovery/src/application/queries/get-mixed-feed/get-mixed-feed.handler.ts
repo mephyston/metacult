@@ -104,10 +104,11 @@ export class GetMixedFeedHandler {
       }
     }
 
-    // 4. Set Cache (TTL 1h) - Only for public generic feeds
+    // 4. Set Cache (TTL 60s) - Only for public generic feeds
+    // Short TTL to ensure guests see new content frequently
     if (shouldCache) {
-      await this.redis.set(cacheKey, JSON.stringify(mixedFeed), 'EX', 3600);
-      console.log(`[MixedFeed] Cached ${mixedFeed.length} items`);
+      await this.redis.set(cacheKey, JSON.stringify(mixedFeed), 'EX', 60);
+      console.log(`[MixedFeed] Cached ${mixedFeed.length} items (60s TTL)`);
     }
 
     return mixedFeed;
