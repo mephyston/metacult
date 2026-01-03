@@ -46,13 +46,43 @@ export function getApiUrl(): string {
   }
 
   // 2. Process Env (Node/SSR)
-  if (
-    !rawApiUrl &&
-    typeof process !== 'undefined' &&
-    process.env['PUBLIC_API_URL']
-  ) {
-    rawApiUrl = process.env['PUBLIC_API_URL'];
-  } else if (!rawApiUrl) {
+  // 2. Process Env (Node/SSR)
+  if (typeof process !== 'undefined') {
+    // A. Priority to Internal Railway URL for SSR (Efficiency)
+    // We strictly use this ONLY if we are in a Node environment (SSR)
+    // and the variable is available (Railway injects API_URL)
+    if (process.env['API_URL']) {
+      let internalUrl = process.env['API_URL'];
+
+      // Ensure protocol
+      if (!internalUrl.startsWith('http')) {
+        internalUrl = `http://${internalUrl}`;
+      }
+
+      // Ensure Port 8080 (Standardized API Port)
+      // Railway Internal URLs are usually host:port or just host.
+      // If it contains '.internal' and no port, we default to 8080.
+      // If it contains '.internal' and no port, we default to 8080.
+      const parts = internalUrl.split('://');
+      if (
+        internalUrl.includes('.internal') &&
+        parts[1] &&
+        !parts[1].includes(':')
+      ) {
+        internalUrl = `${internalUrl}:8080`;
+      }
+
+      rawApiUrl = internalUrl;
+    }
+
+    // B. Fallback to Public URL if Internal not available
+    if (!rawApiUrl && process.env['PUBLIC_API_URL']) {
+      rawApiUrl = process.env['PUBLIC_API_URL'];
+    }
+  }
+
+  // 3. Fallback to Vite/Astro Build Time Env
+  if (!rawApiUrl) {
     rawApiUrl = import.meta.env.PUBLIC_API_URL;
   }
 
