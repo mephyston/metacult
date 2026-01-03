@@ -11,12 +11,19 @@ import { useLogger } from './useLogger';
  * 2. initSync() décode et stocke ça temporairement (SessionStorage/State)
  * 3. Une fois loggé, flushSync() envoie tout au backend
  */
+interface GuestSwipe {
+  mediaId: string;
+  action: string;
+  sentiment?: string;
+  [key: string]: unknown;
+}
+
 export const useGuestSync = () => {
   const route = useRoute();
   const router = useRouter();
 
   // État persistant (client-side) des swipes en attente
-  const pendingSwipes = useState<any[]>('pending_swipes', () => []);
+  const pendingSwipes = useState<GuestSwipe[]>('pending_swipes', () => []);
 
   /**
    * À appeler au montage de l'app (app.vue ou plugin)

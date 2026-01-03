@@ -7,6 +7,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const logger = useLogger();
 
   // Hook global pour intercepter les erreurs de l'application (SSR et Client)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nuxtApp.hook('app:error', async (error: any) => {
     // Détection d'une erreur 401 Unauthorized
     if (

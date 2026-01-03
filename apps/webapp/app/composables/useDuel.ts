@@ -72,9 +72,10 @@ export const useDuel = () => {
         error.value = 'Invalid response format';
         currentPair.value = null;
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error('[useDuel] Error fetching pair:', err);
-      error.value = err.message || 'Failed to fetch duel pair';
+      error.value = message || 'Failed to fetch duel pair';
       currentPair.value = null;
     } finally {
       loading.value = false;
