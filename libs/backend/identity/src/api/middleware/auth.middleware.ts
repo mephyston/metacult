@@ -109,8 +109,13 @@ export const maybeAuthenticated = new Elysia({
   name: 'optional-auth-guard',
 }).derive(async ({ headers, request }) => {
   const cookie = request.headers.get('cookie');
+  console.log('[OptionalAuthGuard] ✅ MIDDLEWARE LOADED AND EXECUTING');
   console.log('[OptionalAuthGuard] Request URL:', request.url);
   console.log('[OptionalAuthGuard] Cookie length:', cookie ? cookie.length : 0);
+  console.log(
+    '[OptionalAuthGuard] Cookie content:',
+    cookie ? cookie.substring(0, 100) : 'none',
+  );
 
   // Récupère la session depuis les headers (Cookie ou Authorization Bearer)
   const sessionData = await auth.api.getSession({

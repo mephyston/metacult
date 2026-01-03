@@ -15,12 +15,20 @@ export class FeedController {
   constructor(
     private readonly getMixedFeedHandler: GetMixedFeedHandler,
     private readonly interactionRepository: IInteractionRepository,
-  ) {}
+  ) {
+    console.log(
+      '[FeedController] 🔧 Constructor called, maybeAuthenticated middleware:',
+      typeof maybeAuthenticated,
+    );
+  }
 
   /**
    * Routes definition to be mounted by Elysia
    */
   public routes() {
+    console.log(
+      '[FeedController] 🚀 routes() called, mounting maybeAuthenticated',
+    );
     return new Elysia({ prefix: '/feed' })
       .use(maybeAuthenticated) // Adds user to context (null if guest)
       .get('/', async (context) => {
