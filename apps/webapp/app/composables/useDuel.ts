@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { API_MESSAGES, DUEL_STATUS } from '@metacult/shared-core';
 import { useLogger } from './useLogger';
 
 /**
@@ -59,7 +60,7 @@ export const useDuel = () => {
       // On check si la réponse a une propriété 'meta'
       if (
         'meta' in response &&
-        response.meta?.status === 'insufficient_likes'
+        response.meta?.status === DUEL_STATUS.INSUFFICIENT_LIKES
       ) {
         isEmpty.value = true;
         currentPair.value = null;
@@ -69,13 +70,14 @@ export const useDuel = () => {
       } else {
         // Fallback bizarrerie
         logger.warn('[useDuel] Invalid response format:', response);
-        error.value = 'Invalid response format';
+        error.value = API_MESSAGES.ERRORS.INVALID_RESPONSE_FORMAT;
         currentPair.value = null;
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error('[useDuel] Error fetching pair:', err);
-      error.value = message || 'Failed to fetch duel pair';
+      // Use explicit error message from server if available, else custom fallback
+      error.value = message || API_MESSAGES.ERRORS.FETCH_FAILED;
       currentPair.value = null;
     } finally {
       loading.value = false;

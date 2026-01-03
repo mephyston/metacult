@@ -4,7 +4,7 @@ import {
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
 import { logger } from '@metacult/backend/infrastructure';
-import { API_MESSAGES } from '@metacult/shared-core';
+import { API_MESSAGES, DUEL_STATUS } from '@metacult/shared-core';
 import { RankingQueue } from '../../../infrastructure/queue/ranking.queue';
 import { DrizzleDuelRepository } from '../../../infrastructure/repositories/drizzle-duel.repository';
 
@@ -39,7 +39,7 @@ export const DuelController = new Elysia({ prefix: '/duel' })
           return {
             data: [],
             meta: {
-              status: 'insufficient_likes',
+              status: DUEL_STATUS.INSUFFICIENT_LIKES,
               message: API_MESSAGES.DUEL.INSUFFICIENT_LIKES,
             },
           };

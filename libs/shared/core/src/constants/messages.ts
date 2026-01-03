@@ -42,6 +42,8 @@ export const API_MESSAGES = {
     INTERNAL_ERROR_SHORT: 'Internal Server Error',
     UNHANDLED_ERROR: 'Unhandled Server Error',
     INVALID_LIMIT: 'Invalid limit parameter. Must be between 1 and 100.',
+    INVALID_RESPONSE_FORMAT: 'Invalid response format',
+    FETCH_FAILED: 'Failed to fetch data',
   },
   VALIDATION: {
     // IGDB
