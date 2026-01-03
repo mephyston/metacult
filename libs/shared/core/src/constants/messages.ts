@@ -32,6 +32,9 @@ export const API_MESSAGES = {
   DISCOVERY: {
     FEED_GENERATED: 'Discovery feed generated',
   },
+  DEBUG: {
+    SYNC_JOB_TRIGGERED: 'Sync job triggered',
+  },
   ERRORS: {
     VALIDATION_FAILED: 'Validation failed',
     ROUTE_NOT_FOUND: 'Route not found',

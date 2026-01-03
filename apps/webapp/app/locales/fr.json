@@ -61,13 +61,20 @@
     "title": "Découverte",
     "empty": "Plus de contenus à découvrir",
     "emptyMessage": "Tu as tout exploré ! Reviens plus tard pour de nouveaux contenus.",
-    "refreshing": "Rechargement..."
+    "refreshing": "Rechargement...",
+    "emptyTitle": "Tout est calme...",
+    "emptyDescription": "Tu as vu tout ce qu'on avait pour l'instant ! Reviens plus tard.",
+    "search": "Rechercher...",
+    "searchLong": "Search documentation..."
   },
   "arena": {
     "title": "Arène",
     "vs": "VS",
     "insufficientLikes": "Swipe plus de titres pour débloquer l'Arène !",
-    "voteRecorded": "Vote enregistré !"
+    "voteRecorded": "Vote enregistré !",
+    "emptyTitle": "Ton arène est vide !",
+    "emptyDescription": "Va liker plus de jeux dans le Radar pour construire ton tournoi et affiner ton classement.",
+    "goToRadar": "Aller au Radar"
   },
   "common": {
     "loading": "Chargement...",

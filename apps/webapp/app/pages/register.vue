@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 // @ts-ignore - Nuxt i18n auto-import
-const { t } = useI18n();
+const { t: __t } = useI18n();
 import { signUp } from '../lib/auth-client';
 import { useAuthSession } from '../composables/useAuthSession';
 import { useLogger } from '../composables/useLogger';
@@ -31,12 +31,12 @@ const error = ref('');
 
 const handleSubmit = async () => {
   if (!name.value || !email.value || !password.value) {
-    error.value = t('auth.register.errors.allFields');
+    error.value = __t('auth.register.errors.allFields');
     return;
   }
 
   if (password.value.length < 8) {
-    error.value = t('auth.register.errors.passwordLength');
+    error.value = __t('auth.register.errors.passwordLength');
     return;
   }
 

@@ -25,6 +25,7 @@ declare global {
   const useRuntimeConfig: () => {
     public: {
       apiUrl: string;
+      websiteUrl?: string;
     };
     internalApiUrl?: string;
   };

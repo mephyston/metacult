@@ -187,9 +187,9 @@ onMounted(() => {
     </div>
 
     <div v-else class="text-center space-y-4">
-      <h2 class="text-2xl font-bold">Tout est calme...</h2>
+      <h2 class="text-2xl font-bold">{{ $t('discover.emptyTitle') }}</h2>
       <p class="text-muted-foreground">
-        Tu as vu tout ce qu'on avait pour l'instant ! Reviens plus tard.
+        {{ $t('discover.emptyDescription') }}
       </p>
       <p class="text-xs text-muted-foreground">API URL: {{ apiUrl }}</p>
       <p class="text-xs text-muted-foreground">
