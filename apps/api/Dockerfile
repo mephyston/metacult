@@ -17,7 +17,7 @@ COPY libs/backend/identity/package.json ./libs/backend/identity/
 COPY libs/backend/infrastructure/package.json ./libs/backend/infrastructure/
 COPY libs/backend/interaction/package.json ./libs/backend/interaction/
 COPY libs/backend/marketing/package.json ./libs/backend/marketing/
-COPY libs/backend/ranking/package.json ./libs/backend/ranking/
+
 COPY libs/shared/ui/package.json ./libs/shared/ui/
 
 # 3. Install production dependencies only
