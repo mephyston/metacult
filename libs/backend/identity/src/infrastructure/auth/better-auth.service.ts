@@ -31,9 +31,13 @@ export const auth = betterAuth({
   basePath: '/api/auth',
   secret: process.env['BETTER_AUTH_SECRET'],
   trustedOrigins: [
-    'http://localhost:3333', // API
-    'http://localhost:4444', // Website dev fallback
-    'http://localhost:4201', // Webapp Nuxt
+    ...(process.env['NODE_ENV'] !== 'production'
+      ? [
+          'http://localhost:3333', // API
+          'http://localhost:4444', // Website dev fallback
+          'http://localhost:4201', // Webapp Nuxt
+        ]
+      : []),
     ...(process.env['BETTER_AUTH_TRUSTED_ORIGINS']
       ? process.env['BETTER_AUTH_TRUSTED_ORIGINS'].split(',')
       : []),
