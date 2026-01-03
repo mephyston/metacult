@@ -1,9 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { Hero, SwipeDeck } from '@metacult/shared-ui';
+import { Hero, SwipeDeck, getApiUrl } from '@metacult/shared-ui';
 import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
-import { getApiUrl } from '../utils/get-api-url';
 
 // Temporarily disable prerender to test API calls
 // Re-enable later for production builds
