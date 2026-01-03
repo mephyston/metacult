@@ -9,11 +9,16 @@ on:
       - '**/*.md'
       - '.vscode/**'
       - 'CHANGELOG.md'
+      - 'LICENSE'
 
 permissions:
   contents: write
   packages: write
   actions: read
+
+env:
+  NX_HEAD: HEAD
+  NX_BASE: HEAD~1
 
 jobs:
   # ------------------------------------------------------------------
@@ -22,7 +27,7 @@ jobs:
   # Goal: Lint & Test only affected projects
   # ------------------------------------------------------------------
   staging-checks:
-    name: 🧪 Staging Checks (Lint & Test)
+    name: 🧪 Staging Checks
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
@@ -40,25 +45,25 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Lint Affected
-        run: bun run nx affected -t lint --base=HEAD~1 --parallel=3
+        run: bun run nx affected -t lint --parallel=3
 
       - name: Test Affected
-        run: bun run nx affected -t test --base=HEAD~1 --parallel=3
+        run: bun run nx affected -t test --parallel=3
 
   # ------------------------------------------------------------------
   # JOB 1 (Part B): STAGING BUILD & DEPLOY
   # Trigger: Push on develop (follows checks)
-  # Goal: Build & Push Docker Images -> Deploy to Railway Staging
+  # Goal: Build -> Push (staging+sha) -> Deploy Railway Staging
   # ------------------------------------------------------------------
-  staging-build:
-    name: 🐳 Staging Build & Deploy (${{ matrix.app }})
+  staging-deploy:
+    name: 🚀 Staging Deploy (${{ matrix.app }})
     needs: staging-checks
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        app: [api, webapp, website]
+        app: [api, webapp, website, worker]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -88,25 +93,23 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # RAILWAY DEPLOYMENT (Staging)
-      # Assumes Railway Service Name matches matrix.app (api, webapp, website)
-      # Requires RAILWAY_TOKEN in GitHub Secrets
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
       - name: Deploy to Railway Staging
-        # Using 'redeploy' to trigger a pull of the new image
-        run: railway redeploy --service ${{ matrix.app }} --environment staging
+        # Using 'redeploy' to trigger a pull of the new image from GHCR
+        # Service name format: metacult-{app}
+        run: railway redeploy --service metacult-${{ matrix.app }} --environment staging
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
 
   # ------------------------------------------------------------------
   # JOB 2: PROD RELEASE & DEPLOY
   # Trigger: Push on main
-  # Goal: Versioning (Nx) + Promotion (Docker ImageTools) -> Deploy to Railway Prod
+  # Goal: Version (Nx) -> Promote Image (Staging->Prod) -> Deploy Railway Prod
   # ------------------------------------------------------------------
   prod-release:
-    name: 🚀 Production Release & Deploy
+    name: 🚀 Prod Release & Deploy
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -155,27 +158,44 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Promote Images & Deploy to Prod
+      - name: Promote Images & Deploy Prod
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PRODUCTION }}
         run: |
           VERSION=${{ steps.get-version.outputs.VERSION }}
-          APPS=("api" "webapp" "website")
+          APPS=("api" "webapp" "website" "worker")
 
           echo "🔥 Promoting images for version: $VERSION"
 
           for APP in "${APPS[@]}"; do
-            SOURCE_IMAGE="ghcr.io/${{ env.OWNER }}/metacult-$APP:staging"
+            # Fallback logic: check if SHA tag exists (ideal), else fallback to staging tag
+            SHA_TAG="ghcr.io/${{ env.OWNER }}/metacult-$APP:sha-${{ github.sha }}"
+            STAGING_TAG="ghcr.io/${{ env.OWNER }}/metacult-$APP:staging"
+            
+            # Note: Checking existence remotely is checking failure of `docker buildx imagetools inspect`
+            # For simplicity in this script, we will try SHA first, if fail, use STAGING.
+            
+            SOURCE_IMAGE="$SHA_TAG"
+            if ! docker buildx imagetools inspect "$SOURCE_IMAGE" &>/dev/null; then
+               echo "⚠️  Image $SHA_TAG not found. Falling back to $STAGING_TAG"
+               SOURCE_IMAGE="$STAGING_TAG"
+            fi
+            
             TARGET_LATEST="ghcr.io/${{ env.OWNER }}/metacult-$APP:latest"
             TARGET_VERSION="ghcr.io/${{ env.OWNER }}/metacult-$APP:$VERSION"
             
             echo "---------------------------------------------------"
             echo "📦 App: $APP"
-            echo "   Promoting: $SOURCE_IMAGE -> $TARGET_LATEST"
+            echo "   Source: $SOURCE_IMAGE"
+            echo "   Targets:"
+            echo "     - $TARGET_LATEST"
+            echo "     - $TARGET_VERSION"
+            
+            # Promote
             docker buildx imagetools create -t $TARGET_LATEST -t $TARGET_VERSION $SOURCE_IMAGE
             
             echo "   🚀 Deploying to Railway Production..."
-            railway redeploy --service $APP --environment production
+            railway redeploy --service metacult-$APP --environment production
           done
 
           echo "✅ All services promoted and deployed to Production!"
