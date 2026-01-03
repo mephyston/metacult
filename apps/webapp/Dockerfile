@@ -12,6 +12,7 @@ COPY apps/webapp/package.json ./apps/webapp/
 COPY apps/website/package.json ./apps/website/
 COPY apps/worker/package.json ./apps/worker/
 
+COPY libs/shared/core/package.json ./libs/shared/core/
 COPY libs/shared/ui/package.json ./libs/shared/ui/
 
 # 3. Install ALL dependencies (needed for build)

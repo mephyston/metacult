@@ -13,6 +13,7 @@ COPY apps/website/package.json ./apps/website/
 COPY apps/worker/package.json ./apps/worker/
 
 # libs/backend/ranking has no package.json yet
+COPY libs/shared/core/package.json ./libs/shared/core/
 COPY libs/shared/ui/package.json ./libs/shared/ui/
 
 # 3. Install production dependencies only
