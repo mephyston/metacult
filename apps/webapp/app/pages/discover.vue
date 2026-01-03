@@ -7,11 +7,17 @@ import { useAuthSession } from '../composables/useAuthSession';
 const apiUrl = import.meta.env.NUXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 const { user } = useAuthSession();
-const isLoading = ref(true);
+const isLoading = ref(false);
 const queue = ref<any[]>([]);
+const swipedIds = ref<Set<string>>(new Set());
 
 // --- API Calls ---
-const fetchFeed = async () => {
+const fetchFeed = async (append = false) => {
+  if (isLoading.value) {
+    console.log('[Discover] Already loading, skipping duplicate request');
+    return;
+  }
+
   isLoading.value = true;
   try {
     console.log('[Discover] Fetching from:', `${apiUrl}/api/discovery/feed`);
@@ -27,20 +33,41 @@ const fetchFeed = async () => {
     const data = await response.json();
     console.log('[Discover] Received data:', data);
 
-    // Adapter les données pour SwipeDeck si nécessaire
-    queue.value = data.map((item: any) => {
-      // Le feed mixed retourne { type: 'MEDIA', data: ... } ou { type: 'SPONSORED', data: ... }
-      // SwipeDeck attend un objet plat avec id, title, image
-      const media = item.data || item; // Support both wrapped and flat structure
-      return {
-        id: media.id,
-        title: media.title,
-        image: media.coverUrl || media.poster || '/placeholder-cover.jpg', // Fallback
-        type: item.type || 'MEDIA',
-        ...media,
-      };
-    });
-    console.log('[Discover] Queue populated with', queue.value.length, 'items');
+    // Adapter les données pour SwipeDeck
+    const newItems = data
+      .map((item: any) => {
+        // Le feed mixed retourne { type: 'MEDIA', data: ... } ou { type: 'SPONSORED', data: ... }
+        const media = item.data || item;
+        return {
+          id: media.id,
+          title: media.title,
+          image: media.coverUrl || media.poster || '/placeholder-cover.jpg',
+          type: item.type || 'MEDIA',
+          ...media,
+        };
+      })
+      // Filter out items already in queue or already swiped
+      .filter((item: any) => {
+        const alreadyInQueue = queue.value.some((q) => q.id === item.id);
+        const alreadySwiped = swipedIds.value.has(item.id);
+        return !alreadyInQueue && !alreadySwiped;
+      });
+
+    if (append) {
+      // Append new items to existing queue (for auto-reload)
+      queue.value = [...queue.value, ...newItems];
+      console.log(
+        `[Discover] Appended ${newItems.length} new items, total queue: ${queue.value.length}`,
+      );
+    } else {
+      // Replace queue (initial load or manual refresh)
+      queue.value = newItems;
+      console.log(
+        '[Discover] Queue populated with',
+        queue.value.length,
+        'items',
+      );
+    }
   } catch (error) {
     console.error('[Discover] Failed to fetch feed:', error);
     queue.value = [];
@@ -50,6 +77,9 @@ const fetchFeed = async () => {
 };
 
 const handleInteraction = async (payload: any) => {
+  // Track swiped media to exclude from future fetches
+  swipedIds.value.add(payload.mediaId);
+
   // Optimistic UI: SwipeDeck gère déjà la suppression visuelle de la carte
   // On envoie juste la requête
   try {
@@ -84,7 +114,8 @@ const handleInteraction = async (payload: any) => {
 
 const handleEmpty = () => {
   console.log('[Discover] Deck empty, refreshing...');
-  fetchFeed();
+  swipedIds.value.clear(); // Reset on manual refresh
+  fetchFeed(false);
 };
 
 // --- Watchers ---
@@ -97,7 +128,7 @@ watch(
       console.log(
         '[Discover] Running low on content, prefetching next batch...',
       );
-      fetchFeed();
+      fetchFeed(true); // Append mode
     }
   },
 );
