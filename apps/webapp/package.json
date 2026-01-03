@@ -8,6 +8,7 @@
     "preview": "node .output/server/index.mjs"
   },
   "dependencies": {
+    "@metacult/shared-core": "workspace:*",
     "@metacult/shared-ui": "workspace:*",
     "@vueuse/core": "^14.1.0",
     "better-auth": "^1.4.10",

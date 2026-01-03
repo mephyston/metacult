@@ -5,9 +5,20 @@
     "sourceRoot": "libs/shared/core/src",
     "tags": [
         "scope:shared",
-        "type:util"
+        "type:util",
+        "type:buildable"
     ],
     "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/libs/shared/core",
+                "main": "libs/shared/core/src/index.ts",
+                "tsConfig": "libs/shared/core/tsconfig.lib.json",
+                "assets": []
+            }
+        },
         "lint": {
             "executor": "@nx/eslint:lint",
             "outputs": [

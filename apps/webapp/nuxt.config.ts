@@ -29,10 +29,14 @@ export default defineNuxtConfig({
     layoutTransition: false,
   },
   runtimeConfig: {
+    // Private keys (Server-side only)
+    internalApiUrl: '', // Surchargé par NUXT_INTERNAL_API_URL
     public: {
-      // Utilise PUBLIC_API_URL (même variable qu'Astro)
-      apiUrl: process.env.PUBLIC_API_URL || 'http://localhost:3000',
-      authCookiePrefix: process.env.PUBLIC_AUTH_COOKIE_PREFIX || 'metacult',
+      // Public keys (Client-side)
+      apiUrl: '', // Surchargé par NUXT_PUBLIC_API_URL (MANDATORY)
+      authUrl: '', // Surchargé par NUXT_PUBLIC_AUTH_URL
+      authCookiePrefix: 'metacult', // Surchargé par NUXT_PUBLIC_AUTH_COOKIE_PREFIX
+      websiteUrl: '', // Surchargé par NUXT_PUBLIC_WEBSITE_URL
     },
   },
   typescript: {
@@ -57,7 +61,7 @@ export default defineNuxtConfig({
     },
   },
   build: {
-    transpile: ['@metacult/shared-ui'],
+    transpile: ['@metacult/shared-core', '@metacult/shared-ui'],
   },
   nitro: {
     esbuild: {
@@ -80,6 +84,9 @@ export default defineNuxtConfig({
     preconnect: true,
   },
   alias: {
+    '@metacult/shared-core': fileURLToPath(
+      new URL('../../libs/shared/core/src/index.ts', import.meta.url),
+    ),
     '@metacult/shared-ui': fileURLToPath(
       new URL('../../libs/shared/ui/src/index.ts', import.meta.url),
     ),

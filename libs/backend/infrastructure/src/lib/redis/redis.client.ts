@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
+import { configService } from '../config/configuration.service';
 
-const redisUrl = process.env['REDIS_URL'] || 'redis://localhost:6379';
+const redisUrl = configService.get('REDIS_URL');
 
 console.log(`🔌 Initialisation du client Redis pour le Cache...`);
 
@@ -20,15 +21,14 @@ export const redisClient = new Redis(redisUrl, {
 });
 
 redisClient.on('error', (err) => {
-    // Silent error logs in production might be preferred to avoid noise if redis flaps, 
-    // but for now we log errors to be aware.
-    if (process.env.NODE_ENV !== 'test') {
+    // Silent error logs in test/staging to avoid noise if redis flaps
+    if (configService.isProduction) {
         console.error('❌ Erreur Client Redis :', err.message);
     }
 });
 
 redisClient.on('connect', () => {
-    if (process.env.NODE_ENV !== 'test') {
+    if (!configService.isStaging) {
         console.log('✅ Client Redis connecté');
     }
 });

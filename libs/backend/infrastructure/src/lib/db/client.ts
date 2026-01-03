@@ -20,6 +20,8 @@ class TracingLogWriter implements LogWriter {
 let pool: Pool;
 let db: ReturnType<typeof drizzle>;
 
+import { configService } from '../config/configuration.service';
+
 /**
  * Initialise ou récupère la connexion Singleton à la base de données PostgreSQL via Drizzle ORM.
  * Combine le schéma de base et les schémas d'authentification ou personnalisés.
@@ -32,18 +34,18 @@ export function getDbConnection<T extends Record<string, unknown>>(
 ) {
   if (!pool) {
     // console.log('🔌 Connexion à la base de données...'); // Too verbose
-    const isProduction = process.env['NODE_ENV'] === 'production';
-    const connectionString = process.env['DATABASE_URL'];
+    const isProduction = configService.isProduction;
+    const connectionString = configService.get('DATABASE_URL');
 
     // Smart SSL: Disable for Railway Internal URLs (they don't need/support it usually)
-    // Can be forced via DB_SSL=true/false
-    const isRailwayInternal = connectionString?.includes('.railway.internal');
-    const dbSslEnv = process.env['DB_SSL'];
+    // Can be forced via DB_SSL env var
+    const isRailwayInternal = connectionString.includes('.railway.internal');
+    const dbSslConfig = configService.get('DB_SSL');
 
     let useSsl = isProduction;
     // if (isRailwayInternal) useSsl = false;
-    if (dbSslEnv === 'true') useSsl = true;
-    if (dbSslEnv === 'false') useSsl = false;
+    if (dbSslConfig === true) useSsl = true;
+    if (dbSslConfig === false) useSsl = false;
 
     pool = new Pool({
       connectionString,
@@ -56,8 +58,8 @@ export function getDbConnection<T extends Record<string, unknown>>(
 
     // Schema is now provided by the caller (apps/api merges all schemas)
     const enableLogger =
-      process.env['NODE_ENV'] !== 'production' ||
-      process.env['DEBUG_SQL'] === 'true';
+      configService.isDevelopment ||
+      configService.get('DEBUG_SQL') === true;
     db = drizzle(pool, {
       schema: customSchema,
       logger: enableLogger ? new TracingLogger() : undefined,

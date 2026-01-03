@@ -25,6 +25,7 @@ export default defineConfig({
         domains: ['images.unsplash.com', 'images.igdb.com', 'image.tmdb.org'],
     },
     vite: {
+        envDir: path.resolve(__dirname, '../..'), // Charge .env depuis la racine du monorepo
         plugins: [nxViteTsPaths(), tailwindcss()],
         ssr: {
             noExternal: isProduction

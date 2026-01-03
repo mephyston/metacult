@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { DEFAULT_DEV_URLS } from '@metacult/shared-core';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -22,36 +23,21 @@ declare global {
 
 export function getApiUrl(): string {
   // Priority:
-  // 1. Window Runtime Config (Browser Hydration)
+  // 1. Window Runtime Config (Browser Hydration - Astro)
   // 2. Process Env (Node/SSR Runtime)
   // 3. Import Meta (Build Time)
 
   let rawApiUrl: string | undefined;
 
   if (typeof window !== 'undefined') {
-    // Debug URL Resolution
-    console.log('[getApiUrl] Hostname:', window.location.hostname);
-
-    // 0. Hardcoded Inference for Staging/Prod (Robustness Fallback)
-    if (window.location.hostname.includes('staging')) {
-      return 'https://staging-api.metacult.app';
-    }
-    if (
-      window.location.hostname === 'www.metacult.app' ||
-      window.location.hostname === 'app.metacult.app'
-    ) {
-      return 'https://api.metacult.app';
-    }
-
-    // 1. Runtime Config
+    // 1. Runtime Config (injected by Astro Layout)
     if (window.__ENV__?.PUBLIC_API_URL) {
       rawApiUrl = window.__ENV__.PUBLIC_API_URL;
     }
   }
 
   // 2. Process Env (Node/SSR)
-  // 2. Process Env (Node/SSR)
-  if (typeof process !== 'undefined') {
+  if (!rawApiUrl && typeof process !== 'undefined') {
     // A. Priority to Internal Railway URL for SSR (Efficiency)
     // We strictly use this ONLY if we are in a Node environment (SSR)
     // and the variable is available (Railway injects API_URL)
@@ -61,19 +47,6 @@ export function getApiUrl(): string {
       // Ensure protocol
       if (!internalUrl.startsWith('http')) {
         internalUrl = `http://${internalUrl}`;
-      }
-
-      // Ensure Port 8080 (Standardized API Port)
-      // Railway Internal URLs are usually host:port or just host.
-      // If it contains '.internal' and no port, we default to 8080.
-      // If it contains '.internal' and no port, we default to 8080.
-      const parts = internalUrl.split('://');
-      if (
-        internalUrl.includes('.internal') &&
-        parts[1] &&
-        !parts[1].includes(':')
-      ) {
-        internalUrl = `${internalUrl}:8080`;
       }
 
       rawApiUrl = internalUrl;
@@ -92,10 +65,10 @@ export function getApiUrl(): string {
 
   // Fallback for local development if not set
   if (!rawApiUrl) {
-    rawApiUrl = 'http://127.0.0.1:3000';
+    rawApiUrl = DEFAULT_DEV_URLS.API;
   }
 
-  // Ensure protocol to prevent relative path resolution (fixing 404 on staging)
+  // Ensure protocol to prevent relative path resolution
   if (!rawApiUrl.startsWith('http')) {
     return `https://${rawApiUrl}`;
   }
@@ -117,7 +90,7 @@ export function getWebappUrl(): string {
   }
 
   if (!rawUrl) {
-    rawUrl = 'http://localhost:4201';
+    rawUrl = DEFAULT_DEV_URLS.WEBAPP;
   }
   if (!rawUrl.startsWith('http')) {
     return `https://${rawUrl}`;
@@ -139,21 +112,8 @@ export function getWebsiteUrl(): string {
     rawUrl = import.meta.env.PUBLIC_WEBSITE_URL;
   }
 
-  // Hardcoded Inference for Staging/Prod
-  if (!rawUrl && typeof window !== 'undefined') {
-    if (window.location.hostname.includes('staging')) {
-      return 'https://staging.metacult.app';
-    }
-    if (
-      window.location.hostname === 'www.metacult.app' ||
-      window.location.hostname === 'app.metacult.app'
-    ) {
-      return 'https://www.metacult.app';
-    }
-  }
-
   if (!rawUrl) {
-    rawUrl = 'http://localhost:4444';
+    rawUrl = DEFAULT_DEV_URLS.WEBSITE;
   }
   if (!rawUrl.startsWith('http')) {
     return `https://${rawUrl}`;

@@ -75,41 +75,23 @@ const { db } = getDbConnection(fullSchema);
 console.log("🚀 Démarrage de l'API (Elysia)...");
 
 // --- COMPOSITION ROOT (Chargement de la Configuration) ---
+import { configService } from '@metacult/backend/infrastructure';
 
-// ✅ Lecture des variables d'environnement UNE SEULE FOIS au démarrage (Responsabilité du Composition Root)
-// Note: Les variables sont chargées depuis apps/api/.env (pas de .env global)
+// ✅ Lecture de la configuration via le service validé
+console.log(`🔌 API Config: NODE_ENV=${configService.get('NODE_ENV')}`);
+
 const catalogConfig: CatalogModuleConfig = {
   igdb: {
-    clientId: process.env.IGDB_CLIENT_ID || '',
-    clientSecret: process.env.IGDB_CLIENT_SECRET || '',
+    clientId: configService.get('IGDB_CLIENT_ID') || '',
+    clientSecret: configService.get('IGDB_CLIENT_SECRET') || '',
   },
   tmdb: {
-    apiKey: process.env.TMDB_API_KEY || '',
+    apiKey: configService.get('TMDB_API_KEY') || '',
   },
   googleBooks: {
-    apiKey: process.env.GOOGLE_BOOKS_API_KEY || '',
+    apiKey: configService.get('GOOGLE_BOOKS_API_KEY') || '',
   },
 };
-
-// Validate critical env vars at startup (fail-fast principle)
-if (!catalogConfig.igdb.clientId || !catalogConfig.igdb.clientSecret) {
-  console.warn("⚠️  Identifiants IGDB manquants. L'import de jeux échouera.");
-  console.warn(
-    '   Configurez IGDB_CLIENT_ID et IGDB_CLIENT_SECRET dans apps/api/.env',
-  );
-}
-if (!catalogConfig.tmdb.apiKey) {
-  console.warn(
-    "⚠️  Clé API TMDB manquante. L'import de films/séries échouera.",
-  );
-  console.warn('   Configurez TMDB_API_KEY dans apps/api/.env');
-}
-if (!catalogConfig.googleBooks.apiKey) {
-  console.warn(
-    "⚠️  Clé API Google Books manquante. L'import de livres échouera.",
-  );
-  console.warn('   Configurez GOOGLE_BOOKS_API_KEY dans apps/api/.env');
-}
 
 // 1. Module Catalog
 // ✅ Injection de la configuration dans la Factory (Principe Clean Architecture)
@@ -224,7 +206,7 @@ const app = new Elysia()
       .use(rankingRoutes),
   );
 
-const port = Number(process.env.PORT) || 8080;
+const port = configService.get('PORT');
 
 // Wrap the fetch handler to initialize AsyncLocalStorage
 const originalFetch = app.fetch;

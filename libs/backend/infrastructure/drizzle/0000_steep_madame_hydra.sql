@@ -1,6 +1,6 @@
-CREATE SCHEMA "identity";
+CREATE SCHEMA IF NOT EXISTS "identity";
 --> statement-breakpoint
-CREATE SCHEMA "interaction";
+CREATE SCHEMA IF NOT EXISTS "interaction";
 --> statement-breakpoint
 CREATE TYPE "public"."media_type" AS ENUM('GAME', 'MOVIE', 'TV', 'BOOK');--> statement-breakpoint
 CREATE TYPE "interaction"."action" AS ENUM('LIKE', 'DISLIKE', 'WISHLIST', 'SKIP');--> statement-breakpoint

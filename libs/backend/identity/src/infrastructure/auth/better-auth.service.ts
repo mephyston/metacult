@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { getDbConnection } from '@metacult/backend-infrastructure';
+import { getDbConnection, configService } from '@metacult/backend-infrastructure';
 import { user, session, account, verification } from '../db/auth.schema';
 
 const { db } = getDbConnection();
@@ -11,11 +11,8 @@ const { db } = getDbConnection();
  * En staging Railway : undefined (pas de cross-domain possible entre .up.railway.app différents)
  * En développement : `localhost`
  */
-const rootDomain = process.env['ROOT_DOMAIN'];
-const cookiePrefix =
-  process.env['PUBLIC_AUTH_COOKIE_PREFIX'] ||
-  process.env['AUTH_COOKIE_PREFIX'] ||
-  'dev-metacult';
+const rootDomain = configService.get('ROOT_DOMAIN');
+const cookiePrefix = configService.get('AUTH_COOKIE_PREFIX') || 'metacult';
 
 /**
  * Configuration du service d'authentification (Better Auth).
@@ -27,19 +24,19 @@ const cookiePrefix =
  * @see https://better-auth.com/docs
  */
 export const auth = betterAuth({
-  baseURL: process.env['BETTER_AUTH_URL'],
+  baseURL: configService.get('BETTER_AUTH_URL'),
   basePath: '/api/auth',
-  secret: process.env['BETTER_AUTH_SECRET'],
+  secret: configService.get('BETTER_AUTH_SECRET'),
   trustedOrigins: [
-    ...(process.env['NODE_ENV'] !== 'production'
+    ...(configService.isDevelopment
       ? [
-          'http://localhost:3333', // API
-          'http://localhost:4444', // Website dev fallback
-          'http://localhost:4201', // Webapp Nuxt
-        ]
+        'http://localhost:3333', // API
+        'http://localhost:4444', // Website dev fallback
+        'http://localhost:4201', // Webapp Nuxt
+      ]
       : []),
-    ...(process.env['BETTER_AUTH_TRUSTED_ORIGINS']
-      ? process.env['BETTER_AUTH_TRUSTED_ORIGINS'].split(',')
+    ...(configService.get('BETTER_AUTH_TRUSTED_ORIGINS')
+      ? configService.get('BETTER_AUTH_TRUSTED_ORIGINS')!.split(',')
       : []),
   ],
   database: drizzleAdapter(db, {
@@ -57,7 +54,7 @@ export const auth = betterAuth({
   },
   advanced: {
     cookiePrefix: cookiePrefix,
-    useSecureCookies: process.env['NODE_ENV'] === 'production',
+    useSecureCookies: configService.isProduction,
     defaultCookieAttributes: {
       domain: rootDomain, // Permet le partage cross-subdomain si défini
     },
