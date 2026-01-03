@@ -1,5 +1,6 @@
 import { Redis } from 'ioredis';
 import { GetMixedFeedQuery } from './get-mixed-feed.query';
+import { logger } from '@metacult/backend/infrastructure';
 import type { IMediaSearcher } from '../../ports/media-searcher.interface';
 import type { IAdsProvider } from '../../ports/ads-provider.interface';
 
@@ -40,13 +41,16 @@ export class GetMixedFeedHandler {
   async execute(query: GetMixedFeedQuery): Promise<MixedFeedItem[]> {
     const normalizedSearch = query.search.trim().toLowerCase();
 
-    console.log('[MixedFeed] Query received:', {
-      search: query.search,
-      userId: query.userId,
-      excludedCount: query.excludedMediaIds?.length || 0,
-      excludedIds: query.excludedMediaIds?.slice(0, 5) || [],
-      limit: query.limit,
-    });
+    logger.debug(
+      {
+        search: query.search,
+        userId: query.userId,
+        excludedCount: query.excludedMediaIds?.length || 0,
+        excludedIds: query.excludedMediaIds?.slice(0, 5) || [],
+        limit: query.limit,
+      },
+      '[MixedFeed] Query received',
+    );
 
     // Le cache key doit inclure les exclusions si on veut vraiment cacher...
     // MAIS le cache est surtout utile pour le feed générique.
@@ -63,13 +67,17 @@ export class GetMixedFeedHandler {
     if (shouldCache) {
       const cached = await this.redis.get(cacheKey);
       if (cached) {
-        console.log(`[MixedFeed] Cache Hit pour "${query.search}"`);
+        logger.info({ search: query.search }, '[MixedFeed] Cache Hit');
         return JSON.parse(cached);
       }
     }
 
-    console.log(
-      `[MixedFeed] Cache ${shouldCache ? 'Miss' : 'Bypassed'} pour "${query.search}" - Fetching dependencies...`,
+    logger.info(
+      {
+        search: query.search,
+        cacheStatus: shouldCache ? 'Miss' : 'Bypassed',
+      },
+      '[MixedFeed] Fetching dependencies',
     );
 
     // 2. Fetch Dependencies (Resilient)
@@ -89,10 +97,13 @@ export class GetMixedFeedHandler {
 
     // Log failures but don't crash
     if (mediaRes.status === 'rejected') {
-      console.error('[MixedFeed] Media Searcher Error:', mediaRes.reason);
+      logger.error(
+        { err: mediaRes.reason },
+        '[MixedFeed] Media Searcher Error',
+      );
     }
     if (adsRes.status === 'rejected') {
-      console.error('[MixedFeed] Ads Provider Error:', adsRes.reason);
+      logger.error({ err: adsRes.reason }, '[MixedFeed] Ads Provider Error');
     }
 
     // 3. Mix Logic (1 Ad per 5 Media items)
@@ -117,7 +128,10 @@ export class GetMixedFeedHandler {
     // Short TTL to ensure guests see new content frequently
     if (shouldCache) {
       await this.redis.set(cacheKey, JSON.stringify(mixedFeed), 'EX', 60);
-      console.log(`[MixedFeed] Cached ${mixedFeed.length} items (60s TTL)`);
+      logger.debug(
+        { count: mixedFeed.length },
+        '[MixedFeed] Cached items (60s TTL)',
+      );
     }
 
     return mixedFeed;

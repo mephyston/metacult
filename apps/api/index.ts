@@ -69,7 +69,7 @@ const { db } = getDbConnection(fullSchema);
  * 4. Injecter les dépendances (Wiring).
  * 5. Monter les routes HTTP.
  */
-console.log("🚀 Démarrage de l'API (Elysia)...");
+logger.info("🚀 Démarrage de l'API (Elysia)...");
 
 // --- COMPOSITION ROOT (Chargement de la Configuration) ---
 import { configService } from '@metacult/backend/infrastructure';

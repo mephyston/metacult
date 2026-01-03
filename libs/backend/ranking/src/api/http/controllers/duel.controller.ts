@@ -3,6 +3,7 @@ import {
   isAuthenticated,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
+import { logger } from '@metacult/backend/infrastructure';
 import { RankingQueue } from '../../../infrastructure/queue/ranking.queue';
 import { DrizzleDuelRepository } from '../../../infrastructure/repositories/drizzle-duel.repository';
 
@@ -45,7 +46,7 @@ export const DuelController = new Elysia({ prefix: '/duel' })
 
         return pair;
       } catch (err: any) {
-        console.error('💥 [DuelController] Error:', err);
+        logger.error({ err }, '[DuelController] Error');
         // Si c'est une erreur d'auth lancée par resolveUserOrThrow
         if (err.status === 401 || err.message === 'Unauthorized') {
           set.status = 401;

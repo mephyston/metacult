@@ -3,6 +3,7 @@ import {
   isAuthenticated,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
+import { logger } from '@metacult/backend/infrastructure';
 import { GetUserRankingsHandler } from '../../../application/queries/get-user-rankings/get-user-rankings.handler';
 import { DrizzleInteractionRepository } from '@metacult/backend-interaction';
 import { DrizzleMediaRepository } from '@metacult/backend/catalog';
@@ -66,7 +67,7 @@ export const RankingController = new Elysia({ prefix: '/ranking' })
           },
         };
       } catch (err: any) {
-        console.error('💥 [RankingController] Error:', err);
+        logger.error({ err }, '[RankingController] Error');
 
         // Gestion des erreurs d'authentification
         if (err.status === 401 || err.message === 'Unauthorized') {

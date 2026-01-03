@@ -19,8 +19,10 @@
     // Client ou Fallback SSR : URL Publique
     return config.public.apiUrl || 'http://localhost:3000';
 };
-
-export const useWebsiteUrl = () => {
+/**
+ * Nuxt composable for resolving Website URL
+ */
+// #importsexport const useWebsiteUrl = () => {
     const config = useRuntimeConfig();
     return config.public.websiteUrl || 'http://localhost:4444';
 }

@@ -98,15 +98,18 @@ export const errorMiddleware = new Elysia({ name: 'error-middleware' }).onError(
     // 4. Unknown/Unhandled Errors (crashes, exceptions)
     set.status = 500;
 
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
     logger.error(
       {
         requestId,
         method,
         url,
         err: error,
-        stack: error.stack,
+        stack: errorStack,
       },
-      `Unhandled Server Error: ${error.message}`,
+      `Unhandled Server Error: ${errorMessage}`,
     );
 
     // Don't leak error details in production

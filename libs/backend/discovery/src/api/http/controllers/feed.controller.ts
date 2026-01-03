@@ -2,6 +2,7 @@
 import { Elysia } from 'elysia';
 import { GetMixedFeedHandler } from '../../../application/queries/get-mixed-feed/get-mixed-feed.handler';
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
+import { logger } from '@metacult/backend/infrastructure';
 
 import type { IInteractionRepository } from '@metacult/backend/interaction';
 
@@ -40,13 +41,13 @@ export class FeedController {
         const excludedIdsParam = query?.excludedIds || '';
         const userId = user?.id;
 
-        console.log(
-          '[FeedController] GET /feed - User:',
-          userId || 'Guest',
-          'Search:',
-          searchTerm,
-          'ExcludedIds param:',
-          excludedIdsParam ? excludedIdsParam.substring(0, 50) + '...' : 'none',
+        logger.info(
+          {
+            userId: userId || 'Guest',
+            search: searchTerm,
+            hasExcludedIds: !!excludedIdsParam,
+          },
+          '[FeedController] GET /feed',
         );
 
         let excludedMediaIds: string[] = [];
@@ -57,13 +58,18 @@ export class FeedController {
           try {
             excludedMediaIds =
               await this.interactionRepository.getSwipedMediaIds(userId);
-            console.log(
-              '[FeedController] Excluded media IDs from DB:',
-              excludedMediaIds.length,
-              excludedMediaIds.length > 0 ? excludedMediaIds.slice(0, 3) : '[]',
+            logger.debug(
+              {
+                count: excludedMediaIds.length,
+                sample: excludedMediaIds.slice(0, 3),
+              },
+              '[FeedController] Excluded media IDs from DB',
             );
           } catch (e) {
-            console.error('[FeedController] Failed to fetch blacklist:', e);
+            logger.error(
+              { err: e },
+              '[FeedController] Failed to fetch blacklist',
+            );
           }
           limit = 10;
         } else if (excludedIdsParam) {
@@ -72,12 +78,12 @@ export class FeedController {
             .split(',')
             .map((id: string) => id.trim())
             .filter((id: string) => id.length > 0);
-          console.log(
-            '[FeedController] Guest mode - excludedIds from client:',
-            excludedMediaIds.length,
+          logger.debug(
+            { count: excludedMediaIds.length },
+            '[FeedController] Guest mode - excludedIds from client',
           );
         } else {
-          console.log('[FeedController] Guest mode - no exclusions');
+          logger.debug('[FeedController] Guest mode - no exclusions');
         }
 
         // Create Query with Context
@@ -89,7 +95,7 @@ export class FeedController {
         );
 
         const feed = await this.getMixedFeedHandler.execute(feedQuery);
-        console.log('[FeedController] Returning', feed.length, 'items');
+        logger.info({ count: feed.length }, '[FeedController] Returning items');
         return feed;
       });
   }

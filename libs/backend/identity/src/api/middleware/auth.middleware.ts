@@ -1,5 +1,6 @@
 import Elysia, { type Context } from 'elysia';
 import { auth } from '../../infrastructure/auth/better-auth.service';
+import { logger } from '@metacult/backend/infrastructure';
 
 /**
  * Contexte enrichi après authentification réussie.
@@ -46,16 +47,24 @@ export interface AuthenticatedContext {
 export const isAuthenticated = new Elysia({ name: 'auth-guard' })
   .derive(async ({ headers, request }) => {
     const cookie = request.headers.get('cookie');
-    console.log('[AuthGuard] Request URL:', request.url);
-    console.log('[AuthGuard] Origin:', request.headers.get('origin'));
-    console.log('[AuthGuard] Cookie length:', cookie ? cookie.length : 0);
+    logger.debug(
+      {
+        url: request.url,
+        origin: request.headers.get('origin'),
+        cookieLength: cookie ? cookie.length : 0,
+      },
+      '[AuthGuard] Request',
+    );
 
     // Récupère la session depuis les headers (Cookie ou Authorization Bearer)
     const sessionData = await auth.api.getSession({
       headers: headers as HeadersInit,
     });
 
-    console.log('[AuthGuard] Session found:', !!sessionData?.user);
+    logger.debug(
+      { hasSession: !!sessionData?.user },
+      '[AuthGuard] Session check',
+    );
 
     // Injecte user et session dans le contexte (ou null si pas authentifié)
     return {
@@ -109,12 +118,13 @@ export const maybeAuthenticated = new Elysia({
   name: 'optional-auth-guard',
 }).derive(async ({ headers, request }) => {
   const cookie = request.headers.get('cookie');
-  console.log('[OptionalAuthGuard] ✅ MIDDLEWARE LOADED AND EXECUTING');
-  console.log('[OptionalAuthGuard] Request URL:', request.url);
-  console.log('[OptionalAuthGuard] Cookie length:', cookie ? cookie.length : 0);
-  console.log(
-    '[OptionalAuthGuard] Cookie content:',
-    cookie ? cookie.substring(0, 100) : 'none',
+  logger.debug(
+    {
+      url: request.url,
+      cookieLength: cookie ? cookie.length : 0,
+      cookiePreview: cookie ? cookie.substring(0, 100) : 'none',
+    },
+    '[OptionalAuthGuard] Middleware executing',
   );
 
   // Récupère la session depuis les headers (Cookie ou Authorization Bearer)
@@ -122,10 +132,12 @@ export const maybeAuthenticated = new Elysia({
     headers: headers as HeadersInit,
   });
 
-  console.log(
-    '[OptionalAuthGuard] Session found:',
-    !!sessionData?.user,
-    sessionData?.user?.id || 'none',
+  logger.debug(
+    {
+      hasSession: !!sessionData?.user,
+      userId: sessionData?.user?.id || 'none',
+    },
+    '[OptionalAuthGuard] Session check',
   );
 
   // Injecte user et session dans le contexte (ou null si pas authentifié)

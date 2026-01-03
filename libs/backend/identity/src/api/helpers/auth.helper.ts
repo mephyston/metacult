@@ -1,4 +1,5 @@
 import { auth } from '../../infrastructure/auth/better-auth.service';
+import { logger } from '@metacult/backend/infrastructure';
 
 /**
  * Resolves the authenticated user from the context or throws a 401 error.
@@ -16,8 +17,8 @@ export async function resolveUserOrThrow(ctx: any) {
     return user;
   }
 
-  console.warn(
-    '[AuthHelper] User context missing. Attempting manual session recovery...',
+  logger.warn(
+    '[AuthHelper] User context missing - attempting manual session recovery',
   );
 
   // 2. Try manual recovery using Better Auth API
@@ -27,20 +28,20 @@ export async function resolveUserOrThrow(ctx: any) {
     });
 
     if (sessionData && sessionData.user) {
-      console.log(
-        '[AuthHelper] RECOVERY SUCCESS! User found:',
-        sessionData.user.id,
+      logger.info(
+        { userId: sessionData.user.id },
+        '[AuthHelper] Recovery success',
       );
       // Optional: Patch context for subsequent handlers if needed (though we return the user mostly)
       ctx.user = sessionData.user;
       return sessionData.user;
     }
   } catch (e) {
-    console.error('[AuthHelper] unexpected error during recovery', e);
+    logger.error({ err: e }, '[AuthHelper] Unexpected error during recovery');
   }
 
   // 3. If all fails, throw 401
-  console.warn('[AuthHelper] Recovery failed. Unauthorized.');
+  logger.warn('[AuthHelper] Recovery failed - Unauthorized');
   // Utilize the error helper from the context if available, otherwise generic throw
   if (error) {
     throw error(401, { success: false, message: 'Unauthorized' });

@@ -87,18 +87,15 @@ export class ImportMediaHandler {
         default:
           throw new UnsupportedMediaTypeError(type);
       }
-      console.log(
-        `[ImportMediaHandler] Provider returned media: ${media ? 'YES' : 'NO'}`,
-      );
     } catch (error) {
       // Re-throw exceptions du domaine telles quelles
       if (error instanceof UnsupportedMediaTypeError) {
         throw error;
       }
       // Encapsulation: On masque les erreurs techniques du provider derrière une erreur métier
-      console.error(
-        `[ImportMediaHandler] Erreur Provider pour ${type}/${mediaId}:`,
-        error,
+      logger.error(
+        { err: error, type, mediaId },
+        '[ImportMediaHandler] Provider error',
       );
       throw new ProviderUnavailableError(
         providerName,
@@ -108,15 +105,21 @@ export class ImportMediaHandler {
 
     // 3. Validation de l'existence
     if (!media) {
-      console.warn(`[ImportMediaHandler] Media not found in provider.`);
+      logger.warn(
+        { providerName, mediaId },
+        '[ImportMediaHandler] Media not found in provider',
+      );
       throw new MediaNotFoundInProviderError(providerName, mediaId);
     }
 
     // 4. Persistance
     // Délégation au Repository pour sauvegarder l'état
-    console.log('[ImportMediaHandler] Step 3: Persisting to Repository...');
+    logger.debug('[ImportMediaHandler] Step 3: Persisting to Repository');
     await this.mediaRepository.create(media);
-    console.log(`[ImportMediaHandler] Succès import de ${media.title}`);
+    logger.info(
+      { title: media.title, id: newId },
+      '[ImportMediaHandler] Import successful',
+    );
 
     return { id: newId, slug: media.slug };
   }

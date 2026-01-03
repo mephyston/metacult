@@ -2,6 +2,7 @@ import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { GetMediaByIdQuery } from './get-media-by-id.query';
 import type { MediaDetailDto } from './media-detail.dto';
 import { MediaNotFoundInProviderError } from '../../../domain/errors/catalog.errors';
+import { logger } from '@metacult/backend/infrastructure';
 
 import type { Redis } from 'ioredis';
 
@@ -17,12 +18,13 @@ export class GetMediaByIdHandler {
     // 1. Check Redis Cache
     const cached = await this.redis.get(cacheKey);
     if (cached) {
-      console.log(`[GetMediaById] Cache Hit for ${query.id}`);
+      logger.info({ mediaId: query.id }, '[GetMediaById] Cache Hit');
       return JSON.parse(cached);
     }
 
-    console.log(
-      `[GetMediaById] Cache Miss - Fetching from DB for ${query.id}...`,
+    logger.info(
+      { mediaId: query.id },
+      '[GetMediaById] Cache Miss - Fetching from DB',
     );
 
     // 2. Fetch from DB
