@@ -224,7 +224,7 @@ const app = new Elysia()
       .use(rankingRoutes),
   );
 
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.PORT) || 8080;
 
 // Wrap the fetch handler to initialize AsyncLocalStorage
 const originalFetch = app.fetch;
