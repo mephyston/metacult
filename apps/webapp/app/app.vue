@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Header, Footer, Search } from '@metacult/shared-ui';
+import { Header, Footer, Search, getWebsiteUrl } from '@metacult/shared-ui';
 import { useAuthSession } from './composables/useAuthSession';
 import { useGuestSync } from './composables/useGuestSync';
 
@@ -15,8 +15,7 @@ const handleLogout = async () => {
 
   // Force clean state by redirecting to Marketing Home
   // This is better for UX (Start Over)
-  const websiteUrl =
-    import.meta.env.PUBLIC_WEBSITE_URL || 'http://localhost:4444'; // Fallback dev port
+  const websiteUrl = getWebsiteUrl();
   window.location.href = websiteUrl;
 };
 </script>

@@ -9,7 +9,7 @@ import {
 } from 'lucide-vue-next';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
-import { getApiUrl } from '../../../lib/utils';
+import { getApiUrl, getWebappUrl } from '../../../lib/utils';
 import { TextRotator } from '../../ui/text-rotator';
 import {
   Tooltip,
@@ -96,9 +96,7 @@ const displayImage = computed(() =>
 );
 
 const displayCtaLink = computed(() =>
-  featureItem.value
-    ? `${import.meta.env.PUBLIC_WEBAPP_URL || 'http://localhost:4201'}/arena`
-    : props.ctaLink,
+  featureItem.value ? `${getWebappUrl()}/arena` : props.ctaLink,
 );
 
 const displayCtaText = computed(() =>

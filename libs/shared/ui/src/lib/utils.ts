@@ -14,6 +14,7 @@ declare global {
   interface Window {
     __ENV__?: {
       PUBLIC_WEBAPP_URL?: string;
+      PUBLIC_WEBSITE_URL?: string;
       PUBLIC_API_URL?: string;
     };
   }
@@ -117,6 +118,42 @@ export function getWebappUrl(): string {
 
   if (!rawUrl) {
     rawUrl = 'http://localhost:4201';
+  }
+  if (!rawUrl.startsWith('http')) {
+    return `https://${rawUrl}`;
+  }
+  return rawUrl;
+}
+
+export function getWebsiteUrl(): string {
+  let rawUrl: string | undefined;
+
+  if (typeof window !== 'undefined' && window.__ENV__?.PUBLIC_WEBSITE_URL) {
+    rawUrl = window.__ENV__.PUBLIC_WEBSITE_URL;
+  } else if (
+    typeof process !== 'undefined' &&
+    process.env['PUBLIC_WEBSITE_URL']
+  ) {
+    rawUrl = process.env['PUBLIC_WEBSITE_URL'];
+  } else {
+    rawUrl = import.meta.env.PUBLIC_WEBSITE_URL;
+  }
+
+  // Hardcoded Inference for Staging/Prod
+  if (!rawUrl && typeof window !== 'undefined') {
+    if (window.location.hostname.includes('staging')) {
+      return 'https://staging.metacult.app';
+    }
+    if (
+      window.location.hostname === 'www.metacult.app' ||
+      window.location.hostname === 'app.metacult.app'
+    ) {
+      return 'https://www.metacult.app';
+    }
+  }
+
+  if (!rawUrl) {
+    rawUrl = 'http://localhost:4444';
   }
   if (!rawUrl.startsWith('http')) {
     return `https://${rawUrl}`;
