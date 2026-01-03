@@ -20,14 +20,21 @@ const fetchFeed = async (append = false) => {
 
   isLoading.value = true;
   try {
-    console.log('[Discover] Fetching from:', `${apiUrl}/api/discovery/feed`);
+    // Build URL with excluded IDs
+    const excludedIds = Array.from(swipedIds.value);
+    const url = new URL(`${apiUrl}/api/discovery/feed`);
+    if (excludedIds.length > 0) {
+      url.searchParams.set('excludedIds', excludedIds.join(','));
+    }
+
+    console.log('[Discover] Fetching from:', url.toString());
     console.log(
       '[Discover] User authenticated:',
       !!user.value,
       user.value?.email || 'Guest',
     );
     console.log('[Discover] Local swipedIds count:', swipedIds.value.size);
-    const response = await fetch(`${apiUrl}/api/discovery/feed`, {
+    const response = await fetch(url.toString(), {
       credentials: 'include',
     });
     console.log('[Discover] Response status:', response.status);
@@ -120,6 +127,7 @@ const handleInteraction = async (payload: any) => {
 
 const handleEmpty = () => {
   console.log('[Discover] Deck empty, refreshing...');
+  queue.value = []; // Clear queue first
   swipedIds.value.clear(); // Reset on manual refresh
   fetchFeed(false);
 };
@@ -132,11 +140,14 @@ watch(
     // When 3 or fewer items remain, preload next batch (but not if already loading or empty)
     if (remaining <= 3 && remaining > 0 && !isLoading.value) {
       console.log(
-        '[Discover] Running low on content, prefetching next batch...',
+        '[Discover] Running low on content (remaining:',
+        remaining,
+        '), prefetching next batch...',
       );
       fetchFeed(true); // Append mode
     }
   },
+  { immediate: false },
 );
 
 // --- Lifecycle ---

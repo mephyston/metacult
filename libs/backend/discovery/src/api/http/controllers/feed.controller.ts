@@ -26,6 +26,7 @@ export class FeedController {
       .get('/', async (context) => {
         const { user, query } = context as any; // Type assertion needed for user
         const searchTerm = query?.q || '';
+        const excludedIdsParam = query?.excludedIds || '';
         const userId = user?.id;
 
         console.log(
@@ -33,18 +34,20 @@ export class FeedController {
           userId || 'Guest',
           'Search:',
           searchTerm,
+          'ExcludedIds param:',
+          excludedIdsParam ? excludedIdsParam.substring(0, 50) + '...' : 'none',
         );
 
         let excludedMediaIds: string[] = [];
         let limit = 5; // Default (Guest)
 
         if (userId) {
-          // User logic
+          // User logic: Fetch from DB
           try {
             excludedMediaIds =
               await this.interactionRepository.getSwipedMediaIds(userId);
             console.log(
-              '[FeedController] Excluded media IDs:',
+              '[FeedController] Excluded media IDs from DB:',
               excludedMediaIds.length,
               excludedMediaIds.length > 0 ? excludedMediaIds.slice(0, 3) : '[]',
             );
@@ -52,6 +55,16 @@ export class FeedController {
             console.error('[FeedController] Failed to fetch blacklist:', e);
           }
           limit = 10;
+        } else if (excludedIdsParam) {
+          // Guest with client-side exclusions
+          excludedMediaIds = excludedIdsParam
+            .split(',')
+            .map((id: string) => id.trim())
+            .filter((id: string) => id.length > 0);
+          console.log(
+            '[FeedController] Guest mode - excludedIds from client:',
+            excludedMediaIds.length,
+          );
         } else {
           console.log('[FeedController] Guest mode - no exclusions');
         }
