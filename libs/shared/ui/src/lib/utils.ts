@@ -28,6 +28,9 @@ export function getApiUrl(): string {
   let rawApiUrl: string | undefined;
 
   if (typeof window !== 'undefined') {
+    // Debug URL Resolution
+    console.log('[getApiUrl] Hostname:', window.location.hostname);
+
     // 0. Hardcoded Inference for Staging/Prod (Robustness Fallback)
     if (window.location.hostname.includes('staging')) {
       return 'https://staging-api.metacult.app';
