@@ -5,7 +5,7 @@ import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/g
 
 import type { IInteractionRepository } from '@metacult/backend/interaction';
 
-import { isAuthenticated } from '@metacult/backend-identity';
+import { maybeAuthenticated } from '@metacult/backend-identity';
 
 /**
  * Contrôleur HTTP pour le flux de découverte (Feed).
@@ -22,7 +22,7 @@ export class FeedController {
    */
   public routes() {
     return new Elysia({ prefix: '/feed' })
-      .use(isAuthenticated) // Adds user to context (optional or required depending on config, here we handle both)
+      .use(maybeAuthenticated) // Adds user to context (null if guest)
       .get('/', async (context) => {
         const { user, query } = context as any; // Type assertion needed for user
         const searchTerm = query?.q || '';
