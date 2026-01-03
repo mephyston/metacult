@@ -11,12 +11,6 @@ COPY apps/api/package.json ./apps/api/
 COPY apps/webapp/package.json ./apps/webapp/
 COPY apps/website/package.json ./apps/website/
 COPY apps/worker/package.json ./apps/worker/
-COPY libs/backend/catalog/package.json ./libs/backend/catalog/
-COPY libs/backend/discovery/package.json ./libs/backend/discovery/
-COPY libs/backend/identity/package.json ./libs/backend/identity/
-COPY libs/backend/infrastructure/package.json ./libs/backend/infrastructure/
-COPY libs/backend/interaction/package.json ./libs/backend/interaction/
-COPY libs/backend/marketing/package.json ./libs/backend/marketing/
 
 COPY libs/shared/ui/package.json ./libs/shared/ui/
 
