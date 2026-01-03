@@ -39,6 +39,15 @@ export class GetMixedFeedHandler {
    */
   async execute(query: GetMixedFeedQuery): Promise<MixedFeedItem[]> {
     const normalizedSearch = query.search.trim().toLowerCase();
+
+    console.log('[MixedFeed] Query received:', {
+      search: query.search,
+      userId: query.userId,
+      excludedCount: query.excludedMediaIds?.length || 0,
+      excludedIds: query.excludedMediaIds?.slice(0, 5) || [],
+      limit: query.limit,
+    });
+
     // Le cache key doit inclure les exclusions si on veut vraiment cacher...
     // MAIS le cache est surtout utile pour le feed générique.
     // Si on fait du user-specific (exclusion), le cache global devient gênant ou doit être ignoré/prefixé user.
@@ -60,7 +69,7 @@ export class GetMixedFeedHandler {
     }
 
     console.log(
-      `[MixedFeed] Cache Miss/User Context pour "${query.search}" - Fetching dependencies...`,
+      `[MixedFeed] Cache ${shouldCache ? 'Miss' : 'Bypassed'} pour "${query.search}" - Fetching dependencies...`,
     );
 
     // 2. Fetch Dependencies (Resilient)

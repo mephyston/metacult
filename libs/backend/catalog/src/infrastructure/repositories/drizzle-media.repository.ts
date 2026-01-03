@@ -341,6 +341,12 @@ export class DrizzleMediaRepository implements IMediaRepository {
   }
 
   async findRandom(filters: MediaSearchFilters): Promise<MediaReadDto[]> {
+    console.log('[DrizzleMediaRepository] findRandom with filters:', {
+      excludedCount: filters.excludedIds?.length || 0,
+      excludedIds: filters.excludedIds?.slice(0, 5) || [],
+      limit: filters.limit,
+    });
+
     const query = this.db
       .select()
       .from(schema.medias)
@@ -355,6 +361,12 @@ export class DrizzleMediaRepository implements IMediaRepository {
     }
 
     const rows = await query.execute();
+
+    console.log(
+      '[DrizzleMediaRepository] findRandom returned',
+      rows.length,
+      'results',
+    );
 
     if (rows.length === 0) return [];
 
