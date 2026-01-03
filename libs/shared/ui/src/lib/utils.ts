@@ -27,11 +27,32 @@ export function getApiUrl(): string {
 
   let rawApiUrl: string | undefined;
 
-  if (typeof window !== 'undefined' && window.__ENV__?.PUBLIC_API_URL) {
-    rawApiUrl = window.__ENV__.PUBLIC_API_URL;
-  } else if (typeof process !== 'undefined' && process.env['PUBLIC_API_URL']) {
+  if (typeof window !== 'undefined') {
+    // 0. Hardcoded Inference for Staging/Prod (Robustness Fallback)
+    if (window.location.hostname.includes('staging')) {
+      return 'https://staging-api.metacult.app';
+    }
+    if (
+      window.location.hostname === 'www.metacult.app' ||
+      window.location.hostname === 'app.metacult.app'
+    ) {
+      return 'https://api.metacult.app';
+    }
+
+    // 1. Runtime Config
+    if (window.__ENV__?.PUBLIC_API_URL) {
+      rawApiUrl = window.__ENV__.PUBLIC_API_URL;
+    }
+  }
+
+  // 2. Process Env (Node/SSR)
+  if (
+    !rawApiUrl &&
+    typeof process !== 'undefined' &&
+    process.env['PUBLIC_API_URL']
+  ) {
     rawApiUrl = process.env['PUBLIC_API_URL'];
-  } else {
+  } else if (!rawApiUrl) {
     rawApiUrl = import.meta.env.PUBLIC_API_URL;
   }
 
