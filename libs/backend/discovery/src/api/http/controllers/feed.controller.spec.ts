@@ -15,13 +15,18 @@ const mockInteractionRepository = {
   getSwipedMediaIds: mock(() => Promise.resolve(['exclude-1', 'exclude-2'])),
 };
 
-// Fake Auth Middleware
+// Fake Auth Service Mock
 mock.module('@metacult/backend-identity', () => ({
-  maybeAuthenticated: (app: any) =>
-    app.derive(() => ({
-      user: { id: 'test-user-id' },
-      session: null,
-    })),
+  auth: {
+    api: {
+      getSession: mock(() =>
+        Promise.resolve({
+          user: { id: 'test-user-id' },
+          session: { id: 'session-id' },
+        }),
+      ),
+    },
+  },
 }));
 
 describe('Feed Controller', () => {

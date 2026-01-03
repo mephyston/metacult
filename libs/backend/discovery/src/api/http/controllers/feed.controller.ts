@@ -5,7 +5,7 @@ import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/g
 
 import type { IInteractionRepository } from '@metacult/backend/interaction';
 
-import { maybeAuthenticated } from '@metacult/backend-identity';
+import { auth } from '@metacult/backend-identity';
 
 /**
  * Contrôleur HTTP pour le flux de découverte (Feed).
@@ -15,22 +15,25 @@ export class FeedController {
   constructor(
     private readonly getMixedFeedHandler: GetMixedFeedHandler,
     private readonly interactionRepository: IInteractionRepository,
-  ) {
-    console.log(
-      '[FeedController] 🔧 Constructor called, maybeAuthenticated middleware:',
-      typeof maybeAuthenticated,
-    );
-  }
+  ) {}
 
   /**
    * Routes definition to be mounted by Elysia
    */
   public routes() {
-    console.log(
-      '[FeedController] 🚀 routes() called, mounting maybeAuthenticated',
-    );
     return new Elysia({ prefix: '/feed' })
-      .use(maybeAuthenticated) // Adds user to context (null if guest)
+      .derive(async ({ headers }) => {
+        // Récupère la session depuis les headers (Cookie ou Authorization Bearer)
+        const sessionData = await auth.api.getSession({
+          headers: headers as HeadersInit,
+        });
+
+        // Injecte user et session dans le contexte (ou null si pas authentifié)
+        return {
+          user: sessionData?.user || null,
+          session: sessionData?.session || null,
+        };
+      })
       .get('/', async (context) => {
         const { user, query } = context as any; // Type assertion needed for user
         const searchTerm = query?.q || '';
