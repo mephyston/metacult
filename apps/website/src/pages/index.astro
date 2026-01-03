@@ -5,9 +5,9 @@ import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
 import { getApiUrl } from '../utils/get-api-url';
 
-// Force Static Site Generation for this page
-// This ensures images are optimized at build time, avoiding runtime 500 errors in Docker.
-export const prerender = true;
+// Temporarily disable prerender to test API calls
+// Re-enable later for production builds
+export const prerender = false;
 
 // Hero Content (Moved to variables to ensure clean strings)
 const heroBadge = 'Metacult';
@@ -50,17 +50,25 @@ const demoGames = [
 
 // Fetch Real Media from Discovery API
 let interactions: any[] = [];
+let trends: any[] = []; // Trends data
+
 try {
 	const apiUrl = getApiUrl();
-	console.log('[Home] Fetching feed from:', `${apiUrl}/feed`);
+	console.log('[Home] API URL:', apiUrl);
+	console.log('[Home] Fetching feed from:', `${apiUrl}/api/discovery/feed`);
+	console.log('[Home] Fetching trends from:', `${apiUrl}/api/media/trends`);
 
-	const response = await fetch(`${apiUrl}/feed`);
-	if (response.ok) {
-		const data = await response.json();
+	// Parallel fetch for feed and trends
+	const [feedRes, trendsRes] = await Promise.all([
+		fetch(`${apiUrl}/api/discovery/feed`),
+		fetch(`${apiUrl}/api/media/trends`),
+	]);
+
+	if (feedRes.ok) {
+		const data = await feedRes.json();
 		if (Array.isArray(data)) {
 			// Mapping MediaReadDto -> SwipeItem
 			interactions = data.slice(0, 5).map((item: any) => {
-				// Determine cover image (support both 'data' wrapper and flat structure if changed)
 				const media = item.data || item;
 				const image =
 					media.coverUrl ||
@@ -72,16 +80,21 @@ try {
 					title: media.title,
 					image: image,
 					type: item.type,
-					// Keep original data for sync if needed
 					...media,
 				};
 			});
 		}
+	}
+
+	if (trendsRes.ok) {
+		trends = await trendsRes.json();
+		console.log('[Home] Trends received:', trends.length, 'items');
+		console.log('[Home] First trend:', trends[0]);
 	} else {
-		console.error('Failed to fetch discovery feed:', response.status);
+		console.error('[Home] Failed to fetch trends:', trendsRes.status);
 	}
 } catch (e) {
-	console.error('Error loading discovery feed:', e);
+	console.error('Error loading data:', e);
 }
 
 // Fallback to demo if API failed or empty
@@ -107,6 +120,7 @@ const appUrl = import.meta.env.PUBLIC_WEBAPP_URL || 'http://localhost:4201';
 	<!-- @ts-expect-error - Astro client directives are not part of component props -->
 	<Hero
 		client:load
+		items={trends}
 		badge={heroBadge}
 		heading={heroHeading}
 		description={heroDescription}
@@ -117,7 +131,6 @@ const appUrl = import.meta.env.PUBLIC_WEBAPP_URL || 'http://localhost:4201';
 		image={heroBg.src}
 		imageSizes={heroImageSizes}
 		fetchpriority="high"
-		recentMedias={[]}
 	>
 		<!-- Slot pour remplacer la carte statique par SwipeDeck -->
 		<div slot="interactive-card" class="relative w-full max-w-sm mx-auto">
