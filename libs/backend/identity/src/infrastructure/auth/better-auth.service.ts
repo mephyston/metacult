@@ -34,6 +34,9 @@ export const auth = betterAuth({
     'http://localhost:3333', // API
     'http://localhost:4444', // Website dev fallback
     'http://localhost:4201', // Webapp Nuxt
+    ...(process.env['BETTER_AUTH_TRUSTED_ORIGINS']
+      ? process.env['BETTER_AUTH_TRUSTED_ORIGINS'].split(',')
+      : []),
   ],
   database: drizzleAdapter(db, {
     provider: 'pg',
