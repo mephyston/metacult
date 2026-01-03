@@ -47,4 +47,4 @@ export default defineConfig({
         host: true
     },
 });
-// Trigger deploy: 2026-01-02-force-rebuild-root-fix
+// Trigger deploy: 2026-01-03-force-rebuild-website-hero-fix
