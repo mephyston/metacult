@@ -55,6 +55,14 @@ let trends: any[] = []; // Trends data
 try {
 	const apiUrl = getApiUrl();
 	console.log('[Home] API URL:', apiUrl);
+	console.log(
+		'[Home] WEBAPP URL (import.meta):',
+		import.meta.env.PUBLIC_WEBAPP_URL,
+	);
+	console.log(
+		'[Home] WEBAPP URL (process.env):',
+		process.env.PUBLIC_WEBAPP_URL,
+	);
 	console.log('[Home] Fetching feed from:', `${apiUrl}/api/discovery/feed`);
 	console.log('[Home] Fetching trends from:', `${apiUrl}/api/media/trends`);
 
