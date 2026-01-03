@@ -24,6 +24,19 @@ mock.module('@metacult/backend/infrastructure', () => {
     IMPORT_QUEUE_NAME: 'import-queue',
     getDbConnection: () => ({ db: {} }),
     importQueue: { add: mock(() => Promise.resolve()) },
+    logger: {
+      info: mock(() => {}),
+      error: mock(() => {}),
+      warn: mock(() => {}),
+      debug: mock(() => {}),
+    },
+    configService: {
+      get: (key: string) => 'mock-value',
+      isProduction: false,
+      isDevelopment: true,
+      isStaging: false,
+      isTest: true,
+    },
     cacheService: {
       getOrSet: async () => null,
       get: async () => null,

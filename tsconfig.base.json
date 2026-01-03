@@ -21,9 +21,6 @@
       "@metacult/shared-ui/styles/*": [
         "libs/shared/ui/src/styles/*"
       ],
-      "@metacult/backend-infrastructure": [
-        "libs/backend/infrastructure/src/index.ts"
-      ],
       "@metacult/backend-identity": [
         "libs/backend/identity/src/index.ts"
       ],

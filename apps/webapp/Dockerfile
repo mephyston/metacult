@@ -1,40 +1,47 @@
-# --------------------------------------------------------
-# Stage 1: Pruner
-# --------------------------------------------------------
-FROM oven/bun:1-alpine AS pruner
-WORKDIR /app
-COPY . .
-RUN find . -type f -not -name 'package.json' -not -name 'bun.lockb' -not -name 'tsconfig.json' -delete
-
-# --------------------------------------------------------
-# Stage 2: Builder
-# --------------------------------------------------------
+# --- Stage 1: Builder ---
 FROM oven/bun:1-alpine AS builder
+
 WORKDIR /app
 
-# Copy pruned workspace
-COPY --from=pruner /app .
+# 1. Copy essential configuration files
+COPY package.json bun.lockb nx.json tsconfig.base.json ./
+
+# 2. Copy workspace configurations
+COPY apps/api/package.json ./apps/api/
+COPY apps/webapp/package.json ./apps/webapp/
+COPY apps/website/package.json ./apps/website/
+COPY apps/worker/package.json ./apps/worker/
+COPY libs/backend/catalog/package.json ./libs/backend/catalog/
+COPY libs/backend/discovery/package.json ./libs/backend/discovery/
+COPY libs/backend/identity/package.json ./libs/backend/identity/
+COPY libs/backend/infrastructure/package.json ./libs/backend/infrastructure/
+COPY libs/backend/interaction/package.json ./libs/backend/interaction/
+COPY libs/backend/marketing/package.json ./libs/backend/marketing/
+COPY libs/backend/ranking/package.json ./libs/backend/ranking/
+COPY libs/shared/ui/package.json ./libs/shared/ui/
+
+# 3. Install ALL dependencies (needed for build)
 RUN bun install --frozen-lockfile
 
-# Copy source code
+# 4. Copy Full Source (Optimized: after install to leverage cache)
 COPY . .
 
-# Build Nuxt App
-# Nuxt output -> .output/
-WORKDIR /app/apps/webapp
-RUN bun run build
+# 5. Build Webapp
+# This generates .output/server
+RUN bun run nx build webapp
 
-# --------------------------------------------------------
-# Stage 3: Runner
-# --------------------------------------------------------
+# --- Stage 2: Runner ---
 FROM oven/bun:1-alpine AS runner
+
 WORKDIR /app
 
+# 1. Copy built artifacts from builder
+COPY --from=builder /app/apps/webapp/.output ./.output
+
+# 2. Environment Setup
 ENV NODE_ENV=production
-ENV HOST=0.0.0.0
-ENV PORT=3000
+ENV NUXT_HOST=0.0.0.0
+ENV NUXT_PORT=3000
 
-# Copy output from builder
-COPY --from=builder /app/apps/webapp/.output /app/.output
-
+# 3. Run Nuxt Server
 CMD ["bun", ".output/server/index.mjs"]

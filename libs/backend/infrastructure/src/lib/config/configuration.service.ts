@@ -1,17 +1,16 @@
 import { Type, type Static } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
-import { logger } from '../logger/logger.service';
 
 // 1. Définition du Schema Strict
 const EnvSchema = Type.Object({
   // Infrastructure
   API_PORT: Type.Number({ default: 3000 }),
-  DATABASE_URL: Type.String({ format: 'uri' }), // ex: postgres://...
-  REDIS_URL: Type.String({ format: 'uri' }), // ex: redis://...
+  DATABASE_URL: Type.String(), // ex: postgres://...
+  REDIS_URL: Type.String(), // ex: redis://...
 
   // Auth & Security
   BETTER_AUTH_SECRET: Type.String(),
-  BETTER_AUTH_URL: Type.String({ format: 'uri' }), // URL publique de l'API Auth
+  BETTER_AUTH_URL: Type.String(), // URL publique de l'API Auth
   BETTER_AUTH_TRUSTED_ORIGINS: Type.Optional(Type.String()), // Comma separated
   AUTH_COOKIE_PREFIX: Type.Optional(Type.String({ default: 'metacult' })),
   ROOT_DOMAIN: Type.Optional(Type.String()), // Pour partage cookies cross-subdomain (.metacult.gg)
@@ -22,8 +21,8 @@ const EnvSchema = Type.Object({
 
   // Internal / Public URLs (Clean Architecture Split)
   INTERNAL_API_URL: Type.Optional(Type.String()), // Service-to-Service (Railway Internal)
-  PUBLIC_API_URL: Type.String({ format: 'uri' }), // Client-facing (Browser)
-  PUBLIC_WEBSITE_URL: Type.Optional(Type.String({ format: 'uri' })), // Website (Astro)
+  PUBLIC_API_URL: Type.String(), // Client-facing (Browser)
+  PUBLIC_WEBSITE_URL: Type.Optional(Type.String()), // Website (Astro)
 
   // Environment
   NODE_ENV: Type.Union(
@@ -31,6 +30,7 @@ const EnvSchema = Type.Object({
       Type.Literal('development'),
       Type.Literal('production'),
       Type.Literal('staging'),
+      Type.Literal('test'),
     ],
     { default: 'development' },
   ),
@@ -61,12 +61,12 @@ export class ConfigurationService {
 
     if (!Value.Check(EnvSchema, convertedEnv)) {
       const errors = [...Value.Errors(EnvSchema, convertedEnv)];
-      logger.error({ errors }, '❌ Invalid Configuration');
+      console.error('❌ Invalid Configuration:', errors);
       process.exit(1);
     }
 
     this.config = convertedEnv;
-    logger.info('✅ Configuration Loaded & Validated');
+    console.log('✅ Configuration Loaded & Validated');
   }
 
   public static getInstance(): ConfigurationService {

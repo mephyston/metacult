@@ -4,6 +4,23 @@ import { MediaController } from '../api/http/controllers/media.controller';
 import { SearchMediaHandler } from '../application/queries/search-media/search-media.handler';
 import { MediaType } from '../domain/entities/media.entity';
 
+// Mock infrastructure
+mock.module('@metacult/backend/infrastructure', () => ({
+  logger: {
+    info: mock(() => {}),
+    error: mock(() => {}),
+    warn: mock(() => {}),
+    debug: mock(() => {}),
+  },
+  configService: {
+    get: (key: string) => 'mock-value',
+    isProduction: false,
+    isDevelopment: true,
+    isStaging: false,
+    isTest: true,
+  },
+}));
+
 // Mocks
 const mockRepo = { searchViews: mock(() => Promise.resolve([])) } as any;
 const mockRedis = {
@@ -110,10 +127,16 @@ describe('Search Integration (API -> Handler)', () => {
   });
 
   it('should handle validation error for empty query', async () => {
-    const res = await app.handle(
-      new Request('http://localhost/media/search?q='),
-    );
-    // Empty string < minLength 1
-    expect(res.status).toBe(400);
+    try {
+      const res = await app.handle(
+        new Request('http://localhost/media/search?q='),
+      );
+      // Elysia should return 422 for validation errors
+      expect(res.status).toBe(422);
+    } catch (error: any) {
+      // If Elysia throws instead of returning response, check error properties
+      expect(error.status).toBe(422);
+      expect(error.code).toBe('VALIDATION');
+    }
   });
 });

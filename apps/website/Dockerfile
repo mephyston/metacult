@@ -1,41 +1,47 @@
-# --------------------------------------------------------
-# Stage 1: Pruner
-# --------------------------------------------------------
-FROM oven/bun:1-alpine AS pruner
-WORKDIR /app
-COPY . .
-RUN find . -type f -not -name 'package.json' -not -name 'bun.lockb' -not -name 'tsconfig.json' -delete
-
-# --------------------------------------------------------
-# Stage 2: Builder
-# --------------------------------------------------------
+# --- Stage 1: Builder ---
 FROM oven/bun:1-alpine AS builder
+
 WORKDIR /app
 
-# Copy pruned workspace
-COPY --from=pruner /app .
+# 1. Copy essential configuration files
+COPY package.json bun.lockb nx.json tsconfig.base.json ./
+
+# 2. Copy workspace configurations
+COPY apps/api/package.json ./apps/api/
+COPY apps/webapp/package.json ./apps/webapp/
+COPY apps/website/package.json ./apps/website/
+COPY apps/worker/package.json ./apps/worker/
+COPY libs/backend/catalog/package.json ./libs/backend/catalog/
+COPY libs/backend/discovery/package.json ./libs/backend/discovery/
+COPY libs/backend/identity/package.json ./libs/backend/identity/
+COPY libs/backend/infrastructure/package.json ./libs/backend/infrastructure/
+COPY libs/backend/interaction/package.json ./libs/backend/interaction/
+COPY libs/backend/marketing/package.json ./libs/backend/marketing/
+COPY libs/backend/ranking/package.json ./libs/backend/ranking/
+COPY libs/shared/ui/package.json ./libs/shared/ui/
+
+# 3. Install ALL dependencies (needed for build)
 RUN bun install --frozen-lockfile
 
-# Copy source code
+# 4. Copy Full Source
 COPY . .
 
-# Build Astro App
-WORKDIR /app/apps/website
-# Astro Node Adapter -> dist/
-RUN bun run build
+# 5. Build Website (Astro)
+# This generates dist/
+RUN bun run nx build website
 
-# --------------------------------------------------------
-# Stage 3: Runner
-# --------------------------------------------------------
+# --- Stage 2: Runner ---
 FROM oven/bun:1-alpine AS runner
+
 WORKDIR /app
 
+# 1. Copy built artifacts from builder
+COPY --from=builder /app/apps/website/dist ./dist
+
+# 2. Environment Setup
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV PORT=8085
+ENV PORT=4321
 
-# Copy output from builder
-COPY --from=builder /app/apps/website/dist /app/dist
-
-# Entry point for Astro Node Adapter in standalone mode
-CMD ["bun", "dist/server/entry.mjs"]
+# 3. Run Astro Server
+CMD ["bun", "./dist/server/entry.mjs"]

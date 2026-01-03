@@ -41,7 +41,20 @@ mock.module('@metacult/backend/infrastructure', () => ({
             select: () => ({ from: () => ({ where: mockSelectWhere }) }),
             transaction: async (cb: any) => cb(mockTx)
         }
-    })
+    }),
+    logger: {
+        info: mock(() => {}),
+        error: mock(() => {}),
+        warn: mock(() => {}),
+        debug: mock(() => {}),
+    },
+    configService: {
+        get: (key: string) => 'mock-value',
+        isProduction: false,
+        isDevelopment: true,
+        isStaging: false,
+        isTest: true,
+    },
 }));
 
 // We use the REAL EloCalculator/RankingQueue constants to avoid test pollution

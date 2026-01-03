@@ -7,6 +7,19 @@ describe('Import Media Processor', () => {
   mock.module('@metacult/backend/infrastructure', () => ({
     getDbConnection: () => ({ db: {} }),
     importQueue: { add: mock(() => Promise.resolve()) },
+    logger: {
+      info: mock(() => {}),
+      error: mock(() => {}),
+      warn: mock(() => {}),
+      debug: mock(() => {}),
+    },
+    configService: {
+      get: (key: string) => 'mock-value',
+      isProduction: false,
+      isDevelopment: true,
+      isStaging: false,
+      isTest: true,
+    },
     requestContext: {
       run: (_: any, cb: () => any) => cb(),
       get: () => ({ requestId: 'test-id' }),

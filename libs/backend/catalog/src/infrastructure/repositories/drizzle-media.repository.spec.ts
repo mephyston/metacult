@@ -39,6 +39,22 @@ const mockDb = {
   transaction: mock((cb) => cb(mockDb)),
 } as any;
 
+mock.module('@metacult/backend/infrastructure', () => ({
+  logger: {
+    info: mock(() => {}),
+    error: mock(() => {}),
+    warn: mock(() => {}),
+    debug: mock(() => {}),
+  },
+  configService: {
+    get: (key: string) => 'mock-value',
+    isProduction: false,
+    isDevelopment: true,
+    isStaging: false,
+    isTest: true,
+  },
+}));
+
 mock.module('@metacult/backend/catalog', () => ({
   mediaSchema: {
     medias: { id: 'id', title: 'title' },

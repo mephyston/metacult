@@ -119,3 +119,6 @@ class LoggerService {
 
 // Export singleton instance
 export const logger = LoggerService.getInstance();
+
+// Export class for type purposes
+export { LoggerService };

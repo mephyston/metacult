@@ -17,7 +17,20 @@ mock.module('@metacult/backend/infrastructure', () => ({
         db: {
             select: mockSelect
         }
-    })
+    }),
+    logger: {
+        info: mock(() => {}),
+        error: mock(() => {}),
+        warn: mock(() => {}),
+        debug: mock(() => {}),
+    },
+    configService: {
+        get: (key: string) => 'mock-value',
+        isProduction: false,
+        isDevelopment: true,
+        isStaging: false,
+        isTest: true,
+    },
 }));
 
 mock.module('drizzle-orm', () => ({
