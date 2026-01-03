@@ -69,7 +69,14 @@ onMounted(async () => {
   }
 });
 
-const webappUrl = import.meta.env.PUBLIC_WEBAPP_URL || 'http://localhost:4201';
+const getWebappUrl = () => {
+  const url = import.meta.env.PUBLIC_WEBAPP_URL || 'http://localhost:4201';
+  if (!url.startsWith('http')) {
+    return `https://${url}`;
+  }
+  return url;
+};
+const webappUrl = getWebappUrl();
 const loginUrl = `${webappUrl}/login`;
 const registerUrl = `${webappUrl}/register`;
 const appUrl = `${webappUrl}/`;
