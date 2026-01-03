@@ -1,275 +1,306 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useMagicKeys, whenever } from '@vueuse/core';
-import { SwipeCard } from '@metacult/shared-ui';
-import { X, Clock, Bookmark, ThumbsUp, Flame } from 'lucide-vue-next';
+import { ref, computed, onMounted } from 'vue';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Button,
+  Badge,
+} from '@metacult/shared-ui';
+import {
+  Eye,
+  Swords,
+  TrendingUp,
+  Radar,
+  Flame,
+  Sparkles,
+} from 'lucide-vue-next';
+import { useAuthSession } from '../composables/useAuthSession';
 
-// --- Mock Data ---
-const items = [
-  {
-    id: 1,
-    title: 'The Last of Us Part II',
-    image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2q4f.jpg',
-    category: 'Game',
-    description:
-      'Five years after their dangerous journey across the post-pandemic United States, Ellie and Joel have settled down in Jackson, Wyoming.',
-  },
-  {
-    id: 2,
-    title: 'Dune: Part Two',
-    image: 'https://image.tmdb.org/t/p/w780/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
-    category: 'Movie',
-    description:
-      'Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the conspirators who destroyed his family.',
-  },
-  {
-    id: 3,
-    title: 'Cyberpunk 2077',
-    image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co49x5.jpg',
-    category: 'Game',
-    description:
-      'An open-world, action-adventure story set in Night City, a megalopolis obsessed with power, glamour and body modification.',
-  },
-  {
-    id: 4,
-    title: 'Oppenheimer',
-    image: 'https://image.tmdb.org/t/p/w780/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',
-    category: 'Movie',
-    description:
-      "The story of J. Robert Oppenheimer's role in the development of the atomic bomb during World War II.",
-  },
-  {
-    id: 5,
-    title: "Baldur's Gate 3",
-    image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5vmg.jpg',
-    category: 'Game',
-    description:
-      'Gather your party and return to the Forgotten Realms in a tale of fellowship and betrayal, sacrifice and survival.',
-  },
-];
+// --- Auth & User Data ---
+const { user } = useAuthSession();
+const apiUrl = import.meta.env.NUXT_PUBLIC_API_URL || 'http://localhost:3000';
+const websiteUrl =
+  import.meta.env.NUXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444';
 
-// --- State ---
-const swipeCardRef = ref();
-const currentIndex = ref(0);
-const currentItem = computed(() => items[currentIndex.value]);
+// --- Mock Stats (à remplacer par API si disponible) ---
+const stats = ref({
+  swipes: 124,
+  duels: 45,
+});
 
-// --- Handlers ---
-function handleSwipe(payload: { action: string; sentiment?: string }) {
-  console.log(`Swiped on ${currentItem.value?.title}:`, payload);
-  currentIndex.value += 1;
-}
+// --- Trends Data ---
+const trends = ref<any[]>([]);
+const isLoadingTrends = ref(true);
 
-function resetDeck() {
-  currentIndex.value = 0;
-}
+// Fetch community trends
+const fetchTrends = async () => {
+  console.log(
+    '[Dashboard] Fetching trends from:',
+    `${apiUrl}/api/media/trends`,
+  );
+  isLoadingTrends.value = true;
+  try {
+    const response = await fetch(`${apiUrl}/api/media/trends`, {
+      credentials: 'include',
+    });
 
-// --- Keyboard Shortcuts ---
-const keys = useMagicKeys();
-const { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Enter } = keys;
+    console.log('[Dashboard] Response status:', response.status);
 
-if (ArrowUp) {
-  whenever(ArrowUp, () => {
-    if (swipeCardRef.value && currentItem.value) {
-      swipeCardRef.value.triggerSwipe('WISHLIST');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
-  });
-}
 
-if (ArrowDown) {
-  whenever(ArrowDown, () => {
-    if (swipeCardRef.value && currentItem.value) {
-      swipeCardRef.value.triggerSwipe('SKIP');
-    }
-  });
-}
+    const data = await response.json();
+    console.log('[Dashboard] Trends received:', data.length, 'items');
+    trends.value = data.slice(0, 5); // Limit to 5 trends
+  } catch (error) {
+    console.error('[Dashboard] Failed to fetch trends:', error);
+    trends.value = [];
+  } finally {
+    isLoadingTrends.value = false;
+    console.log('[Dashboard] Loading complete, trends:', trends.value.length);
+  }
+};
 
-if (ArrowLeft) {
-  whenever(ArrowLeft, () => {
-    if (swipeCardRef.value && currentItem.value) {
-      swipeCardRef.value.triggerSwipe('DISLIKE');
-    }
-  });
-}
+// Display name with fallback
+const displayName = computed(() => {
+  return user.value?.name || user.value?.email?.split('@')[0] || 'Culturevore';
+});
 
-if (ArrowRight) {
-  whenever(ArrowRight, () => {
-    if (swipeCardRef.value && currentItem.value) {
-      swipeCardRef.value.triggerSwipe('LIKE', 'GOOD');
-    }
-  });
-}
+// Format ELO score
+const formatElo = (score?: number) => {
+  return score ? Math.round(score).toLocaleString() : 'N/A';
+};
 
-if (Enter) {
-  whenever(Enter, () => {
-    if (swipeCardRef.value && currentItem.value) {
-      swipeCardRef.value.triggerSwipe('LIKE', 'BANGER');
-    }
-  });
-}
-
-// --- Gamepad Actions ---
-const gamepadActions = [
-  {
-    id: 'dislike',
-    label: 'Pas pour moi',
-    icon: X,
-    color: 'text-red-500 hover:text-red-600',
-    bgColor: 'bg-red-500/10 hover:bg-red-500/20',
-    borderColor: 'border-red-500/30',
-    action: () => swipeCardRef.value?.triggerSwipe('DISLIKE'),
-    shortcut: '←',
-  },
-  {
-    id: 'skip',
-    label: 'Plus tard',
-    icon: Clock,
-    color: 'text-gray-500 hover:text-gray-600',
-    bgColor: 'bg-gray-500/10 hover:bg-gray-500/20',
-    borderColor: 'border-gray-500/30',
-    action: () => swipeCardRef.value?.triggerSwipe('SKIP'),
-    shortcut: '↓',
-  },
-  {
-    id: 'wishlist',
-    label: 'Wishlist',
-    icon: Bookmark,
-    color: 'text-blue-500 hover:text-blue-600',
-    bgColor: 'bg-blue-500/10 hover:bg-blue-500/20',
-    borderColor: 'border-blue-500/30',
-    action: () => swipeCardRef.value?.triggerSwipe('WISHLIST'),
-    shortcut: '↑',
-  },
-  {
-    id: 'good',
-    label: 'Bien',
-    icon: ThumbsUp,
-    color: 'text-green-500 hover:text-green-600',
-    bgColor: 'bg-green-500/10 hover:bg-green-500/20',
-    borderColor: 'border-green-500/30',
-    action: () => swipeCardRef.value?.triggerSwipe('LIKE', 'GOOD'),
-    shortcut: '→',
-  },
-  {
-    id: 'banger',
-    label: 'Banger!',
-    icon: Flame,
-    color: 'text-purple-500 hover:text-purple-600',
-    bgColor: 'bg-purple-500/10 hover:bg-purple-500/20',
-    borderColor: 'border-purple-500/30',
-    action: () => swipeCardRef.value?.triggerSwipe('LIKE', 'BANGER'),
-    shortcut: '⏎',
-  },
-];
+// --- Lifecycle ---
+onMounted(() => {
+  console.log('[Dashboard] Component mounted, fetching trends...');
+  fetchTrends();
+});
 </script>
 
 <template>
-  <div
-    data-testid="dashboard"
-    class="flex flex-col items-center justify-center min-h-screen bg-background p-4 gap-6 md:gap-10"
-  >
-    <!-- Header -->
-    <div class="text-center">
-      <h1 class="text-3xl md:text-4xl font-black text-foreground mb-2">
-        Découvrir
-      </h1>
-      <p class="text-sm md:text-base text-muted-foreground">
-        Swipe ou utilisez les touches pour explorer
-      </p>
-    </div>
-
-    <!-- Card Container -->
-    <div
-      class="relative w-full max-w-sm h-[60vh] md:h-[500px] flex items-center justify-center"
-    >
-      <div v-if="currentItem" class="absolute inset-0">
-        <SwipeCard
-          ref="swipeCardRef"
-          :item="{
-            id: String(currentItem.id),
-            title: currentItem.title,
-            image: currentItem.image,
-          }"
-          @swipe="handleSwipe"
-        />
+  <div class="min-h-screen bg-background">
+    <div class="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+      <!-- 1. Header Welcome -->
+      <div class="mb-10">
+        <h1
+          class="text-3xl md:text-4xl font-black text-foreground mb-2 flex items-center gap-2"
+        >
+          Bonjour {{ displayName }}
+          <span class="text-4xl">👋</span>
+        </h1>
+        <p class="text-base md:text-lg text-muted-foreground">
+          Ton profil culturel est en construction.
+        </p>
       </div>
-      <div v-else class="text-center text-muted-foreground space-y-4">
-        <p class="text-2xl font-bold">Tout vu ! 🎉</p>
-        <p class="text-sm">Vous avez exploré toutes les cartes</p>
-        <button
-          class="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          @click="resetDeck"
+
+      <!-- 2. Section Stats (KPIs) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-10">
+        <!-- Radar Card -->
+        <Card
+          class="border-2 hover:border-primary/50 transition-colors cursor-default"
         >
-          Recommencer
-        </button>
+          <CardHeader>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="p-3 bg-primary/10 rounded-full flex items-center justify-center"
+                >
+                  <Eye class="w-6 h-6 text-primary" stroke-width="2.5" />
+                </div>
+                <div>
+                  <CardTitle class="text-2xl md:text-3xl font-black">{{
+                    stats.swipes
+                  }}</CardTitle>
+                  <CardDescription class="text-sm">Swipes</CardDescription>
+                </div>
+              </div>
+              <Badge variant="secondary" class="text-xs">Radar</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p class="text-xs text-muted-foreground">
+              Titres explorés depuis le début
+            </p>
+          </CardContent>
+        </Card>
+
+        <!-- Arène Card -->
+        <Card
+          class="border-2 hover:border-purple-500/50 transition-colors cursor-default"
+        >
+          <CardHeader>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="p-3 bg-purple-500/10 rounded-full flex items-center justify-center"
+                >
+                  <Swords class="w-6 h-6 text-purple-500" stroke-width="2.5" />
+                </div>
+                <div>
+                  <CardTitle class="text-2xl md:text-3xl font-black">{{
+                    stats.duels
+                  }}</CardTitle>
+                  <CardDescription class="text-sm">Duels</CardDescription>
+                </div>
+              </div>
+              <Badge variant="secondary" class="text-xs">Arène</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p class="text-xs text-muted-foreground">
+              Confrontations jouées dans l'arène
+            </p>
+          </CardContent>
+        </Card>
       </div>
-    </div>
 
-    <!-- Gamepad Controls -->
-    <div
-      v-if="currentItem"
-      class="flex items-center justify-center gap-3 md:gap-6 flex-wrap max-w-2xl"
-    >
-      <button
-        v-for="action in gamepadActions"
-        :key="action.id"
-        :class="[
-          'group relative flex flex-col items-center justify-center',
-          'w-14 h-14 md:w-16 md:h-16 rounded-full',
-          'border-2 transition-all duration-200',
-          'active:scale-95 hover:scale-110',
-          action.bgColor,
-          action.borderColor,
-        ]"
-        :title="action.label"
-        @click="action.action"
-      >
-        <component
-          :is="action.icon"
-          :class="['w-6 h-6 md:w-7 md:h-7', action.color]"
-          stroke-width="2.5"
-        />
-
-        <!-- Label (Hidden on mobile, shown on hover for desktop) -->
-        <span
-          class="absolute -bottom-8 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-          :class="action.color"
+      <!-- 3. Section Missions (Call to Action) -->
+      <div class="mb-12">
+        <h2
+          class="text-xl md:text-2xl font-bold text-foreground mb-6 flex items-center gap-2"
         >
-          {{ action.label }}
-        </span>
+          <Sparkles class="w-5 h-5 text-primary" />
+          Missions
+        </h2>
 
-        <!-- Keyboard Shortcut Badge -->
-        <span
-          class="hidden md:block absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 bg-background border border-border rounded-md shadow-sm"
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <!-- Mission Radar -->
+          <Card
+            class="border-2 hover:border-primary transition-all hover:shadow-lg cursor-pointer group"
+          >
+            <CardHeader>
+              <div class="flex items-center gap-3 mb-2">
+                <Radar
+                  class="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
+                />
+                <CardTitle class="text-xl">Lancer le Radar</CardTitle>
+              </div>
+              <CardDescription>
+                Trouve de nouveaux titres à noter et enrichis ton profil
+                culturel.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <NuxtLink to="/discover">
+                <Button
+                  size="lg"
+                  class="w-full font-bold text-base group-hover:scale-105 transition-transform"
+                >
+                  📡 Découvrir maintenant
+                </Button>
+              </NuxtLink>
+            </CardContent>
+          </Card>
+
+          <!-- Mission Arène -->
+          <Card
+            class="border-2 hover:border-purple-500 transition-all hover:shadow-lg cursor-pointer group"
+          >
+            <CardHeader>
+              <div class="flex items-center gap-3 mb-2">
+                <Swords
+                  class="w-8 h-8 text-purple-500 group-hover:scale-110 transition-transform"
+                />
+                <CardTitle class="text-xl">Entrer dans l'Arène</CardTitle>
+              </div>
+              <CardDescription>
+                Classe tes favoris et fais monter leur score ELO en choisissant
+                tes préférés.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <NuxtLink to="/arena">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  class="w-full font-bold text-base border-2 border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white group-hover:scale-105 transition-transform"
+                >
+                  ⚔️ Combattre maintenant
+                </Button>
+              </NuxtLink>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <!-- 4. Section Teaser Reco -->
+      <div>
+        <h2
+          class="text-xl md:text-2xl font-bold text-foreground mb-4 flex items-center gap-2"
         >
-          {{ action.shortcut }}
-        </span>
-      </button>
-    </div>
+          <TrendingUp class="w-5 h-5 text-primary" />
+          Tendances Communautaires
+        </h2>
 
-    <!-- Keyboard Hint (Desktop Only) -->
-    <div
-      class="hidden md:flex items-center gap-2 text-sm text-muted-foreground"
-    >
-      <kbd class="px-2 py-1 bg-muted rounded border border-border">←</kbd>
-      <kbd class="px-2 py-1 bg-muted rounded border border-border">↑</kbd>
-      <kbd class="px-2 py-1 bg-muted rounded border border-border">↓</kbd>
-      <kbd class="px-2 py-1 bg-muted rounded border border-border">→</kbd>
-      <kbd class="px-2 py-1 bg-muted rounded border border-border">Enter</kbd>
-      <span class="ml-2">pour naviguer</span>
-    </div>
+        <!-- Trends Carousel -->
+        <div v-if="isLoadingTrends" class="flex justify-center py-12">
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
+          ></div>
+        </div>
 
-    <!-- Progress Indicator -->
-    <div class="flex items-center gap-2 text-xs text-muted-foreground">
-      <span>{{ currentIndex }} / {{ items.length }}</span>
-      <div class="flex gap-1">
         <div
-          v-for="(_, index) in items"
-          :key="index"
-          :class="[
-            'w-1.5 h-1.5 rounded-full transition-colors',
-            index < currentIndex ? 'bg-primary' : 'bg-muted',
-          ]"
-        />
+          v-else-if="trends.length > 0"
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"
+        >
+          <a
+            v-for="trend in trends"
+            :key="trend.id"
+            :href="`${websiteUrl}/catalog/${trend.type}/${trend.slug}`"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group relative overflow-hidden rounded-lg border-2 border-border hover:border-primary transition-all hover:shadow-lg cursor-pointer block"
+          >
+            <div class="aspect-[2/3] relative">
+              <img
+                :src="trend.coverUrl || '/placeholder-cover.jpg'"
+                :alt="trend.title"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <div class="absolute bottom-0 left-0 right-0 p-3">
+                  <h3 class="text-white text-sm font-bold line-clamp-2 mb-1">
+                    {{ trend.title }}
+                  </h3>
+                  <div class="flex items-center gap-2">
+                    <Badge
+                      v-if="trend.eloScore"
+                      variant="secondary"
+                      class="text-xs bg-primary/90 text-primary-foreground"
+                    >
+                      <Flame class="w-3 h-3 mr-1" />
+                      {{ formatElo(trend.eloScore) }}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <div v-else class="text-center py-12 text-muted-foreground">
+          <p class="mb-2">Aucune tendance disponible pour le moment</p>
+        </div>
+
+        <!-- Teasing Phase 4 -->
+        <div
+          class="mt-8 p-6 bg-gradient-to-r from-primary/5 to-purple-500/5 border-2 border-dashed border-primary/30 rounded-lg text-center"
+        >
+          <p class="text-sm md:text-base text-muted-foreground italic">
+            ✨ Tes recommandations personnalisées arrivent bientôt...
+          </p>
+          <p class="text-xs text-muted-foreground/70 mt-1">
+            Continue à explorer pour affiner ton profil !
+          </p>
+        </div>
       </div>
     </div>
   </div>
