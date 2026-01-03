@@ -8,13 +8,17 @@ describe('Import Media Processor', () => {
     getDbConnection: () => ({ db: {} }),
     importQueue: { add: mock(() => Promise.resolve()) },
     logger: {
-      info: mock(() => {}),
-      error: mock(() => {}),
-      warn: mock(() => {}),
-      debug: mock(() => {}),
+      info: () => void 0,
+      error: () => void 0,
+      warn: () => void 0,
+      debug: () => void 0,
     },
     configService: {
-      get: (key: string) => 'mock-value',
+      get: (key: string) => {
+        if (key === 'BETTER_AUTH_URL') return 'http://localhost:3000';
+        if (key === 'PUBLIC_API_URL') return 'http://localhost:3000';
+        return 'mock-value';
+      },
       isProduction: false,
       isDevelopment: true,
       isStaging: false,

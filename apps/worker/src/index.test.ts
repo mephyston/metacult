@@ -25,13 +25,18 @@ mock.module('@metacult/backend/infrastructure', () => {
     getDbConnection: () => ({ db: {} }),
     importQueue: { add: mock(() => Promise.resolve()) },
     logger: {
-      info: mock(() => {}),
-      error: mock(() => {}),
-      warn: mock(() => {}),
-      debug: mock(() => {}),
+      info: () => void 0,
+      error: () => void 0,
+      warn: () => void 0,
+      debug: () => void 0,
     },
     configService: {
-      get: (key: string) => 'mock-value',
+      get: (key: string) => {
+        // Return valid URLs for Better Auth to prevent initialization errors
+        if (key === 'BETTER_AUTH_URL') return 'http://localhost:3000';
+        if (key === 'PUBLIC_API_URL') return 'http://localhost:3000';
+        return 'mock-value';
+      },
       isProduction: false,
       isDevelopment: true,
       isStaging: false,
