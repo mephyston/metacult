@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
+import { getApiUrl } from '@metacult/shared-ui';
+
 /**
  * Composable pour gérer la synchronisation des interactions (swipes) faites en mode invité.
  *
@@ -46,8 +48,6 @@ export const useGuestSync = () => {
       }
     }
   };
-
-  import { getApiUrl } from '@metacult/shared-ui';
 
   /**
    * À appeler après un succès de Login ou Register.
