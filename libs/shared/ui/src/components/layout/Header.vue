@@ -20,6 +20,7 @@ import {
 
 import { cn, getWebappUrl } from '../../lib/utils';
 import { authClient } from '../../lib/auth-client';
+import { logger } from '../../lib/logger';
 
 interface User {
   name?: string;
@@ -60,7 +61,7 @@ onMounted(async () => {
         };
       }
     } catch (error) {
-      console.error('[Header] Failed to fetch session:', error);
+      logger.error('[Header] Failed to fetch session:', error);
     } finally {
       isLoadingSession.value = false;
     }
@@ -92,7 +93,7 @@ const handleLogout = async () => {
   try {
     await authClient.signOut();
   } catch (error) {
-    console.error('[Header] Logout failed:', error);
+    logger.error('[Header] Logout failed:', error);
   } finally {
     sessionUser.value = null;
     emit('logout');

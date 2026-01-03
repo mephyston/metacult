@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { useApiUrl } from './useApiUrl';
+import { useLogger } from './useLogger';
 
 /**
  * Composable pour gérer la synchronisation des interactions (swipes) faites en mode invité.
@@ -23,6 +24,7 @@ export const useGuestSync = () => {
    */
   const initSync = () => {
     if (import.meta.server) return;
+    const logger = useLogger();
 
     const syncParam = route.query.sync as string;
     if (syncParam) {
@@ -33,7 +35,7 @@ export const useGuestSync = () => {
         const swipes = JSON.parse(json);
 
         if (Array.isArray(swipes) && swipes.length > 0) {
-          console.log(
+          logger.info(
             `[GuestSync] Found ${swipes.length} pending swipes. Storing...`,
           );
           pendingSwipes.value = swipes;
@@ -44,7 +46,7 @@ export const useGuestSync = () => {
           router.replace({ query });
         }
       } catch (e) {
-        console.error('[GuestSync] Failed to parse sync param', e);
+        logger.error('[GuestSync] Failed to parse sync param', e);
       }
     }
   };
@@ -55,8 +57,9 @@ export const useGuestSync = () => {
    */
   const flushSync = async () => {
     if (pendingSwipes.value.length === 0) return;
+    const logger = useLogger();
 
-    console.log('[GuestSync] Flushing pending swipes to backend...');
+    logger.info('[GuestSync] Flushing pending swipes to backend...');
 
     try {
       // On utilise $fetch qui utilisera automatiquement les cookies de session (si same-origin/proxy)
@@ -73,7 +76,7 @@ export const useGuestSync = () => {
       // 2. Allow any non-empty string as mediaId (Backend handles validation/foreign keys)
       // const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-      console.log(
+      logger.debug(
         '[GuestSync] Pending Swipes Raw:',
         JSON.stringify(pendingSwipes.value),
       );
@@ -87,7 +90,7 @@ export const useGuestSync = () => {
         }));
 
       if (payload.length === 0) {
-        console.warn(
+        logger.warn(
           '[GuestSync] No valid interactions to sync (all filtered out). Clearing storage.',
         );
         pendingSwipes.value = [];
@@ -103,10 +106,10 @@ export const useGuestSync = () => {
         credentials: 'include',
       });
 
-      console.log('[GuestSync] Sync successful!');
+      logger.info('[GuestSync] Sync successful!');
       pendingSwipes.value = []; // Reset
     } catch (e) {
-      console.error('[GuestSync] Sync failed', e);
+      logger.error('[GuestSync] Sync failed', e);
       // On garde pendingSwipes.value pour réessayer plus tard ?
       // Pour l'instant on log juste, l'user a peut-être perdu ses swipes s'il quitte.
     }

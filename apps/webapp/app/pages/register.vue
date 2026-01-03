@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { signUp } from '../lib/auth-client';
 import { useAuthSession } from '../composables/useAuthSession';
+import { useLogger } from '../composables/useLogger';
 import {
   Card,
   CardContent,
@@ -17,6 +18,7 @@ import { Button } from '@metacult/shared-ui';
 
 const router = useRouter();
 const { refreshSession } = useAuthSession();
+const logger = useLogger();
 
 const name = ref('');
 const email = ref('');
@@ -51,7 +53,7 @@ const handleSubmit = async () => {
     // Navigation SPA (pas de reload)
     router.push('/');
   } catch (err: any) {
-    console.error('[Register] Error:', err);
+    logger.error('[Register] Error:', err);
     error.value = err?.message || 'Erreur lors de la création du compte';
   } finally {
     loading.value = false;

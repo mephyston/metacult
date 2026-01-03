@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { useLogger } from './useLogger';
 
 /**
  * Interface simplifiée pour le frontend.
@@ -40,6 +41,7 @@ export const useDuel = () => {
    * Gère le cas où l'utilisateur n'a pas assez de likes.
    */
   const fetchPair = async () => {
+    const logger = useLogger();
     loading.value = true;
     error.value = null;
     isEmpty.value = false;
@@ -66,12 +68,12 @@ export const useDuel = () => {
         currentPair.value = response as DuelMedia[];
       } else {
         // Fallback bizarrerie
-        console.warn('[useDuel] Invalid response format:', response);
+        logger.warn('[useDuel] Invalid response format:', response);
         error.value = 'Invalid response format';
         currentPair.value = null;
       }
     } catch (err: any) {
-      console.error('[useDuel] Error fetching pair:', err);
+      logger.error('[useDuel] Error fetching pair:', err);
       error.value = err.message || 'Failed to fetch duel pair';
       currentPair.value = null;
     } finally {
@@ -85,13 +87,14 @@ export const useDuel = () => {
    * - Optimistic update : on relance le fetch immédiatement sans attendre le résultat du POST.
    */
   const vote = async (winnerId: string) => {
+    const logger = useLogger();
     if (!currentPair.value || currentPair.value.length !== 2) return;
 
     const pair = currentPair.value;
     const loser = pair.find((m: DuelMedia) => m.id !== winnerId);
 
     if (!loser) {
-      console.error(
+      logger.error(
         '[useDuel] Loser not found in current pair for winner:',
         winnerId,
       );
@@ -108,7 +111,7 @@ export const useDuel = () => {
         loserId,
       },
     }).catch((err) => {
-      console.error('[useDuel] Vote failed in background:', err);
+      logger.error('[useDuel] Vote failed in background:', err);
       // On pourrait toaster une erreur ici si critique
     });
 

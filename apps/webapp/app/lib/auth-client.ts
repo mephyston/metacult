@@ -16,7 +16,10 @@ function getAuthBaseURL(): string {
         return apiUrl;
       }
     } catch (e) {
-      console.warn('[auth-client] Failed to read Nuxt config:', e);
+      // Silent fail - use fallback
+      if (import.meta.dev) {
+        console.warn('[auth-client] Failed to read Nuxt config:', e);
+      }
     }
   }
 

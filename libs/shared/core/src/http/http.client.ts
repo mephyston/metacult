@@ -1,3 +1,5 @@
+import { logger } from '../lib/logger';
+
 export type FetchOptions = RequestInit & {
     timeoutMs?: number; // Default: 5000ms
     retries?: number;   // Default: 3
@@ -83,7 +85,7 @@ export async function fetchWithRetry(url: string, options: FetchOptions = {}): P
             // If it's a timeout or 5xx or network error, we retry.
             attempt++;
             const delay = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s
-            console.warn(`[fetchWithRetry] Attempt ${attempt}/${retries} failed for ${url}. Retrying in ${delay}ms...`, error.message);
+            logger.warn(`[fetchWithRetry] Attempt ${attempt}/${retries} failed for ${url}. Retrying in ${delay}ms...`, error.message);
 
             await new Promise(resolve => setTimeout(resolve, delay));
 
