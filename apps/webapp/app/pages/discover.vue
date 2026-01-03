@@ -21,6 +21,12 @@ const fetchFeed = async (append = false) => {
   isLoading.value = true;
   try {
     console.log('[Discover] Fetching from:', `${apiUrl}/api/discovery/feed`);
+    console.log(
+      '[Discover] User authenticated:',
+      !!user.value,
+      user.value?.email || 'Guest',
+    );
+    console.log('[Discover] Local swipedIds count:', swipedIds.value.size);
     const response = await fetch(`${apiUrl}/api/discovery/feed`, {
       credentials: 'include',
     });

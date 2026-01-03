@@ -46,11 +46,14 @@ export class FeedController {
             console.log(
               '[FeedController] Excluded media IDs:',
               excludedMediaIds.length,
+              excludedMediaIds.length > 0 ? excludedMediaIds.slice(0, 3) : '[]',
             );
           } catch (e) {
             console.error('[FeedController] Failed to fetch blacklist:', e);
           }
           limit = 10;
+        } else {
+          console.log('[FeedController] Guest mode - no exclusions');
         }
 
         // Create Query with Context
