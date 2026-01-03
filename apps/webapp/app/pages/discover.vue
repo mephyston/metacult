@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { SwipeDeck, Button } from '@metacult/shared-ui';
 import { useAuthSession } from '../composables/useAuthSession';
 
@@ -83,9 +83,24 @@ const handleInteraction = async (payload: any) => {
 };
 
 const handleEmpty = () => {
-  console.log('Deck empty, refreshing...');
+  console.log('[Discover] Deck empty, refreshing...');
   fetchFeed();
 };
+
+// --- Watchers ---
+// Auto-refetch when queue is running low to ensure continuous discovery
+watch(
+  () => queue.value.length,
+  (remaining) => {
+    // When 3 or fewer items remain, preload next batch (but not if already loading or empty)
+    if (remaining <= 3 && remaining > 0 && !isLoading.value) {
+      console.log(
+        '[Discover] Running low on content, prefetching next batch...',
+      );
+      fetchFeed();
+    }
+  },
+);
 
 // --- Lifecycle ---
 onMounted(() => {
