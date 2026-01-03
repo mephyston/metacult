@@ -165,7 +165,9 @@ const discoveryRoutes = createDiscoveryRoutes(feedController);
 const authRoutes = createAuthRoutes();
 
 // Initialisation des tâches Cron
-initCrons().catch(console.error);
+initCrons().catch((err) =>
+  logger.error({ err }, 'Failed to initialize cron jobs'),
+);
 
 // ... (existing code)
 
