@@ -14,7 +14,10 @@ import {
 } from '@metacult/backend/discovery';
 import { createAuthRoutes } from '@metacult/backend-identity';
 import { interactionController as interactionRoutes } from '@metacult/backend/interaction';
-import { DuelController as duelRoutes } from '@metacult/backend/ranking';
+import {
+  DuelController as duelRoutes,
+  RankingController as rankingRoutes,
+} from '@metacult/backend/ranking';
 import { importRoutes } from './src/routes/import.routes';
 import { debugRoutes } from './src/routes/debug.routes';
 import {
@@ -217,7 +220,8 @@ const app = new Elysia()
       .use(discoveryRoutes)
 
       .use(interactionRoutes)
-      .use(duelRoutes),
+      .use(duelRoutes)
+      .use(rankingRoutes),
   );
 
 const port = Number(process.env.PORT) || 3000;
