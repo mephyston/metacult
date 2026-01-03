@@ -33,6 +33,24 @@ const {
         <title>{title}</title>
 
         <ThemeHeadScript />
+
+        <!-- Runtime Environment Variables for Client-Side Hydration (Railway) -->
+        <script
+            is:inline
+            define:vars={{
+                PUBLIC_WEBAPP_URL:
+                    process.env.PUBLIC_WEBAPP_URL ||
+                    import.meta.env.PUBLIC_WEBAPP_URL,
+                PUBLIC_API_URL:
+                    process.env.PUBLIC_API_URL ||
+                    import.meta.env.PUBLIC_API_URL,
+            }}
+        >
+            window.__ENV__ = {
+                PUBLIC_WEBAPP_URL: PUBLIC_WEBAPP_URL,
+                PUBLIC_API_URL: PUBLIC_API_URL,
+            };
+        </script>
     </head>
     <body class={`font-sans min-h-screen flex flex-col ${bodyClass}`}>
         <Header client:load>

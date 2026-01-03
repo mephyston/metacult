@@ -6,14 +6,30 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Support for Node.js process environment in shared code
+// Support for Node.js process environment in shared code
 declare const process: { env: Record<string, string | undefined> };
 
-export function getApiUrl(): string {
-  // Use PUBLIC_API_URL if available, otherwise relative path (assuming proxy) or default localhost
+// Support for Runtime Config (injected via window.__ENV__ in Layout.astro)
+declare global {
+  interface Window {
+    __ENV__?: {
+      PUBLIC_WEBAPP_URL?: string;
+      PUBLIC_API_URL?: string;
+    };
+  }
+}
 
-  // Check process.env for Node/SSR runtime
+export function getApiUrl(): string {
+  // Priority:
+  // 1. Window Runtime Config (Browser Hydration)
+  // 2. Process Env (Node/SSR Runtime)
+  // 3. Import Meta (Build Time)
+
   let rawApiUrl: string | undefined;
-  if (typeof process !== 'undefined' && process.env['PUBLIC_API_URL']) {
+
+  if (typeof window !== 'undefined' && window.__ENV__?.PUBLIC_API_URL) {
+    rawApiUrl = window.__ENV__.PUBLIC_API_URL;
+  } else if (typeof process !== 'undefined' && process.env['PUBLIC_API_URL']) {
     rawApiUrl = process.env['PUBLIC_API_URL'];
   } else {
     rawApiUrl = import.meta.env.PUBLIC_API_URL;
@@ -34,12 +50,14 @@ export function getApiUrl(): string {
 export function getWebappUrl(): string {
   let rawUrl: string | undefined;
 
-  // Check process.env for Node/SSR runtime (Railway injects variables at runtime)
-  if (typeof process !== 'undefined' && process.env['PUBLIC_WEBAPP_URL']) {
+  if (typeof window !== 'undefined' && window.__ENV__?.PUBLIC_WEBAPP_URL) {
+    rawUrl = window.__ENV__.PUBLIC_WEBAPP_URL;
+  } else if (
+    typeof process !== 'undefined' &&
+    process.env['PUBLIC_WEBAPP_URL']
+  ) {
     rawUrl = process.env['PUBLIC_WEBAPP_URL'];
-  }
-  // Fallback to build-time injected variable
-  else {
+  } else {
     rawUrl = import.meta.env.PUBLIC_WEBAPP_URL;
   }
 
