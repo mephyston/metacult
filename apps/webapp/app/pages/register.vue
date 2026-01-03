@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
+// @ts-ignore - Nuxt i18n auto-import
+const { t } = useI18n();
 import { signUp } from '../lib/auth-client';
 import { useAuthSession } from '../composables/useAuthSession';
 import { useLogger } from '../composables/useLogger';

@@ -4,6 +4,7 @@ import { useAuthSession } from './composables/useAuthSession';
 import { useGuestSync } from './composables/useGuestSync';
 import { useWebsiteUrl } from './composables/useApiUrl';
 
+// @ts-ignore - Nuxt i18n auto-import
 const { t } = useI18n();
 
 const headerLabels = {

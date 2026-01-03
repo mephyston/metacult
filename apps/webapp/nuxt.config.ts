@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     port: 4201,
   },
   modules: ['@nuxtjs/i18n', '@nuxtjs/google-fonts'],
+  // @ts-ignore - i18n module config types not available until build
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'fr',
@@ -81,7 +82,6 @@ export default defineNuxtConfig({
       '/api/**': { proxy: 'http://localhost:3000/api/**' },
     },
   },
-  // @ts-expect-error: googleFonts property is added by the module but types are not inferred without build
   googleFonts: {
     families: {
       Roboto: [300, 400, 500, 700],

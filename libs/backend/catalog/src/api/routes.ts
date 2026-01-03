@@ -26,17 +26,13 @@ export const createCatalogRoutes = (controller: MediaController) => {
     .onError(({ error }) => {
       // Transform domain errors to HTTP errors
       if (error instanceof MediaNotFoundInProviderError) {
-        throw new NotFoundError('MEDIA_NOT_FOUND_IN_PROVIDER', error.message);
+        throw new NotFoundError(error.message);
       }
       if (error instanceof ProviderUnavailableError) {
-        throw new InfrastructureError(
-          'PROVIDER_UNAVAILABLE',
-          error.message,
-          error.cause,
-        );
+        throw new InfrastructureError(error.message, { cause: error.cause });
       }
       if (error instanceof MediaAlreadyExistsError) {
-        throw new ConflictError('MEDIA_ALREADY_EXISTS', error.message, {
+        throw new ConflictError(error.message, {
           existingId: error.internalId,
         });
       }
