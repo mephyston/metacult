@@ -1,7 +1,7 @@
 /**
  * Better Auth Client partagé (framework-agnostic)
  * Utilisable dans Astro, Nuxt, ou tout environnement Vue 3
- * 
+ *
  * Configure la connexion au backend API pour l'authentification
  */
 import { createAuthClient } from 'better-auth/vue';
@@ -11,19 +11,21 @@ import { createAuthClient } from 'better-auth/vue';
 import { getApiUrl } from './utils';
 
 const apiUrl = getApiUrl();
+// Debug URL resolution on client
+if (typeof window !== 'undefined') {
+  console.log('[AuthClient] Window Hostname:', window.location.hostname);
+  console.log('[AuthClient] Resolved API URL:', apiUrl);
+  console.log('[AuthClient] Public Env:', window.__ENV__?.PUBLIC_API_URL);
+}
+
 const cookiePrefix = import.meta.env.PUBLIC_AUTH_COOKIE_PREFIX || 'metacult';
 
 export const authClient = createAuthClient({
-    baseURL: `${apiUrl}/api/auth`,
-    advanced: {
-        cookiePrefix
-    }
+  baseURL: `${apiUrl}/api/auth`,
+  advanced: {
+    cookiePrefix,
+  },
 });
 
 // Export des composables Vue pour utilisation dans les composants
-export const {
-    useSession,
-    signIn,
-    signUp,
-    signOut,
-} = authClient;
+export const { useSession, signIn, signUp, signOut } = authClient;
