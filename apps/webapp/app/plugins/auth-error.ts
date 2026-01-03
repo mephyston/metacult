@@ -1,8 +1,10 @@
 import { defineNuxtPlugin, navigateTo } from 'nuxt/app';
 import { useAuthSession } from '../composables/useAuthSession';
+import { useLogger } from '../composables/useLogger';
 
 export default defineNuxtPlugin((nuxtApp) => {
   const { clearSession } = useAuthSession();
+  const logger = useLogger();
 
   // Hook global pour intercepter les erreurs de l'application (SSR et Client)
   nuxtApp.hook('app:error', async (error: any) => {
@@ -13,7 +15,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       error?.message?.includes('401') ||
       error?.message?.toLowerCase().includes('unauthorized')
     ) {
-      console.warn(
+      logger.warn(
         '[AuthPlugin] 401 Unauthorized detected. Clearing session and redirecting to login.',
       );
 

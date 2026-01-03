@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { DefaultLogger, type LogWriter } from 'drizzle-orm/logger';
 import { requestContext } from '../context/request-context';
+import { logger } from '../logger/logger.service';
 
 export class TracingLogger extends DefaultLogger {
   constructor() {
@@ -13,7 +14,7 @@ class TracingLogWriter implements LogWriter {
   write(message: string) {
     const requestId = requestContext.getRequestId();
     const prefix = requestId ? `[Req: ${requestId}] ` : '';
-    console.log(`${prefix}${message}`);
+    logger.debug(`${prefix}${message}`);
   }
 }
 
@@ -52,14 +53,17 @@ export function getDbConnection<T extends Record<string, unknown>>(
       ssl: useSsl ? { rejectUnauthorized: false } : undefined,
     });
 
-    console.log(
-      `🔌 DB Config: SSL=${useSsl} (Internal=${isRailwayInternal}), Timeout=Default`,
+    logger.info(
+      {
+        ssl: useSsl,
+        isInternal: isRailwayInternal,
+      },
+      '[DB] Connection configured',
     );
 
     // Schema is now provided by the caller (apps/api merges all schemas)
     const enableLogger =
-      configService.isDevelopment ||
-      configService.get('DEBUG_SQL') === true;
+      configService.isDevelopment || configService.get('DEBUG_SQL') === true;
     db = drizzle(pool, {
       schema: customSchema,
       logger: enableLogger ? new TracingLogger() : undefined,

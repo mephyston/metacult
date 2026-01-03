@@ -10,6 +10,7 @@
   "dependencies": {
     "@metacult/shared-core": "workspace:*",
     "@metacult/shared-ui": "workspace:*",
+    "@nuxtjs/i18n": "^9.0.4",
     "@vueuse/core": "^14.1.0",
     "better-auth": "^1.4.10",
     "class-variance-authority": "^0.7.1",

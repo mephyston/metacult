@@ -1,5 +1,6 @@
 import { eq, ilike, and, desc, sql, notInArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { logger } from '@metacult/backend/infrastructure';
 import type {
   IMediaRepository,
   MediaSearchFilters,
@@ -341,11 +342,14 @@ export class DrizzleMediaRepository implements IMediaRepository {
   }
 
   async findRandom(filters: MediaSearchFilters): Promise<MediaReadDto[]> {
-    console.log('[DrizzleMediaRepository] findRandom with filters:', {
-      excludedCount: filters.excludedIds?.length || 0,
-      excludedIds: filters.excludedIds?.slice(0, 5) || [],
-      limit: filters.limit,
-    });
+    logger.debug(
+      {
+        excludedCount: filters.excludedIds?.length || 0,
+        excludedIds: filters.excludedIds?.slice(0, 5) || [],
+        limit: filters.limit,
+      },
+      '[DrizzleMediaRepository] findRandom with filters',
+    );
 
     const query = this.db
       .select()
@@ -362,10 +366,9 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     const rows = await query.execute();
 
-    console.log(
-      '[DrizzleMediaRepository] findRandom returned',
-      rows.length,
-      'results',
+    logger.debug(
+      { count: rows.length },
+      '[DrizzleMediaRepository] findRandom returned results',
     );
 
     if (rows.length === 0) return [];

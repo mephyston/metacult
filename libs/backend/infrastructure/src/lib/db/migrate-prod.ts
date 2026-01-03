@@ -1,6 +1,6 @@
-
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { getDbConnection } from './client';
+import { logger } from '../logger/logger.service';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { sql } from 'drizzle-orm';
@@ -10,62 +10,76 @@ const MAX_RETRIES = 10;
 const RETRY_DELAY_MS = 2000;
 
 async function runSafeMigrations() {
-    console.log('🛡️  Initialisation des Migrations Sécurisées (Production Mode)...');
+  logger.info(
+    '🛡️  Initialisation des Migrations Sécurisées (Production Mode)...',
+  );
 
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const migrationsFolder = process.env.MIGRATIONS_FOLDER || path.resolve(__dirname, '../../../drizzle');
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const migrationsFolder =
+    process.env.MIGRATIONS_FOLDER ||
+    path.resolve(__dirname, '../../../drizzle');
 
-    console.log(`📂 Migrations Folder: ${migrationsFolder}`);
+  logger.info({ migrationsFolder }, '📂 Migrations Folder');
 
-    // Masked URL debug
-    const dbUrl = process.env.DATABASE_URL || '';
-    const maskedUrl = dbUrl.replace(/:([^:@]+)@/, ':****@');
-    console.log(`Checking DATABASE_URL: ${maskedUrl}`);
+  // Masked URL debug
+  const dbUrl = process.env.DATABASE_URL || '';
+  const maskedUrl = dbUrl.replace(/:([^:@]+)@/, ':****@');
+  logger.info({ maskedUrl }, 'Checking DATABASE_URL');
 
-    for (let i = 1; i <= MAX_RETRIES; i++) {
-        try {
-            console.log(`🔌 [Step 1] Getting DB Connection (Try ${i})...`);
-            const { db, pool } = getDbConnection();
+  for (let i = 1; i <= MAX_RETRIES; i++) {
+    try {
+      logger.info({ attempt: i }, `🔌 [Step 1] Getting DB Connection`);
+      const { db, pool } = getDbConnection();
 
-            console.log('📡 [Step 2] Pinging DB directly via Pool (SELECT 1)...');
-            // Use pool directly to get raw error from pg
-            await pool.query('SELECT 1');
-            console.log('✅ [Step 2] DB is reachable.');
+      logger.info('📡 [Step 2] Pinging DB directly via Pool (SELECT 1)...');
+      // Use pool directly to get raw error from pg
+      await pool.query('SELECT 1');
+      logger.info('✅ [Step 2] DB is reachable.');
 
-            console.log(`🔒 [Step 3] Acquiring Advisory Lock (ID: ${LOCK_ID})...`);
+      logger.info({ lockId: LOCK_ID }, `🔒 [Step 3] Acquiring Advisory Lock`);
 
-            // 2. Transactional Migration with Advisory Lock
-            await db.transaction(async (tx) => {
-                // Acquire lock immediately. If another job is running, this waits.
-                // pg_advisory_xact_lock releases automatically at end of transaction.
-                await tx.execute(sql`SELECT pg_advisory_xact_lock(${LOCK_ID})`);
+      // 2. Transactional Migration with Advisory Lock
+      await db.transaction(async (tx) => {
+        // Acquire lock immediately. If another job is running, this waits.
+        // pg_advisory_xact_lock releases automatically at end of transaction.
+        await tx.execute(sql`SELECT pg_advisory_xact_lock(${LOCK_ID})`);
 
-                console.log('🔓Verrou acquis! Starting migration...');
+        logger.info('🔓Verrou acquis! Starting migration...');
 
-                // Run Drizzle migrations
-                await migrate(tx, { migrationsFolder });
-            });
+        // Run Drizzle migrations
+        await migrate(tx, { migrationsFolder });
+      });
 
-            console.log('✅ Migrations terminées avec succès (Verrou relâché).');
-            process.exit(0);
+      logger.info('✅ Migrations terminées avec succès (Verrou relâché).');
+      process.exit(0);
+    } catch (error: unknown) {
+      const err = error as Error & {
+        code?: string;
+        address?: string;
+        port?: number;
+      };
+      const errorDetails = {
+        attempt: i,
+        maxRetries: MAX_RETRIES,
+        code: err.code,
+        address: err.address,
+        port: err.port,
+      };
+      logger.error(
+        { err: error, ...errorDetails },
+        `❌ Erreur tentative de migration`,
+      );
 
-        } catch (error: any) {
-            console.error(`❌ Erreur (Tentative ${i}/${MAX_RETRIES})`, error);
-            // Log specific PG error properties if present
-            if (error.code) console.error(`   -> Code: ${error.code}`);
-            if (error.address) console.error(`   -> Address: ${error.address}`);
-            if (error.port) console.error(`   -> Port: ${error.port}`);
-
-            if (i < MAX_RETRIES) {
-                await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
-            } else {
-                console.error('💥 Abandon après échecs répétés.');
-                process.exit(1);
-            }
-        }
+      if (i < MAX_RETRIES) {
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      } else {
+        logger.error('💥 Abandon après échecs répétés.');
+        process.exit(1);
+      }
     }
+  }
 }
 
 if (import.meta.main) {
-    runSafeMigrations();
+  runSafeMigrations();
 }

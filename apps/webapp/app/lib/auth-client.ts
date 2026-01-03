@@ -6,23 +6,29 @@
 import { createAuthClient } from 'better-auth/vue';
 import { DEFAULT_DEV_URLS } from '@metacult/shared-core';
 
-// Determine auth URL from runtime config
-// In server context, we can use internal URL; in browser, we use public URL
-const getAuthUrl = () => {
-  if (import.meta.server) {
-    const config = useRuntimeConfig();
-    // Server-side: prefer internal URL for service-to-service calls
-    return config.internalApiUrl || config.public.apiUrl || DEFAULT_DEV_URLS.API;
+// Helper pour obtenir l'URL de l'API de manière sûre
+function getAuthBaseURL(): string {
+  // En mode client-only (SPA), on utilise toujours l'URL publique
+  if (typeof window !== 'undefined') {
+    try {
+      const apiUrl = window.__NUXT__?.config?.public?.apiUrl;
+      if (apiUrl) {
+        return apiUrl;
+      }
+    } catch (e) {
+      // Silent fail - use fallback
+      if (import.meta.dev) {
+        console.warn('[auth-client] Failed to read Nuxt config:', e);
+      }
+    }
   }
-  // Client-side: use public API URL
-  const config = useRuntimeConfig();
-  return config.public.apiUrl || DEFAULT_DEV_URLS.API;
-};
 
-const baseURL = getAuthUrl();
+  // Fallback pour développement local
+  return DEFAULT_DEV_URLS.API;
+}
 
 export const authClient = createAuthClient({
-  baseURL: `${baseURL}/api/auth`,
+  baseURL: `${getAuthBaseURL()}/api/auth`,
 });
 
 // Export des composables Vue pour utilisation dans les composants

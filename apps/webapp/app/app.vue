@@ -1,7 +1,21 @@
 <script setup lang="ts">
-import { Header, Footer, Search, getWebsiteUrl } from '@metacult/shared-ui';
+import { Header, Footer, Search } from '@metacult/shared-ui';
 import { useAuthSession } from './composables/useAuthSession';
 import { useGuestSync } from './composables/useGuestSync';
+import { useWebsiteUrl } from './composables/useApiUrl';
+
+// @ts-ignore - Nuxt i18n auto-import
+const { t } = useI18n();
+
+const headerLabels = {
+  explorer: t('common.explore'),
+  login: t('auth.login.title'),
+  register: t('auth.register.title'),
+  logout: t('common.logout'),
+  openApp: t('common.openApp'),
+  profile: t('common.profile'),
+  settings: t('common.settings'),
+};
 
 const { user, clearSession } = useAuthSession();
 const { initSync } = useGuestSync();
@@ -15,7 +29,7 @@ const handleLogout = async () => {
 
   // Force clean state by redirecting to Marketing Home
   // This is better for UX (Start Over)
-  const websiteUrl = getWebsiteUrl();
+  const websiteUrl = useWebsiteUrl();
   window.location.href = websiteUrl;
 };
 </script>
@@ -24,7 +38,7 @@ const handleLogout = async () => {
   <div
     class="font-sans min-h-screen flex flex-col bg-background text-foreground"
   >
-    <Header :user="user" @logout="handleLogout">
+    <Header :user="user" :labels="headerLabels" @logout="handleLogout">
       <template #search>
         <div class="contents">
           <Search />

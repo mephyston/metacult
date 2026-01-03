@@ -3,6 +3,8 @@ import {
   isAuthenticated,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
+import { logger } from '@metacult/backend/infrastructure';
+import { API_MESSAGES } from '@metacult/shared-core';
 import { RankingQueue } from '../../../infrastructure/queue/ranking.queue';
 import { DrizzleDuelRepository } from '../../../infrastructure/repositories/drizzle-duel.repository';
 
@@ -38,21 +40,24 @@ export const DuelController = new Elysia({ prefix: '/duel' })
             data: [],
             meta: {
               status: 'insufficient_likes',
-              message: 'Swipe more games to unlock the Arena!',
+              message: API_MESSAGES.DUEL.INSUFFICIENT_LIKES,
             },
           };
         }
 
         return pair;
       } catch (err: any) {
-        console.error('💥 [DuelController] Error:', err);
+        logger.error({ err }, '[DuelController] Error');
         // Si c'est une erreur d'auth lancée par resolveUserOrThrow
-        if (err.status === 401 || err.message === 'Unauthorized') {
+        if (
+          err.status === 401 ||
+          err.message === API_MESSAGES.AUTH.UNAUTHORIZED_SHORT
+        ) {
           set.status = 401;
-          return { error: 'Unauthorized' };
+          return { error: API_MESSAGES.AUTH.UNAUTHORIZED_SHORT };
         }
         set.status = 500;
-        return { error: 'Internal Server Error' };
+        return { error: API_MESSAGES.ERRORS.INTERNAL_ERROR_SHORT };
       }
     },
     {
@@ -74,7 +79,7 @@ export const DuelController = new Elysia({ prefix: '/duel' })
       // 2. Dispatch job update classement
       await rankingQueue.addDuelResult(winnerId, loserId);
 
-      return { status: 'success', message: 'Vote recorded' };
+      return { status: 'success', message: API_MESSAGES.DUEL.VOTE_REGISTERED };
     },
     {
       body: t.Object({

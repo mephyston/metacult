@@ -9,13 +9,14 @@ import { createAuthClient } from 'better-auth/vue';
 // Récupération de l'URL API depuis PUBLIC_API_URL (convention unifiée)
 // Utilisé par Astro et Nuxt
 import { getApiUrl } from './utils';
+import { logger } from './logger';
 
 const apiUrl = getApiUrl();
 // Debug URL resolution on client
 if (typeof window !== 'undefined') {
-  console.log('[AuthClient] Window Hostname:', window.location.hostname);
-  console.log('[AuthClient] Resolved API URL:', apiUrl);
-  console.log('[AuthClient] Public Env:', window.__ENV__?.PUBLIC_API_URL);
+  logger.debug('[AuthClient] Window Hostname:', window.location.hostname);
+  logger.debug('[AuthClient] Resolved API URL:', apiUrl);
+  logger.debug('[AuthClient] Public Env:', window.__ENV__?.PUBLIC_API_URL);
 }
 
 const cookiePrefix = import.meta.env.PUBLIC_AUTH_COOKIE_PREFIX || 'metacult';

@@ -35,10 +35,11 @@ onMounted(() => {
       </div>
 
       <div class="space-y-2">
-        <h1 class="text-3xl font-black tracking-tight">Ton arène est vide !</h1>
+        <h1 class="text-3xl font-black tracking-tight">
+          {{ $t('arena.emptyTitle') }}
+        </h1>
         <p class="text-muted-foreground text-lg">
-          Va liker plus de jeux dans le Radar pour construire ton tournoi et
-          affiner ton classement.
+          {{ $t('arena.emptyDescription') }}
         </p>
       </div>
 

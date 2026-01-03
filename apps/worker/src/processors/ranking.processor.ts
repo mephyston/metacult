@@ -4,7 +4,7 @@ import {
   EloCalculator,
   type RankingUpdateJob,
 } from '@metacult/backend/ranking';
-import { getDbConnection } from '@metacult/backend/infrastructure';
+import { getDbConnection, logger } from '@metacult/backend/infrastructure';
 import { mediaSchema } from '@metacult/backend/catalog';
 
 // Initialize Elo Service
@@ -21,8 +21,9 @@ export const processRankingUpdate = async (job: Job<RankingUpdateJob>) => {
   const { winnerId, loserId } = job.data;
   const { db } = getDbConnection();
 
-  console.log(
-    `🏆 [RankingProcessor] Processing duel: ${winnerId} (Win) vs ${loserId} (Loss)`,
+  logger.info(
+    { winnerId, loserId },
+    '🏆 [RankingProcessor] Processing duel',
   );
 
   // 1. Fetch Medias
@@ -72,7 +73,11 @@ export const processRankingUpdate = async (job: Job<RankingUpdateJob>) => {
       .where(eq(mediaSchema.medias.id, loserId));
   });
 
-  console.log(
-    `✅ [RankingProcessor] Update Complete: "${winner.title}" (${winner.eloScore} -> ${winnerNewElo}) vs "${loser.title}" (${loser.eloScore} -> ${loserNewElo})`,
+  logger.info(
+    {
+      winner: { title: winner.title, oldElo: winner.eloScore, newElo: winnerNewElo },
+      loser: { title: loser.title, oldElo: loser.eloScore, newElo: loserNewElo },
+    },
+    '✅ [RankingProcessor] Update Complete',
   );
 };

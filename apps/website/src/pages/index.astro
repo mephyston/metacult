@@ -3,18 +3,18 @@ import Layout from '../layouts/Layout.astro';
 import { Hero, SwipeDeck, getApiUrl } from '@metacult/shared-ui';
 import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
+import { fr } from '../i18n/fr';
 
 // Temporarily disable prerender to test API calls
 // Re-enable later for production builds
 export const prerender = false;
 
-// Hero Content (Moved to variables to ensure clean strings)
+// Hero Content (Internationalized)
 const heroBadge = 'Metacult';
-const heroHeading = 'Le Radar Social pour votre Culture.';
-const heroDescription =
-	'Découvrez, suivez et partagez vos films, jeux et séries préférés avec votre squad. Une seule app pour toute votre culture.';
-const heroCtaText = 'Créer un compte';
-const heroSecondaryCtaText = 'Se connecter';
+const heroHeading = fr.home.hero.title;
+const heroDescription = fr.home.hero.subtitle;
+const heroCtaText = fr.home.hero.cta;
+const heroSecondaryCtaText = fr.header.login;
 const heroImageSizes =
 	'(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1920px';
 

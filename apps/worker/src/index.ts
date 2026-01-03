@@ -2,16 +2,13 @@ import { processImportMedia } from './processors/import-media.processor';
 import {
   createWorker,
   IMPORT_QUEUE_NAME,
-  patchConsole,
+  logger,
 } from '@metacult/backend/infrastructure';
 import { processRankingUpdate } from './processors/ranking.processor';
 import { RANKING_QUEUE_NAME } from '@metacult/backend/ranking';
 
 export const startWorker = async () => {
-  // Apply logging patch
-  patchConsole();
-
-  console.log('🚀 Starting Metacult Worker Service...');
+  logger.info('🚀 Starting Metacult Worker Service...');
 
   /**
    * Point d'entrée du Worker.
@@ -34,18 +31,18 @@ export const startWorker = async () => {
 
   // Daemon mode checks
   process.on('SIGINT', async () => {
-    console.log('🛑 Shutting down workers...');
+    logger.info('🛑 Shutting down workers...');
     await Promise.all([worker.close(), rankingWorker.close()]);
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
-    console.log('🛑 Shutting down workers...');
+    logger.info('🛑 Shutting down workers...');
     await Promise.all([worker.close(), rankingWorker.close()]);
     process.exit(0);
   });
 
-  console.log(
+  logger.info(
     `👷 Worker listening on queues: ${IMPORT_QUEUE_NAME}, ${RANKING_QUEUE_NAME}`,
   );
 };

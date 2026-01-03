@@ -5,6 +5,7 @@
  * Utilise useState pour persist la session entre client/serveur
  */
 import { authClient } from '../lib/auth-client';
+import { useLogger } from './useLogger';
 
 interface User {
   name?: string;
@@ -19,6 +20,7 @@ export const useAuthSession = () => {
 
   // Rafraîchir la session depuis l'API
   const refreshSession = async () => {
+    const logger = useLogger();
     try {
       isLoading.value = true;
       const { data } = await authClient.getSession();
@@ -33,7 +35,7 @@ export const useAuthSession = () => {
         user.value = null;
       }
     } catch (error) {
-      console.error('[useAuthSession] Failed to fetch session:', error);
+      logger.error('[useAuthSession] Failed to fetch session:', error);
       user.value = null;
     } finally {
       isLoading.value = false;

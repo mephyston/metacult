@@ -2,6 +2,7 @@ import {
   requestContext,
   importQueue,
   getDbConnection,
+  logger,
   type ImportJob,
 } from '@metacult/backend/infrastructure';
 import * as mediaSchema from '@metacult/backend/catalog';
@@ -35,7 +36,7 @@ export const processImportMedia = async (
   return requestContext.run({ requestId }, async () => {
     // --- DAILY SYNC LOGIC ---
     if (type === 'daily-global-sync') {
-      console.log(`🔄 [Worker] Processing Cron Job ${job.id} | Type: ${type} `);
+      logger.info({ jobId: job.id, type }, '[Worker] Processing Cron Job');
 
       const config = {
         igdb: {
@@ -46,17 +47,20 @@ export const processImportMedia = async (
         googleBooks: { apiKey: process.env.GOOGLE_BOOKS_API_KEY || '' },
       };
 
-      console.log('🔧 [Worker] Config loaded:', {
-        hasIgdb: !!config.igdb.clientId,
-        hasTmdb: !!config.tmdb.apiKey,
-        hasBooks: !!config.googleBooks.apiKey,
-      });
+      logger.debug(
+        {
+          hasIgdb: !!config.igdb.clientId,
+          hasTmdb: !!config.tmdb.apiKey,
+          hasBooks: !!config.googleBooks.apiKey,
+        },
+        '[Worker] Config loaded',
+      );
 
       try {
         // 1. Queue Access (imported statically)
 
         // 2. Instantiate Providers with Config
-        console.log('🏭 [Worker] Instantiating Providers...');
+        logger.debug('[Worker] Instantiating Providers');
         const tmdb = new TmdbProvider(config.tmdb.apiKey);
         const igdb = new IgdbProvider(
           config.igdb.clientId,
@@ -77,11 +81,12 @@ export const processImportMedia = async (
 
         // TMDB
         if (config.tmdb.apiKey) {
-          console.log('🔍 [Worker] Fetching TMDB Trending...');
+          logger.info('[Worker] Fetching TMDB Trending');
           try {
             const tmdbResults = await tmdb.fetchTrending();
-            console.log(
-              `📊 [Sync] Found ${tmdbResults.length} trending items from TMDB`,
+            logger.info(
+              { count: tmdbResults.length },
+              '[Sync] Found trending items from TMDB',
             );
             for (const item of tmdbResults) {
               const mediaType =
@@ -95,19 +100,20 @@ export const processImportMedia = async (
               });
             }
           } catch (e: any) {
-            console.error('❌ [Worker] TMDB Fetch Failed:', e.message);
+            logger.error({ err: e }, '[Worker] TMDB Fetch Failed');
           }
         } else {
-          console.log('⚠️ [Worker] TMDB API Key missing, skipping.');
+          logger.warn('[Worker] TMDB API Key missing - skipping');
         }
 
         // IGDB
         if (config.igdb.clientId) {
-          console.log('🔍 [Worker] Fetching IGDB Trending...');
+          logger.info('🔍 [Worker] Fetching IGDB Trending...');
           try {
             const igdbResults = await igdb.fetchTrending();
-            console.log(
-              `📊 [Sync] Found ${igdbResults.length} trending items from IGDB`,
+            logger.info(
+              { count: igdbResults.length },
+              '📊 [Sync] Found trending items from IGDB',
             );
             for (const item of igdbResults) {
               await importQueue.add('import-trending-item', {
@@ -117,19 +123,20 @@ export const processImportMedia = async (
               });
             }
           } catch (e: any) {
-            console.error('❌ [Worker] IGDB Fetch Failed:', e.message);
+            logger.error({ err: e }, '❌ [Worker] IGDB Fetch Failed');
           }
         } else {
-          console.log('⚠️ [Worker] IGDB Credentials missing, skipping.');
+          logger.warn('⚠️ [Worker] IGDB Credentials missing, skipping.');
         }
 
         // Google Books
         if (config.googleBooks.apiKey) {
-          console.log('🔍 [Worker] Fetching Google Books Trending...');
+          logger.info('🔍 [Worker] Fetching Google Books Trending...');
           try {
             const booksResults = await googleBooks.fetchTrending();
-            console.log(
-              `📊 [Sync] Found ${booksResults.length} trending items from Google Books`,
+            logger.info(
+              { count: booksResults.length },
+              '📊 [Sync] Found trending items from Google Books',
             );
             for (const item of booksResults) {
               await importQueue.add('import-trending-item', {
@@ -139,15 +146,15 @@ export const processImportMedia = async (
               });
             }
           } catch (e: any) {
-            console.error('❌ [Worker] Books Fetch Failed:', e.message);
+            logger.error({ err: e }, '❌ [Worker] Books Fetch Failed');
           }
         } else {
-          console.log('⚠️ [Worker] Google Books API Key missing, skipping.');
+          logger.warn('⚠️ [Worker] Google Books API Key missing, skipping.');
         }
 
-        console.log('✅ [Worker] Daily Global Sync completed successfully.');
+        logger.info('✅ [Worker] Daily Global Sync completed successfully.');
       } catch (err: any) {
-        console.error('💥 [Worker] Critical Error in Daily Global Sync:', err);
+        logger.error({ err }, '💥 [Worker] Critical Error in Daily Global Sync');
       }
 
       return;
@@ -157,17 +164,13 @@ export const processImportMedia = async (
 
     if ((type as string) === 'daily-global-sync') return;
     const { id } = job.data;
-    console.log(
-      `🔄 [Worker] Processing Import Job ${job.id} | Type: ${type} | ID: ${id} `,
-    );
+    logger.info({ jobId: job.id, type, id }, '[Worker] Processing Import Job');
 
     try {
       let handler = deps?.handler;
 
       if (!handler) {
-        console.log(
-          '🏭 [Worker] Initialisation des dépendances via la Factory...',
-        );
+        logger.debug('[Worker] Initializing dependencies via Factory');
         const { db } = getDbConnection(mediaSchema);
 
         const config = {
@@ -207,18 +210,19 @@ export const processImportMedia = async (
       const command = new ImportMediaCommand(id, mediaType);
       await handler.execute(command);
 
-      console.log(`✅ [Worker] Job ${job.id} terminé avec succès.`);
+      logger.info({ jobId: job.id }, '[Worker] Job completed successfully');
     } catch (error: any) {
       if (error instanceof MediaAlreadyExistsError) {
-        console.warn(
-          `ℹ️ [Worker] Job ${job.id} skipped (Duplicate): ${error.message}`,
+        logger.warn(
+          { jobId: job.id, message: error.message },
+          '[Worker] Job skipped (Duplicate)',
         );
         return;
       }
 
-      console.error(
-        `💥 [Error] Failed to process job ${job.id}: `,
-        error.message,
+      logger.error(
+        { jobId: job.id, err: error },
+        '[Worker] Failed to process job',
       );
       throw error;
     }

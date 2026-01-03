@@ -22,6 +22,7 @@ import {
 } from '../ui/command';
 import { Button } from '../ui/button';
 import { getApiUrl, getWebappUrl } from '../../lib/utils';
+import { logger } from '../../lib/logger';
 
 // Types (simplified version of DTO)
 interface SearchResultItem {
@@ -105,7 +106,7 @@ const searchApi = async (q: string) => {
       results.value = await res.json();
     }
   } catch (e) {
-    console.error('Search failed', e);
+    logger.error('[Search] Search failed:', e);
   } finally {
     isLoading.value = false;
   }
@@ -123,7 +124,7 @@ async function handleSelect(item: SearchResultItem) {
     navigateToMedia(item.type, item.slug || item.id);
   } else {
     // Import logic
-    console.log('[Search] Importing item:', item);
+    logger.debug('[Search] Importing item:', item);
     importingId.value = item.id;
     const baseUrl = getApiUrl();
     try {
@@ -147,19 +148,19 @@ async function handleSelect(item: SearchResultItem) {
         }
       } else if (res.status === 409) {
         // Media already imported - navigate to existing media
-        console.log('[Search] Media already exists, navigating to it...');
+        logger.info('[Search] Media already exists, navigating to it...');
         const errorBody = await res.json().catch(() => ({}));
         const targetId = errorBody.existingId || item.slug || item.id;
         navigateToMedia(item.type, targetId);
       } else {
-        console.error('[Search] Import failed with status:', res.status);
+        logger.error('[Search] Import failed with status:', res.status);
         const error = await res
           .json()
           .catch(() => ({ message: 'Unknown error' }));
-        console.error('[Search] Error details:', error);
+        logger.error('[Search] Error details:', error);
       }
     } catch (e) {
-      console.error('Import failed', e);
+      logger.error('[Search] Import failed:', e);
     } finally {
       importingId.value = null;
     }

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+// @ts-ignore - Nuxt i18n auto-import
+const { t: __t } = useI18n();
 import { signUp } from '../lib/auth-client';
 import { useAuthSession } from '../composables/useAuthSession';
+import { useLogger } from '../composables/useLogger';
 import {
   Card,
   CardContent,
@@ -17,6 +20,8 @@ import { Button } from '@metacult/shared-ui';
 
 const router = useRouter();
 const { refreshSession } = useAuthSession();
+const logger = useLogger();
+const { t } = useI18n();
 
 const name = ref('');
 const email = ref('');
@@ -26,12 +31,12 @@ const error = ref('');
 
 const handleSubmit = async () => {
   if (!name.value || !email.value || !password.value) {
-    error.value = 'Veuillez remplir tous les champs';
+    error.value = __t('auth.register.errors.allFields');
     return;
   }
 
   if (password.value.length < 8) {
-    error.value = 'Le mot de passe doit contenir au moins 8 caractères';
+    error.value = __t('auth.register.errors.passwordLength');
     return;
   }
 
@@ -51,8 +56,8 @@ const handleSubmit = async () => {
     // Navigation SPA (pas de reload)
     router.push('/');
   } catch (err: any) {
-    console.error('[Register] Error:', err);
-    error.value = err?.message || 'Erreur lors de la création du compte';
+    logger.error('[Register] Error:', err);
+    error.value = err?.message || t('auth.register.errors.generic');
   } finally {
     loading.value = false;
   }
@@ -63,9 +68,11 @@ const handleSubmit = async () => {
   <div class="flex min-h-screen items-center justify-center bg-background px-4">
     <Card class="w-full max-w-md">
       <CardHeader>
-        <CardTitle class="text-2xl"> Créer un compte </CardTitle>
+        <CardTitle class="text-2xl">
+          {{ $t('auth.register.title') }}
+        </CardTitle>
         <CardDescription>
-          Rejoignez Metacult et découvrez vos prochains favoris
+          {{ $t('auth.register.description') }}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -75,7 +82,7 @@ const handleSubmit = async () => {
           @submit.prevent="handleSubmit"
         >
           <div class="space-y-2">
-            <Label for="name">Pseudo</Label>
+            <Label for="name">{{ $t('auth.register.name') }}</Label>
             <Input
               id="name"
               v-model="name"
@@ -87,7 +94,7 @@ const handleSubmit = async () => {
             />
           </div>
           <div class="space-y-2">
-            <Label for="email">Email</Label>
+            <Label for="email">{{ $t('auth.register.email') }}</Label>
             <Input
               id="email"
               v-model="email"
@@ -100,7 +107,7 @@ const handleSubmit = async () => {
             />
           </div>
           <div class="space-y-2">
-            <Label for="password">Mot de passe</Label>
+            <Label for="password">{{ $t('auth.register.password') }}</Label>
             <Input
               id="password"
               v-model="password"
@@ -111,7 +118,9 @@ const handleSubmit = async () => {
               required
               :disabled="loading"
             />
-            <p class="text-xs text-muted-foreground">Minimum 8 caractères</p>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('auth.register.passwordHint') }}
+            </p>
           </div>
           <div
             v-if="error"
@@ -121,15 +130,19 @@ const handleSubmit = async () => {
             {{ error }}
           </div>
           <Button type="submit" class="w-full" :disabled="loading">
-            {{ loading ? 'Création...' : 'Créer mon compte' }}
+            {{
+              loading
+                ? $t('auth.register.submitting')
+                : $t('auth.register.submit')
+            }}
           </Button>
         </form>
       </CardContent>
       <CardFooter class="flex justify-center">
         <p class="text-sm text-muted-foreground">
-          Déjà inscrit ?
+          {{ $t('auth.register.login') }}
           <NuxtLink to="/login" class="text-primary hover:underline">
-            Se connecter
+            {{ $t('auth.register.loginLink') }}
           </NuxtLink>
         </p>
       </CardFooter>

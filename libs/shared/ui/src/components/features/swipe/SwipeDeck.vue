@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import SwipeCard from './SwipeCard.vue';
 import { X, Clock, Bookmark, ThumbsUp, Flame } from 'lucide-vue-next';
+import { logger } from '../../../lib/logger';
 
 // --- Types ---
 interface SwipeItem {
@@ -66,7 +67,7 @@ function saveToLocalStorage(interaction: InteractionPayload) {
     swipes.push(interaction);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(swipes));
   } catch (error) {
-    console.error('Failed to save to localStorage:', error);
+    logger.error('[SwipeDeck] Failed to save to localStorage:', error);
   }
 }
 
@@ -95,7 +96,7 @@ function getSyncUrl(targetUrl: string): string {
     const separator = targetUrl.includes('?') ? '&' : '?';
     return `${targetUrl}${separator}sync=${b64}`;
   } catch (error) {
-    console.error('Failed to generate sync URL:', error);
+    logger.error('[SwipeDeck] Failed to generate sync URL:', error);
     return targetUrl;
   }
 }

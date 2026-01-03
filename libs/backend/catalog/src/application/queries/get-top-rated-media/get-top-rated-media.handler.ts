@@ -1,6 +1,7 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { Redis } from 'ioredis';
 import type { MediaReadDto } from '../search-media/media-read.dto';
+import { logger } from '@metacult/backend/infrastructure';
 
 export interface GetTopRatedMediaQuery {
   limit: number;
@@ -18,11 +19,11 @@ export class GetTopRatedMediaHandler {
     // 1. Check Redis Cache
     const cached = await this.redis.get(cacheKey);
     if (cached) {
-      console.log('[GetTopRatedMedia] Cache Hit');
+      logger.info('[GetTopRatedMedia] Cache Hit');
       return JSON.parse(cached);
     }
 
-    console.log('[GetTopRatedMedia] Cache Miss - Fetching from DB...');
+    logger.info('[GetTopRatedMedia] Cache Miss - Fetching from DB');
 
     // 2. Fetch from DB
     const results = await this.mediaRepository.findTopRated(query.limit);
