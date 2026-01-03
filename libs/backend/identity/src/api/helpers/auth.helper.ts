@@ -1,5 +1,6 @@
 import { auth } from '../../infrastructure/auth/better-auth.service';
 import { logger } from '@metacult/backend/infrastructure';
+import { API_MESSAGES } from '@metacult/shared-core';
 
 /**
  * Resolves the authenticated user from the context or throws a 401 error.
@@ -44,7 +45,10 @@ export async function resolveUserOrThrow(ctx: any) {
   logger.warn('[AuthHelper] Recovery failed - Unauthorized');
   // Utilize the error helper from the context if available, otherwise generic throw
   if (error) {
-    throw error(401, { success: false, message: 'Unauthorized' });
+    throw error(401, {
+      success: false,
+      message: API_MESSAGES.AUTH.UNAUTHORIZED_SHORT,
+    });
   }
-  throw new Error('Unauthorized');
+  throw new Error(API_MESSAGES.AUTH.UNAUTHORIZED_SHORT);
 }

@@ -28,9 +28,20 @@ interface User {
   avatar?: string;
 }
 
+interface HeaderLabels {
+  explorer: string;
+  login: string;
+  register: string;
+  logout: string;
+  openApp: string;
+  profile: string;
+  settings: string;
+}
+
 interface Props {
   user?: User | null;
   context?: 'website' | 'app';
+  labels: HeaderLabels;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -124,7 +135,9 @@ const handleLogout = async () => {
               <NavigationMenuList>
                 <!-- Explorer Item -->
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>Explorer</NavigationMenuTrigger>
+                  <NavigationMenuTrigger>{{
+                    labels.explorer
+                  }}</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul
                       class="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]"
@@ -299,7 +312,7 @@ const handleLogout = async () => {
               :href="appUrl"
               class="hidden md:flex"
             >
-              Ouvrir l'App
+              {{ labels.openApp }}
             </Button>
 
             <!-- APP CONTEXT: Show User Menu (Logout) -->
@@ -349,16 +362,16 @@ const handleLogout = async () => {
                 <hr class="my-1 border-border" />
 
                 <DropdownMenuItem v-if="context === 'website'" as-child>
-                  <a :href="appUrl" class="cursor-pointer w-full font-medium"
-                    >Ouvrir l'App</a
-                  >
+                  <a :href="appUrl" class="cursor-pointer w-full font-medium">{{
+                    labels.openApp
+                  }}</a>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
                   class="cursor-pointer text-destructive focus:text-destructive"
                   @click="handleLogout"
                 >
-                  Déconnexion
+                  {{ labels.logout }}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -372,10 +385,10 @@ const handleLogout = async () => {
             <!-- Website Context: Login/Register -->
             <template v-if="context === 'website'">
               <Button variant="ghost" size="sm" as="a" :href="loginUrl">
-                Connexion
+                {{ labels.login }}
               </Button>
               <Button variant="default" size="sm" as="a" :href="registerUrl">
-                Inscription
+                {{ labels.register }}
               </Button>
             </template>
           </div>

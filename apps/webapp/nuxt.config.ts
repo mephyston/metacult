@@ -16,6 +16,14 @@ export default defineNuxtConfig({
     host: 'localhost',
     port: 4201,
   },
+  modules: ['@nuxtjs/i18n', '@nuxtjs/google-fonts'],
+  i18n: {
+    strategy: 'no_prefix',
+    defaultLocale: 'fr',
+    locales: [{ code: 'fr', file: 'fr.json' }],
+    lazy: true,
+    langDir: 'locales',
+  },
   app: {
     // google-fonts handles the font links now
     head: {
@@ -73,7 +81,6 @@ export default defineNuxtConfig({
       '/api/**': { proxy: 'http://localhost:3000/api/**' },
     },
   },
-  modules: ['@nuxtjs/google-fonts'],
   // @ts-expect-error: googleFonts property is added by the module but types are not inferred without build
   googleFonts: {
     families: {

@@ -5,6 +5,7 @@ import {
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
 import { logger } from '@metacult/backend/infrastructure';
+import { API_MESSAGES } from '@metacult/shared-core';
 import { saveInteraction } from '../../../application/commands/save-interaction.command';
 import { syncInteractions } from '../../../application/commands/sync-interactions.command';
 
@@ -31,6 +32,7 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         return {
           success: true,
           data: interaction,
+          message: API_MESSAGES.INTERACTION.VOTE_RECORDED,
         };
       } catch (e: any) {
         logger.error(
@@ -40,7 +42,7 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         set.status = 500;
         return {
           success: false,
-          message: 'Failed to save interaction',
+          message: API_MESSAGES.INTERACTION.SAVE_FAILED,
           error: e.message,
         };
       }
@@ -78,7 +80,9 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
       try {
         const results = await syncInteractions(user.id, body);
         return {
+          success: true,
           synced: results.length,
+          message: API_MESSAGES.INTERACTION.SYNC_SUCCESS,
         };
       } catch (e: any) {
         logger.error(
@@ -88,7 +92,7 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         set.status = 500;
         return {
           success: false,
-          message: 'Failed to sync interactions',
+          message: API_MESSAGES.INTERACTION.SYNC_FAILED,
           error: e.message,
         };
       }

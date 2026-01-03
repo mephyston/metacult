@@ -93,11 +93,11 @@ onMounted(() => {
         <h1
           class="text-3xl md:text-4xl font-black text-foreground mb-2 flex items-center gap-2"
         >
-          Bonjour {{ displayName }}
+          {{ $t('dashboard.welcome', { name: displayName }) }}
           <span class="text-4xl">👋</span>
         </h1>
         <p class="text-base md:text-lg text-muted-foreground">
-          Ton profil culturel est en construction.
+          {{ $t('dashboard.subtitle') }}
         </p>
       </div>
 
@@ -119,7 +119,9 @@ onMounted(() => {
                   <CardTitle class="text-2xl md:text-3xl font-black">{{
                     stats.swipes
                   }}</CardTitle>
-                  <CardDescription class="text-sm">Swipes</CardDescription>
+                  <CardDescription class="text-sm">{{
+                    $t('dashboard.stats.radar', { count: stats.swipes })
+                  }}</CardDescription>
                 </div>
               </div>
               <Badge variant="secondary" class="text-xs">Radar</Badge>
@@ -127,7 +129,7 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <p class="text-xs text-muted-foreground">
-              Titres explorés depuis le début
+              {{ $t('dashboard.stats.radarDescription') }}
             </p>
           </CardContent>
         </Card>
@@ -148,7 +150,9 @@ onMounted(() => {
                   <CardTitle class="text-2xl md:text-3xl font-black">{{
                     stats.duels
                   }}</CardTitle>
-                  <CardDescription class="text-sm">Duels</CardDescription>
+                  <CardDescription class="text-sm">{{
+                    $t('dashboard.stats.arena', { count: stats.duels })
+                  }}</CardDescription>
                 </div>
               </div>
               <Badge variant="secondary" class="text-xs">Arène</Badge>
@@ -156,7 +160,7 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <p class="text-xs text-muted-foreground">
-              Confrontations jouées dans l'arène
+              {{ $t('dashboard.stats.arenaDescription') }}
             </p>
           </CardContent>
         </Card>
@@ -168,7 +172,7 @@ onMounted(() => {
           class="text-xl md:text-2xl font-bold text-foreground mb-6 flex items-center gap-2"
         >
           <Sparkles class="w-5 h-5 text-primary" />
-          Missions
+          {{ $t('dashboard.missions.title') }}
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -181,11 +185,12 @@ onMounted(() => {
                 <Radar
                   class="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                 />
-                <CardTitle class="text-xl">Lancer le Radar</CardTitle>
+                <CardTitle class="text-xl">{{
+                  $t('dashboard.missions.radar.title')
+                }}</CardTitle>
               </div>
               <CardDescription>
-                Trouve de nouveaux titres à noter et enrichis ton profil
-                culturel.
+                {{ $t('dashboard.missions.radar.description') }}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -194,7 +199,7 @@ onMounted(() => {
                   size="lg"
                   class="w-full font-bold text-base group-hover:scale-105 transition-transform"
                 >
-                  📡 Découvrir maintenant
+                  {{ $t('dashboard.missions.radar.cta') }}
                 </Button>
               </NuxtLink>
             </CardContent>
@@ -209,11 +214,12 @@ onMounted(() => {
                 <Swords
                   class="w-8 h-8 text-purple-500 group-hover:scale-110 transition-transform"
                 />
-                <CardTitle class="text-xl">Entrer dans l'Arène</CardTitle>
+                <CardTitle class="text-xl">{{
+                  $t('dashboard.missions.arena.title')
+                }}</CardTitle>
               </div>
               <CardDescription>
-                Classe tes favoris et fais monter leur score ELO en choisissant
-                tes préférés.
+                {{ $t('dashboard.missions.arena.description') }}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -223,7 +229,7 @@ onMounted(() => {
                   variant="outline"
                   class="w-full font-bold text-base border-2 border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white group-hover:scale-105 transition-transform"
                 >
-                  ⚔️ Combattre maintenant
+                  {{ $t('dashboard.missions.arena.cta') }}
                 </Button>
               </NuxtLink>
             </CardContent>
@@ -237,7 +243,7 @@ onMounted(() => {
           class="text-xl md:text-2xl font-bold text-foreground mb-4 flex items-center gap-2"
         >
           <TrendingUp class="w-5 h-5 text-primary" />
-          Tendances Communautaires
+          {{ $t('dashboard.trends.title') }}
         </h2>
 
         <!-- Trends Carousel -->
@@ -290,7 +296,7 @@ onMounted(() => {
         </div>
 
         <div v-else class="text-center py-12 text-muted-foreground">
-          <p class="mb-2">Aucune tendance disponible pour le moment</p>
+          <p class="mb-2">{{ $t('dashboard.trends.empty') }}</p>
         </div>
 
         <!-- Teasing Phase 4 -->
@@ -298,10 +304,10 @@ onMounted(() => {
           class="mt-8 p-6 bg-gradient-to-r from-primary/5 to-purple-500/5 border-2 border-dashed border-primary/30 rounded-lg text-center"
         >
           <p class="text-sm md:text-base text-muted-foreground italic">
-            ✨ Tes recommandations personnalisées arrivent bientôt...
+            {{ $t('dashboard.trends.teaser') }}
           </p>
           <p class="text-xs text-muted-foreground/70 mt-1">
-            Continue à explorer pour affiner ton profil !
+            {{ $t('dashboard.trends.teaserSubtitle') }}
           </p>
         </div>
       </div>

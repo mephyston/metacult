@@ -1,6 +1,7 @@
 import Elysia, { type Context } from 'elysia';
 import { auth } from '../../infrastructure/auth/better-auth.service';
 import { logger } from '@metacult/backend/infrastructure';
+import { API_MESSAGES } from '@metacult/shared-core';
 
 /**
  * Contexte enrichi après authentification réussie.
@@ -78,8 +79,8 @@ export const isAuthenticated = new Elysia({ name: 'auth-guard' })
       if (!user || !session) {
         set.status = 401;
         return {
-          error: 'Unauthorized',
-          message: 'Valid authentication required',
+          error: API_MESSAGES.AUTH.UNAUTHORIZED_SHORT,
+          message: API_MESSAGES.AUTH.AUTH_REQUIRED,
         };
       }
     },

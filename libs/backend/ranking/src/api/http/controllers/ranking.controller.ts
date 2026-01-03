@@ -4,6 +4,7 @@ import {
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
 import { logger } from '@metacult/backend/infrastructure';
+import { API_MESSAGES } from '@metacult/shared-core';
 import { GetUserRankingsHandler } from '../../../application/queries/get-user-rankings/get-user-rankings.handler';
 import { DrizzleInteractionRepository } from '@metacult/backend-interaction';
 import { DrizzleMediaRepository } from '@metacult/backend/catalog';
@@ -48,7 +49,7 @@ export const RankingController = new Elysia({ prefix: '/ranking' })
         if (isNaN(limit) || limit < 1 || limit > 100) {
           set.status = 400;
           return {
-            error: 'Invalid limit parameter. Must be between 1 and 100.',
+            error: API_MESSAGES.ERRORS.INVALID_LIMIT,
           };
         }
 
@@ -70,14 +71,17 @@ export const RankingController = new Elysia({ prefix: '/ranking' })
         logger.error({ err }, '[RankingController] Error');
 
         // Gestion des erreurs d'authentification
-        if (err.status === 401 || err.message === 'Unauthorized') {
+        if (
+          err.status === 401 ||
+          err.message === API_MESSAGES.AUTH.UNAUTHORIZED_SHORT
+        ) {
           set.status = 401;
-          return { error: 'Unauthorized' };
+          return { error: API_MESSAGES.AUTH.UNAUTHORIZED_SHORT };
         }
 
         // Erreur interne
         set.status = 500;
-        return { error: 'Internal Server Error' };
+        return { error: API_MESSAGES.ERRORS.INTERNAL_ERROR_SHORT };
       }
     },
     {

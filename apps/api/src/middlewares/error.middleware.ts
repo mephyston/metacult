@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia';
-import { AppError } from '@metacult/shared-core';
+import { AppError, API_MESSAGES } from '@metacult/shared-core';
 import { logger } from '@metacult/backend/infrastructure';
 
 /**
@@ -34,7 +34,7 @@ export const errorMiddleware = new Elysia({ name: 'error-middleware' }).onError(
 
       return {
         code: 'VALIDATION_ERROR',
-        message: 'Validation failed',
+        message: API_MESSAGES.ERRORS.VALIDATION_FAILED,
         details: (error as any).all || error.message,
       };
     }
@@ -91,7 +91,7 @@ export const errorMiddleware = new Elysia({ name: 'error-middleware' }).onError(
 
       return {
         code: 'NOT_FOUND',
-        message: 'Route not found',
+        message: API_MESSAGES.ERRORS.ROUTE_NOT_FOUND,
       };
     }
 
@@ -115,7 +115,7 @@ export const errorMiddleware = new Elysia({ name: 'error-middleware' }).onError(
     // Don't leak error details in production
     return {
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'An internal server error occurred',
+      message: API_MESSAGES.ERRORS.INTERNAL_SERVER_ERROR,
     };
   },
 );

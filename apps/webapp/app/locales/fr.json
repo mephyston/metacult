@@ -1,0 +1,89 @@
+{
+  "dashboard": {
+    "welcome": "Bonjour {name}",
+    "subtitle": "Ton profil culturel est en construction.",
+    "stats": {
+      "radar": "{count} Swipes",
+      "arena": "{count} Duels",
+      "radarDescription": "Titres explorés depuis le début",
+      "arenaDescription": "Confrontations jouées dans l'arène"
+    },
+    "missions": {
+      "title": "Missions",
+      "radar": {
+        "title": "Lancer le Radar",
+        "description": "Trouve de nouveaux titres à noter et enrichis ton profil culturel.",
+        "cta": "📡 Découvrir maintenant"
+      },
+      "arena": {
+        "title": "Entrer dans l'Arène",
+        "description": "Classe tes favoris et fais monter leur score ELO en choisissant tes préférés.",
+        "cta": "⚔️ Combattre maintenant"
+      }
+    },
+    "trends": {
+      "title": "Tendances Communautaires",
+      "loading": "Chargement...",
+      "empty": "Aucune tendance disponible pour le moment",
+      "teaser": "✨ Tes recommandations personnalisées arrivent bientôt...",
+      "teaserSubtitle": "Continue à explorer pour affiner ton profil !"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "description": "Connecte-toi à ton compte Metacult",
+      "email": "Email",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "signup": "Pas encore inscrit ?",
+      "signupLink": "Créer un compte"
+    },
+    "register": {
+      "title": "Créer un compte",
+      "description": "Rejoignez Metacult et découvrez vos prochains favoris",
+      "name": "Pseudo",
+      "email": "Email",
+      "password": "Mot de passe",
+      "passwordHint": "Minimum 8 caractères",
+      "submit": "Créer mon compte",
+      "submitting": "Création...",
+      "login": "Déjà inscrit ?",
+      "loginLink": "Se connecter",
+      "errors": {
+        "allFields": "Veuillez remplir tous les champs",
+        "passwordLength": "Le mot de passe doit contenir au moins 8 caractères",
+        "generic": "Erreur lors de la création du compte"
+      }
+    }
+  },
+  "discover": {
+    "title": "Découverte",
+    "empty": "Plus de contenus à découvrir",
+    "emptyMessage": "Tu as tout exploré ! Reviens plus tard pour de nouveaux contenus.",
+    "refreshing": "Rechargement..."
+  },
+  "arena": {
+    "title": "Arène",
+    "vs": "VS",
+    "insufficientLikes": "Swipe plus de titres pour débloquer l'Arène !",
+    "voteRecorded": "Vote enregistré !"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour",
+    "explore": "Explorer",
+    "logout": "Déconnexion",
+    "openApp": "Ouvrir l'app",
+    "profile": "Profil",
+    "settings": "Paramètres"
+  }
+}

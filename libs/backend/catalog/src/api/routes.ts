@@ -5,7 +5,7 @@ import {
   NotFoundError,
   ConflictError,
   InfrastructureError,
-} from '@metacult/shared/core';
+} from '@metacult/shared-core';
 
 import {
   MediaNotFoundInProviderError,
