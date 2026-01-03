@@ -35,23 +35,31 @@ const isLoadingTrends = ref(true);
 
 // Fetch community trends
 const fetchTrends = async () => {
+  console.log(
+    '[Dashboard] Fetching trends from:',
+    `${apiUrl}/api/media/trends`,
+  );
   isLoadingTrends.value = true;
   try {
     const response = await fetch(`${apiUrl}/api/media/trends`, {
       credentials: 'include',
     });
 
+    console.log('[Dashboard] Response status:', response.status);
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('[Dashboard] Trends received:', data.length, 'items');
     trends.value = data.slice(0, 5); // Limit to 5 trends
   } catch (error) {
     console.error('[Dashboard] Failed to fetch trends:', error);
     trends.value = [];
   } finally {
     isLoadingTrends.value = false;
+    console.log('[Dashboard] Loading complete, trends:', trends.value.length);
   }
 };
 
@@ -64,6 +72,12 @@ const displayName = computed(() => {
 const formatElo = (score?: number) => {
   return score ? Math.round(score).toLocaleString() : 'N/A';
 };
+
+// --- Lifecycle ---
+onMounted(() => {
+  console.log('[Dashboard] Component mounted, fetching trends...');
+  fetchTrends();
+});
 </script>
 
 <template>
