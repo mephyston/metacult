@@ -80,6 +80,13 @@ export const API_MESSAGES = {
     GOOGLE_BOOKS_INVALID_AUTHORS:
       'Invalid field: volumeInfo.authors (expected array or null)',
   },
+  DOCS: {
+    DUEL: {
+      GET_PAIR_SUMMARY:
+        'Get a random pair of media for a duel (from user favorites)',
+      VOTE_SUMMARY: 'Vote for a winner in a duel',
+    },
+  },
 } as const;
 
 // Type for autocomplete

@@ -63,7 +63,7 @@ export const DuelController = new Elysia({ prefix: '/duel' })
     {
       detail: {
         tags: ['Duel'],
-        summary: 'Get a random pair of media for a duel (from user favorites)',
+        summary: API_MESSAGES.DOCS.DUEL.GET_PAIR_SUMMARY,
       },
     },
   )
@@ -88,7 +88,7 @@ export const DuelController = new Elysia({ prefix: '/duel' })
       }),
       detail: {
         tags: ['Duel'],
-        summary: 'Vote for a winner in a duel',
+        summary: API_MESSAGES.DOCS.DUEL.VOTE_SUMMARY,
       },
     },
   );
