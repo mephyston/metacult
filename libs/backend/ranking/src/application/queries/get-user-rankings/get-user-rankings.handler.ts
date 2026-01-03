@@ -158,7 +158,7 @@ export class GetUserRankingsHandler {
     );
 
     // Construire le résultat final
-    const intermediateResults = rankedEntries.map((entry, index) => {
+    const intermediateResults = rankedEntries.map((entry) => {
       const media = mediaMap.get(entry.mediaId);
       if (!media) {
         return null; // Média supprimé ou introuvable
@@ -170,13 +170,16 @@ export class GetUserRankingsHandler {
         coverUrl: media.coverUrl?.getValue() ?? null,
         type: media.type as string,
         score: entry.score,
-        rank: index + 1,
+        rank: 0, // Sera recalculé après le filtrage
       };
     });
 
-    const result: RankedMedia[] = intermediateResults.filter(
-      (item): item is RankedMedia => item !== null,
-    );
+    const result: RankedMedia[] = intermediateResults
+      .filter((item): item is RankedMedia => item !== null)
+      .map((item, index) => ({
+        ...item,
+        rank: index + 1, // Recalcul du rank après filtrage
+      }));
 
     return result;
   }
