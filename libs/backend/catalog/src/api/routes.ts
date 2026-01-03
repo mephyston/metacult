@@ -33,7 +33,10 @@ export const createCatalogRoutes = (controller: MediaController) => {
       }
       if (error instanceof MediaAlreadyExistsError) {
         set.status = 409;
-        return { message: error.message };
+        return {
+          message: error.message,
+          existingId: error.internalId,
+        };
       }
       console.error('[CatalogRoutes] Unhandled Error:', error);
       set.status = 500;

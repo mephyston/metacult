@@ -150,6 +150,18 @@ async function handleSelect(item: SearchResultItem) {
           // Fallback
           window.location.reload();
         }
+      } else if (res.status === 409) {
+        // Media already imported - navigate to existing media
+        console.log('[Search] Media already exists, navigating to it...');
+        const errorBody = await res.json().catch(() => ({}));
+        const targetId = errorBody.existingId || item.slug || item.id;
+        navigateToMedia(item.type, targetId);
+      } else {
+        console.error('[Search] Import failed with status:', res.status);
+        const error = await res
+          .json()
+          .catch(() => ({ message: 'Unknown error' }));
+        console.error('[Search] Error details:', error);
       }
     } catch (e) {
       console.error('Import failed', e);
@@ -161,7 +173,12 @@ async function handleSelect(item: SearchResultItem) {
 
 function navigateToMedia(type: string, idOrSlug: string) {
   open.value = false;
-  window.location.href = `/catalog/${type}/${idOrSlug}`;
+  let websiteUrl =
+    import.meta.env.PUBLIC_WEBSITE_URL || 'http://localhost:4444';
+  if (!websiteUrl.startsWith('http')) {
+    websiteUrl = `https://${websiteUrl}`;
+  }
+  window.location.href = `${websiteUrl}/catalog/${type}/${idOrSlug}`;
 }
 </script>
 
