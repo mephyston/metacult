@@ -42,7 +42,7 @@ export const startWorker = async () => {
     process.exit(0);
   });
 
-  console.log(
+  logger.info(
     `👷 Worker listening on queues: ${IMPORT_QUEUE_NAME}, ${RANKING_QUEUE_NAME}`,
   );
 };

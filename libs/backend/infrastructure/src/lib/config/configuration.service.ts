@@ -1,5 +1,6 @@
-import { Type, type Static, type TSchema } from '@sinclair/typebox';
+import { Type, type Static } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
+import { logger } from '../logger/logger.service';
 
 // 1. Définition du Schema Strict
 const EnvSchema = Type.Object({
@@ -60,12 +61,12 @@ export class ConfigurationService {
 
     if (!Value.Check(EnvSchema, convertedEnv)) {
       const errors = [...Value.Errors(EnvSchema, convertedEnv)];
-      console.error('❌ Invalid Configuration:', errors);
+      logger.error({ errors }, '❌ Invalid Configuration');
       process.exit(1);
     }
 
     this.config = convertedEnv;
-    console.log('✅ Configuration Loaded & Validated');
+    logger.info('✅ Configuration Loaded & Validated');
   }
 
   public static getInstance(): ConfigurationService {
