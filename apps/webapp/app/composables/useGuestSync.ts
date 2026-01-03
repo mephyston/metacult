@@ -47,6 +47,8 @@ export const useGuestSync = () => {
     }
   };
 
+  import { getApiUrl } from '@metacult/shared-ui';
+
   /**
    * À appeler après un succès de Login ou Register.
    * Envoie les données au backend.
@@ -67,8 +69,7 @@ export const useGuestSync = () => {
 
       const config = useRuntimeConfig();
       // On utilise l'URL API publique configurée
-      const apiUrl = config.public.apiUrl || 'http://localhost:3000';
-
+      const apiUrl = getApiUrl();
       // Sanitize payload:
       // 1. Remove timestamp/extra fields
       // 2. Allow any non-empty string as mediaId (Backend handles validation/foreign keys)

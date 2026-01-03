@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { SwipeDeck, Button } from '@metacult/shared-ui';
+import {
+  Input,
+  Button,
+  Card,
+  CardContent,
+  Badge,
+  SwipeDeck,
+  getApiUrl,
+} from '@metacult/shared-ui';
 import { useAuthSession } from '../composables/useAuthSession';
 
 // Get API URL from environment
-const apiUrl = import.meta.env.NUXT_PUBLIC_API_URL || 'http://localhost:3000';
+const apiUrl = getApiUrl();
 
 const { user } = useAuthSession();
 const isLoading = ref(false);

@@ -8,6 +8,7 @@ import {
   CardContent,
   Button,
   Badge,
+  getApiUrl,
 } from '@metacult/shared-ui';
 import {
   Eye,
@@ -21,7 +22,8 @@ import { useAuthSession } from '../composables/useAuthSession';
 
 // --- Auth & User Data ---
 const { user } = useAuthSession();
-const apiUrl = import.meta.env.NUXT_PUBLIC_API_URL || 'http://localhost:3000';
+// Use shared robust logic (Split Horizon + Domain Inference)
+const apiUrl = getApiUrl();
 const websiteUrl =
   import.meta.env.NUXT_PUBLIC_WEBSITE_URL || 'http://localhost:4444';
 
