@@ -181,6 +181,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HUSKY: 0
         run: |
+          # ⚠️ Disable Husky hooks by removing the directory
+          # This prevents tests/lint-staged from running in this job (missing env vars)
+          rm -rf .husky
+
           if [ "${{ inputs.preid }}" == "none" ]; then
              bun run nx release ${{ inputs.releaseType }} --skip-publish
           else
