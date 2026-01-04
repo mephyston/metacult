@@ -1,3 +1,14 @@
+## 0.5.0 (2026-01-04)
+
+### 🩹 Fixes
+
+- **ci:** fix railway variables set command syntax ([f40b8db](https://github.com/mephyston/metacult/commit/f40b8db))
+- **ci:** quote job name to fix github actions display ([c2a720a](https://github.com/mephyston/metacult/commit/c2a720a))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.4.0 (2026-01-04)
 
 ### 🚀 Features
