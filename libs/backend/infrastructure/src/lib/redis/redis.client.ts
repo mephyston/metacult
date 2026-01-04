@@ -12,7 +12,7 @@ logger.info('[Redis] Initializing client for Cache');
  * Utilisé pour le Cache et BullMQ.
  */
 export const redisClient = new Redis(redisUrl, {
-  family: 4,
+  // family: 4, // REMOVED: Railway Private Network uses IPv6 for .internal domains
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   retryStrategy(times) {
@@ -23,8 +23,8 @@ export const redisClient = new Redis(redisUrl, {
 });
 
 redisClient.on('error', (err) => {
-  // Silent error logs in test/staging to avoid noise if redis flaps
-  if (configService.isProduction) {
+  // Log detailed error in Staging/Prod to diagnose connection issues
+  if (!configService.isTest) {
     logger.error({ err }, '[Redis] Client error');
   }
 });
