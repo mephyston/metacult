@@ -231,4 +231,5 @@ const server = Bun.serve({
 });
 
 logger.info({ port, hostname: server.hostname }, `✅ Elysia API running`);
+logger.info(`✨ Production Build Triggered`);
 logger.info(`📖 Swagger: http://localhost:${port}/swagger`);
