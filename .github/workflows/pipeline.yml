@@ -181,9 +181,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ inputs.preid }}" == "none" ]; then
-             bun run nx release --type=${{ inputs.releaseType }} --skip-publish
+             bun run nx release ${{ inputs.releaseType }} --skip-publish
           else
-             bun run nx release --type=${{ inputs.releaseType }} --preid=${{ inputs.preid }} --skip-publish
+             bun run nx release ${{ inputs.releaseType }} --preid=${{ inputs.preid }} --skip-publish
           fi
 
       - name: Get Released Version
