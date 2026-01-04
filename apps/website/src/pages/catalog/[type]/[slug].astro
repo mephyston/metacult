@@ -17,8 +17,8 @@ let media = null;
 let error = null;
 
 try {
-  // TODO: Use env var for API URL
-  const baseUrl = 'http://localhost:3000'; 
+  // Use shared helper to resolve API URL contextually (Network Internal vs Public)
+  const baseUrl = getApiUrl(); 
   // API supports both ID and Slug
   const res = await fetch(`${baseUrl}/api/media/${slug}`);
   
