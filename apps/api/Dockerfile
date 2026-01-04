@@ -4,7 +4,7 @@ FROM oven/bun:1-alpine AS runner
 WORKDIR /app
 
 # 1. Copy essential configuration files (Monorepo structure)
-COPY package.json bun.lockb nx.json tsconfig.base.json ./
+COPY package.json bun.lock nx.json tsconfig.base.json ./
 
 # 2. Copy workspace configurations (to ensure bun install works for workspace deps)
 COPY apps/api/package.json ./apps/api/
