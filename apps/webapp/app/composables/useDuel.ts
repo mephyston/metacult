@@ -60,6 +60,7 @@ export const useDuel = () => {
             // Explicitly ask for JSON just in case
             Accept: 'application/json',
           },
+          credentials: 'include', // Necessary for Cross-Origin cookies (Webapp -> API)
         },
       );
 
@@ -121,6 +122,7 @@ export const useDuel = () => {
         winnerId,
         loserId,
       },
+      credentials: 'include',
     }).catch((err) => {
       logger.error('[useDuel] Vote failed in background:', err);
       // On pourrait toaster une erreur ici si critique
