@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { API_MESSAGES, DUEL_STATUS } from '@metacult/shared-core';
 import { useLogger } from './useLogger';
+import { useApiUrl } from './useApiUrl';
 
 /**
  * Interface simplifiée pour le frontend.
@@ -43,18 +44,24 @@ export const useDuel = () => {
    */
   const fetchPair = async () => {
     const logger = useLogger();
+    // Bypass Nuxt Proxy to avoid 502 in Staging (Docker Networking)
+    // We construct the full URL client-side (or server-side split horizon)
+    const apiUrl = useApiUrl();
     loading.value = true;
     error.value = null;
     isEmpty.value = false;
 
     try {
-      // On utilise $fetch qui gère automatiquement le baseURL via proxy ou config Nuxt
-      const response = await $fetch<DuelMedia[] | DuelResponse>('/api/duel', {
-        headers: {
-          // Explicitly ask for JSON just in case
-          Accept: 'application/json',
+      // On utilise $fetch avec l'URL complète pour éviter le proxy Nuxt défaillant
+      const response = await $fetch<DuelMedia[] | DuelResponse>(
+        `${apiUrl}/api/duel`,
+        {
+          headers: {
+            // Explicitly ask for JSON just in case
+            Accept: 'application/json',
+          },
         },
-      });
+      );
 
       // Vérification du cas "Insufficient Likes" (Structure { data: [], meta: ... })
       // On check si la réponse a une propriété 'meta'
@@ -107,7 +114,8 @@ export const useDuel = () => {
     const loserId = loser.id;
 
     // Fire and forget pour l'UI, mais on catche les erreurs en background si besoin
-    $fetch('/api/duel/vote', {
+    const apiUrl = useApiUrl();
+    $fetch(`${apiUrl}/api/duel/vote`, {
       method: 'POST',
       body: {
         winnerId,

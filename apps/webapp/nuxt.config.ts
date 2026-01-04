@@ -82,7 +82,11 @@ export default {
       },
     },
     routeRules: {
-      '/api/**': { proxy: 'http://localhost:3000/api/**' },
+      '/api/**': {
+        proxy: process.env.INTERNAL_API_URL
+          ? `${process.env.INTERNAL_API_URL}/api/**`
+          : 'http://localhost:3000/api/**',
+      },
     },
   },
   googleFonts: {
