@@ -131,7 +131,19 @@ jobs:
         # Using 'redeploy' to trigger a pull of the new image from GHCR
         # Service name is just the app name (lowercase)
         # Note: Environment is determined by RAILWAY_TOKEN (staging token = staging env)
-        run: railway redeploy --service ${{ matrix.app }} --yes
+        run: |
+          n=0
+          until [ "$n" -ge 3 ]
+          do
+             railway redeploy --service ${{ matrix.app }} --yes && break
+             n=$((n+1))
+             echo "⚠️ Deploy failed. Retrying in 10s ($n/3)..."
+             sleep 10
+          done
+          if [ "$n" -ge 3 ]; then
+            echo "❌ Failed to deploy after 3 attempts."
+            exit 1
+          fi
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
 
@@ -249,6 +261,25 @@ jobs:
 
           echo "✅ All images promoted successfully. Starting deployment..."
 
+          # Retry helper function
+          function retry_cmd {
+            local n=1
+            local max=3
+            local delay=10
+            while true; do
+              "$@" && break || {
+                if [[ $n -lt $max ]]; then
+                  ((n++))
+                  echo "⚠️ Command failed. Retrying in ${delay}s ($n/$max)..."
+                  sleep $delay;
+                else
+                  echo "❌ Command failed after $n attempts."
+                  return 1
+                fi
+              }
+            done
+          }
+
           # 2. DEPLOYMENT PHASE
           # Only runs if all promotions succeeded.
           for APP in "${APPS[@]}"; do
@@ -256,11 +287,11 @@ jobs:
             echo "💉 Injecting Version $VERSION into Railway ($APP)..."
 
             # On injecte la version. Railway redémarrera automatiquement le service.
-            railway variables --set "APP_VERSION=$VERSION" --service $APP --environment production
+            retry_cmd railway variables --set "APP_VERSION=$VERSION" --service $APP --environment production
 
             # Cas spécifique Nuxt pour le frontend
             if [ "$APP" == "webapp" ]; then
-                railway variables --set "NUXT_PUBLIC_APP_VERSION=$VERSION" --service $APP --environment production
+                retry_cmd railway variables --set "NUXT_PUBLIC_APP_VERSION=$VERSION" --service $APP --environment production
             fi
           done
 
