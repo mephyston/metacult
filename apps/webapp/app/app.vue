@@ -41,7 +41,7 @@ const sha = (config.public as any).commitSha || 'local';
 const appVer = (config.public as any).appVersion;
 
 // If appVersion is present (Production), use it. Otherwise 'Dev'.
-const displayVersion = appVer ? `${appVer}` : 'Dev';
+const displayVersion = appVer ? `${appVer}` : 'vDev';
 const displayCommit = `#${sha.substring(0, 7)}`;
 </script>
 
