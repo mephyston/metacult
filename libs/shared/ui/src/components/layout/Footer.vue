@@ -10,6 +10,11 @@ import { Facebook, Instagram, Twitter, Youtube } from 'lucide-vue-next';
 // OR simpler: just define it inline given I can't wait.
 // Actually, I can just use a Tailwind div separator.
 const currentYear = ref(new Date().getFullYear());
+
+defineProps<{
+  version?: string;
+  commit?: string;
+}>();
 </script>
 
 <template>
@@ -123,6 +128,12 @@ const currentYear = ref(new Date().getFullYear());
         &copy; {{ currentYear }}
         <a href="#" class="hover:underline">Metacult</a>, Made with ❤️ for
         better culture.
+        <span v-if="version" class="ml-2 text-xs text-muted-foreground"
+          >v{{ version }}</span
+        >
+        <span v-if="commit" class="ml-1 text-xs text-muted-foreground"
+          >({{ commit?.substring(0, 7) }})</span
+        >
       </p>
     </div>
   </footer>

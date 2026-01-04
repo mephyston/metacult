@@ -3,6 +3,7 @@ import { Header, Footer, Search } from '@metacult/shared-ui';
 import { useAuthSession } from './composables/useAuthSession';
 import { useGuestSync } from './composables/useGuestSync';
 import { useWebsiteUrl } from './composables/useApiUrl';
+import pkg from '../package.json';
 
 // @ts-ignore - Nuxt i18n auto-import
 const { t } = useI18n();
@@ -32,6 +33,9 @@ const handleLogout = async () => {
   const websiteUrl = useWebsiteUrl();
   window.location.href = websiteUrl;
 };
+
+const config = useRuntimeConfig();
+const commitSha = (config.public as any).commitSha || 'dev';
 </script>
 
 <template>
@@ -50,6 +54,6 @@ const handleLogout = async () => {
       <NuxtPage :keepalive="{ max: 10 }" />
     </main>
 
-    <Footer />
+    <Footer :version="pkg.version" :commit="commitSha" />
   </div>
 </template>

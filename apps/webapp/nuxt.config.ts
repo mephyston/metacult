@@ -45,6 +45,8 @@ export default {
       authUrl: '', // Surchargé par NUXT_PUBLIC_AUTH_URL
       authCookiePrefix: 'metacult', // Surchargé par NUXT_PUBLIC_AUTH_COOKIE_PREFIX
       websiteUrl: '', // Surchargé par NUXT_PUBLIC_WEBSITE_URL
+      commitSha:
+        process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || '',
     },
   },
   typescript: {

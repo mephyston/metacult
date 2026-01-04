@@ -1,5 +1,5 @@
 # --- Stage 1: Builder ---
-FROM oven/bun:1-alpine AS builder
+FROM oven/bun:1 AS builder
 
 WORKDIR /app
 
@@ -29,11 +29,13 @@ COPY . .
 # This generates dist/
 # Use direct astro build to avoid Nx graph construction issues in Docker
 WORKDIR /app/apps/website
+ARG GIT_COMMIT_SHA
+ENV GIT_COMMIT_SHA=$GIT_COMMIT_SHA
 RUN bun run build
 WORKDIR /app
 
 # --- Stage 2: Runner ---
-FROM oven/bun:1-alpine AS runner
+FROM oven/bun:1 AS runner
 
 WORKDIR /app
 
@@ -41,6 +43,8 @@ WORKDIR /app
 COPY --from=builder /app/apps/website/dist ./dist
 
 # 2. Environment Setup
+ARG GIT_COMMIT_SHA
+ENV GIT_COMMIT_SHA=$GIT_COMMIT_SHA
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=4321
