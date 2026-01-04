@@ -1,3 +1,13 @@
+## 0.6.6 (2026-01-04)
+
+### 🩹 Fixes
+
+- **api:** bind to :: for ipv6 support in railway private network ([fdc18e4](https://github.com/mephyston/metacult/commit/fdc18e4))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.6.5 (2026-01-04)
 
 This was a version bump only, there were no code changes.
