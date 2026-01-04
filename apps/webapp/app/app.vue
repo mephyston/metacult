@@ -40,6 +40,15 @@ const config = useRuntimeConfig();
 const sha = (config.public as any).commitSha || 'local';
 const appVer = (config.public as any).appVersion;
 
+// Inject window.__ENV__ for shared-ui utilities (Header, etc.)
+if (import.meta.client) {
+  window.__ENV__ = {
+    PUBLIC_WEBAPP_URL: (config.public as any).webappUrl,
+    PUBLIC_WEBSITE_URL: (config.public as any).websiteUrl,
+    PUBLIC_API_URL: (config.public as any).apiUrl,
+  };
+}
+
 // If appVersion is present (Production), use it. Otherwise 'Dev'.
 const displayVersion = appVer ? `${appVer}` : 'vDev';
 const displayCommit = `#${sha.substring(0, 7)}`;
