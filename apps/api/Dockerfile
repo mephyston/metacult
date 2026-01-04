@@ -33,5 +33,5 @@ COPY libs ./libs
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Fix for "Elysia not found" or path issues: We run from root with absolute path
-CMD ["bun", "/app/apps/api/src/index.ts"]
+# API entrypoint is at root: apps/api/index.ts
+CMD ["bun", "/app/apps/api/index.ts"]
