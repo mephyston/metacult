@@ -54,7 +54,11 @@ export class ConfigurationService {
 
   private constructor() {
     // 2. Validation Fail-Fast au démarrage
-    const rawEnv = process.env;
+    const rawEnv = { ...process.env };
+    // Railway provides PORT, map it to API_PORT if not explicit
+    if (!rawEnv.API_PORT && rawEnv.PORT) {
+      rawEnv.API_PORT = rawEnv.PORT;
+    }
 
     // Apply defaults and convert types
     const withDefaults = Value.Default(EnvSchema, { ...rawEnv });
