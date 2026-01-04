@@ -29,6 +29,8 @@ COPY . .
 # This generates dist/
 # Use direct astro build to avoid Nx graph construction issues in Docker
 WORKDIR /app/apps/website
+ARG GIT_COMMIT_SHA
+ENV GIT_COMMIT_SHA=$GIT_COMMIT_SHA
 RUN bun run build
 WORKDIR /app
 

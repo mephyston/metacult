@@ -43,6 +43,7 @@ COPY --from=builder /app/apps/webapp/.output ./.output
 # 2. Environment Setup
 ARG GIT_COMMIT_SHA
 ENV GIT_COMMIT_SHA=$GIT_COMMIT_SHA
+ENV NUXT_PUBLIC_COMMIT_SHA=$GIT_COMMIT_SHA
 ENV NODE_ENV=production
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
