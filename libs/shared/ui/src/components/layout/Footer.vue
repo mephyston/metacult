@@ -128,9 +128,9 @@ defineProps<{
         &copy; {{ currentYear }}
         <a href="#" class="hover:underline">Metacult</a>, Made with ❤️ for
         better culture.
-        <span v-if="version" class="ml-2 text-xs text-muted-foreground"
-          >v{{ version }}</span
-        >
+        <span v-if="version" class="ml-2 text-xs text-muted-foreground">{{
+          version
+        }}</span>
         <span v-if="commit" class="ml-1 text-xs text-muted-foreground"
           >({{ commit?.substring(0, 7) }})</span
         >
