@@ -20,9 +20,9 @@ export default {
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'fr',
-    locales: [{ code: 'fr', file: 'app/locales/fr.json' }], // Chemin complet depuis racine projet (pas de langDir avec srcDir)
+    locales: [{ code: 'fr', file: 'fr.json' }],
     lazy: true,
-    // langDir supprimé : bug @nuxtjs/i18n avec srcDir, chemins absolus ne fonctionnent pas en production
+    langDir: fileURLToPath(new URL('./app/locales', import.meta.url)), // Chemin absolu pour éviter le préfixe i18n/
   },
   app: {
     // google-fonts handles the font links now
