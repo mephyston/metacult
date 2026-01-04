@@ -47,4 +47,24 @@ describe('GetMixedFeedHandler', () => {
         expect(mockAdsProvider.getAds).toHaveBeenCalled();
         expect(mockRedis.set).toHaveBeenCalled();
     });
+
+    it('should pass filters to media searcher', async () => {
+        const mockRedis = { get: mock(() => null), set: mock(() => 'OK') } as any;
+        const mockSearcher = { search: mock(() => Promise.resolve([])) } as any;
+        const mockAds = { getAds: mock(() => []) } as any;
+
+        const handler = new GetMixedFeedHandler(mockRedis, mockSearcher, mockAds);
+        const query = new GetMixedFeedQuery('action', 'user-1', ['ex-1'], 15);
+
+        await handler.execute(query);
+
+        expect(mockSearcher.search).toHaveBeenCalledWith('action', {
+            excludedIds: ['ex-1'],
+            limit: 15,
+            orderBy: undefined // 'action' is present, so not random default (unless search logic inside handler changes)
+        });
+
+        // Cache should be bypassed for user
+        expect(mockRedis.get).not.toHaveBeenCalled();
+    });
 });

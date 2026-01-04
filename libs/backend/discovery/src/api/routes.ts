@@ -9,10 +9,4 @@ import { FeedController } from './http/controllers/feed.controller';
  * @returns {Elysia} Routeur configuré.
  */
 export const createDiscoveryRoutes = (feedController: FeedController) => new Elysia({ prefix: '/discovery' })
-    .get('/feed', ({ query }) => {
-        return feedController.getMixedFeed({ q: query.q });
-    }, {
-        query: t.Object({
-            q: t.Optional(t.String({ maxLength: 100 }))
-        })
-    });
+    .use(feedController.routes());

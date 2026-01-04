@@ -9,5 +9,5 @@ export interface IMediaSearcher {
      * @param {string} query - Terme de recherche.
      * @returns {Promise<any[]>} Liste de médias (typage faible 'any' temporaire, à remplacer par un DTO).
      */
-    search(query: string): Promise<any[]>;
+    search(query: string, options?: { excludedIds?: string[], limit?: number, orderBy?: 'random' }): Promise<any[]>;
 }

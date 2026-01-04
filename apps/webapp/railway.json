@@ -12,6 +12,7 @@
         ]
     },
     "deploy": {
+        "startCommand": "bun .output/server/index.mjs",
         "restartPolicyType": "ON_FAILURE"
     }
 }

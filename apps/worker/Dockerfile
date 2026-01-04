@@ -1,28 +1,39 @@
-FROM oven/bun:1-alpine AS base
-WORKDIR /usr/src/app
+# Base image optimized for Bun
+FROM oven/bun:1-alpine AS runner
 
-# Install dependencies (using cache)
-FROM base AS install
-COPY package.json bun.lock ./
-COPY apps/worker/package.json ./apps/worker/package.json
-RUN bun install
+WORKDIR /app
 
-# Build stage (Optimized cache)
-FROM base AS build
-COPY --from=install /usr/src/app/node_modules ./node_modules
-# ✅ Copy source code AFTER dependencies
-COPY . .
+# 1. Copy essential configuration files (Monorepo structure)
+COPY package.json bun.lock bunfig.toml nx.json tsconfig.base.json tsconfig.json* ./
 
-# Run Tests during build
-RUN bun test apps/worker
+# 2. Copy workspace configurations (to ensure bun install works for workspace deps)
+COPY apps/api/package.json ./apps/api/
+COPY apps/webapp/package.json ./apps/webapp/
+COPY apps/website/package.json ./apps/website/
+COPY apps/worker/package.json ./apps/worker/
 
-# Final image
-FROM base AS release
-COPY --from=install /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app .
+# libs/backend/ranking has no package.json yet
+COPY libs/shared/core/package.json ./libs/shared/core/
+COPY libs/shared/ui/package.json ./libs/shared/ui/
 
-# Run the worker
+# Copy E2E package.json as it is a workspace in bun.lock
+COPY apps/e2e/package.json ./apps/e2e/
+
+# 3. Install ALL dependencies (including devDependencies)
+# Required in monorepo: internal libs are referenced as workspace dependencies
+# and are not included in production deps. Bun needs them to resolve path aliases.
+# --ignore-scripts prevents husky/prepare scripts from running
+RUN bun install --frozen-lockfile --ignore-scripts
+
+# 4. Copy Source Code
+COPY apps/worker ./apps/worker
+# We need libs because backend code relies on them
+COPY libs ./libs
+
+# 5. Set Environment and Start
 ENV NODE_ENV=production
-USER bun
-ENTRYPOINT []
-CMD [ "bun", "apps/worker/src/index.ts" ]
+# Worker doesn't expose a port usually, but if it does:
+# ENV PORT=3000 
+
+# Worker entrypoint is in src/: apps/worker/src/index.ts
+CMD ["bun", "/app/apps/worker/src/index.ts"]

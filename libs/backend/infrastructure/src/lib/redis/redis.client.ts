@@ -1,8 +1,10 @@
 import Redis from 'ioredis';
+import { configService } from '../config/configuration.service';
+import { logger } from '../logger/logger.service';
 
-const redisUrl = process.env['REDIS_URL'] || 'redis://localhost:6379';
+const redisUrl = configService.get('REDIS_URL');
 
-console.log(`🔌 Initialisation du client Redis pour le Cache...`);
+logger.info('[Redis] Initializing client for Cache');
 
 /**
  * Client Redis Singleton (IoRedis).
@@ -10,25 +12,24 @@ console.log(`🔌 Initialisation du client Redis pour le Cache...`);
  * Utilisé pour le Cache et BullMQ.
  */
 export const redisClient = new Redis(redisUrl, {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false,
-    retryStrategy(times) {
-        // Exponential backoff with max 2s delay
-        const delay = Math.min(times * 50, 2000);
-        return delay;
-    },
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  retryStrategy(times) {
+    // Exponential backoff with max 2s delay
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  },
 });
 
 redisClient.on('error', (err) => {
-    // Silent error logs in production might be preferred to avoid noise if redis flaps, 
-    // but for now we log errors to be aware.
-    if (process.env.NODE_ENV !== 'test') {
-        console.error('❌ Erreur Client Redis :', err.message);
-    }
+  // Silent error logs in test/staging to avoid noise if redis flaps
+  if (configService.isProduction) {
+    logger.error({ err }, '[Redis] Client error');
+  }
 });
 
 redisClient.on('connect', () => {
-    if (process.env.NODE_ENV !== 'test') {
-        console.log('✅ Client Redis connecté');
-    }
+  if (!configService.isStaging) {
+    logger.info('[Redis] Client connected');
+  }
 });

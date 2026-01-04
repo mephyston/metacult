@@ -32,42 +32,31 @@
     }
   ],
   "release": {
-    "projects": [
-      "tag:type:app",
-      "tag:type:ui"
-    ],
-    "projectsRelationship": "fixed",
+    "projects": ["apps/api", "apps/webapp", "apps/website", "apps/worker"],
     "version": {
+      "generator": "@nx/js:release-version",
       "generatorOptions": {
         "currentVersionResolver": "git-tag",
         "specifierSource": "conventional-commits"
+      },
+      "git": {
+        "commit": true,
+        "tag": true
       }
     },
     "changelog": {
       "workspaceChangelog": {
-        "createReleaseAt": "github",
+        "createRelease": "github",
         "file": "CHANGELOG.md"
       },
-      "projectChangelogs": false,
-      "automaticFromRef": true
-    },
-    "git": {
-      "commit": true,
-      "commitMessage": "chore(release): {version}",
-      "tag": true,
-      "stageChanges": true
+      "automaticFromCommits": true
     }
   },
   "targetDefaults": {
     "@nx/js:tsc": {
       "cache": true,
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "default",
-        "^default"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^default"]
     }
   }
 }

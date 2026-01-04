@@ -25,11 +25,12 @@ export default defineConfig({
         domains: ['images.unsplash.com', 'images.igdb.com', 'image.tmdb.org'],
     },
     vite: {
+        envDir: path.resolve(__dirname, '../..'), // Charge .env depuis la racine du monorepo
         plugins: [nxViteTsPaths(), tailwindcss()],
         ssr: {
             noExternal: isProduction
-                ? ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'vue', '@astrojs/vue']
-                : ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next'],
+                ? ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'vue', '@astrojs/vue', 'better-auth', '@vueuse/core']
+                : ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'better-auth', '@vueuse/core'],
         },
         optimizeDeps: {
             include: ['vue', 'radix-vue', 'lucide-vue-next', 'class-variance-authority', 'clsx', 'tailwind-merge'],
@@ -47,3 +48,4 @@ export default defineConfig({
         host: true
     },
 });
+// Trigger deploy: 2026-01-03-force-rebuild-website-hero-fix

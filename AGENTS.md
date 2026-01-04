@@ -278,3 +278,165 @@ Before writing, editing, or generating ANY code:
 * [Créer un Bounded Context DDD](.packmind/recipes/creer-un-bounded-context-ddd.md): Recipe pour créer un nouveau Bounded Context backend respectant DDD et Clean Architecture avec structure complète (domain, application, infrastructure, api)."}, {"name": "Ajouter tsconfig paths", "description": "Ajouter alias dans `tsconfig.base.json` paths : `@metacult/backend-<nom>`: [`libs/backend/<nom>/src/index.ts`]"}, {"name": "Créer les tests", "description": "Créer fichiers `.spec.ts` adjacents aux handlers et services avec tests unitaires. Mocker les repositories et providers."}, {"name": "Générer migration Drizzle", "description": "Exécuter `bun db:generate` pour générer migration SQL depuis schema. Vérifier fichier dans `libs/backend/infrastructure/drizzle/`."}, {"name": "Documenter dans AGENTS.md", "description": "Ajouter section dans AGENTS.md décrivant le nouveau Bounded Context, son rôle, ses dépendances et son API publique."}]
 * [Créer une nouvelle App déployable](.packmind/recipes/creer-une-nouvelle-app-deployable.md): Recipe pour cr\u00e9er une nouvelle application d\u00e9ployable (API, frontend, worker) avec Dockerfile, Railway config et int\u00e9gration monorepo NX."}, {"name": "Ajouter scripts package.json", "description": "Ajouter scripts dans `apps/<nom>/package.json` : `dev`, `build`, `start`, `test` avec commandes Bun appropri\u00e9es."}, {"name": "Configurer CORS si API", "description": "Si app backend, installer @elysiajs/cors et configurer origins autoris\u00e9es dans index.ts."}, {"name": "Ajouter tests e2e", "description": "Cr\u00e9er `apps/<nom>/src/index.test.ts` avec tests end-to-end pour routes principales ou pages critiques."}, {"name": "Configurer CI/CD", "description": "V\u00e9rifier que railway.json watchPatterns inclut tous les dossiers pertinents pour trigger rebuild automatique."}]
 <!-- end: Packmind recipes -->
+---
+
+# 🏗️ Architecture Globale
+
+## Configuration & Environment Variables (2025)
+
+### 📋 Vue d'Ensemble
+
+**Objectif :** Configuration centralisée, type-safe, validée au démarrage avec TypeBox.  
+**Principe :** Aucune logique conditionnelle hardcodée (NODE_ENV, hostname, etc.) pour les URLs.  
+**Runtime Config :** Injection au lancement Docker (pas de rebuild nécessaire).
+
+### 🔧 Backend - ConfigurationService
+
+**Fichier :** `libs/backend/infrastructure/src/lib/config/configuration.service.ts`
+
+```
+┌─────────────────────────────────────────────────────┐
+│         ConfigurationService (Singleton)            │
+│                                                     │
+│  ┌──────────────────────────────────────────┐     │
+│  │  TypeBox Schema Validation (Fail-Fast)   │     │
+│  │  - DATABASE_URL (uri)                    │     │
+│  │  - REDIS_URL (uri)                       │     │
+│  │  - JWT_SECRET (min 32 chars)             │     │
+│  │  - BETTER_AUTH_SECRET                    │     │
+│  │  - BETTER_AUTH_URL (uri)                 │     │
+│  │  - GOOGLE_CLIENT_ID                      │     │
+│  │  - PUBLIC_API_URL (uri)                  │     │
+│  │  - INTERNAL_API_URL (optional)           │     │
+│  │  - NODE_ENV (dev|staging|prod)           │     │
+│  │  - ... et 15+ autres variables           │     │
+│  └──────────────────────────────────────────┘     │
+│                                                     │
+│  API: configService.get<K>(key: K): EnvType[K]    │
+│  Helpers: .isProduction, .isDevelopment, .isStaging│
+└─────────────────────────────────────────────────────┘
+         ▲                    ▲                    ▲
+         │                    │                    │
+    ┌────┴────┐         ┌─────┴─────┐       ┌─────┴─────┐
+    │ DB      │         │ Redis     │       │ BetterAuth│
+    │ Client  │         │ Client    │       │ Service   │
+    └─────────┘         └───────────┘       └───────────┘
+```
+
+**Avantages :**
+- ✅ Type-Safe : Auto-complétion TypeScript
+- ✅ Fail-Fast : Erreur explicite au démarrage si config invalide
+- ✅ Single Source of Truth : Un seul endroit pour lire la config
+- ✅ Testable : Facile à mocker en tests
+
+**Exemples d'utilisation :**
+```typescript
+// ❌ AVANT (éparpillé, non validé)
+const dbUrl = process.env.DATABASE_URL || 'fallback';
+
+// ✅ APRÈS (centralisé, validé, type-safe)
+const dbUrl = configService.get('DATABASE_URL');
+```
+
+---
+
+### 🌐 Frontend - Split Horizon URLs
+
+**Concept :** Différencier les URLs selon le contexte d'exécution.
+
+```
+┌────────────────────────────────────────────────────┐
+│              Split Horizon Architecture            │
+└────────────────────────────────────────────────────┘
+
+  Server-Side (SSR/SSG)          Client-Side (Browser)
+  ┌──────────────────┐           ┌──────────────────┐
+  │ INTERNAL_API_URL │           │ PUBLIC_API_URL   │
+  │ (Railway Private)│           │ (Public Internet)│
+  └──────────────────┘           └──────────────────┘
+         │                               │
+         ▼                               ▼
+  http://api.railway.internal     https://api.metacult.app
+  (Pas de latence DNS/SSL)        (Accessible par users)
+```
+
+**Nuxt :**
+```typescript
+// apps/webapp/app/composables/useApiUrl.ts
+export const useApiUrl = () => {
+  const config = useRuntimeConfig();
+  
+  if (import.meta.server) {
+    // SSR : Réseau privé Railway
+    return config.internalApiUrl || config.public.apiUrl;
+  }
+  
+  // Browser : Réseau public
+  return config.public.apiUrl;
+};
+```
+
+**Astro :**
+```typescript
+// apps/website/src/utils/get-api-url.ts
+export function getApiUrl(): string {
+  if (import.meta.env.SSR) {
+    return import.meta.env.INTERNAL_API_URL || 
+           import.meta.env.PUBLIC_API_URL;
+  }
+  return import.meta.env.PUBLIC_API_URL;
+}
+```
+
+---
+
+### 📦 Variables d'Environnement par App
+
+#### Backend API
+```bash
+# Infrastructure
+PORT=3000
+DATABASE_URL=postgresql://...
+REDIS_URL=redis://...
+
+# Auth
+BETTER_AUTH_SECRET=...
+BETTER_AUTH_URL=https://api.metacult.app
+AUTH_COOKIE_PREFIX=metacult
+ROOT_DOMAIN=.metacult.app
+
+# OAuth
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+
+# URLs
+PUBLIC_API_URL=https://api.metacult.app
+INTERNAL_API_URL=http://api.railway.internal:3000
+
+# Env
+NODE_ENV=production  # ou staging, development
+```
+
+#### Frontend Nuxt
+```bash
+NUXT_PUBLIC_API_URL=https://api.metacult.app
+NUXT_INTERNAL_API_URL=http://api.railway.internal:3000
+NUXT_PUBLIC_WEBSITE_URL=https://www.metacult.app
+```
+
+#### Frontend Astro
+```bash
+PUBLIC_API_URL=https://api.metacult.app
+INTERNAL_API_URL=http://api.railway.internal:3000
+PUBLIC_WEBSITE_URL=https://www.metacult.app
+```
+
+---
+
+### 📚 Documentation Complète
+
+- **Guide Complet :** [docs/refacto-config-2025.md](./docs/refacto-config-2025.md)
+- **Guide Migration :** [docs/MIGRATION-CONFIG-2025.md](./docs/MIGRATION-CONFIG-2025.md)
+- **Exemple Config :** [.env.example](./.env.example)
+
+---

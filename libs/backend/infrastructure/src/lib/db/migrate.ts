@@ -1,5 +1,6 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { getDbConnection } from './client';
+import { logger } from '../logger/logger.service';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,35 +13,44 @@ const RETRY_DELAY_MS = 2000;
  * En cas de succès, le process se termine avec exit(0) (Job d'init).
  */
 async function runMigrations() {
-    console.log('📦 Exécution des Migrations Base de Données...');
+  logger.info('📦 Exécution des Migrations Base de Données...');
 
-    // Use absolute path resolution relative to this file to avoid CWD issues
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const migrationsFolder = path.resolve(__dirname, '../../../drizzle');
+  // Use absolute path resolution relative to this file to avoid CWD issues
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  // Allow overriding via ENV (for Docker), otherwise use relative dev path
+  const migrationsFolder =
+    process.env.MIGRATIONS_FOLDER ||
+    path.resolve(__dirname, '../../../drizzle');
 
-    for (let i = 1; i <= MAX_RETRIES; i++) {
-        try {
-            // console.log(`🔌 Connexion à la DB (Tentative ${i}/${MAX_RETRIES})...`);
-            const { db } = getDbConnection();
+  for (let i = 1; i <= MAX_RETRIES; i++) {
+    try {
+      // console.log(`🔌 Connexion à la DB (Tentative ${i}/${MAX_RETRIES})...`);
+      const { db } = getDbConnection();
 
-            // Test connection first
-            await db.execute('SELECT 1');
+      // Test connection first
+      await db.execute('SELECT 1');
 
-            await migrate(db, { migrationsFolder });
+      await migrate(db, { migrationsFolder });
 
-            console.log('✅ Migrations DB à jour.');
-            return;
-        } catch (error: any) {
-            console.error(`❌ Échec tentative de migration ${i} :`, error.message);
-            if (i < MAX_RETRIES) {
-                // console.log(`⏳ Nouvel essai dans ${RETRY_DELAY_MS / 1000}s...`);
-                await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
-            } else {
-                console.error('💥 Toutes les tentatives de migration ont échoué. Arrêt.');
-                process.exit(1);
-            }
-        }
+      logger.info('✅ Migrations DB à jour.');
+      return;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error(
+        { attempt: i, message },
+        `❌ Échec tentative de migration ${i}`,
+      );
+      if (i < MAX_RETRIES) {
+        // console.log(`⏳ Nouvel essai dans ${RETRY_DELAY_MS / 1000}s...`);
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      } else {
+        logger.error(
+          '💥 Toutes les tentatives de migration ont échoué. Arrêt.',
+        );
+        process.exit(1);
+      }
     }
+  }
 }
 
 export { runMigrations };
@@ -50,7 +60,7 @@ export { runMigrations };
 // Start.sh calls "bun run ...migrate.ts", so it will run.
 // Importing it in index.ts won't trigger this block.
 if (import.meta.main) {
-    runMigrations()
-        .then(() => process.exit(0))
-        .catch(() => process.exit(1));
+  runMigrations()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
 }

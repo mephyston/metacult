@@ -155,4 +155,18 @@ describe('SearchMediaHandler', () => {
         expect(mockRepo.searchViews).not.toHaveBeenCalled();
         expect(response).toEqual(cachedResponse);
     });
+    it('should IGNORE excludedIds when searching (universal search)', async () => {
+        const query: SearchMediaQuery = { search: 'test', excludedIds: ['1', '2'] };
+        mockRepo.searchViews.mockResolvedValue([]);
+
+        await handler.execute(query);
+
+        // We expect searchViews to be called WITHOUT excludedIds
+        expect(mockRepo.searchViews).toHaveBeenCalledWith(expect.objectContaining({
+            search: 'test'
+        }));
+
+        const callArgs = mockRepo.searchViews.mock.calls[0][0];
+        expect(callArgs.excludedIds).toBeUndefined();
+    });
 });

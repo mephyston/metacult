@@ -1,30 +1,39 @@
-FROM oven/bun:1-alpine AS base
-WORKDIR /usr/src/app
+# Base image optimized for Bun
+FROM oven/bun:1-alpine AS runner
 
-# Install dependencies (using cache)
-FROM base AS install
-COPY package.json bun.lock ./
-COPY apps/api/package.json ./apps/api/package.json
-RUN bun install
+WORKDIR /app
 
-# Build stage
-FROM base AS build
-COPY --from=install /usr/src/app/node_modules ./node_modules
-# ✅ Copy source code AFTER dependencies
-COPY . .
+# 1. Copy essential configuration files (Monorepo structure)
+COPY package.json bun.lock bunfig.toml nx.json tsconfig.base.json tsconfig.json* ./
 
-# Run Tests during build to prevent bad deployments
-RUN bun test apps/api
+# 2. Copy workspace configurations (to ensure bun install works for workspace deps)
+COPY apps/api/package.json ./apps/api/
+COPY apps/webapp/package.json ./apps/webapp/
+COPY apps/website/package.json ./apps/website/
+COPY apps/worker/package.json ./apps/worker/
 
-# Final image
-FROM base AS release
-COPY --from=install /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app .
+COPY libs/shared/core/package.json ./libs/shared/core/
+COPY libs/shared/ui/package.json ./libs/shared/ui/
 
-# Run the app
+# Copy E2E package.json as it is a workspace in bun.lock
+COPY apps/e2e/package.json ./apps/e2e/
+
+# 3. Install ALL dependencies (including devDependencies)
+# Required in monorepo: internal libs are referenced as workspace dependencies
+# and are not included in production deps. Bun needs them to resolve path aliases.
+# --ignore-scripts prevents husky/prepare scripts from running
+RUN bun install --frozen-lockfile --ignore-scripts
+
+# 4. Copy Source Code
+COPY apps/api ./apps/api
+COPY libs ./libs
+
+# 5. Set Environment and Start
 ENV NODE_ENV=production
-USER bun
 ENV PORT=3000
-EXPOSE 3000/tcp
-ENTRYPOINT []
-CMD ["bun", "apps/api/index.ts"]
+RUN ls -R apps/api
+RUN ls -R libs/backend/catalog
+RUN cat tsconfig.base.json
+
+# API entrypoint is at root: apps/api/index.ts
+CMD ["bun", "/app/apps/api/index.ts"]

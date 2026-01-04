@@ -1,32 +1,49 @@
+# --- Stage 1: Builder ---
+FROM oven/bun:1-alpine AS builder
 
-# Install dependencies
-# trigger build fix deps
-# Install dependencies
-FROM oven/bun:1 AS install
-WORKDIR /usr/src/app
-COPY package.json bun.lock nx.json tsconfig.base.json ./
-COPY apps/website/package.json ./apps/website/package.json
-COPY libs/shared/ui/package.json ./libs/shared/ui/package.json
-RUN bun install
+WORKDIR /app
 
-# Build
-FROM install AS build
-COPY --from=install /usr/src/app/node_modules ./node_modules
+# 1. Copy essential configuration files
+COPY package.json bun.lock nx.json tsconfig.base.json tsconfig.json* ./
+
+# 2. Copy workspace configurations
+COPY apps/api/package.json ./apps/api/
+COPY apps/webapp/package.json ./apps/webapp/
+COPY apps/website/package.json ./apps/website/
+COPY apps/worker/package.json ./apps/worker/
+
+COPY libs/shared/core/package.json ./libs/shared/core/
+COPY libs/shared/ui/package.json ./libs/shared/ui/
+
+# Copy E2E package.json as it is a workspace in bun.lock
+COPY apps/e2e/package.json ./apps/e2e/
+
+# 3. Install ALL dependencies (needed for build)
+# --ignore-scripts prevents husky from running in Docker build
+RUN bun install --frozen-lockfile --ignore-scripts
+
+# 4. Copy Full Source
 COPY . .
-# ✅ Receive PUBLIC_API_URL from build args for Client-Side bundling
-ARG PUBLIC_API_URL
-ENV PUBLIC_API_URL=$PUBLIC_API_URL
-RUN cd apps/website && bun run build
 
-# Final image
-# Use alpine for minimal footprint since we don't need runtime image processing (sharp) anymore
-FROM node:20-alpine AS release
-WORKDIR /usr/src/app
+# 5. Build Website (Astro)
+# This generates dist/
+# Use direct astro build to avoid Nx graph construction issues in Docker
+WORKDIR /app/apps/website
+RUN bun run build
+WORKDIR /app
 
-COPY --from=build /usr/src/app/apps/website/dist ./dist
-# Copy node_modules to ensure all dependencies are available
-COPY --from=install /usr/src/app/node_modules ./node_modules
+# --- Stage 2: Runner ---
+FROM oven/bun:1-alpine AS runner
 
+WORKDIR /app
+
+# 1. Copy built artifacts from builder
+COPY --from=builder /app/apps/website/dist ./dist
+
+# 2. Environment Setup
+ENV NODE_ENV=production
 ENV HOST=0.0.0.0
+ENV PORT=4321
 
-CMD ["node", "./dist/server/entry.mjs"]
+# 3. Run Astro Server
+CMD ["bun", "./dist/server/entry.mjs"]

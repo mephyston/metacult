@@ -1,30 +1,22 @@
 {
-    "name": "backend-catalog",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "projectType": "library",
-    "sourceRoot": "libs/backend/catalog/src",
-    "tags": [
-        "type:feature",
-        "scope:catalog",
-        "layer:backend"
-    ],
-    "targets": {
-        "lint": {
-            "executor": "@nx/eslint:lint",
-            "outputs": [
-                "{options.outputFile}"
-            ],
-            "options": {
-                "lintFilePatterns": [
-                    "libs/backend/catalog/**/*.ts"
-                ]
-            }
-        },
-        "test": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "bun test libs/backend/catalog"
-            }
-        }
+  "name": "backend-catalog",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/backend/catalog/src",
+  "tags": ["scope:catalog", "layer:backend", "type:bounded-context"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/backend/catalog/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun test --preload ./test/setup.ts libs/backend/catalog"
+      }
     }
+  }
 }

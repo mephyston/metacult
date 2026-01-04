@@ -1,22 +1,102 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { Hero } from '@metacult/shared-ui';
+import { Hero, SwipeDeck, getApiUrl } from '@metacult/shared-ui';
 import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
+import { fr } from '../i18n/fr';
 
-// Force Static Site Generation for this page
-// This ensures images are optimized at build time, avoiding runtime 500 errors in Docker.
-export const prerender = true;
+// Temporarily disable prerender to test API calls
+// Re-enable later for production builds
+export const prerender = false;
 
-// Hero Content (Moved to variables to ensure clean strings)
+// Hero Content (Internationalized)
 const heroBadge = 'Metacult';
-const heroHeading = 'Le Radar Social pour votre Culture.';
-const heroDescription =
-	'Découvrez, suivez et partagez vos films, jeux et séries préférés avec votre squad. Une seule app pour toute votre culture.';
-const heroCtaText = 'Créer un compte';
-const heroSecondaryCtaText = 'Se connecter';
+const heroHeading = fr.home.hero.title;
+const heroDescription = fr.home.hero.subtitle;
+const heroCtaText = fr.home.hero.cta;
+const heroSecondaryCtaText = fr.header.login;
 const heroImageSizes =
 	'(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1920px';
+
+// Demo Games for SwipeDeck
+const demoGames = [
+	{
+		id: '11111111-1111-1111-1111-111111111111', // UUID valid required by backend
+		title: 'Elden Ring',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg',
+	},
+	{
+		id: '22222222-2222-2222-2222-222222222222',
+		title: 'The Legend of Zelda: Tears of the Kingdom',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5vmg.jpg',
+	},
+	{
+		id: '33333333-3333-3333-3333-333333333333',
+		title: 'Hollow Knight',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2ash.jpg',
+	},
+	{
+		id: '44444444-4444-4444-4444-444444444444',
+		title: 'Hades',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2i0f.jpg',
+	},
+	{
+		id: '55555555-5555-5555-5555-555555555555',
+		title: 'Cyberpunk 2077',
+		image: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co49x5.jpg',
+	},
+];
+
+// Fetch Real Media from Discovery API
+let interactions: any[] = [];
+let trends: any[] = []; // Trends data
+
+try {
+	const apiUrl = getApiUrl();
+
+	// Parallel fetch for feed and trends
+	const [feedRes, trendsRes] = await Promise.all([
+		fetch(`${apiUrl}/api/discovery/feed`),
+		fetch(`${apiUrl}/api/media/trends`),
+	]);
+
+	if (feedRes.ok) {
+		const data = await feedRes.json();
+		if (Array.isArray(data)) {
+			// Mapping MediaReadDto -> SwipeItem
+			interactions = data.slice(0, 5).map((item: any) => {
+				const media = item.data || item;
+				const image =
+					media.coverUrl ||
+					media.poster ||
+					'https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.jpg';
+
+				return {
+					id: media.id,
+					title: media.title,
+					image: image,
+					type: item.type,
+					...media,
+				};
+			});
+		}
+	}
+
+	if (trendsRes.ok) {
+		trends = await trendsRes.json();
+		console.log('[Home] Trends received:', trends.length, 'items');
+		console.log('[Home] First trend:', trends[0]);
+	} else {
+		console.error('[Home] Failed to fetch trends:', trendsRes.status);
+	}
+} catch (e) {
+	console.error('Error loading data:', e);
+}
+
+// Fallback to demo if API failed or empty
+if (interactions.length === 0) {
+	interactions = demoGames;
+}
 
 // Build-time Image Optimization
 const heroBg = await getImage({
@@ -26,22 +106,39 @@ const heroBg = await getImage({
 	format: 'avif',
 	quality: 85,
 });
+
+// App URL for redirection (Register/Login)
+import { getWebappUrl } from '@metacult/shared-ui';
+const appUrl = getWebappUrl();
 ---
 
 <Layout title="MetaCult - Le Radar Social">
 	<!-- HERO SECTION -->
+	<!-- @ts-expect-error - Astro client directives are not part of component props -->
 	<Hero
 		client:load
+		items={trends}
 		badge={heroBadge}
 		heading={heroHeading}
 		description={heroDescription}
 		ctaText={heroCtaText}
-		ctaLink="/auth/register"
+		ctaLink={`${appUrl}/register`}
 		secondaryCtaText={heroSecondaryCtaText}
-		secondaryCtaLink="/auth/login"
+		secondaryCtaLink={`${appUrl}/login`}
 		image={heroBg.src}
 		imageSizes={heroImageSizes}
 		fetchpriority="high"
-		recentMedias={[]}
-	/>
+	>
+		<!-- Slot pour remplacer la carte statique par SwipeDeck -->
+		<div slot="interactive-card" class="relative w-full max-w-sm mx-auto">
+			<!-- @ts-expect-error - Astro client directives are not part of component props -->
+			<SwipeDeck
+				client:visible
+				items={interactions}
+				guestMode={true}
+				signupUrl={`${appUrl}/register`}
+				loginUrl={`${appUrl}/login`}
+			/>
+		</div>
+	</Hero>
 </Layout>

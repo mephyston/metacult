@@ -2,8 +2,8 @@
   "name": "@metacult/api",
   "version": "0.2.0",
   "scripts": {
-    "dev": "bun run --watch index.ts",
-    "start": "bun run index.ts"
+    "dev": "bun --env-file=../../.env --watch index.ts",
+    "start": "bun --env-file=../../.env index.ts"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.1",

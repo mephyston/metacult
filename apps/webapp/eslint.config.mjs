@@ -1,18 +1,12 @@
-import { createConfigForNuxt } from '@nuxt/eslint-config/flat';
 import baseConfig from '../../eslint.config.mjs';
 
-export default createConfigForNuxt({
-  features: {
-    typescript: true,
+export default [
+  {
+    ignores: ['.nuxt', '.output', 'dist', 'node_modules', '**/.nuxt/**'],
   },
-})
-  .prepend(...baseConfig)
-  .append(
-    {
-      files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.vue'],
-      rules: {},
-    },
-    {
-      ignores: ['.nuxt/**', '.output/**', 'node_modules'],
-    },
-  );
+  ...baseConfig,
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.vue'],
+    rules: {},
+  }
+];

@@ -1,0 +1,13 @@
+{
+  "name": "interaction",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/interaction/src",
+  "projectType": "library",
+  "tags": [
+    "scope:interaction",
+    "layer:backend",
+    "type:bounded-context"
+  ],
+  "// targets": "to see all targets run: nx show project interaction --web",
+  "targets": {}
+}

@@ -1,20 +1,21 @@
 import { getDbConnection } from '../client';
+import { logger } from '../../logger/logger.service';
 import { sql } from 'drizzle-orm';
 
 async function main() {
-    const { db } = getDbConnection();
+  const { db } = getDbConnection();
 
-    console.log('💥 Dropping all tables...');
+  logger.info('💥 Dropping all tables...');
 
-    await db.execute(sql`DROP SCHEMA IF EXISTS "auth" CASCADE;`);
-    await db.execute(sql`DROP SCHEMA IF EXISTS "public" CASCADE;`);
-    await db.execute(sql`CREATE SCHEMA "public";`);
+  await db.execute(sql`DROP SCHEMA IF EXISTS "auth" CASCADE;`);
+  await db.execute(sql`DROP SCHEMA IF EXISTS "public" CASCADE;`);
+  await db.execute(sql`CREATE SCHEMA "public";`);
 
-    console.log('✅ DB Reset Complete.');
-    process.exit(0);
+  logger.info('✅ DB Reset Complete.');
+  process.exit(0);
 }
 
-main().catch(err => {
-    console.error(err);
-    process.exit(1);
+main().catch((err) => {
+  logger.error({ err }, 'Database reset failed');
+  process.exit(1);
 });

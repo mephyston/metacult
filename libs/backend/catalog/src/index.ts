@@ -36,6 +36,8 @@ export { MediaController } from './api/http/controllers/media.controller';
 // ⚠️ Schema exported for DB initialization only (composition root)
 export * as mediaSchema from './infrastructure/db/media.schema';
 
-// ❌ Repository implementations are INTERNAL. Use CatalogModuleFactory instead.
-// Consumers must use CatalogModuleFactory or Dependency Injection Container.
-// DO NOT export: DrizzleMediaRepository, IgdbProvider, mappers, validators, etc.
+// Export Repository for DI in other modules (Ranking needs it)
+export { DrizzleMediaRepository } from './infrastructure/repositories/drizzle-media.repository';
+
+// ❌ Other implementations are INTERNAL. Use CatalogModuleFactory when possible.
+// DO NOT export: IgdbProvider, mappers, validators, etc.

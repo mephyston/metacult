@@ -7,6 +7,8 @@ export interface MediaDetailDto {
     posterUrl: string | null;
     rating: number | null;
     description: string | null;
+    eloScore: number;
+    matchCount: number;
     tags: Array<{ id: string; label: string; slug: string }>;
     metadata: Record<string, any>;
 }

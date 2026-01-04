@@ -1,0 +1,209 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - '.vscode/**'
+      - 'CHANGELOG.md'
+      - 'LICENSE'
+
+permissions:
+  contents: write
+  packages: write
+  actions: read
+
+env:
+  NX_HEAD: HEAD
+  NX_BASE: HEAD~1
+
+jobs:
+  # ------------------------------------------------------------------
+  # JOB 1 (Part A): STAGING CHECKS
+  # Trigger: Push on develop
+  # Goal: Lint & Test only affected projects
+  # ------------------------------------------------------------------
+  staging-checks:
+    name: 🧪 Staging Checks
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      # - name: Install Playwright Browsers
+      #   run: bunx playwright install --with-deps
+
+      - name: Lint Affected
+        run: bun run nx affected -t lint --parallel=3
+
+      - name: Test Affected
+        run: bun run nx affected -t test --parallel=3 --exclude=e2e
+
+  # ------------------------------------------------------------------
+  # JOB 1 (Part B): STAGING BUILD & DEPLOY
+  # Trigger: Push on develop (follows checks)
+  # Goal: Build -> Push (staging+sha) -> Deploy Railway Staging
+  # ------------------------------------------------------------------
+  staging-deploy:
+    name: 🚀 Staging Deploy (${{ matrix.app }})
+    needs: staging-checks
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        app: [api, webapp, website, worker]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lowercase Repo Owner
+        id: get-owner
+        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/${{ steps.get-owner.outputs.owner }}/metacult-${{ matrix.app }}:staging
+            ghcr.io/${{ steps.get-owner.outputs.owner }}/metacult-${{ matrix.app }}:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway Staging
+        # Using 'redeploy' to trigger a pull of the new image from GHCR
+        # Service name is just the app name (lowercase)
+        # Note: Environment is determined by RAILWAY_TOKEN (staging token = staging env)
+        run: railway redeploy --service ${{ matrix.app }} --yes
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
+
+  # ------------------------------------------------------------------
+  # JOB 2: PROD RELEASE & DEPLOY
+  # Trigger: Push on main
+  # Goal: Version (Nx) -> Promote Image (Staging->Prod) -> Deploy Railway Prod
+  # ------------------------------------------------------------------
+  prod-release:
+    name: 🚀 Prod Release & Deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Nx Release (Version & Changelog)
+        id: release
+        run: bun run nx release --skip-publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Released Version
+        id: get-version
+        run: echo "VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+
+      - name: Lowercase Repo Owner
+        id: get-owner
+        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Initialize Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Promote Images & Deploy Prod
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PRODUCTION }}
+        run: |
+          VERSION=${{ steps.get-version.outputs.VERSION }}
+          OWNER=${{ steps.get-owner.outputs.owner }}
+          APPS=("api" "webapp" "website" "worker")
+
+          echo "🔥 Promoting images for version: $VERSION"
+
+          for APP in "${APPS[@]}"; do
+            # Fallback logic: check if SHA tag exists (ideal), else fallback to staging tag
+            SHA_TAG="ghcr.io/$OWNER/metacult-$APP:sha-${{ github.sha }}"
+            STAGING_TAG="ghcr.io/$OWNER/metacult-$APP:staging"
+            
+            # Note: Checking existence remotely is checking failure of `docker buildx imagetools inspect`
+            # For simplicity in this script, we will try SHA first, if fail, use STAGING.
+            
+            SOURCE_IMAGE="$SHA_TAG"
+            if ! docker buildx imagetools inspect "$SOURCE_IMAGE" &>/dev/null; then
+               echo "⚠️  Image $SHA_TAG not found. Falling back to $STAGING_TAG"
+               SOURCE_IMAGE="$STAGING_TAG"
+            fi
+            
+            TARGET_LATEST="ghcr.io/$OWNER/metacult-$APP:latest"
+            TARGET_VERSION="ghcr.io/$OWNER/metacult-$APP:$VERSION"
+            
+            echo "---------------------------------------------------"
+            echo "📦 App: $APP"
+            echo "   Source: $SOURCE_IMAGE"
+            echo "   Targets:"
+            echo "     - $TARGET_LATEST"
+            echo "     - $TARGET_VERSION"
+            
+            # Promote
+            docker buildx imagetools create -t $TARGET_LATEST -t $TARGET_VERSION $SOURCE_IMAGE
+            
+            echo "   🚀 Deploying to Railway Production..."
+            railway redeploy --service $APP --yes
+          done
+
+          echo "✅ All services promoted and deployed to Production!"
