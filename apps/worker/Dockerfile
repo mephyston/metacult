@@ -33,4 +33,4 @@ ENV NODE_ENV=production
 # Worker doesn't expose a port usually, but if it does:
 # ENV PORT=3000 
 
-CMD ["bun", "apps/worker/src/index.ts"]
+CMD ["bun", "/app/apps/worker/src/index.ts"]
