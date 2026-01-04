@@ -193,13 +193,21 @@ const app = new Elysia()
     logger.debug({ method: request.method, url: request.url }, '[API Request]');
   })
   .get('/', () => 'Hello Metacult API (Elysia)')
-  .get('/health', () => ({
-    status: 'ok',
-    version,
-    commit:
-      process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || 'dev',
-    timestamp: new Date().toISOString(),
-  }))
+  .get('/health', () => {
+    const displayVersion = process.env.APP_VERSION || 'Dev';
+    const sha =
+      process.env.GIT_SHA ||
+      process.env.RAILWAY_GIT_COMMIT_SHA ||
+      process.env.GIT_COMMIT_SHA ||
+      'local';
+
+    return {
+      status: 'ok',
+      version: displayVersion,
+      commit: sha === 'local' ? 'local' : sha.substring(0, 7),
+      timestamp: new Date().toISOString(),
+    };
+  })
   // Montage des routes
   .use(authRoutes)
   .group('/api', (app) =>
