@@ -217,22 +217,11 @@ jobs:
 
           echo "🔥 Promoting images for version: $VERSION"
 
-          for APP in "${APPS[@]}"; do
-            # We assume the image built for this SHA exists in GHCR (from a previous staging build or local push)
-            # If we just merged to main, the 'staging-deploy' ran for the merge commit on develop? 
-            # Wait, main and develop are different. If I merge develop -> main, no pipeline runs automatically now.
-            # So the SHA on main MIGTH NOT have an image if we don't build it.
-            # BUT usually we create a PR develop -> main. Merging it creates a commit on main.
-            # With 'push: develop', staging runs on develop.
-            # If I run workflow_dispatch on main, the sha corresponds to main's HEAD.
-            # If that SHA was previously on develop (fast-forward), the image exists.
-            # If it's a merge commit, it might generally NOT exist unless we built it.
-            # HOWEVER, for simplicity and speed, let's assume we maintain the pattern OR fallback to 'staging' tag which is risky if staging moved on.
-            # Better approach for 'A la Carte' on main: We might need to BUILD if we aren't sure.
-            # User instruction: "Ensure image is tagged with version AND latest".
-            # Providing a robust fallback: Try SHA, if not, Try Staging, if not... well we fail or build. 
-            # I will keep the SHA/Staging check logic but ensure we tag "latest" and "version".
+          echo "🔥 Promoting images for version: $VERSION"
 
+          # 1. PROMOTION PHASE
+          # We promote ALL images first. If any fails, the script exits, and no deployments occur.
+          for APP in "${APPS[@]}"; do
             SHA_TAG="ghcr.io/$OWNER/metacult-$APP:sha-${{ github.sha }}"
             STAGING_TAG="ghcr.io/$OWNER/metacult-$APP:staging"
             
@@ -246,16 +235,19 @@ jobs:
             TARGET_VERSION="ghcr.io/$OWNER/metacult-$APP:$VERSION"
             
             echo "---------------------------------------------------"
-            echo "📦 App: $APP"
+            echo "📦 Promoting App: $APP"
             echo "   Source: $SOURCE_IMAGE"
-            echo "   Targets:"
-            echo "     - $TARGET_LATEST"
-            echo "     - $TARGET_VERSION"
+            echo "   Targets: $TARGET_LATEST, $TARGET_VERSION"
             
-            # Promote (Tagging)
             docker buildx imagetools create -t $TARGET_LATEST -t $TARGET_VERSION $SOURCE_IMAGE
-            
-            echo "   🚀 Deploying to Railway Production..."
+          done
+
+          echo "✅ All images promoted successfully. Starting deployment..."
+
+          # 2. DEPLOYMENT PHASE
+          # Only runs if all promotions succeeded.
+          for APP in "${APPS[@]}"; do
+            echo "🚀 Deploying $APP to Production..."
             railway redeploy --service $APP --yes
           done
 

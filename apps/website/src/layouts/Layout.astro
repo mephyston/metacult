@@ -67,6 +67,8 @@ const {
 
     <Footer
         version={pkg.version}
-        commit={import.meta.env.RAILWAY_GIT_COMMIT_SHA || 'dev'}
+        commit={process.env.GIT_COMMIT_SHA ||
+            import.meta.env.RAILWAY_GIT_COMMIT_SHA ||
+            'dev'}
     />
 </html>
