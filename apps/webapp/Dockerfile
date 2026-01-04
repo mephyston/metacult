@@ -27,6 +27,8 @@ COPY . .
 
 # 5. Build Webapp
 # This generates .output/server
+# NX_DAEMON=false to avoid Nx daemon issues in Docker
+ENV NX_DAEMON=false
 RUN bun run nx build webapp
 
 # --- Stage 2: Runner ---

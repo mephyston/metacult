@@ -19,13 +19,16 @@ COPY libs/shared/ui/package.json ./libs/shared/ui/
 COPY apps/e2e/package.json ./apps/e2e/
 
 # 3. Install ALL dependencies (needed for build)
-RUN bun install --frozen-lockfile
+# --ignore-scripts prevents husky from running in Docker build
+RUN bun install --frozen-lockfile --ignore-scripts
 
 # 4. Copy Full Source
 COPY . .
 
 # 5. Build Website (Astro)
 # This generates dist/
+# NX_DAEMON=false to avoid Nx daemon issues in Docker
+ENV NX_DAEMON=false
 RUN bun run nx build website
 
 # --- Stage 2: Runner ---

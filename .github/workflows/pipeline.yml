@@ -104,7 +104,8 @@ jobs:
       - name: Deploy to Railway Staging
         # Using 'redeploy' to trigger a pull of the new image from GHCR
         # Service name format: metacult-{app}
-        run: railway redeploy --service metacult-${{ matrix.app }} --environment staging
+        # Note: Environment is determined by RAILWAY_TOKEN (staging token = staging env)
+        run: railway redeploy --service metacult-${{ matrix.app }}
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
 
@@ -202,7 +203,7 @@ jobs:
             docker buildx imagetools create -t $TARGET_LATEST -t $TARGET_VERSION $SOURCE_IMAGE
             
             echo "   🚀 Deploying to Railway Production..."
-            railway redeploy --service metacult-$APP --environment production
+            railway redeploy --service metacult-$APP
           done
 
           echo "✅ All services promoted and deployed to Production!"
