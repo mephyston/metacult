@@ -22,7 +22,7 @@ export default {
     defaultLocale: 'fr',
     locales: [{ code: 'fr', file: 'fr.json' }],
     lazy: true,
-    langDir: 'locales',
+    langDir: '../app/locales',
   },
   app: {
     // google-fonts handles the font links now
