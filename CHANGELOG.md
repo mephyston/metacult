@@ -1,3 +1,7 @@
+## 0.6.5 (2026-01-04)
+
+This was a version bump only, there were no code changes.
+
 ## 0.6.4 (2026-01-04)
 
 ### 🩹 Fixes
