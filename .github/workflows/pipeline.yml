@@ -105,7 +105,7 @@ jobs:
         # Using 'redeploy' to trigger a pull of the new image from GHCR
         # Service name is just the app name (lowercase)
         # Note: Environment is determined by RAILWAY_TOKEN (staging token = staging env)
-        run: railway redeploy --service ${{ matrix.app }}
+        run: railway redeploy --service ${{ matrix.app }} --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
 
@@ -203,7 +203,7 @@ jobs:
             docker buildx imagetools create -t $TARGET_LATEST -t $TARGET_VERSION $SOURCE_IMAGE
             
             echo "   🚀 Deploying to Railway Production..."
-            railway redeploy --service $APP
+            railway redeploy --service $APP --yes
           done
 
           echo "✅ All services promoted and deployed to Production!"
