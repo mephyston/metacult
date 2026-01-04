@@ -15,7 +15,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bun test libs/backend/ranking"
+        "command": "bun test --preload ./test/setup.ts libs/backend/ranking"
       }
     }
   }
