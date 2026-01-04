@@ -12,6 +12,7 @@ logger.info('[Redis] Initializing client for Cache');
  * Utilisé pour le Cache et BullMQ.
  */
 export const redisClient = new Redis(redisUrl, {
+  family: 4,
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   retryStrategy(times) {
