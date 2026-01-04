@@ -1,3 +1,14 @@
+## 0.6.3 (2026-01-04)
+
+### 🩹 Fixes
+
+- **staging:** fix ranking queue redis config and search redirection ([ef921f8](https://github.com/mephyston/metacult/commit/ef921f8))
+- **website:** use getApiUrl in slug page instead of localhost ([b3e26b9](https://github.com/mephyston/metacult/commit/b3e26b9))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.6.2 (2026-01-04)
 
 ### 🩹 Fixes
