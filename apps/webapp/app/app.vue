@@ -35,7 +35,14 @@ const handleLogout = async () => {
 };
 
 const config = useRuntimeConfig();
-const commitSha = (config.public as any).commitSha || 'dev';
+
+// Standardization logic
+const sha = (config.public as any).commitSha || 'local';
+const appVer = (config.public as any).appVersion;
+
+// If appVersion is present (Production), use it. Otherwise 'Dev'.
+const displayVersion = appVer ? `${appVer}` : 'Dev';
+const displayCommit = `#${sha.substring(0, 7)}`;
 </script>
 
 <template>
@@ -54,6 +61,6 @@ const commitSha = (config.public as any).commitSha || 'dev';
       <NuxtPage :keepalive="{ max: 10 }" />
     </main>
 
-    <Footer :version="pkg.version" :commit="commitSha" />
+    <Footer :version="displayVersion" :commit="displayCommit" />
   </div>
 </template>
