@@ -22,7 +22,7 @@ export default {
     defaultLocale: 'fr',
     locales: [{ code: 'fr', file: 'fr.json' }],
     lazy: true,
-    langDir: fileURLToPath(new URL('./app/locales', import.meta.url)), // Chemin absolu pour éviter le préfixe i18n/
+    langDir: 'locales',
   },
   app: {
     // google-fonts handles the font links now

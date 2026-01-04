@@ -31,6 +31,9 @@ COPY libs ./libs
 # 5. Set Environment and Start
 ENV NODE_ENV=production
 ENV PORT=3000
+RUN ls -R apps/api
+RUN ls -R libs/backend/catalog
+RUN cat tsconfig.base.json
 
 # API entrypoint is at root: apps/api/index.ts
 CMD ["bun", "/app/apps/api/index.ts"]

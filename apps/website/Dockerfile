@@ -4,7 +4,7 @@ FROM oven/bun:1-alpine AS builder
 WORKDIR /app
 
 # 1. Copy essential configuration files
-COPY package.json bun.lock nx.json tsconfig.base.json ./
+COPY package.json bun.lock nx.json tsconfig.base.json tsconfig.json* ./
 
 # 2. Copy workspace configurations
 COPY apps/api/package.json ./apps/api/
