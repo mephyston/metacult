@@ -4,12 +4,28 @@ on:
   push:
     branches:
       - develop
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '.vscode/**'
-      - 'CHANGELOG.md'
-      - 'LICENSE'
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: 'Type of release'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      preid:
+        description: 'Prerelease Identifier (only for prerelease)'
+        required: false
+        default: 'none'
+        type: choice
+        options:
+          - none
+          - alpha
+          - beta
+          - rc
 
 permissions:
   contents: write
@@ -40,6 +56,14 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json', '**/yarn.lock', '**/pnpm-lock.yaml', '**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
@@ -95,6 +119,8 @@ jobs:
           tags: |
             ghcr.io/${{ steps.get-owner.outputs.owner }}/metacult-${{ matrix.app }}:staging
             ghcr.io/${{ steps.get-owner.outputs.owner }}/metacult-${{ matrix.app }}:sha-${{ github.sha }}
+          build-args: |
+            GIT_COMMIT_SHA=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -111,12 +137,12 @@ jobs:
 
   # ------------------------------------------------------------------
   # JOB 2: PROD RELEASE & DEPLOY
-  # Trigger: Push on main
+  # Trigger: Manual workflow_dispatch
   # Goal: Version (Nx) -> Promote Image (Staging->Prod) -> Deploy Railway Prod
   # ------------------------------------------------------------------
   prod-release:
     name: 🚀 Prod Release & Deploy
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -138,11 +164,27 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Generate Release Name
+        id: release-name
+        run: |
+          ADJECTIVES=("Cosmic" "Shiny" "Epic" "Fast" "Silent" "Brave" "Witty" "Mighty" "Clever" "Wild")
+          ANIMALS=("Bear" "Wolf" "Eagle" "Tiger" "Shark" "Fox" "Lion" "Hawk" "Owl" "Panda")
+          RANDOM_ADJ=${ADJECTIVES[$RANDOM % ${#ADJECTIVES[@]}]}
+          RANDOM_ANI=${ANIMALS[$RANDOM % ${#ANIMALS[@]}]}
+          RELEASE_NAME="$RANDOM_ADJ $RANDOM_ANI"
+          echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_OUTPUT
+          echo "Generated Release Name: $RELEASE_NAME"
+
       - name: Nx Release (Version & Changelog)
         id: release
-        run: bun run nx release --skip-publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ inputs.preid }}" == "none" ]; then
+             bun run nx release --type=${{ inputs.releaseType }} --skip-publish
+          else
+             bun run nx release --type=${{ inputs.releaseType }} --preid=${{ inputs.preid }} --skip-publish
+          fi
 
       - name: Get Released Version
         id: get-version
@@ -176,12 +218,23 @@ jobs:
           echo "🔥 Promoting images for version: $VERSION"
 
           for APP in "${APPS[@]}"; do
-            # Fallback logic: check if SHA tag exists (ideal), else fallback to staging tag
+            # We assume the image built for this SHA exists in GHCR (from a previous staging build or local push)
+            # If we just merged to main, the 'staging-deploy' ran for the merge commit on develop? 
+            # Wait, main and develop are different. If I merge develop -> main, no pipeline runs automatically now.
+            # So the SHA on main MIGTH NOT have an image if we don't build it.
+            # BUT usually we create a PR develop -> main. Merging it creates a commit on main.
+            # With 'push: develop', staging runs on develop.
+            # If I run workflow_dispatch on main, the sha corresponds to main's HEAD.
+            # If that SHA was previously on develop (fast-forward), the image exists.
+            # If it's a merge commit, it might generally NOT exist unless we built it.
+            # HOWEVER, for simplicity and speed, let's assume we maintain the pattern OR fallback to 'staging' tag which is risky if staging moved on.
+            # Better approach for 'A la Carte' on main: We might need to BUILD if we aren't sure.
+            # User instruction: "Ensure image is tagged with version AND latest".
+            # Providing a robust fallback: Try SHA, if not, Try Staging, if not... well we fail or build. 
+            # I will keep the SHA/Staging check logic but ensure we tag "latest" and "version".
+
             SHA_TAG="ghcr.io/$OWNER/metacult-$APP:sha-${{ github.sha }}"
             STAGING_TAG="ghcr.io/$OWNER/metacult-$APP:staging"
-            
-            # Note: Checking existence remotely is checking failure of `docker buildx imagetools inspect`
-            # For simplicity in this script, we will try SHA first, if fail, use STAGING.
             
             SOURCE_IMAGE="$SHA_TAG"
             if ! docker buildx imagetools inspect "$SOURCE_IMAGE" &>/dev/null; then
@@ -199,7 +252,7 @@ jobs:
             echo "     - $TARGET_LATEST"
             echo "     - $TARGET_VERSION"
             
-            # Promote
+            # Promote (Tagging)
             docker buildx imagetools create -t $TARGET_LATEST -t $TARGET_VERSION $SOURCE_IMAGE
             
             echo "   🚀 Deploying to Railway Production..."

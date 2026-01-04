@@ -41,6 +41,8 @@ WORKDIR /app
 COPY --from=builder /app/apps/website/dist ./dist
 
 # 2. Environment Setup
+ARG GIT_COMMIT_SHA
+ENV GIT_COMMIT_SHA=$GIT_COMMIT_SHA
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=4321

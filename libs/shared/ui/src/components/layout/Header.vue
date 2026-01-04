@@ -18,6 +18,8 @@ import {
   navigationMenuTriggerStyle,
 } from '../ui/navigation-menu';
 
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
 import { cn, getWebappUrl } from '../../lib/utils';
 import { authClient } from '../../lib/auth-client';
 import { logger } from '../../lib/logger';
@@ -135,7 +137,7 @@ const handleLogout = async () => {
               <NavigationMenuList>
                 <!-- Explorer Item -->
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>{{
+                  <NavigationMenuTrigger class="uppercase">{{
                     labels.explorer
                   }}</NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -218,7 +220,9 @@ const handleLogout = async () => {
 
                 <!-- Classements Item -->
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>Classements</NavigationMenuTrigger>
+                  <NavigationMenuTrigger class="uppercase"
+                    >Classements</NavigationMenuTrigger
+                  >
                   <NavigationMenuContent>
                     <ul
                       class="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]"
@@ -282,7 +286,7 @@ const handleLogout = async () => {
                 <NavigationMenuItem>
                   <NavigationMenuLink
                     href="/about"
-                    :class="navigationMenuTriggerStyle()"
+                    :class="cn(navigationMenuTriggerStyle(), 'uppercase')"
                   >
                     À Propos
                   </NavigationMenuLink>
@@ -310,7 +314,7 @@ const handleLogout = async () => {
               variant="default"
               as="a"
               :href="appUrl"
-              class="hidden md:flex"
+              class="hidden md:flex uppercase"
             >
               {{ labels.openApp }}
             </Button>
@@ -324,24 +328,18 @@ const handleLogout = async () => {
               <DropdownMenuTrigger as-child>
                 <button
                   type="button"
-                  class="relative flex h-9 w-9 shrink-0 items-center justify-center !rounded-full overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors !p-[2px]"
+                  class="appearance-none focus:outline-none border-none bg-transparent cursor-pointer rounded-full"
                 >
-                  <div
-                    class="h-full w-full flex items-center justify-center bg-primary text-primary-foreground !rounded-full overflow-hidden"
+                  <Avatar
+                    class="h-9 w-9 cursor-pointer hover:opacity-90 transition-opacity"
                   >
-                    <span
-                      v-if="!currentUser.avatar"
-                      class="text-sm font-semibold"
-                    >
-                      {{ userInitials }}
-                    </span>
-                    <img
-                      v-else
+                    <AvatarImage
+                      v-if="currentUser?.avatar"
                       :src="currentUser.avatar"
                       :alt="currentUser.name || 'User avatar'"
-                      class="h-full w-full object-cover !rounded-full"
                     />
-                  </div>
+                    <AvatarFallback>{{ userInitials }}</AvatarFallback>
+                  </Avatar>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" class="w-56">
@@ -384,10 +382,22 @@ const handleLogout = async () => {
           >
             <!-- Website Context: Login/Register -->
             <template v-if="context === 'website'">
-              <Button variant="ghost" size="sm" as="a" :href="loginUrl">
+              <Button
+                variant="ghost"
+                size="sm"
+                as="a"
+                :href="loginUrl"
+                class="uppercase"
+              >
                 {{ labels.login }}
               </Button>
-              <Button variant="default" size="sm" as="a" :href="registerUrl">
+              <Button
+                variant="default"
+                size="sm"
+                as="a"
+                :href="registerUrl"
+                class="uppercase"
+              >
                 {{ labels.register }}
               </Button>
             </template>
