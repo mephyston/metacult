@@ -1,3 +1,19 @@
+## 0.4.0 (2026-01-04)
+
+### 🚀 Features
+
+- **ci:** implement hybrid versioning strategy (immutable SHA + dynamic Version) ([7c2c176](https://github.com/mephyston/metacult/commit/7c2c176))
+- **ui:** standardize version display in webapp and website ([beca74c](https://github.com/mephyston/metacult/commit/beca74c))
+
+### 🩹 Fixes
+
+- **api:** standardizing version display (ignore package.json version) ([9b81e49](https://github.com/mephyston/metacult/commit/9b81e49))
+- **ci:** delete .husky in release job ([0285b1b](https://github.com/mephyston/metacult/commit/0285b1b))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.3.0 (2026-01-04)
 
 ### 🚀 Features

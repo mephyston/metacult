@@ -1,7 +1,7 @@
 {
   "name": "apps-website",
   "type": "module",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "scripts": {
     "dev": "astro dev --port 4444",
     "build": "astro build",
