@@ -60,6 +60,14 @@ export class ConfigurationService {
       rawEnv.API_PORT = rawEnv.PORT;
     }
 
+    // Auto-detect Railway Environment to force correct NODE_ENV
+    if (rawEnv.RAILWAY_ENVIRONMENT_NAME) {
+      const railwayEnv = rawEnv.RAILWAY_ENVIRONMENT_NAME.toLowerCase();
+      if (['staging', 'production', 'development'].includes(railwayEnv)) {
+        rawEnv.NODE_ENV = railwayEnv;
+      }
+    }
+
     // Apply defaults and convert types
     const withDefaults = Value.Default(EnvSchema, { ...rawEnv });
     const convertedEnv = Value.Convert(EnvSchema, withDefaults);
