@@ -1,6 +1,7 @@
 ---
 import { Header, Footer, Search } from '@metacult/shared-ui';
 import ThemeHeadScript from '../components/shared/ThemeHeadScript.astro';
+import { fr } from '../i18n/fr';
 import '@metacult/shared-ui/styles/global.css';
 
 // ✅ Self-hosted fonts
@@ -53,7 +54,7 @@ const {
         </script>
     </head>
     <body class={`font-sans min-h-screen flex flex-col ${bodyClass}`}>
-        <Header client:load>
+        <Header client:load labels={fr.header}>
             <!-- Shared Navigation from default slot -->
             <div slot="search" class="contents">
                 <Search client:load />
