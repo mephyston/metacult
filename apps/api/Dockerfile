@@ -15,13 +15,8 @@ COPY apps/worker/package.json ./apps/worker/
 COPY libs/shared/core/package.json ./libs/shared/core/
 COPY libs/shared/ui/package.json ./libs/shared/ui/
 
-COPY libs/backend/catalog/package.json ./libs/backend/catalog/
-COPY libs/backend/discovery/package.json ./libs/backend/discovery/
-COPY libs/backend/identity/package.json ./libs/backend/identity/
-COPY libs/backend/infrastructure/package.json ./libs/backend/infrastructure/
-COPY libs/backend/interaction/package.json ./libs/backend/interaction/
-COPY libs/backend/marketing/package.json ./libs/backend/marketing/
-COPY libs/backend/ranking/package.json ./libs/backend/ranking/
+# Copy E2E package.json as it is a workspace in bun.lock
+COPY apps/e2e/package.json ./apps/e2e/
 
 # 3. Install production dependencies only
 # Note: In a strict monorepo, we might need all deps to build libs, 
