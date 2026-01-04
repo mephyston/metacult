@@ -83,7 +83,8 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
     raw.name,
     slugify(raw.name),
     raw.summary || null,
-    createCoverUrl(raw.cover?.url),
+    // IGDB returns t_thumb (90x90) by default. Upgrade to t_cover_big (264x374).
+    createCoverUrl(raw.cover?.url?.replace('t_thumb', 't_cover_big')),
     createRating(rating),
     createReleaseYear(raw.first_release_date),
     new ExternalReference('igdb', String(raw.id)),
