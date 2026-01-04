@@ -1,3 +1,14 @@
+## 0.5.1 (2026-01-04)
+
+### 🩹 Fixes
+
+- **ci:** remove unsupported --yes flag from railway variables command ([7313799](https://github.com/mephyston/metacult/commit/7313799))
+- **ci:** simplify job name to fix github actions display ([0045188](https://github.com/mephyston/metacult/commit/0045188))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.5.0 (2026-01-04)
 
 ### 🩹 Fixes
