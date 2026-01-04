@@ -83,7 +83,7 @@ jobs:
   # Goal: Build -> Push (staging+sha) -> Deploy Railway Staging
   # ------------------------------------------------------------------
   staging-deploy:
-    name: 🚀 Staging Deploy (${{ matrix.app }})
+    name: '🚀 Staging Deploy (${{ matrix.app }})'
     needs: staging-checks
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
