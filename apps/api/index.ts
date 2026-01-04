@@ -242,7 +242,7 @@ const wrappedFetch = function (request: Request) {
 
 const server = Bun.serve({
   port,
-  hostname: '0.0.0.0', // Bind to 0.0.0.0 for IPv4 compatibility (Railway/Docker)
+  hostname: '::', // Bind to :: for IPv6 (Railway Private Network) & IPv4 compatibility
   fetch: wrappedFetch,
 });
 
