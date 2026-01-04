@@ -27,11 +27,10 @@ COPY . .
 
 # 5. Build Website (Astro)
 # This generates dist/
-# NX_DAEMON=false to avoid Nx daemon issues in Docker
-# NX_SKIP_NX_CACHE=true to prevent graph construction loop with plugins
-ENV NX_DAEMON=false
-ENV NX_SKIP_NX_CACHE=true
-RUN bun run nx build website --skip-nx-cache
+# Use direct astro build to avoid Nx graph construction issues in Docker
+WORKDIR /app/apps/website
+RUN bun run build
+WORKDIR /app
 
 # --- Stage 2: Runner ---
 FROM oven/bun:1-alpine AS runner
