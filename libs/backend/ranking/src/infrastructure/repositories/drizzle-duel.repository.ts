@@ -1,7 +1,7 @@
 import { sql, eq, and, or, inArray } from 'drizzle-orm';
-import { Media, mediaSchema } from '@metacult/backend/catalog';
+import { Media, mediaSchema } from '@metacult/backend-catalog';
 import { userInteractions } from '@metacult/backend-interaction';
-import { getDbConnection } from '@metacult/backend/infrastructure';
+import { getDbConnection } from '@metacult/backend-infrastructure';
 import type { DuelRepository } from '../../application/ports/duel.repository.interface';
 
 /**

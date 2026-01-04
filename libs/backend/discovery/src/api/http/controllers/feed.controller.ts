@@ -2,9 +2,9 @@
 import { Elysia } from 'elysia';
 import { GetMixedFeedHandler } from '../../../application/queries/get-mixed-feed/get-mixed-feed.handler';
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 
-import type { IInteractionRepository } from '@metacult/backend/interaction';
+import type { IInteractionRepository } from '@metacult/backend-interaction';
 
 import { auth } from '@metacult/backend-identity';
 

@@ -12,7 +12,7 @@ import type {
   GoogleBooksAdapter,
 } from '../../../infrastructure/adapters/media.adapters';
 import { MediaType } from '../../../domain/entities/media.entity';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 
 type SearchResultItem = Static<typeof SearchResultItemSchema>;
 

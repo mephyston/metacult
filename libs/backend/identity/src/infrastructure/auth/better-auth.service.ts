@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { getDbConnection, configService } from '@metacult/backend/infrastructure';
+import { getDbConnection, configService } from '@metacult/backend-infrastructure';
 import { user, session, account, verification } from '../db/auth.schema';
 
 const { db } = getDbConnection();

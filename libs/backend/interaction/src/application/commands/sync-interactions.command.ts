@@ -1,5 +1,5 @@
 import { eq, and } from 'drizzle-orm';
-import { getDbConnection, logger } from '@metacult/backend/infrastructure';
+import { getDbConnection, logger } from '@metacult/backend-infrastructure';
 import { userInteractions } from '../../infrastructure/db/interactions.schema';
 
 interface SyncInteractionPayload {

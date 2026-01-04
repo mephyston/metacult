@@ -5,7 +5,7 @@ import { SearchMediaHandler } from '../application/queries/search-media/search-m
 import { MediaType } from '../domain/entities/media.entity';
 
 // Mock infrastructure
-mock.module('@metacult/backend/infrastructure', () => ({
+mock.module('@metacult/backend-infrastructure', () => ({
   logger: {
     info: () => void 0,
     error: () => void 0,

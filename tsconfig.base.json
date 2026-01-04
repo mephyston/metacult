@@ -19,9 +19,8 @@
       "@metacult/backend-interaction": [
         "libs/backend/interaction/src/index.ts"
       ],
-
-      "@metacult/backend/ranking": ["libs/backend/ranking/src/index.ts"],
-      "@metacult/backend/infrastructure": [
+      "@metacult/backend-ranking": ["libs/backend/ranking/src/index.ts"],
+      "@metacult/backend-infrastructure": [
         "libs/backend/infrastructure/src/index.ts"
       ],
 

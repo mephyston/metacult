@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 
 export const RANKING_QUEUE_NAME = 'ranking-updates';
 

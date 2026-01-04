@@ -9,7 +9,7 @@
 "@metacult/shared-ui" = "libs/shared/ui/src/index.ts"
 "@metacult/shared-core" = "libs/shared/core/src/index.ts"
 
-# Backend Libraries (New naming convention)
+# Backend Libraries (with hyphen - new standard)
 "@metacult/backend-identity" = "libs/backend/identity/src/index.ts"
 "@metacult/backend-catalog" = "libs/backend/catalog/src/index.ts"
 "@metacult/backend-marketing" = "libs/backend/marketing/src/index.ts"
@@ -18,10 +18,6 @@
 "@metacult/backend-infrastructure" = "libs/backend/infrastructure/src/index.ts"
 "@metacult/backend-ranking" = "libs/backend/ranking/src/index.ts"
 
-# Legacy aliases (à supprimer progressivement mais nécessaires pour compatibilité)
-"@metacult/backend/infrastructure" = "libs/backend/infrastructure/src/index.ts"
-"@metacult/backend/ranking" = "libs/backend/ranking/src/index.ts"
-
-# Very legacy aliases
+# Very legacy aliases (to remove eventually)
 "interaction" = "libs/backend/interaction/src/index.ts"
 "identity" = "libs/backend/identity/src/index.ts"

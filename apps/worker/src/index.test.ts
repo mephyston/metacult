@@ -18,7 +18,7 @@ const mockCreateWorker = mock(() => ({
 // bun test might resolve aliases to absolute paths, so we need to be careful with double mocking.
 // Merging into one mock block for safety.
 
-mock.module('@metacult/backend/infrastructure', () => {
+mock.module('@metacult/backend-infrastructure', () => {
   return {
     createWorker: mockCreateWorker,
     IMPORT_QUEUE_NAME: 'import-queue',

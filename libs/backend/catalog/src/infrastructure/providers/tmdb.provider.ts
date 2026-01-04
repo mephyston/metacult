@@ -1,5 +1,5 @@
 import { fetchWithRetry } from '@metacult/shared-core';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 import type { TmdbMovieRaw } from '../types/raw-responses';
 
 /**

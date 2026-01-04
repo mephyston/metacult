@@ -3,9 +3,9 @@ import {
   createWorker,
   IMPORT_QUEUE_NAME,
   logger,
-} from '@metacult/backend/infrastructure';
+} from '@metacult/backend-infrastructure';
 import { processRankingUpdate } from './processors/ranking.processor';
-import { RANKING_QUEUE_NAME } from '@metacult/backend/ranking';
+import { RANKING_QUEUE_NAME } from '@metacult/backend-ranking';
 
 export const startWorker = async () => {
   logger.info('🚀 Starting Metacult Worker Service...');

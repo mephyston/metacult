@@ -4,7 +4,7 @@ import {
   auth,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
 import { saveInteraction } from '../../../application/commands/save-interaction.command';
 import { syncInteractions } from '../../../application/commands/sync-interactions.command';

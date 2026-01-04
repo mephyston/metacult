@@ -3,12 +3,12 @@ import {
   isAuthenticated,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
 import { GetUserRankingsHandler } from '../../../application/queries/get-user-rankings/get-user-rankings.handler';
 import { DrizzleInteractionRepository } from '@metacult/backend-interaction';
-import { DrizzleMediaRepository } from '@metacult/backend/catalog';
-import { getDbConnection } from '@metacult/backend/infrastructure';
+import { DrizzleMediaRepository } from '@metacult/backend-catalog';
+import { getDbConnection } from '@metacult/backend-infrastructure';
 
 // Note: Ces repositories partagent la même instance DB que l'app principale
 // On réutilise le singleton DB déjà initialisé dans apps/api/index.ts

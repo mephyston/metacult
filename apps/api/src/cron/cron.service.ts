@@ -1,4 +1,4 @@
-import { importQueue, logger } from '@metacult/backend/infrastructure';
+import { importQueue, logger } from '@metacult/backend-infrastructure';
 
 /**
  * Initialise les tâches planifiées (Cron Jobs) dans BullMQ.

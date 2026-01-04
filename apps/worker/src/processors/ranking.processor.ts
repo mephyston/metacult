@@ -3,9 +3,9 @@ import { eq } from 'drizzle-orm';
 import {
   EloCalculator,
   type RankingUpdateJob,
-} from '@metacult/backend/ranking';
-import { getDbConnection, logger } from '@metacult/backend/infrastructure';
-import { mediaSchema } from '@metacult/backend/catalog';
+} from '@metacult/backend-ranking';
+import { getDbConnection, logger } from '@metacult/backend-infrastructure';
+import { mediaSchema } from '@metacult/backend-catalog';
 
 // Initialize Elo Service
 const eloCalculator = new EloCalculator();

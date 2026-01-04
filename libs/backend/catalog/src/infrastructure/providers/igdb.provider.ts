@@ -3,7 +3,7 @@ import {
   redisClient,
   cacheService,
   logger,
-} from '@metacult/backend/infrastructure';
+} from '@metacult/backend-infrastructure';
 import type { IgdbGameRaw } from '../types/raw-responses';
 
 interface TwitchTokenResponse {

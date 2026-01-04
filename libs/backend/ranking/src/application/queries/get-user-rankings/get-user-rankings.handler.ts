@@ -1,6 +1,6 @@
 import type { GetUserRankingsQuery } from './get-user-rankings.query';
 import type { IInteractionRepository } from '@metacult/backend-interaction';
-import type { IMediaRepository, Media } from '@metacult/backend/catalog';
+import type { IMediaRepository, Media } from '@metacult/backend-catalog';
 import { EloCalculator } from '../../../domain/services/elo-calculator.service';
 import { InteractionAction } from '@metacult/backend-interaction';
 

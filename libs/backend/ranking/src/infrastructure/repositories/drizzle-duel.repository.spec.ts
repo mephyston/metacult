@@ -14,7 +14,7 @@ const mockInnerJoin = mock(() => ({ where: mockWhere }));
 const mockFrom = mock(() => ({ innerJoin: mockInnerJoin }));
 const mockSelect = mock(() => ({ from: mockFrom }));
 
-mock.module('@metacult/backend/infrastructure', () => ({
+mock.module('@metacult/backend-infrastructure', () => ({
   getDbConnection: () => ({
     db: {
       select: mockSelect,
@@ -47,7 +47,7 @@ mock.module('drizzle-orm', () => ({
   inArray: () => 'inArray',
 }));
 
-mock.module('@metacult/backend/catalog', () => ({
+mock.module('@metacult/backend-catalog', () => ({
   mediaSchema: { medias: { id: 'm_id' } },
 }));
 

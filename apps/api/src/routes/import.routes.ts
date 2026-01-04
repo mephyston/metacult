@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { importQueue } from '@metacult/backend/infrastructure';
+import { importQueue } from '@metacult/backend-infrastructure';
 
 // Les routes sont préfixées lors du montage (ex: /api/import)
 

@@ -1,6 +1,6 @@
 import { Elysia } from 'elysia';
 import { AppError, API_MESSAGES } from '@metacult/shared-core';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 
 /**
  * Global Error Handling Middleware for Elysia

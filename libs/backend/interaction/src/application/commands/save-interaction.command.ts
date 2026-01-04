@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { getDbConnection } from '@metacult/backend/infrastructure';
+import { getDbConnection } from '@metacult/backend-infrastructure';
 import { userInteractions, actionEnum, sentimentEnum } from '../../infrastructure/db/interactions.schema';
 
 const { db } = getDbConnection();

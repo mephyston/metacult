@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 import type { GetActiveAdsQuery } from './get-active-ads.query';
 import type { Ad } from '../../../domain/ad.entity';
 

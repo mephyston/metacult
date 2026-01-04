@@ -1,6 +1,6 @@
 import { Redis } from 'ioredis';
 import { GetMixedFeedQuery } from './get-mixed-feed.query';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 import type { IMediaSearcher } from '../../ports/media-searcher.interface';
 import type { IAdsProvider } from '../../ports/ads-provider.interface';
 

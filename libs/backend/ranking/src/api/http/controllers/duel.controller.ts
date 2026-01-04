@@ -3,7 +3,7 @@ import {
   isAuthenticated,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES, DUEL_STATUS } from '@metacult/shared-core';
 import { RankingQueue } from '../../../infrastructure/queue/ranking.queue';
 import { DrizzleDuelRepository } from '../../../infrastructure/repositories/drizzle-duel.repository';

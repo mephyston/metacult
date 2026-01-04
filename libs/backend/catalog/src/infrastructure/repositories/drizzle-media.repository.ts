@@ -1,6 +1,6 @@
 import { eq, ilike, and, desc, sql, notInArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 import type {
   IMediaRepository,
   MediaSearchFilters,

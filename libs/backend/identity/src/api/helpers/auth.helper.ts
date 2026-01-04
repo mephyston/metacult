@@ -1,5 +1,5 @@
 import { auth } from '../../infrastructure/auth/better-auth.service';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
 
 /**

@@ -5,18 +5,18 @@ import {
   createCatalogRoutes,
   CatalogModuleFactory,
   type CatalogModuleConfig,
-} from '@metacult/backend/catalog';
+} from '@metacult/backend-catalog';
 import {
   createDiscoveryRoutes,
   FeedController,
   GetMixedFeedHandler,
-} from '@metacult/backend/discovery';
+} from '@metacult/backend-discovery';
 import { createAuthRoutes } from '@metacult/backend-identity';
-import { interactionController as interactionRoutes } from '@metacult/backend/interaction';
+import { interactionController as interactionRoutes } from '@metacult/backend-interaction';
 import {
   DuelController as duelRoutes,
   RankingController as rankingRoutes,
-} from '@metacult/backend/ranking';
+} from '@metacult/backend-ranking';
 import { importRoutes } from './src/routes/import.routes';
 import { debugRoutes } from './src/routes/debug.routes';
 import {
@@ -24,16 +24,16 @@ import {
   redisClient,
   requestContext,
   logger,
-} from '@metacult/backend/infrastructure';
-import * as infraSchema from '@metacult/backend/infrastructure';
+} from '@metacult/backend-infrastructure';
+import * as infraSchema from '@metacult/backend-infrastructure';
 import { initCrons } from './src/cron/cron.service';
 import { errorMiddleware } from './src/middlewares/error.middleware';
 import {
   GetActiveAdsHandler,
   GetActiveAdsQuery,
-} from '@metacult/backend/marketing';
+} from '@metacult/backend-marketing';
 
-import { runMigrations } from '@metacult/backend/infrastructure';
+import { runMigrations } from '@metacult/backend-infrastructure';
 
 // Safe migration runner (Non-blocking to allow Healthcheck to pass)
 runMigrations()
@@ -43,13 +43,13 @@ runMigrations()
   );
 
 // Initialisation de la BDD (Composition Root)
-import { mediaSchema, DrizzleMediaRepository } from '@metacult/backend/catalog';
+import { mediaSchema, DrizzleMediaRepository } from '@metacult/backend-catalog';
 import {
   userInteractions,
   actionEnum,
   sentimentEnum,
   DrizzleInteractionRepository,
-} from '@metacult/backend/interaction';
+} from '@metacult/backend-interaction';
 const fullSchema = {
   ...infraSchema,
   ...mediaSchema,
@@ -72,7 +72,7 @@ const { db } = getDbConnection(fullSchema);
 logger.info("🚀 Démarrage de l'API (Elysia)...");
 
 // --- COMPOSITION ROOT (Chargement de la Configuration) ---
-import { configService } from '@metacult/backend/infrastructure';
+import { configService } from '@metacult/backend-infrastructure';
 
 // ✅ Lecture de la configuration via le service validé
 logger.info(`🔌 API Config: NODE_ENV=${configService.get('NODE_ENV')}`);

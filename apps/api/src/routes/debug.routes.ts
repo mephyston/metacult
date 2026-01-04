@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia';
-import { importQueue, logger } from '@metacult/backend/infrastructure';
+import { importQueue, logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
 
 export const debugRoutes = new Elysia({ prefix: '/debug' }).get(

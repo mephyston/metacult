@@ -1,10 +1,10 @@
 import { describe, it, expect, mock } from 'bun:test';
 import { processImportMedia } from './import-media.processor';
-import { MediaType, ImportMediaHandler } from '@metacult/backend/catalog';
+import { MediaType, ImportMediaHandler } from '@metacult/backend-catalog';
 import { Job } from 'bullmq';
 
 describe('Import Media Processor', () => {
-  mock.module('@metacult/backend/infrastructure', () => ({
+  mock.module('@metacult/backend-infrastructure', () => ({
     getDbConnection: () => ({ db: {} }),
     importQueue: { add: mock(() => Promise.resolve()) },
     logger: {

@@ -8,7 +8,7 @@ import {
   ProviderUnavailableError,
   UnsupportedMediaTypeError,
 } from '../../../domain/errors/catalog.errors';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 
 /**
  * Cas d'Utilisation (Use Case) : Importer un média externe.

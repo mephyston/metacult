@@ -1,7 +1,7 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { Redis } from 'ioredis';
 import type { MediaReadDto } from '../search-media/media-read.dto';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 
 export interface GetTopRatedMediaQuery {
   limit: number;

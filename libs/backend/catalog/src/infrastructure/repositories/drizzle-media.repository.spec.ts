@@ -39,7 +39,7 @@ const mockDb = {
   transaction: mock((cb) => cb(mockDb)),
 } as any;
 
-mock.module('@metacult/backend/infrastructure', () => ({
+mock.module('@metacult/backend-infrastructure', () => ({
   logger: {
     info: () => void 0,
     error: () => void 0,
@@ -59,7 +59,7 @@ mock.module('@metacult/backend/infrastructure', () => ({
   },
 }));
 
-mock.module('@metacult/backend/catalog', () => ({
+mock.module('@metacult/backend-catalog', () => ({
   mediaSchema: {
     medias: { id: 'id', title: 'title' },
     mediasToTags: { mediaId: 'mid', tagId: 'tid' },

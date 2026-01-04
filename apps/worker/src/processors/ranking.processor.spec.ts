@@ -45,7 +45,7 @@ mock.module('drizzle-orm', () => ({
   eq: (col: any, val: any) => ({ col, val }), // Capture value for inspection
 }));
 
-mock.module('@metacult/backend/infrastructure', () => ({
+mock.module('@metacult/backend-infrastructure', () => ({
   getDbConnection: () => ({
     db: {
       select: () => ({ from: () => ({ where: mockSelectWhere }) }),

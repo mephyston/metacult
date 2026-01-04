@@ -1,4 +1,4 @@
-import { Media } from '@metacult/backend/catalog';
+import { Media } from '@metacult/backend-catalog';
 
 /**
  * Port pour l'accès aux données des Duels.

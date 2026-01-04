@@ -2,7 +2,7 @@ import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { GetMediaByIdQuery } from './get-media-by-id.query';
 import type { MediaDetailDto } from './media-detail.dto';
 import { MediaNotFoundInProviderError } from '../../../domain/errors/catalog.errors';
-import { logger } from '@metacult/backend/infrastructure';
+import { logger } from '@metacult/backend-infrastructure';
 
 import type { Redis } from 'ioredis';
 

@@ -4,8 +4,8 @@ import {
   getDbConnection,
   logger,
   type ImportJob,
-} from '@metacult/backend/infrastructure';
-import * as mediaSchema from '@metacult/backend/catalog';
+} from '@metacult/backend-infrastructure';
+import * as mediaSchema from '@metacult/backend-catalog';
 import {
   MediaType,
   ImportMediaHandler,
@@ -15,7 +15,7 @@ import {
   IgdbProvider,
   GoogleBooksProvider,
   MediaAlreadyExistsError,
-} from '@metacult/backend/catalog';
+} from '@metacult/backend-catalog';
 import { Job } from 'bullmq';
 
 export interface ImportMediaProcessorDeps {
