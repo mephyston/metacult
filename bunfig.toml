@@ -1,0 +1,29 @@
+# Bun Module Resolution Configuration
+# Required for production runtime to resolve TypeScript path aliases
+
+[module]
+# Map TypeScript path aliases to actual file locations
+# These must match the paths defined in tsconfig.base.json
+
+# Shared Libraries
+"@metacult/shared-ui" = "libs/shared/ui/src/index.ts"
+"@metacult/shared-core" = "libs/shared/core/src/index.ts"
+
+# Backend Libraries (New naming convention)
+"@metacult/backend-identity" = "libs/backend/identity/src/index.ts"
+"@metacult/backend-catalog" = "libs/backend/catalog/src/index.ts"
+"@metacult/backend-marketing" = "libs/backend/marketing/src/index.ts"
+"@metacult/backend-discovery" = "libs/backend/discovery/src/index.ts"
+"@metacult/backend-interaction" = "libs/backend/interaction/src/index.ts"
+"@metacult/backend/ranking" = "libs/backend/ranking/src/index.ts"
+
+# Legacy aliases (à supprimer progressivement mais nécessaires pour compatibilité)
+"@metacult/backend/infrastructure" = "libs/backend/infrastructure/src/index.ts"
+"@metacult/backend/catalog" = "libs/backend/catalog/src/index.ts"
+"@metacult/backend/marketing" = "libs/backend/marketing/src/index.ts"
+"@metacult/backend/discovery" = "libs/backend/discovery/src/index.ts"
+"@metacult/backend/interaction" = "libs/backend/interaction/src/index.ts"
+
+# Very legacy aliases
+"interaction" = "libs/backend/interaction/src/index.ts"
+"identity" = "libs/backend/identity/src/index.ts"
