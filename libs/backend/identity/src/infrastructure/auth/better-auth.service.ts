@@ -1,6 +1,9 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { getDbConnection, configService } from '@metacult/backend-infrastructure';
+import {
+  getDbConnection,
+  configService,
+} from '@metacult/backend-infrastructure';
 import { user, session, account, verification } from '../db/auth.schema';
 
 const { db } = getDbConnection();
@@ -30,10 +33,10 @@ export const auth = betterAuth({
   trustedOrigins: [
     ...(configService.isDevelopment
       ? [
-        'http://localhost:3333', // API
-        'http://localhost:4444', // Website dev fallback
-        'http://localhost:4201', // Webapp Nuxt
-      ]
+          'http://localhost:3000', // API: Default port
+          'http://localhost:4444', // Website dev fallback
+          'http://localhost:4201', // Webapp Nuxt
+        ]
       : []),
     ...(configService.get('BETTER_AUTH_TRUSTED_ORIGINS')
       ? configService.get('BETTER_AUTH_TRUSTED_ORIGINS')!.split(',')

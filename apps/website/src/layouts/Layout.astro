@@ -2,6 +2,7 @@
 import { Header, Footer, Search } from '@metacult/shared-ui';
 import ThemeHeadScript from '../components/shared/ThemeHeadScript.astro';
 import { fr } from '../i18n/fr';
+import pkg from '../../package.json';
 import '@metacult/shared-ui/styles/global.css';
 
 // ✅ Self-hosted fonts
@@ -64,5 +65,8 @@ const {
         <slot />
     </main>
 
-    <Footer />
+    <Footer
+        version={pkg.version}
+        commit={import.meta.env.RAILWAY_GIT_COMMIT_SHA || 'dev'}
+    />
 </html>

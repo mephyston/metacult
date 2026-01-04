@@ -33,6 +33,8 @@ import {
   GetActiveAdsQuery,
 } from '@metacult/backend-marketing';
 
+import { version } from './package.json';
+
 import { runMigrations } from '@metacult/backend-infrastructure';
 
 // Safe migration runner (Non-blocking to allow Healthcheck to pass)
@@ -191,7 +193,13 @@ const app = new Elysia()
     logger.debug({ method: request.method, url: request.url }, '[API Request]');
   })
   .get('/', () => 'Hello Metacult API (Elysia)')
-  .get('/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
+  .get('/health', () => ({
+    status: 'ok',
+    version,
+    commit:
+      process.env.RAILWAY_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || 'dev',
+    timestamp: new Date().toISOString(),
+  }))
   // Montage des routes
   .use(authRoutes)
   .group('/api', (app) =>
