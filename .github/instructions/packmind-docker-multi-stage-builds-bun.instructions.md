@@ -9,8 +9,9 @@ Pratiques Docker avec Bun pour monorepo NX : single-stage (runtime direct) et mu
 - Utiliser oven/bun:1-alpine comme image de base (Alpine pour légèreté).
 - Copier package.json et bun.lock (pas bun.lockb) AVANT le code pour optimiser le cache Docker.
 - Copier TOUS les package.json du monorepo (apps/_/package.json, libs/_/package.json) pour que bun install fonctionne avec workspaces.
-- Installer avec bun install --frozen-lockfile --production pour apps runtime direct (API, Worker).
-- Installer avec bun install --frozen-lockfile (toutes dépendances) pour apps nécessitant un build (Nuxt, Astro).
+- Ajouter --ignore-scripts à TOUS les bun install pour éviter l'exécution de scripts prepare (husky, etc.) en Docker.
+- Installer avec bun install --frozen-lockfile --production --ignore-scripts pour apps runtime direct (API, Worker).
+- Installer avec bun install --frozen-lockfile --ignore-scripts (toutes dépendances) pour apps nécessitant un build (Nuxt, Astro).
 - Pour apps multi-stage (Nuxt) : Séparer en 2 stages builder (build avec toutes deps) et runner (copie artefacts buildés).
 - Pour apps single-stage (API, Worker) : Un seul stage runner avec install production puis copie du code source.
 - Copier nx.json et tsconfig.base.json dans TOUS les Dockerfiles (requis pour résolution des paths aliases monorepo).

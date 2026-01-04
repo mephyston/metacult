@@ -19,7 +19,8 @@ COPY libs/shared/ui/package.json ./libs/shared/ui/
 COPY apps/e2e/package.json ./apps/e2e/
 
 # 3. Install ALL dependencies (needed for build)
-RUN bun install --frozen-lockfile
+# --ignore-scripts prevents husky from running in Docker build
+RUN bun install --frozen-lockfile --ignore-scripts
 
 # 4. Copy Full Source (Optimized: after install to leverage cache)
 COPY . .

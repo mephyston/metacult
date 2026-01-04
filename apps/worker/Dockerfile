@@ -20,7 +20,8 @@ COPY libs/shared/ui/package.json ./libs/shared/ui/
 COPY apps/e2e/package.json ./apps/e2e/
 
 # 3. Install production dependencies only
-RUN bun install --frozen-lockfile --production
+# --ignore-scripts prevents husky/prepare scripts from running
+RUN bun install --frozen-lockfile --production --ignore-scripts
 
 # 4. Copy Source Code
 COPY apps/worker ./apps/worker

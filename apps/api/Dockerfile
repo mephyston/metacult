@@ -22,7 +22,8 @@ COPY apps/e2e/package.json ./apps/e2e/
 # Note: In a strict monorepo, we might need all deps to build libs, 
 # but for API running TS directly, we typically just need runtime deps.
 # Using --frozen-lockfile to ensure consistency.
-RUN bun install --frozen-lockfile --production
+# --ignore-scripts prevents husky/prepare scripts from running
+RUN bun install --frozen-lockfile --production --ignore-scripts
 
 # 4. Copy Source Code
 COPY apps/api ./apps/api
