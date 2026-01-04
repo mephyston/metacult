@@ -1,5 +1,7 @@
 # Base image optimized for Bun
-FROM oven/bun:1-alpine AS runner
+
+FROM oven/bun:1 AS runner
+
 
 WORKDIR /app
 
