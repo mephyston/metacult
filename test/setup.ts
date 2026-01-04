@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { mock } from 'bun:test';
+import { EventEmitter } from 'events';
 
 // 1. Mock Environment Variables BEFORE any imports
 process.env.NODE_ENV = 'test';
@@ -14,9 +15,10 @@ process.env.BETTER_AUTH_TRUSTED_ORIGINS = 'http://localhost:3000';
 // 2. Mock IoRedis to prevent connection attempts
 mock.module('ioredis', () => {
   return {
-    default: class RedisMock {
-      constructor() {}
-      on(event: string, callback: any) {}
+    default: class RedisMock extends EventEmitter {
+      constructor() {
+        super();
+      }
       async get(key: string) {
         return null;
       }
@@ -28,6 +30,16 @@ mock.module('ioredis', () => {
       }
       async quit() {
         return 'OK';
+      }
+      async disconnect() {
+        return 'OK';
+      }
+      async info() {
+        return 'redis_version:6.2.0';
+      }
+      defineCommand(name: string, def: any) {}
+      duplicate() {
+        return this;
       }
       status = 'ready';
     },
