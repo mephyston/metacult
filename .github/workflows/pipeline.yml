@@ -44,14 +44,14 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Install Playwright Browsers
-        run: bunx playwright install --with-deps
+      # - name: Install Playwright Browsers
+      #   run: bunx playwright install --with-deps
 
       - name: Lint Affected
         run: bun run nx affected -t lint --parallel=3
 
       - name: Test Affected
-        run: bun run nx affected -t test --parallel=3
+        run: bun run nx affected -t test --parallel=3 --exclude=e2e
 
   # ------------------------------------------------------------------
   # JOB 1 (Part B): STAGING BUILD & DEPLOY

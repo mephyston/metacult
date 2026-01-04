@@ -15,7 +15,7 @@
 "@metacult/backend-marketing" = "libs/backend/marketing/src/index.ts"
 "@metacult/backend-discovery" = "libs/backend/discovery/src/index.ts"
 "@metacult/backend-interaction" = "libs/backend/interaction/src/index.ts"
-"@metacult/backend/ranking" = "libs/backend/ranking/src/index.ts"
+"@metacult/backend-ranking" = "libs/backend/ranking/src/index.ts"
 
 # Legacy aliases (à supprimer progressivement mais nécessaires pour compatibilité)
 "@metacult/backend/infrastructure" = "libs/backend/infrastructure/src/index.ts"
@@ -23,6 +23,7 @@
 "@metacult/backend/marketing" = "libs/backend/marketing/src/index.ts"
 "@metacult/backend/discovery" = "libs/backend/discovery/src/index.ts"
 "@metacult/backend/interaction" = "libs/backend/interaction/src/index.ts"
+"@metacult/backend/ranking" = "libs/backend/ranking/src/index.ts"
 
 # Very legacy aliases
 "interaction" = "libs/backend/interaction/src/index.ts"
