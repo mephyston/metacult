@@ -1,3 +1,16 @@
+## 0.6.4 (2026-01-04)
+
+### 🩹 Fixes
+
+- **catalog:** use higher quality igdb images (t_cover_big) ([faa3e13](https://github.com/mephyston/metacult/commit/faa3e13))
+- **config:** auto-detect NODE_ENV from RAILWAY_ENVIRONMENT_NAME ([7e20ee4](https://github.com/mephyston/metacult/commit/7e20ee4))
+- **webapp:** bypass nuxt proxy for duel api to fix staging 502, dynamic proxy rule ([d59f381](https://github.com/mephyston/metacult/commit/d59f381))
+- **webapp:** add credentials:include to useDuel fetch for cross-origin auth ([6ddf5bc](https://github.com/mephyston/metacult/commit/6ddf5bc))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.6.3 (2026-01-04)
 
 ### 🩹 Fixes

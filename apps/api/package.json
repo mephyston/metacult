@@ -1,6 +1,6 @@
 {
   "name": "@metacult/api",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "scripts": {
     "dev": "bun --env-file=../../.env --watch index.ts",
     "start": "bun --env-file=../../.env index.ts"
