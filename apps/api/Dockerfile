@@ -18,12 +18,11 @@ COPY libs/shared/ui/package.json ./libs/shared/ui/
 # Copy E2E package.json as it is a workspace in bun.lock
 COPY apps/e2e/package.json ./apps/e2e/
 
-# 3. Install production dependencies only
-# Note: In a strict monorepo, we might need all deps to build libs, 
-# but for API running TS directly, we typically just need runtime deps.
-# Using --frozen-lockfile to ensure consistency.
+# 3. Install ALL dependencies (including devDependencies)
+# Required in monorepo: internal libs are referenced as workspace dependencies
+# and are not included in production deps. Bun needs them to resolve path aliases.
 # --ignore-scripts prevents husky/prepare scripts from running
-RUN bun install --frozen-lockfile --production --ignore-scripts
+RUN bun install --frozen-lockfile --ignore-scripts
 
 # 4. Copy Source Code
 COPY apps/api ./apps/api
