@@ -90,6 +90,7 @@ jobs:
         with:
           context: .
           file: apps/${{ matrix.app }}/Dockerfile
+          platforms: linux/amd64
           push: true
           tags: |
             ghcr.io/${{ steps.get-owner.outputs.owner }}/metacult-${{ matrix.app }}:staging
