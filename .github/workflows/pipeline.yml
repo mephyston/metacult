@@ -179,6 +179,7 @@ jobs:
         id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HUSKY: 0
         run: |
           if [ "${{ inputs.preid }}" == "none" ]; then
              bun run nx release ${{ inputs.releaseType }} --skip-publish
