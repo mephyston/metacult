@@ -2,12 +2,11 @@
 import { fileURLToPath } from 'url';
 import tailwindcss from '@tailwindcss/vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
-import { defineNuxtConfig } from 'nuxt/config';
 
 import { themeScript } from '../../libs/shared/ui/src/lib/theme-script';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
+export default {
   workspaceDir: '../../',
   srcDir: 'app',
   devtools: { enabled: true },
@@ -98,4 +97,4 @@ export default defineNuxtConfig({
       new URL('../../libs/shared/ui/src/index.ts', import.meta.url),
     ),
   },
-});
+};
