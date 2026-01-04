@@ -1,3 +1,13 @@
+## 0.6.1 (2026-01-04)
+
+### 🩹 Fixes
+
+- **infra:** allow ipv6 for redis and enable logs ([39d9b99](https://github.com/mephyston/metacult/commit/39d9b99))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.6.0 (2026-01-04)
 
 ### 🩹 Fixes
