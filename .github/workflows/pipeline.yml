@@ -120,7 +120,7 @@ jobs:
             ghcr.io/${{ steps.get-owner.outputs.owner }}/metacult-${{ matrix.app }}:staging
             ghcr.io/${{ steps.get-owner.outputs.owner }}/metacult-${{ matrix.app }}:sha-${{ github.sha }}
           build-args: |
-            GIT_COMMIT_SHA=${{ github.sha }}
+            GIT_SHA=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -253,7 +253,15 @@ jobs:
           # Only runs if all promotions succeeded.
           for APP in "${APPS[@]}"; do
             echo "🚀 Deploying $APP to Production..."
-            railway redeploy --service $APP --yes
+            echo "💉 Injecting Version $VERSION into Railway ($APP)..."
+
+            # On injecte la version. Railway redémarrera automatiquement le service.
+            railway variables set APP_VERSION=$VERSION --service $APP --environment production --yes
+
+            # Cas spécifique Nuxt pour le frontend
+            if [ "$APP" == "webapp" ]; then
+                railway variables set NUXT_PUBLIC_APP_VERSION=$VERSION --service $APP --environment production --yes
+            fi
           done
 
           echo "✅ All services promoted and deployed to Production!"

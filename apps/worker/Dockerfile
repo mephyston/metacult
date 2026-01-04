@@ -38,4 +38,6 @@ ENV NODE_ENV=production
 # ENV PORT=3000 
 
 # Worker entrypoint is in src/: apps/worker/src/index.ts
+ARG GIT_SHA
+ENV GIT_SHA=$GIT_SHA
 CMD ["bun", "/app/apps/worker/src/index.ts"]

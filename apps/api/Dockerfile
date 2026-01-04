@@ -29,8 +29,8 @@ COPY apps/api ./apps/api
 COPY libs ./libs
 
 # 5. Set Environment and Start
-ARG GIT_COMMIT_SHA
-ENV GIT_COMMIT_SHA=$GIT_COMMIT_SHA
+ARG GIT_SHA
+ENV GIT_SHA=$GIT_SHA
 ENV NODE_ENV=production
 ENV PORT=3000
 RUN ls -R apps/api

@@ -26,9 +26,11 @@ RUN bun install --frozen-lockfile --ignore-scripts
 COPY . .
 
 # 5. Build Webapp
-# This generates .output/server
 # Use direct nuxt build to avoid Nx graph construction issues in Docker
 WORKDIR /app/apps/webapp
+ARG GIT_SHA
+ENV NUXT_PUBLIC_GIT_SHA=$GIT_SHA
+ENV GIT_SHA=$GIT_SHA
 RUN bun run build
 WORKDIR /app
 
@@ -41,9 +43,9 @@ WORKDIR /app
 COPY --from=builder /app/apps/webapp/.output ./.output
 
 # 2. Environment Setup
-ARG GIT_COMMIT_SHA
-ENV GIT_COMMIT_SHA=$GIT_COMMIT_SHA
-ENV NUXT_PUBLIC_COMMIT_SHA=$GIT_COMMIT_SHA
+ARG GIT_SHA
+ENV GIT_SHA=$GIT_SHA
+ENV NUXT_PUBLIC_GIT_SHA=$GIT_SHA
 ENV NODE_ENV=production
 ENV NUXT_HOST=0.0.0.0
 ENV NUXT_PORT=3000
