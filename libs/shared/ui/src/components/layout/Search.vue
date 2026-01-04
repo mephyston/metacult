@@ -21,7 +21,7 @@ import {
   CommandSeparator,
 } from '../ui/command';
 import { Button } from '../ui/button';
-import { getApiUrl, getWebappUrl } from '../../lib/utils';
+import { getApiUrl, getWebappUrl, getWebsiteUrl } from '../../lib/utils';
 import { logger } from '../../lib/logger';
 
 // Types (simplified version of DTO)
@@ -169,7 +169,7 @@ async function handleSelect(item: SearchResultItem) {
 
 function navigateToMedia(type: string, idOrSlug: string) {
   open.value = false;
-  const websiteUrl = getWebappUrl();
+  const websiteUrl = getWebsiteUrl();
   window.location.href = `${websiteUrl}/catalog/${type}/${idOrSlug}`;
 }
 </script>

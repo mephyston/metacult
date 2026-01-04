@@ -19,6 +19,9 @@ export class RankingQueue {
   constructor() {
     const connection = {
       url: process.env.REDIS_URL || 'redis://localhost:6379',
+      maxRetriesPerRequest: null, // Required by BullMQ
+      enableReadyCheck: false,
+      // family: 0 // Auto-detect IPv4/IPv6 (Railway compatible)
     };
 
     this.queue = new Queue<RankingUpdateJob>(RANKING_QUEUE_NAME, {
