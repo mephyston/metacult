@@ -256,11 +256,11 @@ jobs:
             echo "💉 Injecting Version $VERSION into Railway ($APP)..."
 
             # On injecte la version. Railway redémarrera automatiquement le service.
-            railway variables --set "APP_VERSION=$VERSION" --service $APP --environment production --yes
+            railway variables --set "APP_VERSION=$VERSION" --service $APP --environment production
 
             # Cas spécifique Nuxt pour le frontend
             if [ "$APP" == "webapp" ]; then
-                railway variables --set "NUXT_PUBLIC_APP_VERSION=$VERSION" --service $APP --environment production --yes
+                railway variables --set "NUXT_PUBLIC_APP_VERSION=$VERSION" --service $APP --environment production
             fi
           done
 
