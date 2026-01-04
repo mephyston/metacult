@@ -5,6 +5,7 @@ This standards index contains all available coding standards that can be used by
 ## Available Standards
 
 - [AstroJS Development Standards](./standards/astrojs-development-standards.md) : Regroupe les pratiques essentielles pour un projet AstroJS moderne et robuste.
+- [Configuration Runtime et Résolution d'URLs](./standards/configuration-runtime-et-resolution-durls.md) : Pratiques pour configuration runtime type-safe, Split Horizon URLs (interne/publique), validation TypeBox, et élimination des URLs hardcodées.
 - [DDD Clean Architecture Implementation](./standards/ddd-clean-architecture-implementation.md) : Application pratique de DDD et Clean Architecture avec structure en couches, Value Objects, Entities et Ports/Adapters.
 - [Docker Multi-Stage Builds Bun](./standards/docker-multi-stage-builds-bun.md) : Pratiques Docker multi-stage avec Bun pour images optimis\u00e9es, cache intelligent et s\u00e9curit\u00e9.
 - [ElysiaJS + Bun Development Standards](./standards/elysiajs-bun-development-standards.md) : Standards et bonnes pratiques pour le développement d'APIs backend avec ElysiaJS et Bun runtime.
