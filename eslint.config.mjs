@@ -21,7 +21,7 @@ export default [
     },
   },
   {
-    ignores: ['**/dist', '**/out-tsc', '**/vite.config.*.timestamp*', '**/*.d.ts', '**/.astro/**/*', '**/.nuxt/**/*', '**/.output/**/*', 'apps/webapp/nuxt.config.ts', '**/playwright-report/**', '**/test-results/**'],
+    ignores: ['**/dist', '**/out-tsc', '**/vite.config.*.timestamp*', '**/*.d.ts', '**/.astro/**/*', '**/.nuxt/**/*', 'apps/webapp/.nuxt/**/*', '**/.output/**/*', 'apps/webapp/nuxt.config.ts', '**/playwright-report/**', '**/test-results/**'],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.vue'],
