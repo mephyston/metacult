@@ -1,3 +1,14 @@
+## 0.6.0 (2026-01-04)
+
+### 🩹 Fixes
+
+- **ui:** remove double version prefix in footer ([39fa733](https://github.com/mephyston/metacult/commit/39fa733))
+- **webapp:** inject window.__ENV__ for shared-ui url resolution ([dbc921d](https://github.com/mephyston/metacult/commit/dbc921d))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.5.1 (2026-01-04)
 
 ### 🩹 Fixes
