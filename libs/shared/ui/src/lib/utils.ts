@@ -38,10 +38,15 @@ export function getApiUrl(): string {
 
   // 2. Process Env (Node/SSR)
   if (!rawApiUrl && typeof process !== 'undefined') {
-    // A. Priority to Internal Railway URL for SSR (Efficiency)
-    // We strictly use this ONLY if we are in a Node environment (SSR)
-    // and the variable is available (Railway injects API_URL)
-    if (process.env['API_URL']) {
+    // A. Priority to Explicit Internal URLs (We set these manually with correct Port)
+    if (process.env['INTERNAL_API_URL']) {
+      rawApiUrl = process.env['INTERNAL_API_URL'];
+    } else if (process.env['NUXT_INTERNAL_API_URL']) {
+      rawApiUrl = process.env['NUXT_INTERNAL_API_URL'];
+    }
+    // B. Fallback to Railway Auto-Injected API_URL
+    // WARNING: This often lacks the port (80 vs 8080), so we prefer the variables above.
+    else if (process.env['API_URL']) {
       let internalUrl = process.env['API_URL'];
 
       // Ensure protocol
@@ -52,7 +57,7 @@ export function getApiUrl(): string {
       rawApiUrl = internalUrl;
     }
 
-    // B. Fallback to Public URL if Internal not available
+    // C. Fallback to Public URL if Internal not available
     if (!rawApiUrl && process.env['PUBLIC_API_URL']) {
       rawApiUrl = process.env['PUBLIC_API_URL'];
     }
