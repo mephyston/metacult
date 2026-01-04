@@ -56,8 +56,9 @@ export class ConfigurationService {
     // 2. Validation Fail-Fast au démarrage
     const rawEnv = process.env;
 
-    // Conversion des types (ex: "3000" -> 3000)
-    const convertedEnv = Value.Convert(EnvSchema, rawEnv);
+    // Apply defaults and convert types
+    const withDefaults = Value.Default(EnvSchema, { ...rawEnv });
+    const convertedEnv = Value.Convert(EnvSchema, withDefaults);
 
     if (!Value.Check(EnvSchema, convertedEnv)) {
       const errors = [...Value.Errors(EnvSchema, convertedEnv)];
