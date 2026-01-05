@@ -10,6 +10,7 @@ import {
   createDiscoveryRoutes,
   FeedController,
   GetMixedFeedHandler,
+  GetPersonalizedFeedHandler,
 } from '@metacult/backend-discovery';
 import { createAuthRoutes } from '@metacult/backend-identity';
 import { interactionController as interactionRoutes } from '@metacult/backend-interaction';
@@ -159,8 +160,13 @@ const mixedFeedHandler = new GetMixedFeedHandler(
   mediaSearchAdapter,
   adsAdapter,
 );
+const personalizedFeedHandler = new GetPersonalizedFeedHandler(db);
 const interactionRepo = new DrizzleInteractionRepository(db);
-const feedController = new FeedController(mixedFeedHandler, interactionRepo);
+const feedController = new FeedController(
+  mixedFeedHandler,
+  personalizedFeedHandler,
+  interactionRepo,
+);
 const discoveryRoutes = createDiscoveryRoutes(feedController);
 
 // 4. Module Identity (Auth routes)

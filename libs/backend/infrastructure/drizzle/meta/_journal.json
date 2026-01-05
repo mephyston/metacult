@@ -8,6 +8,20 @@
       "when": 1767449153896,
       "tag": "0000_steep_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767640646016,
+      "tag": "0001_fuzzy_skrulls",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767641483268,
+      "tag": "0002_organic_the_watchers",
+      "breakpoints": true
     }
   ]
 }

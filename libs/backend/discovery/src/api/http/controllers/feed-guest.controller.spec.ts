@@ -10,6 +10,10 @@ const mockGetMixedFeedHandler = {
   ),
 };
 
+const mockGetPersonalizedFeedHandler = {
+  execute: mock(() => Promise.resolve([])),
+};
+
 const mockInteractionRepository = {
   getSwipedMediaIds: mock(() => Promise.resolve(['exclude-1'])),
 };
@@ -32,11 +36,13 @@ describe('Feed Controller (Guest)', () => {
   let app: Elysia;
 
   beforeEach(() => {
-    mockGetMixedFeedHandler.execute.mockClear();
+    mockGetMixedFeedHandler.execute.mockClear(); // Fix: use Mixed Handler mock
+    mockGetPersonalizedFeedHandler.execute.mockClear();
     mockInteractionRepository.getSwipedMediaIds.mockClear();
 
     controller = new FeedController(
       mockGetMixedFeedHandler as any,
+      mockGetPersonalizedFeedHandler as any,
       mockInteractionRepository as any,
     );
 

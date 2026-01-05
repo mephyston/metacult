@@ -3,6 +3,9 @@ import { GetMixedFeedHandler } from '../../../application/queries/get-mixed-feed
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
 import { logger } from '@metacult/backend-infrastructure';
 
+import { GetPersonalizedFeedHandler } from '../../../application/queries/get-personalized-feed/get-personalized-feed.handler';
+import { GetPersonalizedFeedQuery } from '../../../application/queries/get-personalized-feed/get-personalized-feed.query';
+
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type { IInteractionRepository } from '@metacult/backend-interaction';
 
@@ -16,6 +19,7 @@ import { auth } from '@metacult/backend-identity';
 export class FeedController {
   constructor(
     private readonly getMixedFeedHandler: GetMixedFeedHandler,
+    private readonly getPersonalizedFeedHandler: GetPersonalizedFeedHandler,
     private readonly interactionRepository: IInteractionRepository,
   ) {}
 
@@ -128,6 +132,37 @@ export class FeedController {
             ),
             limit: t.Optional(t.Numeric()),
           }),
+        },
+      )
+      .get(
+        '/personalized',
+        async ({ query, user, set }) => {
+          if (!user) {
+            set.status = 401;
+            return 'Unauthorized';
+          }
+
+          const limit = query.limit || 20;
+          const offset = query.offset || 0;
+
+          const feedQuery = new GetPersonalizedFeedQuery(
+            user.id,
+            limit,
+            offset,
+          );
+          const feed = await this.getPersonalizedFeedHandler.execute(feedQuery);
+
+          return feed;
+        },
+        {
+          query: t.Object({
+            limit: t.Optional(t.Numeric()),
+            offset: t.Optional(t.Numeric()),
+          }),
+          detail: {
+            summary: 'Get personalized feed based on user neighbors',
+            tags: ['Feed'],
+          },
         },
       );
   }

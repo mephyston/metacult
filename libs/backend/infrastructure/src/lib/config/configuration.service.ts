@@ -44,6 +44,7 @@ const EnvSchema = Type.Object({
   // Debug & Dev Tools
   DEBUG_SQL: Type.Optional(Type.Boolean({ default: false })),
   DB_SSL: Type.Optional(Type.Boolean()), // Force SSL on/off si défini
+  MIGRATIONS_FOLDER: Type.Optional(Type.String()), // Custom migration folder path
 });
 
 export type EnvType = Static<typeof EnvSchema>;
