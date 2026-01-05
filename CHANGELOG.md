@@ -1,3 +1,14 @@
+## 0.7.1 (2026-01-05)
+
+### 🩹 Fixes
+
+- **config:** make BETTER_AUTH variables optional for worker ([6df0da5](https://github.com/mephyston/metacult/commit/6df0da5))
+- **identity:** prevent better-auth init if secret is missing (worker fix) ([81d5caa](https://github.com/mephyston/metacult/commit/81d5caa))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.7.0 (2026-01-05)
 
 ### 🩹 Fixes
