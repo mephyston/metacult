@@ -110,7 +110,7 @@
     "quality:full": "bun run lint:all && bun run test:all && bun run test:e2e",
     "release": "nx release --skip-publish",
     "prepare": "husky",
-    "typecheck": "vue-tsc --noEmit --skipLibCheck"
+    "typecheck": "tsc --noEmit"
   },
   "lint-staged": {
     "*.{js,ts,vue}": [

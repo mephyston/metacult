@@ -19,5 +19,8 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
+      - name: Typecheck
+        run: bun run typecheck
+
       - name: Run Quality Gate (Lint + Test)
         run: bun run quality
