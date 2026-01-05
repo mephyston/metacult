@@ -21,7 +21,7 @@ const EnvSchema = Type.Object({
 
   // Internal / Public URLs (Clean Architecture Split)
   INTERNAL_API_URL: Type.Optional(Type.String()), // Service-to-Service (Railway Internal)
-  PUBLIC_API_URL: Type.String(), // Client-facing (Browser)
+  PUBLIC_API_URL: Type.Optional(Type.String()), // Client-facing (Browser)
   PUBLIC_WEBSITE_URL: Type.Optional(Type.String()), // Website (Astro)
 
   // Environment

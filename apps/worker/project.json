@@ -1,27 +1,23 @@
 {
-    "name": "worker",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "projectType": "application",
-    "sourceRoot": "apps/worker/src",
-    "tags": [
-        "type:app",
-        "scope:worker",
-        "layer:backend"
-    ],
-    "targets": {
-        "serve": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "bun --watch src/index.ts",
-                "cwd": "apps/worker"
-            }
-        },
-        "test": {
-            "executor": "nx:run-commands",
-            "options": {
-                "command": "bun test",
-                "cwd": "apps/worker"
-            }
-        }
+  "name": "worker",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/worker/src",
+  "tags": ["type:app", "scope:worker", "layer:backend"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun --watch src/index.ts",
+        "cwd": "apps/worker"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun test --preload test/setup.ts",
+        "cwd": "apps/worker"
+      }
     }
+  }
 }

@@ -45,4 +45,55 @@ export class DrizzleDuelRepository implements DuelRepository {
         m.providerMetadata?.coverUrl || m.providerMetadata?.posterUrl || null,
     })) as unknown as Media[];
   }
+  async findById(id: string): Promise<Media | undefined> {
+    const { db } = getDbConnection();
+    const rows = await db
+      .select()
+      .from(mediaSchema.medias)
+      .where(eq(mediaSchema.medias.id, id))
+      .limit(1);
+
+    if (rows.length === 0) {
+      return undefined;
+    }
+
+    // Cast pour correspondre au type Media (approximatif ici car on utilise le schema Drizzle direct)
+    const m = rows[0];
+    return {
+      ...m,
+      coverUrl:
+        (m as any).providerMetadata?.coverUrl ||
+        (m as any).providerMetadata?.posterUrl ||
+        null,
+    } as unknown as Media;
+  }
+
+  async updateEloScores(
+    winnerId: string,
+    winnerNewElo: number,
+    loserId: string,
+    loserNewElo: number,
+  ): Promise<void> {
+    const { db } = getDbConnection();
+
+    await db.transaction(async (tx) => {
+      // Update Winner
+      await tx
+        .update(mediaSchema.medias)
+        .set({
+          eloScore: winnerNewElo,
+          matchCount: sql`${mediaSchema.medias.matchCount} + 1`,
+        })
+        .where(eq(mediaSchema.medias.id, winnerId));
+
+      // Update Loser
+      await tx
+        .update(mediaSchema.medias)
+        .set({
+          eloScore: loserNewElo,
+          matchCount: sql`${mediaSchema.medias.matchCount} + 1`,
+        })
+        .where(eq(mediaSchema.medias.id, loserId));
+    });
+  }
 }
