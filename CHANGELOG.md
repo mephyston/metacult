@@ -1,3 +1,14 @@
+## 0.7.0 (2026-01-05)
+
+### 🩹 Fixes
+
+- **config:** make PUBLIC_API_URL optional to fix worker deployment ([7f2b65f](https://github.com/mephyston/metacult/commit/7f2b65f))
+- **discovery:** resolve linting errors in feed controller ([ef56cec](https://github.com/mephyston/metacult/commit/ef56cec))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.6.6 (2026-01-04)
 
 ### 🩹 Fixes
