@@ -86,7 +86,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background">
+  <div class="min-h-screen bg-background" data-testid="dashboard">
     <div class="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
       <!-- 1. Header Welcome -->
       <div class="mb-10">

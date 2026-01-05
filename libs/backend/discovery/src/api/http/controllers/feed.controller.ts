@@ -1,11 +1,12 @@
-/* eslint-disable */
-import { Elysia } from 'elysia';
+import { Elysia, t } from 'elysia';
 import { GetMixedFeedHandler } from '../../../application/queries/get-mixed-feed/get-mixed-feed.handler';
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
 import { logger } from '@metacult/backend-infrastructure';
 
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import type { IInteractionRepository } from '@metacult/backend-interaction';
 
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { auth } from '@metacult/backend-identity';
 
 /**
@@ -35,68 +36,99 @@ export class FeedController {
           session: sessionData?.session || null,
         };
       })
-      .get('/', async (context) => {
-        const { user, query } = context as any; // Type assertion needed for user
-        const searchTerm = query?.q || '';
-        const excludedIdsParam = query?.excludedIds || '';
-        const userId = user?.id;
+      .get(
+        '/',
+        async ({ query, user }) => {
+          const searchTerm = query.q || '';
+          const userId = user?.id;
+          const excludedIdsParam = query.excludedIds || [];
 
-        logger.info(
-          {
-            userId: userId || 'Guest',
-            search: searchTerm,
-            hasExcludedIds: !!excludedIdsParam,
-          },
-          '[FeedController] GET /feed',
-        );
-
-        let excludedMediaIds: string[] = [];
-        let limit = 5; // Default (Guest)
-
-        if (userId) {
-          // User logic: Fetch from DB
-          try {
-            excludedMediaIds =
-              await this.interactionRepository.getSwipedMediaIds(userId);
-            logger.debug(
-              {
-                count: excludedMediaIds.length,
-                sample: excludedMediaIds.slice(0, 3),
-              },
-              '[FeedController] Excluded media IDs from DB',
-            );
-          } catch (e) {
-            logger.error(
-              { err: e },
-              '[FeedController] Failed to fetch blacklist',
-            );
-          }
-          limit = 10;
-        } else if (excludedIdsParam) {
-          // Guest with client-side exclusions
-          excludedMediaIds = excludedIdsParam
-            .split(',')
-            .map((id: string) => id.trim())
-            .filter((id: string) => id.length > 0);
-          logger.debug(
-            { count: excludedMediaIds.length },
-            '[FeedController] Guest mode - excludedIds from client',
+          logger.info(
+            {
+              userId: userId || 'Guest',
+              search: searchTerm,
+              hasExcludedIds: excludedIdsParam.length > 0,
+            },
+            '[FeedController] GET /feed',
           );
-        } else {
-          logger.debug('[FeedController] Guest mode - no exclusions');
-        }
 
-        // Create Query with Context
-        const feedQuery = new GetMixedFeedQuery(
-          searchTerm,
-          userId,
-          excludedMediaIds,
-          limit,
-        );
+          let excludedMediaIds: string[] = [];
 
-        const feed = await this.getMixedFeedHandler.execute(feedQuery);
-        logger.info({ count: feed.length }, '[FeedController] Returning items');
-        return feed;
-      });
+          // Determine Limit: Query > User (10) > Guest (5)
+          let limit = query.limit;
+          if (!limit) {
+            limit = userId ? 10 : 5;
+          }
+
+          if (userId) {
+            // User logic: Fetch from DB (server-side blacklist)
+            try {
+              const dbExcluded =
+                await this.interactionRepository.getSwipedMediaIds(userId);
+              excludedMediaIds = [
+                ...new Set([...dbExcluded, ...excludedIdsParam]),
+              ]; // Merge DB + Client exclusions if any
+
+              logger.debug(
+                {
+                  count: excludedMediaIds.length,
+                  sample: excludedMediaIds.slice(0, 3),
+                },
+                '[FeedController] Excluded media IDs (DB + Client)',
+              );
+            } catch (e) {
+              logger.error(
+                { err: e },
+                '[FeedController] Failed to fetch blacklist',
+              );
+              // Fallback to just client params if DB fails
+              excludedMediaIds = excludedIdsParam;
+            }
+          } else {
+            // Guest with client-side exclusions only
+            excludedMediaIds = excludedIdsParam;
+            if (excludedMediaIds.length > 0) {
+              logger.debug(
+                { count: excludedMediaIds.length },
+                '[FeedController] Guest mode - excludedIds from client',
+              );
+            } else {
+              logger.debug('[FeedController] Guest mode - no exclusions');
+            }
+          }
+
+          // Create Query with Context
+          const feedQuery = new GetMixedFeedQuery(
+            searchTerm,
+            userId,
+            excludedMediaIds,
+            limit,
+          );
+
+          const feed = await this.getMixedFeedHandler.execute(feedQuery);
+          logger.info(
+            { count: feed.length },
+            '[FeedController] Returning items',
+          );
+          return feed;
+        },
+        {
+          query: t.Object({
+            q: t.Optional(t.String()),
+            excludedIds: t.Optional(
+              t
+                .Transform(t.String())
+                .Decode((value: string) =>
+                  value
+                    .split(',')
+                    .map((s: string) => s.trim())
+                    .filter(Boolean),
+                )
+                .Encode((value: string[]) => value.join(',')),
+            ),
+            limit: t.Optional(t.Numeric()),
+          }),
+        },
+      );
   }
 }
