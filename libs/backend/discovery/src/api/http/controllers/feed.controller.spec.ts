@@ -78,4 +78,27 @@ describe('Feed Controller', () => {
       expect(lastCallArgs.excludedMediaIds).toEqual(['exclude-1', 'exclude-2']);
     }
   });
+
+  it('GET /feed/personalized should return personalized feed', async () => {
+    // Mock handler response
+    (mockGetPersonalizedFeedHandler.execute as any).mockResolvedValueOnce([
+      { id: 'p1', title: 'Personalized Movie' },
+    ]);
+
+    const response = await app.handle(
+      new Request('http://localhost/feed/personalized'),
+    );
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json).toHaveLength(1);
+    expect(json[0].id).toBe('p1');
+
+    expect(mockGetPersonalizedFeedHandler.execute).toHaveBeenCalled();
+    const calls = (mockGetPersonalizedFeedHandler.execute as any).mock.calls;
+    const queryArg = calls[0][0];
+
+    expect(queryArg.userId).toBe('test-user-id');
+    expect(queryArg.limit).toBe(20); // Default
+  });
 });
