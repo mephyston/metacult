@@ -26,43 +26,54 @@ const cookiePrefix = configService.get('AUTH_COOKIE_PREFIX') || 'metacult';
  *
  * @see https://better-auth.com/docs
  */
-export const auth = betterAuth({
-  baseURL: configService.get('BETTER_AUTH_URL'),
-  basePath: '/api/auth',
-  secret: configService.get('BETTER_AUTH_SECRET'),
-  trustedOrigins: [
-    ...(configService.isDevelopment
-      ? [
-          'http://localhost:3000', // API: Default port
-          'http://localhost:4444', // Website dev fallback
-          'http://localhost:4201', // Webapp Nuxt
-        ]
-      : []),
-    ...(configService.get('BETTER_AUTH_TRUSTED_ORIGINS')
-      ? configService.get('BETTER_AUTH_TRUSTED_ORIGINS')!.split(',')
-      : []),
-  ],
-  database: drizzleAdapter(db, {
-    provider: 'pg',
-    schema: {
-      user,
-      session,
-      account,
-      verification,
-    },
-  }),
-  emailAndPassword: {
-    enabled: true,
-    autoSignIn: true,
-  },
-  advanced: {
-    cookiePrefix: cookiePrefix,
-    useSecureCookies: configService.isProduction,
-    defaultCookieAttributes: {
-      domain: rootDomain, // Permet le partage cross-subdomain si défini
-    },
-  },
-});
+// Safe Initialization: Check if Critical Secrets are present
+// Prevents Worker from crashing when importing this module implicitly (via repositories)
+const secret = configService.get('BETTER_AUTH_SECRET');
+const baseURL = configService.get('BETTER_AUTH_URL');
+
+export const auth =
+  secret && baseURL
+    ? betterAuth({
+        baseURL: baseURL,
+        basePath: '/api/auth',
+        secret: secret,
+        trustedOrigins: [
+          ...(configService.isDevelopment
+            ? [
+                'http://localhost:3000', // API: Default port
+                'http://localhost:4444', // Website dev fallback
+                'http://localhost:4201', // Webapp Nuxt
+              ]
+            : []),
+          ...(configService.get('BETTER_AUTH_TRUSTED_ORIGINS')
+            ? configService.get('BETTER_AUTH_TRUSTED_ORIGINS')!.split(',')
+            : []),
+        ],
+        database: drizzleAdapter(db, {
+          provider: 'pg',
+          schema: {
+            user,
+            session,
+            account,
+            verification,
+          },
+        }),
+        emailAndPassword: {
+          enabled: true,
+          autoSignIn: true,
+        },
+        advanced: {
+          cookiePrefix: cookiePrefix,
+          useSecureCookies: configService.isProduction,
+          defaultCookieAttributes: {
+            domain: rootDomain, // Permet le partage cross-subdomain si défini
+          },
+        },
+      })
+    : // Return a proxy/mock that throws if accessed? Or just a dummy object?
+      // Since usage is only in API which has secrets, this branch is only hit by Worker which DOES NOT use it.
+      // Returning a dummy strictly to satisfy export type.
+      ({} as any);
 
 /**
  * Type du client Better Auth exposé.
