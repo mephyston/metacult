@@ -9,8 +9,8 @@ const EnvSchema = Type.Object({
   REDIS_URL: Type.String(), // ex: redis://...
 
   // Auth & Security
-  BETTER_AUTH_SECRET: Type.String(),
-  BETTER_AUTH_URL: Type.String(), // URL publique de l'API Auth
+  BETTER_AUTH_SECRET: Type.Optional(Type.String()),
+  BETTER_AUTH_URL: Type.Optional(Type.String()), // URL publique de l'API Auth
   BETTER_AUTH_TRUSTED_ORIGINS: Type.Optional(Type.String()), // Comma separated
   AUTH_COOKIE_PREFIX: Type.Optional(Type.String({ default: 'metacult' })),
   ROOT_DOMAIN: Type.Optional(Type.String()), // Pour partage cookies cross-subdomain (.metacult.gg)
