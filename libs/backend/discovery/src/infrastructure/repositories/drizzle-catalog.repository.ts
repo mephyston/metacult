@@ -192,11 +192,22 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     const externalReference = new ExternalReference('unknown', 'unknown');
     // Simple metadata parse if needed
 
-    const coverUrl =
-      providerMetadata && (providerMetadata as any).coverUrl
-        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          new CoverUrl((providerMetadata as any).coverUrl)
-        : null;
+    let coverUrlStr: string | null = null;
+    if (providerMetadata) {
+      const meta = providerMetadata as any;
+      if (meta.coverUrl) {
+        coverUrlStr = meta.coverUrl;
+      } else if (meta.poster_path) {
+        const path = meta.poster_path.startsWith('/')
+          ? meta.poster_path
+          : `/${meta.poster_path}`;
+        coverUrlStr = `https://image.tmdb.org/t/p/original${path}`;
+      } else if (meta.image_id) {
+        coverUrlStr = `https://images.igdb.com/igdb/image/upload/t_1080p/${meta.image_id}.jpg`;
+      }
+    }
+
+    const coverUrl = coverUrlStr ? new CoverUrl(coverUrlStr) : null;
 
     const rating = globalRating ? new Rating(globalRating) : null;
     const releaseYear = releaseDate

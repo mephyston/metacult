@@ -31,18 +31,34 @@ mock.module('@metacult/backend-identity', () => ({
   },
 }));
 
+const mockGetTrendingHandler = { execute: mock(() => Promise.resolve([])) };
+const mockGetHallOfFameHandler = { execute: mock(() => Promise.resolve([])) };
+const mockGetHiddenGemsHandler = { execute: mock(() => Promise.resolve([])) };
+const mockSearchMediaHandler = { execute: mock(() => Promise.resolve([])) };
+const mockSearchAdvancedHandler = { execute: mock(() => Promise.resolve([])) };
+
 describe('Feed Controller (Guest)', () => {
   let controller: FeedController;
   let app: Elysia;
 
   beforeEach(() => {
-    mockGetMixedFeedHandler.execute.mockClear(); // Fix: use Mixed Handler mock
+    mockGetMixedFeedHandler.execute.mockClear();
     mockGetPersonalizedFeedHandler.execute.mockClear();
     mockInteractionRepository.getSwipedMediaIds.mockClear();
+    mockGetTrendingHandler.execute.mockClear();
+    mockGetHallOfFameHandler.execute.mockClear();
+    mockGetHiddenGemsHandler.execute.mockClear();
+    mockSearchMediaHandler.execute.mockClear();
+    mockSearchAdvancedHandler.execute.mockClear();
 
     controller = new FeedController(
       mockGetMixedFeedHandler as any,
       mockGetPersonalizedFeedHandler as any,
+      mockGetTrendingHandler as any,
+      mockGetHallOfFameHandler as any,
+      mockGetHiddenGemsHandler as any,
+      mockSearchMediaHandler as any,
+      mockSearchAdvancedHandler as any,
       mockInteractionRepository as any,
     );
 

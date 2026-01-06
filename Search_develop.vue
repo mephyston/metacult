@@ -170,7 +170,7 @@ async function handleSelect(item: SearchResultItem) {
 function navigateToMedia(type: string, idOrSlug: string) {
   open.value = false;
   const websiteUrl = getWebsiteUrl();
-  window.location.href = `${websiteUrl}/catalog/${type.toLowerCase()}/${idOrSlug}`;
+  window.location.href = `${websiteUrl}/catalog/${type}/${idOrSlug}`;
 }
 </script>
 

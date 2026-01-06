@@ -28,13 +28,19 @@ export class MediaController {
    * @param {SearchMediaDto['query']} query
    */
   async search(query: SearchMediaDto['query']) {
-    const { q, type, tag } = query;
+    const { q, type, tags, minElo, releaseYear, page } = query;
     const mediaType = type as MediaType | undefined;
+
+    // Normalize tags to array if string
+    const tagsArray = typeof tags === 'string' ? [tags] : tags;
 
     const medias = await this.searchMediaHandler.execute({
       search: q,
       type: mediaType,
-      tag,
+      tags: tagsArray,
+      minElo,
+      releaseYear,
+      page,
     });
 
     return medias;

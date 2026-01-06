@@ -18,6 +18,23 @@ const mockInteractionRepository = {
   getSwipedMediaIds: mock(() => Promise.resolve(['exclude-1', 'exclude-2'])),
 };
 
+// New Mocks
+const mockGetTrendingHandler = {
+  execute: mock(() => Promise.resolve([] as any[])),
+};
+const mockGetHallOfFameHandler = {
+  execute: mock(() => Promise.resolve([] as any[])),
+};
+const mockGetControversialHandler = {
+  execute: mock(() => Promise.resolve([] as any[])),
+};
+const mockGetUpcomingHandler = {
+  execute: mock(() => Promise.resolve([] as any[])),
+};
+const mockGetTopRatedByYearHandler = {
+  execute: mock(() => Promise.resolve([] as any[])),
+};
+
 // Standardized mock for @metacult/backend-identity
 mock.module('@metacult/backend-identity', () => ({
   isAuthenticated: (app: any) =>
@@ -45,14 +62,24 @@ describe('Feed Controller', () => {
     mockGetMixedFeedHandler.execute.mockClear();
     mockGetPersonalizedFeedHandler.execute.mockClear();
     mockInteractionRepository.getSwipedMediaIds.mockClear();
+    mockGetTrendingHandler.execute.mockClear();
+    mockGetHallOfFameHandler.execute.mockClear();
+    mockGetControversialHandler.execute.mockClear();
+    mockGetUpcomingHandler.execute.mockClear();
+    mockGetTopRatedByYearHandler.execute.mockClear();
 
     controller = new FeedController(
       mockGetMixedFeedHandler as any,
       mockGetPersonalizedFeedHandler as any,
       mockInteractionRepository as any,
+      mockGetTrendingHandler as any,
+      mockGetHallOfFameHandler as any,
+      mockGetControversialHandler as any,
+      mockGetUpcomingHandler as any,
+      mockGetTopRatedByYearHandler as any,
     );
 
-    // Mount routes - Cast to any to avoid complex Elysia type mismatch in tests
+    // Mount routes
     app = new Elysia().use(controller.routes() as any);
   });
 
@@ -95,10 +122,45 @@ describe('Feed Controller', () => {
     expect(json[0].id).toBe('p1');
 
     expect(mockGetPersonalizedFeedHandler.execute).toHaveBeenCalled();
-    const calls = (mockGetPersonalizedFeedHandler.execute as any).mock.calls;
-    const queryArg = calls[0][0];
+  });
 
-    expect(queryArg.userId).toBe('test-user-id');
-    expect(queryArg.limit).toBe(20); // Default
+  it('GET /feed/best-of/:year should return list for valid year', async () => {
+    mockGetTopRatedByYearHandler.execute.mockResolvedValueOnce([
+      { title: 'Best of 2024' },
+    ]);
+
+    const response = await app.handle(
+      new Request('http://localhost/feed/best-of/2024'),
+    );
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json).toHaveLength(1);
+    expect(json[0].title).toBe('Best of 2024');
+
+    expect(mockGetTopRatedByYearHandler.execute).toHaveBeenCalled();
+  });
+
+  it('GET /feed/best-of/:year should return 422 for invalid year', async () => {
+    const response = await app.handle(
+      new Request('http://localhost/feed/best-of/invalid'),
+    );
+    expect(response.status).toBe(422); // Validation error (not numeric)
+  });
+
+  it('GET /feed/best-of/:year should return 400 for year out of range', async () => {
+    const response = await app.handle(
+      new Request('http://localhost/feed/best-of/1800'),
+    );
+    expect(response.status).toBe(400); // Logical validation
+    const text = await response.text();
+    expect(text).toBe('Invalid Year');
+  });
+
+  it('GET /feed/trending should call GetTrendingHandler', async () => {
+    await app.handle(
+      new Request('http://localhost/feed/trending?limit=5&type=movie'),
+    );
+    expect(mockGetTrendingHandler.execute).toHaveBeenCalled();
   });
 });

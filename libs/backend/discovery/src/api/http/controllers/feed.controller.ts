@@ -6,6 +6,20 @@ import { logger } from '@metacult/backend-infrastructure';
 import { GetPersonalizedFeedHandler } from '../../../application/queries/get-personalized-feed/get-personalized-feed.handler';
 import { GetPersonalizedFeedQuery } from '../../../application/queries/get-personalized-feed/get-personalized-feed.query';
 
+// New Handlers
+import { GetTrendingHandler } from '../../../application/queries/get-trending/get-trending.handler';
+import { GetTrendingQuery } from '../../../application/queries/get-trending/get-trending.query';
+import { GetHallOfFameHandler } from '../../../application/queries/get-hall-of-fame/get-hall-of-fame.handler';
+import { GetHallOfFameQuery } from '../../../application/queries/get-hall-of-fame/get-hall-of-fame.query';
+import { GetControversialHandler } from '../../../application/queries/get-controversial/get-controversial.handler';
+import { GetControversialQuery } from '../../../application/queries/get-controversial/get-controversial.query';
+import { GetUpcomingHandler } from '../../../application/queries/get-upcoming/get-upcoming.handler';
+import { GetUpcomingQuery } from '../../../application/queries/get-upcoming/get-upcoming.query';
+import { GetTopRatedByYearHandler } from '../../../application/queries/get-top-rated-by-year/get-top-rated-by-year.handler';
+import { GetTopRatedByYearQuery } from '../../../application/queries/get-top-rated-by-year/get-top-rated-by-year.query';
+// Entity Type
+import { MediaType } from '@metacult/backend-catalog';
+
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type { IInteractionRepository } from '@metacult/backend-interaction';
 
@@ -14,14 +28,33 @@ import { auth, isAuthenticated } from '@metacult/backend-identity';
 
 /**
  * Contrôleur HTTP pour le flux de découverte (Feed).
- * Expose les endpoints liés à l'exploration du catalogue (Mixed Feed).
+ * Expose les endpoints liés à l'exploration du catalogue (Mixed Feed + Specific Queries).
  */
 export class FeedController {
   constructor(
     private readonly getMixedFeedHandler: GetMixedFeedHandler,
     private readonly getPersonalizedFeedHandler: GetPersonalizedFeedHandler,
     private readonly interactionRepository: IInteractionRepository,
+    // New Injections
+    private readonly getTrendingHandler: GetTrendingHandler,
+    private readonly getHallOfFameHandler: GetHallOfFameHandler,
+    private readonly getControversialHandler: GetControversialHandler,
+    private readonly getUpcomingHandler: GetUpcomingHandler,
+    private readonly getTopRatedByYearHandler: GetTopRatedByYearHandler,
   ) {}
+
+  /**
+   * Helper to map Entity MediaType to Application Query Type.
+   * Catalog uses 'tv', Discovery Query uses 'SHOW'.
+   * Catalog uses lowercase, Discovery Query uses uppercase.
+   */
+  private mapToQueryType(
+    type?: MediaType,
+  ): 'GAME' | 'MOVIE' | 'BOOK' | 'SHOW' | undefined {
+    if (!type) return undefined;
+    if (type === MediaType.TV) return 'SHOW';
+    return type.toUpperCase() as any;
+  }
 
   /**
    * Routes definition to be mounted by Elysia
@@ -111,6 +144,115 @@ export class FeedController {
             }),
           },
         )
+        // --- NEW CATALOG QUERIES ---
+        .get(
+          '/trending',
+          async ({ query }) => {
+            const limit = query.limit || 10;
+            const type = this.mapToQueryType(
+              query.type as MediaType | undefined,
+            );
+            return this.getTrendingHandler.execute(
+              new GetTrendingQuery(limit, type),
+            );
+          },
+          {
+            query: t.Object({
+              limit: t.Optional(t.Numeric()),
+              type: t.Optional(t.Enum(MediaType)),
+            }),
+            detail: { summary: 'Get trending media (last 7 days)' },
+          },
+        )
+        .get(
+          '/hall-of-fame',
+          async ({ query }) => {
+            const limit = query.limit || 10;
+            const type = this.mapToQueryType(
+              query.type as MediaType | undefined,
+            );
+            return this.getHallOfFameHandler.execute(
+              new GetHallOfFameQuery(limit, type),
+            );
+          },
+          {
+            query: t.Object({
+              limit: t.Optional(t.Numeric()),
+              type: t.Optional(t.Enum(MediaType)),
+            }),
+            detail: { summary: 'Get Hall of Fame (High ELO + Matches)' },
+          },
+        )
+        .get(
+          '/controversial',
+          async ({ query }) => {
+            const limit = query.limit || 10;
+            const type = this.mapToQueryType(
+              query.type as MediaType | undefined,
+            );
+            return this.getControversialHandler.execute(
+              new GetControversialQuery(limit, type),
+            );
+          },
+          {
+            query: t.Object({
+              limit: t.Optional(t.Numeric()),
+              type: t.Optional(t.Enum(MediaType)),
+            }),
+            detail: {
+              summary: 'Get Controversial media (High Activity, Mid ELO)',
+            },
+          },
+        )
+        .get(
+          '/upcoming',
+          async ({ query }) => {
+            const limit = query.limit || 10;
+            const type = this.mapToQueryType(
+              query.type as MediaType | undefined,
+            );
+            return this.getUpcomingHandler.execute(
+              new GetUpcomingQuery(limit, type),
+            );
+          },
+          {
+            query: t.Object({
+              limit: t.Optional(t.Numeric()),
+              type: t.Optional(t.Enum(MediaType)),
+            }),
+            detail: { summary: 'Get Upcoming media (Future releases)' },
+          },
+        )
+        .get(
+          '/best-of/:year',
+          async ({ params, query, set }) => {
+            const year = params.year;
+            const limit = query.limit || 10;
+            const type = this.mapToQueryType(
+              query.type as MediaType | undefined,
+            );
+
+            if (year < 1888 || year > 2100) {
+              set.status = 400;
+              return 'Invalid Year';
+            }
+
+            return this.getTopRatedByYearHandler.execute(
+              new GetTopRatedByYearQuery(year, limit, type),
+            );
+          },
+          {
+            params: t.Object({
+              year: t.Numeric(),
+            }),
+            query: t.Object({
+              limit: t.Optional(t.Numeric()),
+              type: t.Optional(t.Enum(MediaType)),
+            }),
+            detail: { summary: 'Get Best Rated media by specific year' },
+          },
+        )
+
         // --- Protected Routes ---
         .use(isAuthenticated)
         .get(

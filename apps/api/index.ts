@@ -120,19 +120,29 @@ const mediaSearchAdapter = {
     options: { excludedIds?: string[]; limit?: number; orderBy?: 'random' },
   ) => {
     // Adaptateur: String -> SearchQuery -> DTO
-    // Le handler retourne maintenant une réponse groupée. On doit l'aplatir pour le module Discovery.
-    const grouped = await searchHandler.execute({
+    // Le handler retourne maintenant une réponse groupée ou paginée (Mode B).
+    const result = await searchHandler.execute({
       search: q,
       excludedIds: options?.excludedIds,
       limit: options?.limit,
       orderBy: options?.orderBy,
     });
-    const all = [
-      ...grouped.games,
-      ...grouped.movies,
-      ...grouped.shows,
-      ...grouped.books,
-    ];
+
+    let all: any[] = [];
+
+    // Type Guard pour déterminer si c'est Grouped ou Paginated
+    if ('items' in result) {
+      // Mode Paginated (Mode B ou Empty Search)
+      all = result.items;
+    } else {
+      // Mode Grouped (Mode A)
+      all = [
+        ...result.games,
+        ...result.movies,
+        ...result.shows,
+        ...result.books,
+      ];
+    }
 
     // Mapping vers MediaReadDto (attendu par Discovery ?)
     return all.map((item) => ({
@@ -162,10 +172,37 @@ const mixedFeedHandler = new GetMixedFeedHandler(
 );
 const personalizedFeedHandler = new GetPersonalizedFeedHandler(db);
 const interactionRepo = new DrizzleInteractionRepository(db);
+
+// --- Discovery Catalog Queries Wiring ---
+import {
+  DrizzleCatalogRepository,
+  GetTrendingHandler,
+  GetHallOfFameHandler,
+  GetControversialHandler,
+  GetUpcomingHandler,
+  GetTopRatedByYearHandler,
+} from '@metacult/backend-discovery';
+
+const discoveryCatalogRepo = new DrizzleCatalogRepository(db as any);
+const getTrendingHandler = new GetTrendingHandler(discoveryCatalogRepo);
+const getHallOfFameHandler = new GetHallOfFameHandler(discoveryCatalogRepo);
+const getControversialHandler = new GetControversialHandler(
+  discoveryCatalogRepo,
+);
+const getUpcomingHandler = new GetUpcomingHandler(discoveryCatalogRepo);
+const getTopRatedByYearHandler = new GetTopRatedByYearHandler(
+  discoveryCatalogRepo,
+);
+
 const feedController = new FeedController(
   mixedFeedHandler,
   personalizedFeedHandler,
   interactionRepo,
+  getTrendingHandler,
+  getHallOfFameHandler,
+  getControversialHandler,
+  getUpcomingHandler,
+  getTopRatedByYearHandler,
 );
 const discoveryRoutes = createDiscoveryRoutes(feedController);
 

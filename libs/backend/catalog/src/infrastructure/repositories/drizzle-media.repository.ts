@@ -1,4 +1,4 @@
-import { eq, ilike, and, desc, sql, notInArray } from 'drizzle-orm';
+import { eq, ilike, and, desc, sql, notInArray, gte } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { logger } from '@metacult/backend-infrastructure';
 import type {
@@ -206,6 +206,129 @@ export class DrizzleMediaRepository implements IMediaRepository {
     }
 
     return results;
+  }
+
+  async searchAdvanced(
+    filters: MediaSearchFilters,
+  ): Promise<{ items: Media[]; total: number }> {
+    const page = Math.max(filters.page || 1, 1);
+    const limit = Math.max(filters.limit || 20, 1);
+    const offset = (page - 1) * limit;
+
+    // Base query for items
+    const query = this.db
+      .select()
+      .from(schema.medias)
+      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
+      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
+      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
+      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id));
+
+    const conditions = [];
+
+    if (filters.type) {
+      // Safe cast as DB type matches upper case strings used in enum mostly, or logic adapts
+      // In this repo, DB Enum is 'GAME', 'MOVIE' etc. App Enum is likely 'game', 'movie'.
+      // Existing search code uses `eq(schema.medias.type, filters.type as any)`.
+      // Let's assume the input is correct casing or cast it.
+      // Actually existing `types/raw-responses` or schema defines it.
+      // Let's force uppercase to be safe if provided as lowercase?
+      // Check mapRowToEntity: `row.medias.type` is 'GAME' etc.
+      // `filters.type` is likely 'game'.
+      // existing `search` does `filters.type as any`. I will convert.
+      conditions.push(
+        eq(schema.medias.type, filters.type.toUpperCase() as any),
+      );
+    }
+
+    if (filters.search) {
+      conditions.push(ilike(schema.medias.title, `%${filters.search}%`));
+    }
+
+    if (filters.releaseYear) {
+      const start = new Date(filters.releaseYear, 0, 1);
+      const end = new Date(filters.releaseYear, 11, 31);
+      conditions.push(
+        and(
+          gte(schema.medias.releaseDate, start),
+          sql`${schema.medias.releaseDate} <= ${end}`,
+        ),
+      );
+      // OR extract year from date: sql`EXTRACT(YEAR FROM ${schema.medias.releaseDate}) = ${filters.releaseYear}`
+      // Using range is index-friendly.
+    }
+
+    if (filters.minElo !== undefined) {
+      conditions.push(gte(schema.medias.eloScore, filters.minElo));
+    }
+
+    if (filters.tags && filters.tags.length > 0) {
+      // Filter Logic: Media MUST have ONE OF the tags (OR) or ALL (AND)?
+      // "Exploration" -> usually OR.
+      // Complex to do properly with Many-To-Many without duplicating rows.
+      // EXISTS subquery is best.
+      const tagsSubQuery = this.db
+        .select({ id: schema.mediasToTags.mediaId })
+        .from(schema.mediasToTags)
+        .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
+        .where(
+          and(
+            eq(schema.mediasToTags.mediaId, schema.medias.id),
+            sql`${schema.tags.slug} IN ${filters.tags}`,
+          ),
+        );
+      conditions.push(sql`EXISTS (${tagsSubQuery})`);
+
+      // Note: If tags are comma separated string "tag1,tag2" passed to handler?
+      // My updated Interface says tags?: string[].
+    }
+
+    if (filters.excludedIds && filters.excludedIds.length > 0) {
+      conditions.push(notInArray(schema.medias.id, filters.excludedIds));
+    }
+
+    if (conditions.length > 0) {
+      query.where(and(...conditions));
+    }
+
+    // Sort
+    if (filters.orderBy === 'random') {
+      query.orderBy(sql`RANDOM()`);
+    } else if (filters.minElo) {
+      // If filtering by Elo, interesting to sort by Elo too?
+      query.orderBy(desc(schema.medias.eloScore));
+    } else {
+      query.orderBy(desc(schema.medias.createdAt));
+    }
+
+    // Count Query (Duplicate logic essentially but count only)
+    // To be efficient, we can use window functions `count(*) OVER()` but Drizzle select structure might be tricky.
+    // Let's do a separate count query for simplicity and correctness.
+    const countQuery = this.db
+      .select({ count: sql<number>`count(${schema.medias.id})` })
+      .from(schema.medias)
+      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
+      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
+      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
+      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id));
+
+    // Apply WHERE (Reusing conditions array might fail if query builder mutates? No, conditions are array of SQL objects)
+    if (conditions.length > 0) {
+      countQuery.where(and(...conditions));
+    }
+
+    const [totalRes] = await countQuery;
+    const total = Number(totalRes?.count || 0);
+
+    // Apply Pagination to Main Query
+    query.limit(limit).offset(offset);
+
+    const rows = await query.execute();
+
+    // Map to entities
+    const items = rows.map((r) => this.mapRowToEntity(r));
+
+    return { items, total };
   }
 
   async searchViews(filters: MediaSearchFilters): Promise<MediaReadDto[]> {

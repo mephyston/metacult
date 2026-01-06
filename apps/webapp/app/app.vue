@@ -2,7 +2,7 @@
 import { Header, Footer, Search } from '@metacult/shared-ui';
 import { useAuthSession } from './composables/useAuthSession';
 import { useGuestSync } from './composables/useGuestSync';
-import { useWebsiteUrl } from './composables/useApiUrl';
+import { useWebsiteUrl, useApiUrl } from './composables/useApiUrl';
 import pkg from '../package.json';
 
 // @ts-ignore - Nuxt i18n auto-import
@@ -23,6 +23,49 @@ const { initSync } = useGuestSync();
 
 // Initialisation de la synchro invité (vérifie l'URL)
 initSync();
+
+const apiUrl = useApiUrl();
+
+// Fetch trending highlights for Header Mega-Menu
+// @ts-ignore - Nuxt auto-import
+const { data: trendingHighlights } = useAsyncData(
+  'trending-highlights',
+  async () => {
+    try {
+      const [movie, tv, game, book] = await Promise.all([
+        $fetch(
+          `${apiUrl}/api/discovery/feed/trending?type=movie&limit=1`,
+        ).catch(() => null),
+        $fetch(`${apiUrl}/api/discovery/feed/trending?type=tv&limit=1`).catch(
+          () => null,
+        ),
+        $fetch(`${apiUrl}/api/discovery/feed/trending?type=game&limit=1`).catch(
+          () => null,
+        ),
+        $fetch(`${apiUrl}/api/discovery/feed/trending?type=book&limit=1`).catch(
+          () => null,
+        ),
+      ]);
+
+      const getFirstItem = (data: any) =>
+        Array.isArray(data) && data.length > 0 ? data[0] : null;
+
+      return {
+        movie: getFirstItem(movie),
+        tv: getFirstItem(tv),
+        game: getFirstItem(game),
+        book: getFirstItem(book),
+      };
+    } catch (e) {
+      console.error('[App] Failed to fetch trending highlights:', e);
+      return { movie: null, tv: null, game: null, book: null };
+    }
+  },
+  {
+    lazy: true,
+    default: () => ({ movie: null, tv: null, game: null, book: null }),
+  },
+);
 
 // Gérer le logout depuis le Header
 const handleLogout = async () => {
@@ -58,7 +101,12 @@ const displayCommit = `#${sha.substring(0, 7)}`;
   <div
     class="font-sans min-h-screen flex flex-col bg-background text-foreground"
   >
-    <Header :user="user" :labels="headerLabels" @logout="handleLogout">
+    <Header
+      :user="user"
+      :labels="headerLabels"
+      :trendingHighlights="trendingHighlights"
+      @logout="handleLogout"
+    >
       <template #search>
         <div class="contents">
           <Search />

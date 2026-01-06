@@ -14,6 +14,8 @@ export * from './components/ui/theme-switcher';
 export * from './lib/theme-script';
 export * from './components/ui/command';
 export * from './components/ui/dialog';
+export * from './components/ui/select';
+export * from './components/ui/slider';
 
 // Export Layout components
 export * from './components/layout';

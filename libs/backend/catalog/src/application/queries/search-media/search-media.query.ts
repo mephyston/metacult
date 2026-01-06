@@ -5,12 +5,16 @@ import { MediaType } from '../../../domain/entities/media.entity';
  * Immuable.
  */
 export class SearchMediaQuery {
-    constructor(
-        public readonly search?: string,
-        public readonly type?: MediaType,
-        public readonly tag?: string,
-        public readonly excludedIds?: string[],
-        public readonly limit?: number,
-        public readonly orderBy?: 'random' | 'recent' | 'popularity'
-    ) { }
+  constructor(
+    public readonly search?: string,
+    public readonly type?: MediaType,
+    public readonly tag?: string,
+    public readonly excludedIds?: string[],
+    public readonly limit?: number,
+    public readonly orderBy?: 'random' | 'recent' | 'popularity',
+    public readonly releaseYear?: number,
+    public readonly minElo?: number,
+    public readonly tags?: string[], // Array of tags
+    public readonly page?: number,
+  ) {}
 }

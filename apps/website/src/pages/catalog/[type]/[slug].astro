@@ -1,155 +1,328 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
-import { Button, getApiUrl } from '@metacult/shared-ui';
-// Note: We might need to import specific UI components from shared-ui or use primitives
-import { MoveLeft, Star, Calendar, Clock, Monitor } from 'lucide-vue-next';
+import { getApiUrl } from '@metacult/shared-ui';
+import { getCurrentCatalogYear } from '../../../utils/date.utils';
+import { MoveLeft, Star, Calendar } from 'lucide-vue-next';
 
 export const prerender = false;
 
-const { slug, type } = Astro.params;
+const { type, slug } = Astro.params;
 
-if (!slug) {
+// 1. Validate Type
+const validTypes = ['game', 'movie', 'tv', 'book'];
+if (!type || !validTypes.includes(type)) {
   return Astro.redirect('/404');
 }
 
-// Fetch Media Details
-let media = null;
+// 2. Determine View Mode (Category vs Media)
+const validCategories = [
+  'trending',
+  'hall-of-fame',
+  'controversial',
+  'upcoming',
+  'best-of',
+];
+const isCategoryView = validCategories.includes(slug || '');
+
+// --- SHARED DATA ---
+const baseUrl = getApiUrl();
 let error = null;
 
-try {
-  // Use shared helper to resolve API URL contextually (Network Internal vs Public)
-  const baseUrl = getApiUrl(); 
-  // API supports both ID and Slug
-  const res = await fetch(`${baseUrl}/api/media/${slug}`);
-  
-  if (!res.ok) {
-    if (res.status === 404) {
-      return Astro.redirect('/404');
-    }
-    throw new Error(`API Error: ${res.status}`);
+// --- VIEW SPECIFIC VARIABLES ---
+// Category View
+let categoryItems: any[] = [];
+let categoryTitle = '';
+let categoryDescription = '';
+let typeLabel = '';
+let categoryLabel = '';
+
+// Media View
+let media: any = null;
+let mediaTitle = '';
+let mediaDescription = '';
+
+// --- LOGIC ---
+if (isCategoryView) {
+  // === CATEGORY MODE ===
+  const category = slug as string;
+
+  // Labels
+  const typeLabels: Record<string, string> = {
+    game: 'Jeux Vidéo',
+    movie: 'Films',
+    tv: 'Séries',
+    book: 'Livres',
+  };
+  const categoryLabels: Record<string, string> = {
+    trending: 'Tendances',
+    'hall-of-fame': 'Hall of Fame',
+    controversial: 'Controversés',
+    upcoming: 'À venir',
+    'best-of': 'Meilleurs',
+  };
+
+  typeLabel = typeLabels[type] || type;
+  categoryLabel = categoryLabels[category] || category;
+
+  // Endpoint Construction
+  let apiEndpoint = '';
+  if (category === 'best-of') {
+    const catalogYear = getCurrentCatalogYear();
+    apiEndpoint = `${baseUrl}/api/feed/best-of/${catalogYear}?type=${type}`;
+    categoryTitle = `Les Meilleurs ${typeLabel} de ${catalogYear}`;
+    categoryDescription = `Découvrez les meilleurs ${typeLabel.toLowerCase()} de ${catalogYear} selon la communauté MetaCult.`;
+  } else {
+    apiEndpoint = `${baseUrl}/api/feed/${category}?type=${type}`;
+    categoryTitle = `${categoryLabel} - ${typeLabel}`;
+    categoryDescription = `Découvrez les ${typeLabel.toLowerCase()} ${categoryLabel.toLowerCase()} sur MetaCult.`;
   }
-  
-  media = await res.json();
-  
-  // Optional: Validate URL type matches media type
-  // const urlType = type?.toLowerCase();
-  // const mediaType = media.type.toLowerCase();
-  // if (urlType !== mediaType && urlType !== 'all') {
-  //    // Canonical redirect could happen here
-  // }
-  
-} catch (e) {
-  console.error('Failed to fetch media:', e);
-  error = e;
+
+  try {
+    const res = await fetch(apiEndpoint);
+    if (!res.ok) throw new Error(`API Error: ${res.status}`);
+    categoryItems = await res.json();
+  } catch (e) {
+    console.error('[Catalog] Fetch failed:', e);
+    error = e;
+  }
+} else {
+  // === MEDIA MODE ===
+  if (!slug) return Astro.redirect('/404');
+
+  try {
+    const fetchUrl = `${baseUrl}/api/media/${slug}`;
+    const res = await fetch(fetchUrl);
+
+    if (!res.ok) {
+      if (res.status === 404) return Astro.redirect('/404');
+      throw new Error(`API Error: ${res.status}`);
+    }
+    media = await res.json();
+  } catch (e) {
+    console.error('[Media] Fetch failed:', e);
+    error = e;
+  }
+
+  mediaTitle = media ? `${media.title} - MetaCult` : 'Media Not Found';
+  mediaDescription =
+    media?.description?.slice(0, 160) || 'Découvrez ce média sur MetaCult.';
 }
 
-const title = media ? `${media.title} - MetaCult` : 'Media Not Found';
-const description = media?.description?.slice(0, 160) || 'Découvrez ce média sur MetaCult.';
+const pageTitle = isCategoryView ? `${categoryTitle} - MetaCult` : mediaTitle;
+const pageDescription = isCategoryView ? categoryDescription : mediaDescription;
 ---
 
-<Layout title={title} description={description}>
-  <div class="container py-10 max-w-5xl mx-auto">
-    <!-- Back Button -->
-    <div class="mb-6">
-      <a href="/" class="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <MoveLeft class="mr-2 h-4 w-4" />
-        Retour à l'accueil
-      </a>
-    </div>
+<Layout title={pageTitle} description={pageDescription}>
+  {
+    isCategoryView ? (
+      // ==================== CATEGORY VIEW TEMPLATE ====================
+      <div class="container py-8">
+        <nav class="text-sm text-muted-foreground mb-6">
+          <a href="/" class="hover:text-foreground">
+            Accueil
+          </a>
+          <span class="mx-2">/</span>
+          <a href={`/catalog/${type}`} class="hover:text-foreground capitalize">
+            {typeLabel}
+          </a>
+          <span class="mx-2">/</span>
+          <span class="text-foreground">{categoryLabel}</span>
+        </nav>
 
-    {error && (
-      <div class="rounded-lg border border-destructive/50 p-4 text-destructive">
-        Une erreur est survenue lors du chargement du média.
-      </div>
-    )}
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">{categoryTitle}</h1>
+        <p class="text-muted-foreground mb-8">{categoryDescription}</p>
 
-    {media && (
-      <div class="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
-        <!-- Poster Column -->
-        <div class="flex flex-col gap-4">
-            <div class="relative aspect-[2/3] overflow-hidden rounded-lg border bg-muted shadow-sm">
-                {media.posterUrl ? (
-                    <img 
-                        src={media.posterUrl} 
-                        alt={media.title}
-                        class="h-full w-full object-cover transition-transform hover:scale-105"
-                        transition:name={`poster-${media.id}`}
+        {error && (
+          <div class="rounded-lg border border-destructive/50 p-4 text-destructive">
+            Une erreur est survenue lors du chargement du catalogue.
+          </div>
+        )}
+
+        {!error && categoryItems.length === 0 && (
+          <div class="text-center py-12 text-muted-foreground">
+            <p class="text-lg">Aucun média trouvé dans cette catégorie.</p>
+          </div>
+        )}
+
+        {categoryItems.length > 0 && (
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            {categoryItems.map((item: any, index: number) => (
+              <a
+                href={`/catalog/${item.type || type}/${item.slug}`}
+                class="group block rounded-lg border bg-card overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1"
+              >
+                {/* Rank Badge for best-of */}
+                {slug === 'best-of' && (
+                  <div class="absolute top-2 left-2 z-10 bg-primary text-primary-foreground text-sm font-bold px-2 py-1 rounded">
+                    #{index + 1}
+                  </div>
+                )}
+
+                <div class="aspect-[2/3] overflow-hidden bg-muted relative">
+                  {item.posterUrl ? (
+                    <img
+                      src={item.posterUrl}
+                      alt={item.title}
+                      class="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      loading="lazy"
                     />
-                ) : (
-                    <div class="flex h-full items-center justify-center bg-muted text-muted-foreground">
-                        No Poster
+                  ) : (
+                    <div class="h-full w-full flex items-center justify-center text-muted-foreground text-sm">
+                      No Image
                     </div>
-                )}
-            </div>
-            
-            <!-- Quick Actions (Placeholder) -->
-            <div class="grid grid-cols-1 gap-2">
-                 <!-- TODO: Add Interactive Buttons (Rate, Add to List) -->
-            </div>
-        </div>
-
-        <!-- Info Column -->
-        <div class="flex flex-col gap-6">
-            <div>
-                <h1 class="text-4xl font-bold tracking-tight lg:text-5xl mb-2">{media.title}</h1>
-                
-                <div class="flex flex-wrap gap-4 text-sm text-muted-foreground items-center">
-                    {media.releaseYear && (
-                        <div class="flex items-center gap-1">
-                            <Calendar class="h-4 w-4" />
-                            <span>{media.releaseYear}</span>
-                        </div>
-                    )}
-                    {media.rating && (
-                         <div class="flex items-center gap-1 text-yellow-500">
-                            <Star class="h-4 w-4 fill-current" />
-                            <span>{media.rating}/10</span>
-                        </div>
-                    )}
-                    <div class="px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs font-semibold uppercase tracking-wider">
-                        {media.type}
-                    </div>
+                  )}
                 </div>
-            </div>
-
-            <!-- Description -->
-            {media.description && (
-                <div class="prose prose-zinc dark:prose-invert max-w-none">
-                    <h3 class="text-xl font-semibold mb-2">Synopsis</h3>
-                    <p class="leading-relaxed text-muted-foreground">{media.description}</p>
+                <div class="p-3">
+                  <h3 class="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                    {item.title}
+                  </h3>
+                  <div class="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                    {item.releaseYear && <span>{item.releaseYear}</span>}
+                    {item.eloScore && (
+                      <span class="text-yellow-600 dark:text-yellow-500">
+                        ⭐ {item.eloScore}
+                      </span>
+                    )}
+                  </div>
                 </div>
-            )}
+              </a>
+            ))}
+          </div>
+        )}
 
-            <!-- Metadata Grid -->
-            <div class="grid grid-cols-2 gap-4 border-t pt-6 mt-2">
-                {media.metadata?.director && (
-                    <div>
-                        <span class="block text-xs font-medium text-muted-foreground uppercase">Réalisateur</span>
-                        <span class="text-sm">{media.metadata.director}</span>
-                    </div>
-                )}
-                 {media.metadata?.developer && (
-                    <div>
-                        <span class="block text-xs font-medium text-muted-foreground uppercase">Studio</span>
-                        <span class="text-sm">{media.metadata.developer}</span>
-                    </div>
-                )}
-                 {media.metadata?.author && (
-                    <div>
-                        <span class="block text-xs font-medium text-muted-foreground uppercase">Auteur</span>
-                        <span class="text-sm">{media.metadata.author}</span>
-                    </div>
-                )}
-                 {media.metadata?.platform && (
-                    <div>
-                         <span class="block text-xs font-medium text-muted-foreground uppercase">Plateformes</span>
-                         <span class="text-sm">{Array.isArray(media.metadata.platform) ? media.metadata.platform.join(', ') : media.metadata.platform}</span>
-                    </div>
-                )}
-            </div>
-            
-        </div>
+        {/* Category Navigation */}
+        <nav class="mt-12 pt-8 border-t">
+          <h2 class="text-lg font-semibold mb-4">Autres catégories</h2>
+          <div class="flex flex-wrap gap-2">
+            {validCategories
+              .filter((c) => c !== slug)
+              .map((c) => (
+                <a
+                  href={`/catalog/${type}/${c}`}
+                  class="px-4 py-2 rounded-full border hover:bg-muted transition-colors text-sm"
+                >
+                  {/* @ts-ignore */}
+                  {categoryLabels[c]}
+                </a>
+              ))}
+          </div>
+        </nav>
       </div>
-    )}
-  </div>
+    ) : (
+      // ==================== MEDIA DETAIL VIEW TEMPLATE ====================
+      <div class="container py-10 max-w-5xl mx-auto">
+        <div class="mb-6">
+          <a
+            href="/"
+            class="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <MoveLeft class="mr-2 h-4 w-4" />
+            Retour à l'accueil
+          </a>
+        </div>
+
+        {error && (
+          <div class="rounded-lg border border-destructive/50 p-4 text-destructive">
+            Une erreur est survenue lors du chargement du média.
+          </div>
+        )}
+
+        {media && (
+          <div class="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
+            {/* Poster Column */}
+            <div class="flex flex-col gap-4">
+              <div class="relative aspect-[2/3] overflow-hidden rounded-lg border bg-muted shadow-sm">
+                {media.posterUrl ? (
+                  <img
+                    src={media.posterUrl}
+                    alt={media.title}
+                    class="h-full w-full object-cover transition-transform hover:scale-105"
+                    transition:name={`poster-${media.id}`}
+                  />
+                ) : (
+                  <div class="flex h-full items-center justify-center bg-muted text-muted-foreground">
+                    No Poster
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Info Column */}
+            <div class="flex flex-col gap-6">
+              <div>
+                <h1 class="text-4xl font-bold tracking-tight lg:text-5xl mb-2">
+                  {media.title}
+                </h1>
+                <div class="flex flex-wrap gap-4 text-sm text-muted-foreground items-center">
+                  {media.releaseYear && (
+                    <div class="flex items-center gap-1">
+                      <Calendar class="h-4 w-4" />
+                      <span>{media.releaseYear}</span>
+                    </div>
+                  )}
+                  {media.rating && (
+                    <div class="flex items-center gap-1 text-yellow-500">
+                      <Star class="h-4 w-4 fill-current" />
+                      <span>{media.rating}/10</span>
+                    </div>
+                  )}
+                  <div class="px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs font-semibold uppercase tracking-wider">
+                    {media.type}
+                  </div>
+                </div>
+              </div>
+
+              {media.description && (
+                <div class="prose prose-zinc dark:prose-invert max-w-none">
+                  <h3 class="text-xl font-semibold mb-2">Synopsis</h3>
+                  <p class="leading-relaxed text-muted-foreground">
+                    {media.description}
+                  </p>
+                </div>
+              )}
+
+              <div class="grid grid-cols-2 gap-4 border-t pt-6 mt-2">
+                {media.metadata?.director && (
+                  <div>
+                    <span class="block text-xs font-medium text-muted-foreground uppercase">
+                      Réalisateur
+                    </span>
+                    <span class="text-sm">{media.metadata.director}</span>
+                  </div>
+                )}
+                {media.metadata?.developer && (
+                  <div>
+                    <span class="block text-xs font-medium text-muted-foreground uppercase">
+                      Studio
+                    </span>
+                    <span class="text-sm">{media.metadata.developer}</span>
+                  </div>
+                )}
+                {media.metadata?.author && (
+                  <div>
+                    <span class="block text-xs font-medium text-muted-foreground uppercase">
+                      Auteur
+                    </span>
+                    <span class="text-sm">{media.metadata.author}</span>
+                  </div>
+                )}
+                {media.metadata?.platform && (
+                  <div>
+                    <span class="block text-xs font-medium text-muted-foreground uppercase">
+                      Plateformes
+                    </span>
+                    <span class="text-sm">
+                      {Array.isArray(media.metadata.platform)
+                        ? media.metadata.platform.join(', ')
+                        : media.metadata.platform}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
 </Layout>

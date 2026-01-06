@@ -40,15 +40,48 @@ interface HeaderLabels {
   settings: string;
 }
 
+interface TrendingMedia {
+  id: string;
+  title: string;
+  slug: string;
+  type: string;
+  coverUrl?: { value: string } | string | null;
+}
+
+interface TrendingHighlights {
+  movie?: TrendingMedia | null;
+  tv?: TrendingMedia | null;
+  game?: TrendingMedia | null;
+  book?: TrendingMedia | null;
+}
+
 interface Props {
   user?: User | null;
   context?: 'website' | 'app';
   labels: HeaderLabels;
+  trendingHighlights?: TrendingHighlights;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   context: 'website',
 });
+
+// Smart Year logic (before March = N-1, after = N)
+const currentCatalogYear = (() => {
+  const now = new Date();
+  return now.getMonth() < 2 ? now.getFullYear() - 1 : now.getFullYear();
+})();
+
+// Helper to extract cover URL from Value Object or string
+const getCoverUrl = (
+  media: TrendingMedia | null | undefined,
+): string | undefined => {
+  if (!media?.coverUrl) return undefined;
+  if (typeof media.coverUrl === 'string') return media.coverUrl;
+  if (typeof media.coverUrl === 'object' && 'value' in media.coverUrl)
+    return media.coverUrl.value;
+  return undefined;
+};
 
 const emit = defineEmits<{
   logout: [];
@@ -135,150 +168,335 @@ const handleLogout = async () => {
           <div v-if="context === 'website'" class="hidden md:flex">
             <NavigationMenu>
               <NavigationMenuList>
-                <!-- Explorer Item -->
+                <!-- Films Menu -->
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger class="uppercase">{{
-                    labels.explorer
-                  }}</NavigationMenuTrigger>
+                  <NavigationMenuTrigger class="uppercase"
+                    >Films</NavigationMenuTrigger
+                  >
                   <NavigationMenuContent>
-                    <ul
-                      class="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]"
-                    >
-                      <li class="row-span-3">
-                        <NavigationMenuLink as-child>
-                          <a
-                            class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-6 no-underline outline-none focus:shadow-md"
-                            href="/trends"
-                          >
-                            <div class="mb-2 mt-4 text-3xl">🔥</div>
-                            <div class="mb-2 text-lg font-medium">
-                              Tendances
-                            </div>
-                            <p
-                              class="text-sm leading-tight text-muted-foreground"
+                    <div class="grid gap-3 p-6 w-[500px] grid-cols-[250px_1fr]">
+                      <!-- Featured Trending -->
+                      <NavigationMenuLink as-child>
+                        <a
+                          :href="
+                            trendingHighlights?.movie
+                              ? `/catalog/movie/${trendingHighlights.movie.slug}`
+                              : '/catalog/movie/trending'
+                          "
+                          class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-4 no-underline outline-none focus:shadow-md overflow-hidden relative"
+                        >
+                          <img
+                            v-if="getCoverUrl(trendingHighlights?.movie)"
+                            :src="getCoverUrl(trendingHighlights?.movie)"
+                            :alt="trendingHighlights?.movie?.title"
+                            class="absolute inset-0 w-full h-full object-cover opacity-30"
+                          />
+                          <div class="relative z-10">
+                            <div
+                              class="mb-1 text-xs font-medium text-primary uppercase"
                             >
-                              Découvrez les jeux, films et séries qui font le
-                              buzz en ce moment (Top ELO).
-                            </p>
-                          </a>
-                        </NavigationMenuLink>
-                      </li>
-                      <li>
-                        <NavigationMenuLink as-child>
-                          <a
-                            href="/catalog?type=game"
-                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div class="text-sm font-medium leading-none">
-                              🎮 Jeux Vidéo
+                              🔥 En Tendance
                             </div>
-                            <p
-                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                            <div
+                              class="mb-1 text-base font-semibold line-clamp-2"
                             >
-                              Explorez notre collection de jeux culte.
-                            </p>
-                          </a>
-                        </NavigationMenuLink>
-                      </li>
-                      <li>
-                        <NavigationMenuLink as-child>
-                          <a
-                            href="/catalog?type=movie"
-                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div class="text-sm font-medium leading-none">
-                              🎬 Films & Séries
+                              {{
+                                trendingHighlights?.movie?.title || 'Découvrir'
+                              }}
                             </div>
-                            <p
-                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
-                            >
-                              Les grands classiques du cinéma.
+                            <p class="text-xs text-muted-foreground">
+                              Le n°1 du moment
                             </p>
-                          </a>
-                        </NavigationMenuLink>
-                      </li>
-                      <li>
-                        <NavigationMenuLink as-child>
-                          <a
-                            href="/catalog?type=book"
-                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          </div>
+                        </a>
+                      </NavigationMenuLink>
+                      <!-- Links -->
+                      <ul class="flex flex-col gap-2">
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/catalog/movie/upcoming"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >📅 Bientôt</a
+                            ></NavigationMenuLink
                           >
-                            <div class="text-sm font-medium leading-none">
-                              📚 Livres & BD
-                            </div>
-                            <p
-                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              :href="`/catalog/movie/best-of`"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >🏆 Le Top {{ currentCatalogYear }}</a
                             >
-                              Romans, mangas et comics.
-                            </p>
-                          </a>
-                        </NavigationMenuLink>
-                      </li>
-                    </ul>
+                          </NavigationMenuLink>
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/catalog/movie/hall-of-fame"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >⭐ Hall of Fame</a
+                            ></NavigationMenuLink
+                          >
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/search?type=movie"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >🔍 Recherche avancée</a
+                            >
+                          </NavigationMenuLink>
+                        </li>
+                      </ul>
+                    </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                <!-- Classements Item -->
+                <!-- Séries Menu -->
                 <NavigationMenuItem>
                   <NavigationMenuTrigger class="uppercase"
-                    >Classements</NavigationMenuTrigger
+                    >Séries</NavigationMenuTrigger
                   >
                   <NavigationMenuContent>
-                    <ul
-                      class="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]"
-                    >
-                      <li>
-                        <NavigationMenuLink as-child>
-                          <a
-                            href="/rankings/hall-of-fame"
-                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div class="text-sm font-medium leading-none">
-                              🏆 Hall of Fame
-                            </div>
-                            <p
-                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                    <div class="grid gap-3 p-6 w-[500px] grid-cols-[250px_1fr]">
+                      <NavigationMenuLink as-child>
+                        <a
+                          :href="
+                            trendingHighlights?.tv
+                              ? `/catalog/tv/${trendingHighlights.tv.slug}`
+                              : '/catalog/tv/trending'
+                          "
+                          class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-4 no-underline outline-none focus:shadow-md overflow-hidden relative"
+                        >
+                          <img
+                            v-if="getCoverUrl(trendingHighlights?.tv)"
+                            :src="getCoverUrl(trendingHighlights?.tv)"
+                            :alt="trendingHighlights?.tv?.title"
+                            class="absolute inset-0 w-full h-full object-cover opacity-30"
+                          />
+                          <div class="relative z-10">
+                            <div
+                              class="mb-1 text-xs font-medium text-primary uppercase"
                             >
-                              Le classement ultime par ELO.
-                            </p>
-                          </a>
-                        </NavigationMenuLink>
-                      </li>
-                      <li>
-                        <NavigationMenuLink as-child>
-                          <a
-                            href="/rankings/hidden-gems"
-                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div class="text-sm font-medium leading-none">
-                              💎 Pépites Cachées
+                              🔥 En Tendance
                             </div>
-                            <p
-                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
+                            <div
+                              class="mb-1 text-base font-semibold line-clamp-2"
                             >
-                              D'excellentes notes mais peu de vues.
-                            </p>
-                          </a>
-                        </NavigationMenuLink>
-                      </li>
-                      <li>
-                        <NavigationMenuLink as-child>
-                          <a
-                            href="/rankings/controversial"
-                            class="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div class="text-sm font-medium leading-none">
-                              📉 Les Controversés
+                              {{ trendingHighlights?.tv?.title || 'Découvrir' }}
                             </div>
-                            <p
-                              class="line-clamp-2 text-sm leading-snug text-muted-foreground"
-                            >
-                              Ils divisent la communauté.
+                            <p class="text-xs text-muted-foreground">
+                              Le n°1 du moment
                             </p>
-                          </a>
-                        </NavigationMenuLink>
-                      </li>
-                    </ul>
+                          </div>
+                        </a>
+                      </NavigationMenuLink>
+                      <ul class="flex flex-col gap-2">
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/catalog/tv/upcoming"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >📅 Bientôt</a
+                            ></NavigationMenuLink
+                          >
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              :href="`/catalog/tv/best-of`"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >🏆 Le Top {{ currentCatalogYear }}</a
+                            >
+                          </NavigationMenuLink>
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/catalog/tv/hall-of-fame"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >⭐ Hall of Fame</a
+                            ></NavigationMenuLink
+                          >
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/search?type=tv"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >🔍 Recherche avancée</a
+                            >
+                          </NavigationMenuLink>
+                        </li>
+                      </ul>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                <!-- Jeux Menu -->
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger class="uppercase"
+                    >Jeux</NavigationMenuTrigger
+                  >
+                  <NavigationMenuContent>
+                    <div class="grid gap-3 p-6 w-[500px] grid-cols-[250px_1fr]">
+                      <NavigationMenuLink as-child>
+                        <a
+                          :href="
+                            trendingHighlights?.game
+                              ? `/catalog/game/${trendingHighlights.game.slug}`
+                              : '/catalog/game/trending'
+                          "
+                          class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-4 no-underline outline-none focus:shadow-md overflow-hidden relative"
+                        >
+                          <img
+                            v-if="getCoverUrl(trendingHighlights?.game)"
+                            :src="getCoverUrl(trendingHighlights?.game)"
+                            :alt="trendingHighlights?.game?.title"
+                            class="absolute inset-0 w-full h-full object-cover opacity-30"
+                          />
+                          <div class="relative z-10">
+                            <div
+                              class="mb-1 text-xs font-medium text-primary uppercase"
+                            >
+                              🔥 En Tendance
+                            </div>
+                            <div
+                              class="mb-1 text-base font-semibold line-clamp-2"
+                            >
+                              {{
+                                trendingHighlights?.game?.title || 'Découvrir'
+                              }}
+                            </div>
+                            <p class="text-xs text-muted-foreground">
+                              Le n°1 du moment
+                            </p>
+                          </div>
+                        </a>
+                      </NavigationMenuLink>
+                      <ul class="flex flex-col gap-2">
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/catalog/game/upcoming"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >📅 Bientôt</a
+                            ></NavigationMenuLink
+                          >
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              :href="`/catalog/game/best-of`"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >🏆 Le Top {{ currentCatalogYear }}</a
+                            >
+                          </NavigationMenuLink>
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/catalog/game/hall-of-fame"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >⭐ Hall of Fame</a
+                            ></NavigationMenuLink
+                          >
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/search?type=game"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >🔍 Recherche avancée</a
+                            >
+                          </NavigationMenuLink>
+                        </li>
+                      </ul>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                <!-- Livres Menu -->
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger class="uppercase"
+                    >Livres</NavigationMenuTrigger
+                  >
+                  <NavigationMenuContent>
+                    <div class="grid gap-3 p-6 w-[500px] grid-cols-[250px_1fr]">
+                      <NavigationMenuLink as-child>
+                        <a
+                          :href="
+                            trendingHighlights?.book
+                              ? `/catalog/book/${trendingHighlights.book.slug}`
+                              : '/catalog/book/trending'
+                          "
+                          class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-4 no-underline outline-none focus:shadow-md overflow-hidden relative"
+                        >
+                          <img
+                            v-if="getCoverUrl(trendingHighlights?.book)"
+                            :src="getCoverUrl(trendingHighlights?.book)"
+                            :alt="trendingHighlights?.book?.title"
+                            class="absolute inset-0 w-full h-full object-cover opacity-30"
+                          />
+                          <div class="relative z-10">
+                            <div
+                              class="mb-1 text-xs font-medium text-primary uppercase"
+                            >
+                              🔥 En Tendance
+                            </div>
+                            <div
+                              class="mb-1 text-base font-semibold line-clamp-2"
+                            >
+                              {{
+                                trendingHighlights?.book?.title || 'Découvrir'
+                              }}
+                            </div>
+                            <p class="text-xs text-muted-foreground">
+                              Le n°1 du moment
+                            </p>
+                          </div>
+                        </a>
+                      </NavigationMenuLink>
+                      <ul class="flex flex-col gap-2">
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/catalog/book/upcoming"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >📅 Bientôt</a
+                            ></NavigationMenuLink
+                          >
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              :href="`/catalog/book/best-of`"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >🏆 Le Top {{ currentCatalogYear }}</a
+                            >
+                          </NavigationMenuLink>
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/catalog/book/hall-of-fame"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >⭐ Hall of Fame</a
+                            ></NavigationMenuLink
+                          >
+                        </li>
+                        <li>
+                          <NavigationMenuLink as-child
+                            ><a
+                              href="/search?type=book"
+                              class="block p-2 rounded hover:bg-accent text-sm"
+                              >🔍 Recherche avancée</a
+                            >
+                          </NavigationMenuLink>
+                        </li>
+                      </ul>
+                    </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 

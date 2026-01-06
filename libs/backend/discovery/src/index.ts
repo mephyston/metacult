@@ -21,7 +21,20 @@ export * from './application/queries/get-personalized-feed/get-personalized-feed
 // Infrastructure
 export * from './infrastructure/repositories/drizzle-affinity.repository';
 export * from './infrastructure/repositories/drizzle-similarity.repository';
+export * from './infrastructure/repositories/drizzle-catalog.repository';
 export * from './infrastructure/db/schema';
+
+// Export Handlers for API Composition Root
+export * from './application/queries/get-trending/get-trending.handler';
+export * from './application/queries/get-trending/get-trending.query';
+export * from './application/queries/get-hall-of-fame/get-hall-of-fame.handler';
+export * from './application/queries/get-hall-of-fame/get-hall-of-fame.query';
+export * from './application/queries/get-controversial/get-controversial.handler';
+export * from './application/queries/get-controversial/get-controversial.query';
+export * from './application/queries/get-upcoming/get-upcoming.handler';
+export * from './application/queries/get-upcoming/get-upcoming.query';
+export * from './application/queries/get-top-rated-by-year/get-top-rated-by-year.handler';
+export * from './application/queries/get-top-rated-by-year/get-top-rated-by-year.query';
 
 // Constants
 export const COMPUTE_NEIGHBORS_QUEUE_NAME = 'compute-neighbors';
