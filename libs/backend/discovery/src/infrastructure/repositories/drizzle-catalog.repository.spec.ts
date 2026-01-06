@@ -9,7 +9,8 @@ import { sql } from 'drizzle-orm';
 
 // Note: This test requires a running database instance.
 // Safety: It uses strict TRANSACTION ROLLBACK to ensure NO data is ever committed to your local DB.
-const runIntegration = process.env.DATABASE_URL ? describe : describe.skip;
+const isMockDb = process.env.DATABASE_URL?.includes('mock');
+const runIntegration = (process.env.DATABASE_URL && !isMockDb) ? describe : describe.skip;
 
 runIntegration('DrizzleCatalogRepository Integration', () => {
   const { db } = getDbConnection();
