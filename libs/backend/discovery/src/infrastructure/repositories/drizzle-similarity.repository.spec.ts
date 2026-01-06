@@ -13,33 +13,6 @@ export const mockValues = mock(() => ({
 }));
 export const mockInsert = mock(() => ({ values: mockValues }));
 
-mock.module('@metacult/backend-infrastructure', () => ({
-  getDbConnection: () => ({
-    db: {
-      select: mockSelect,
-      insert: mockInsert,
-    },
-  }),
-  logger: {
-    info: () => null,
-    error: () => null,
-    warn: () => null,
-    debug: () => null,
-  },
-  configService: {
-    get: () => 'http://mock-url.com',
-    isProduction: false,
-    isDevelopment: true,
-    isStaging: false,
-    isTest: true,
-  },
-}));
-
-mock.module('drizzle-orm', () => ({
-  sql: (strings: any) => strings,
-  eq: () => 'eq',
-}));
-
 import { DrizzleSimilarityRepository } from './drizzle-similarity.repository';
 import { Neighbor } from '../../domain/entities/neighbor.entity';
 
