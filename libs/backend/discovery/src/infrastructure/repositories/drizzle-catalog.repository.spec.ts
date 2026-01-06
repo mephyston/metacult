@@ -24,6 +24,16 @@ runIntegration('DrizzleCatalogRepository Integration', () => {
       .transaction(async (tx) => {
         const repository = new DrizzleCatalogRepository(tx as any);
 
+        // Clear existing data WITHIN the transaction to ensure tests run against a clean state.
+        // This is safe because the entire transaction is rolled back at the end.
+        // We must delete from child tables first to satisfy constraints.
+        await tx.delete(userInteractions);
+        await tx.delete(mediaSchema.games);
+        await tx.delete(mediaSchema.movies);
+        await tx.delete(mediaSchema.tv);
+        await tx.delete(mediaSchema.books);
+        await tx.delete(mediaSchema.medias);
+
         const m1 = randomUUID(); // Trending Game
         const m2 = randomUUID(); // HallOfFame Movie
         const m3 = randomUUID(); // Controversial Show
