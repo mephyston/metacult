@@ -36,6 +36,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Thème
 .theme
 
+#BMA
+#.agent
+#_bmad
+#_bmad-output
 
 
 .nx/cache

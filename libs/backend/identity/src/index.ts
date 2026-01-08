@@ -19,6 +19,7 @@
 
 // --- API Layer (Routes & Middleware) ---
 export { createAuthRoutes } from './api/auth.routes';
+export { userController } from './api/http/controllers/user.controller';
 export {
   isAuthenticated,
   maybeAuthenticated,

@@ -45,3 +45,22 @@ export const userInteractions = interactionSchema.table(
     };
   },
 );
+
+export const userFollows = interactionSchema.table(
+  'user_follows',
+  {
+    followerId: text('follower_id').notNull(), // User who follows
+    followingId: text('following_id').notNull(), // User being followed
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => {
+    return {
+      pk: uniqueIndex('user_follows_pk').on(
+        table.followerId,
+        table.followingId,
+      ),
+      followerIdx: index('follower_idx').on(table.followerId),
+      followingIdx: index('following_idx').on(table.followingId),
+    };
+  },
+);

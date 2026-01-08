@@ -9,16 +9,23 @@
   },
   "dependencies": {
     "@metacult/shared-core": "workspace:*",
+    "@metacult/shared-local-db": "workspace:*",
+    "@metacult/shared-sync-manager": "workspace:*",
+    "@metacult/shared-types": "workspace:*",
     "@metacult/shared-ui": "workspace:*",
     "@nuxtjs/i18n": "^9.0.4",
+    "@vite-pwa/nuxt": "^1.1.0",
     "@vueuse/core": "^14.1.0",
+    "@vueuse/rxjs": "^14.1.0",
     "better-auth": "^1.4.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.562.0",
     "radix-vue": "^1.9.17",
+    "rxjs": "^7.8.2",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "workbox-window": "^7.4.0"
   },
   "devDependencies": {
     "ofetch": "^1.5.1"

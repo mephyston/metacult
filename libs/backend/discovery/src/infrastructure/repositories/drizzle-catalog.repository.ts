@@ -12,7 +12,7 @@ import {
   CoverUrl,
   ReleaseYear,
 } from '@metacult/backend-catalog';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+
 import { userInteractions } from '@metacult/backend-interaction';
 import type { CatalogRepository } from '../../domain/ports/catalog.repository.interface';
 
@@ -169,6 +169,20 @@ export class DrizzleCatalogRepository implements CatalogRepository {
       .limit(limit);
 
     return rows.map((row) => this.mapRowToEntity(row));
+  }
+
+  async findByIds(ids: string[]): Promise<Media[]> {
+    if (ids.length === 0) return [];
+
+    const rows = await this.getBaseQuery().where(
+      sql`${mediaSchema.medias.id} IN ${ids}`,
+    );
+
+    const rowMap = new Map(rows.map((r) => [r.medias.id, r]));
+    return ids
+      .map((id) => rowMap.get(id))
+      .filter((r) => !!r)
+      .map((row) => this.mapRowToEntity(row!));
   }
 
   private mapRowToEntity(row: {

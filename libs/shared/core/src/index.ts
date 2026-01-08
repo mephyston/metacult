@@ -3,6 +3,7 @@ export * from './lib/config/default-urls';
 export * from './lib/errors/app.error';
 export * from './constants/messages';
 export * from './constants/status';
+export * from './lib/logger';
 export {
   AppError,
   DomainError,

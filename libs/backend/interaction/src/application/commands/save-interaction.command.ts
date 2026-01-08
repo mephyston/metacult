@@ -2,11 +2,15 @@ import { eq } from 'drizzle-orm';
 import {
   getDbConnection,
   configService,
+  logger,
 } from '@metacult/backend-infrastructure';
 import { userInteractions } from '../../infrastructure/db/interactions.schema';
 import { Queue } from 'bullmq';
+import { GamificationService } from '@metacult/backend-gamification';
 
 const { db } = getDbConnection();
+
+const gamificationService = new GamificationService();
 
 // Constant defined locally to avoid circular dependency with backend-discovery
 const AFFINITY_QUEUE_NAME = 'affinity-queue';
@@ -67,7 +71,14 @@ export async function saveInteraction(payload: SaveInteractionPayload) {
       globalElo: globalElo,
     });
   } catch (err) {
-    console.error('Failed to publish affinity update event', err);
+    logger.error({ err }, 'Failed to publish affinity update event');
+  }
+
+  // --- GAMIFICATION: Award XP ---
+  try {
+    await gamificationService.addXp(payload.userId, 10, 'SWIPE');
+  } catch (e) {
+    logger.error({ err: e }, '[Gamification] Failed to award XP for SWIPE');
   }
 
   return result[0];

@@ -131,17 +131,23 @@ const angle = computed(() => {
 
 // Rotation de la carte (Tilt)
 const cardTransform = computed(() => {
-  // N'applique RIEN si x et y sont à 0 ou quasi-0
-  if (distance.value < 3) {
-    return {};
+  // Tactile feedback: Scale down slightly when dragging
+  const scale = isDragging.value ? 0.95 : 1;
+
+  // N'applique RIEN si x et y sont à 0 ou quasi-0 (sauf le scale si on drag)
+  if (distance.value < 3 && !isDragging.value) {
+    return {
+      transform: `scale(${scale})`,
+      transition: 'transform 0.3s ease-out',
+    };
   }
 
   const rotate = (x.value / (windowWidth.value / 2)) * MAX_ROTATION;
 
   return {
-    transform: `translate3d(${x.value}px, ${y.value}px, 0) rotate(${rotate}deg)`,
+    transform: `translate3d(${x.value}px, ${y.value}px, 0) rotate(${rotate}deg) scale(${scale})`,
     transition: isDragging.value
-      ? 'none'
+      ? 'none' // Instant response for drag
       : 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Spring effect au retour
     cursor: isDragging.value ? 'grabbing' : 'grab',
   };
@@ -341,16 +347,26 @@ defineExpose({
     class="relative flex items-center justify-center w-full h-full select-none"
     style="touch-action: none"
   >
-    <div v-if="!item" class="absolute text-muted-foreground animate-pulse">
-      Chargement du deck...
+    <div
+      v-if="!item"
+      class="absolute text-muted-foreground animate-pulse font-display text-xl"
+    >
+      Loading...
     </div>
 
+    <!-- 
+      CINEMATIC IMMERSIVE CARD 
+      - Full Bleed (No padding)
+      - No visible border (Clean edges)
+      - Floating Metadata
+    -->
     <div
       v-else
       ref="cardRef"
-      class="relative w-full max-w-sm aspect-[3/4] bg-card rounded-2xl shadow-2xl overflow-hidden border border-border/50 cursor-grab active:cursor-grabbing will-change-transform z-10"
+      class="relative w-full h-full bg-black rounded-3xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing will-change-transform z-10"
       :style="cardTransform"
     >
+      <!-- FULL BLEED IMAGE -->
       <img
         :src="item.image"
         :alt="item.title"
@@ -358,54 +374,84 @@ defineExpose({
         draggable="false"
       />
 
+      <!-- GRADIENT OVERLAY (Cinematic Fade) -->
       <div
-        class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 to-transparent pointer-events-none"
+        class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none"
       />
 
-      <div class="absolute bottom-6 left-6 right-6 pointer-events-none">
-        <h2 class="text-3xl font-black text-white leading-tight drop-shadow-md">
+      <!-- FLOATING METADATA (Bottom Left) -->
+      <div
+        class="absolute bottom-10 left-6 right-6 pointer-events-none flex flex-col gap-2"
+      >
+        <!-- Tags / Rating -->
+        <div class="flex items-center gap-2 mb-1">
+          <span
+            class="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-white"
+            >Movie</span
+          >
+          <span
+            class="text-amber-400 text-xs font-bold flex items-center gap-1"
+          >
+            <Flame class="w-3 h-3" /> 8.8
+          </span>
+        </div>
+
+        <!-- Title -->
+        <h2
+          class="text-4xl font-black font-display text-white leading-[0.9] drop-shadow-lg"
+        >
           {{ item.title }}
         </h2>
+
+        <!-- Short Description (Mocked for now) -->
+        <p
+          class="text-sm text-zinc-300 line-clamp-2 leading-snug mt-2 font-normal opacity-90"
+        >
+          Swipe to decide. Discovery awaits.
+        </p>
       </div>
 
+      <!-- INTERACTION OVERLAY (Sentiment feedback) -->
       <div
         class="absolute inset-0 flex flex-col items-center justify-center transition-colors duration-200 pointer-events-none"
         :class="
           activeZone
             ? `bg-gradient-to-tr ${activeZone.bgGradient} to-transparent`
-            : 'bg-black/40'
+            : ''
         "
         :style="{ opacity: isDragging ? overlayOpacity : 0 }"
       >
-        <div
-          v-if="activeZone"
-          class="transform transition-all duration-200 scale-150 p-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-xl"
+        <Transition
+          enter-active-class="transition duration-200 ease-out cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+          enter-from-class="opacity-0 scale-50 rotate-12"
+          enter-to-class="opacity-100 scale-150 rotate-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="opacity-100 scale-150"
+          leave-to-class="opacity-0 scale-50"
         >
-          <component
-            :is="activeZone.icon"
-            class="w-16 h-16"
-            :class="activeZone.color"
-            stroke-width="2.5"
-          />
-        </div>
+          <div
+            v-if="activeZone"
+            class="transform p-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-xl"
+          >
+            <component
+              :is="activeZone.icon"
+              class="w-16 h-16"
+              :class="activeZone.color"
+              stroke-width="2.5"
+            />
+          </div>
+        </Transition>
 
         <p
           v-if="activeZone"
-          class="mt-4 text-2xl font-bold text-white tracking-widest uppercase drop-shadow-lg"
+          class="mt-4 text-3xl font-black font-display text-white tracking-widest uppercase drop-shadow-xl"
         >
           {{ activeZone.label }}
         </p>
       </div>
 
-      <div
-        v-if="isDragging && distance < 50"
-        class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none"
-      >
-        <div class="grid grid-cols-2 gap-24">
-          <X class="text-red-500" />
-          <ThumbsUp class="text-green-500" />
-        </div>
-      </div>
+      <!-- DEADZONE HINTS (Optional for Tutorial feel) -->
+      <!-- <div class="absolute inset-0 border-[1px] border-white/5 pointer-events-none"></div> -->
     </div>
   </div>
 </template>

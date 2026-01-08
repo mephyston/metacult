@@ -7,11 +7,13 @@ import { logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES, DUEL_STATUS } from '@metacult/shared-core';
 import { RankingQueue } from '../../../infrastructure/queue/ranking.queue';
 import { DrizzleDuelRepository } from '../../../infrastructure/repositories/drizzle-duel.repository';
+import { GamificationService } from '@metacult/backend-gamification';
 
 // Initialisation des dépendances (Poor man's injection pour ce module)
 // Idéalement, on passerait par un conteneur ou une factory au niveau de l'app.
 const duelRepository = new DrizzleDuelRepository();
 const rankingQueue = new RankingQueue();
+const gamificationService = new GamificationService();
 
 /**
  * Contrôleur pour le module Duel.
@@ -70,14 +72,21 @@ export const DuelController = new Elysia({ prefix: '/duel' })
 
   .post(
     '/vote',
-    async ({ body }) => {
+    async (context) => {
+      const { body } = context as any; // Elysia context typing workaround
       const { winnerId, loserId } = body;
 
-      // 1. Enregistrement de l'interaction (TODO: Module Interaction)
-      // console.log(`User ${user.id} voted for ${winnerId} over ${loserId}`);
+      const user = await resolveUserOrThrow(context as any);
 
-      // 2. Dispatch job update classement
+      // 1. Dispatch job update classement
       await rankingQueue.addDuelResult(winnerId, loserId);
+
+      // 2. GAMIFICATION: Award XP
+      try {
+        await gamificationService.addXp(user.id, 50, 'DUEL');
+      } catch (e) {
+        logger.error({ err: e }, '[Gamification] Failed to award XP for DUEL');
+      }
 
       return { status: 'success', message: API_MESSAGES.DUEL.VOTE_REGISTERED };
     },

@@ -99,7 +99,7 @@ const displayCommit = `#${sha.substring(0, 7)}`;
 
 <template>
   <div
-    class="font-sans min-h-screen flex flex-col bg-background text-foreground"
+    class="font-sans min-h-screen flex flex-col bg-background text-foreground dark"
   >
     <Header
       :user="user"

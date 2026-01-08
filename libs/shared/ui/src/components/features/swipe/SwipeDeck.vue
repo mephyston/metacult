@@ -212,7 +212,7 @@ defineExpose({
   >
     <!-- Card Display Area -->
     <div
-      class="relative w-full max-w-sm h-[65vh] md:h-[550px] flex items-center justify-center"
+      class="relative w-full max-w-sm h-[70vh] md:h-[600px] flex items-center justify-center"
     >
       <!-- Current Card -->
       <div v-if="currentCard" class="absolute inset-0">
@@ -273,7 +273,7 @@ defineExpose({
     <!-- Action Buttons -->
     <div
       v-if="currentCard"
-      class="flex items-center justify-center gap-3 md:gap-5"
+      class="hidden md:flex items-center justify-center gap-3 md:gap-5"
     >
       <!-- Dislike -->
       <button

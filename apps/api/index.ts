@@ -11,15 +11,28 @@ import {
   FeedController,
   GetMixedFeedHandler,
   GetPersonalizedFeedHandler,
+  mediaController as mediaRoutes,
 } from '@metacult/backend-discovery';
-import { createAuthRoutes } from '@metacult/backend-identity';
-import { interactionController as interactionRoutes } from '@metacult/backend-interaction';
+import {
+  createAuthRoutes,
+  userController as userRoutes,
+} from '@metacult/backend-identity';
+import {
+  interactionController as interactionRoutes,
+  socialController as socialRoutes,
+} from '@metacult/backend-interaction';
 import {
   DuelController as duelRoutes,
   RankingController as rankingRoutes,
 } from '@metacult/backend-ranking';
+import {
+  GamificationController as gamificationRoutes,
+  userStats,
+  gamificationSchema,
+} from '@metacult/backend-gamification';
 import { importRoutes } from './src/routes/import.routes';
 import { debugRoutes } from './src/routes/debug.routes';
+import { syncRoutes } from './src/routes/sync.routes';
 import {
   getDbConnection,
   redisClient,
@@ -49,6 +62,7 @@ runMigrations()
 import { mediaSchema, DrizzleMediaRepository } from '@metacult/backend-catalog';
 import {
   userInteractions,
+  userFollows,
   actionEnum,
   sentimentEnum,
   DrizzleInteractionRepository,
@@ -57,8 +71,10 @@ const fullSchema = {
   ...infraSchema,
   ...mediaSchema,
   userInteractions,
+  userFollows,
   actionEnum,
   sentimentEnum,
+  userStats, // Gamification
 };
 // Initialisation du Singleton
 const { db } = getDbConnection(fullSchema);
@@ -256,13 +272,17 @@ const app = new Elysia()
   .group('/api', (app) =>
     app
       .group('/import', (app) => app.use(importRoutes))
+      .use(userRoutes)
       .use(debugRoutes)
+      .use(syncRoutes)
       .use(catalogRoutes)
       .use(discoveryRoutes)
-
+      .use(mediaRoutes)
       .use(interactionRoutes)
+      .use(socialRoutes)
       .use(duelRoutes)
-      .use(rankingRoutes),
+      .use(rankingRoutes)
+      .use(gamificationRoutes),
   );
 
 const port = configService.get('API_PORT');

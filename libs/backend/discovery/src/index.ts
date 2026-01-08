@@ -2,6 +2,7 @@ export * from './application/queries/get-mixed-feed/get-mixed-feed.query';
 export * from './application/queries/get-mixed-feed/get-mixed-feed.handler';
 export * from './api/routes';
 export * from './api/http/controllers/feed.controller';
+export * from './api/http/controllers/media.controller';
 export * from './application/queries/get-mixed-feed/get-mixed-feed.handler';
 // Domain
 export * from './domain/entities/affinity.entity';

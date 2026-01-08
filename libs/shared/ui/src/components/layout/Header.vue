@@ -24,11 +24,7 @@ import { cn, getWebappUrl } from '../../lib/utils';
 import { authClient } from '../../lib/auth-client';
 import { logger } from '../../lib/logger';
 
-interface User {
-  name?: string;
-  email?: string;
-  avatar?: string;
-}
+import { type UserProfile } from '@metacult/shared-types';
 
 interface HeaderLabels {
   explorer: string;
@@ -56,7 +52,7 @@ interface TrendingHighlights {
 }
 
 interface Props {
-  user?: User | null;
+  user?: UserProfile | null;
   context?: 'website' | 'app';
   labels: HeaderLabels;
   trendingHighlights?: TrendingHighlights;
@@ -88,11 +84,15 @@ const emit = defineEmits<{
 }>();
 
 const isOpen = ref(false);
-const sessionUser = ref<User | null>(null);
+const sessionUser = ref<UserProfile | null>(null);
 const isLoadingSession = ref(true);
 
 const currentUser = computed(() => props.user ?? sessionUser.value);
 const isMounted = ref(false);
+
+const currentLevel = computed(() => currentUser.value?.level ?? 1);
+const currentXp = computed(() => currentUser.value?.xp ?? 0);
+const nextLevelXp = computed(() => currentUser.value?.nextLevelXp ?? 100);
 
 onMounted(async () => {
   isMounted.value = true;
@@ -100,15 +100,36 @@ onMounted(async () => {
     try {
       const { data } = await authClient.getSession();
       if (data?.user) {
-        sessionUser.value = {
-          name: data.user.name ?? undefined,
-          email: data.user.email ?? undefined,
-          avatar: data.user.image ?? undefined,
+        // Map to UserProfile
+        const profile: UserProfile = {
+          id: data.user.id,
+          username: data.user.name || 'Anonymous',
+          email: data.user.email,
+          avatarUrl: data.user.image || undefined,
+          createdAt: data.user.createdAt.toString(),
+          level: 1,
+          xp: 0,
+          nextLevelXp: 100,
         };
+
+        // Fetch extra stats if we are in a context that supports it?
+        // For now, simpler: Try to fetch me stats
+        try {
+          const res = await fetch('/api/gamification/me');
+          if (res.ok) {
+            const stats = await res.json();
+            profile.level = stats.level;
+            profile.xp = stats.xp;
+            profile.nextLevelXp = stats.nextLevelXp;
+          }
+        } catch (e) {
+          /* ignore */
+        }
+
+        sessionUser.value = profile;
       }
     } catch (error) {
       logger.error('[Header] Failed to fetch session:', error);
-    } finally {
       isLoadingSession.value = false;
     }
   } else {
@@ -127,12 +148,12 @@ const toggleMenu = () => {
 
 const userInitials = computed(() => {
   const user = currentUser.value;
-  if (!user?.name) return 'U';
-  const names = user.name.split(' ');
+  if (!user?.username) return 'U';
+  const names = user.username.split(' ');
   if (names.length >= 2) {
     return `${names[0]?.[0] || ''}${names[1]?.[0] || ''}`.toUpperCase();
   }
-  return user.name.substring(0, 2).toUpperCase();
+  return user.username.substring(0, 2).toUpperCase();
 });
 
 const handleLogout = async () => {
@@ -417,6 +438,16 @@ const handleLogout = async () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
+                <!-- Arena Menu -->
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    href="/arena"
+                    :class="cn(navigationMenuTriggerStyle(), 'uppercase')"
+                  >
+                    ⚔️ Arène
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
                 <!-- Livres Menu -->
                 <NavigationMenuItem>
                   <NavigationMenuTrigger class="uppercase"
@@ -552,9 +583,9 @@ const handleLogout = async () => {
                     class="h-9 w-9 cursor-pointer hover:opacity-90 transition-opacity"
                   >
                     <AvatarImage
-                      v-if="currentUser?.avatar"
-                      :src="currentUser.avatar"
-                      :alt="currentUser.name || 'User avatar'"
+                      v-if="currentUser?.avatarUrl"
+                      :src="currentUser.avatarUrl"
+                      :alt="currentUser.username || 'User avatar'"
                     />
                     <AvatarFallback>{{ userInitials }}</AvatarFallback>
                   </Avatar>
@@ -564,8 +595,8 @@ const handleLogout = async () => {
                 <!-- User Info -->
                 <div class="flex items-center justify-start gap-2 p-2">
                   <div class="flex flex-col space-y-1 leading-none">
-                    <p v-if="currentUser.name" class="font-medium">
-                      {{ currentUser.name }}
+                    <p v-if="currentUser.username" class="font-medium">
+                      {{ currentUser.username }}
                     </p>
                     <p
                       v-if="currentUser.email"
@@ -583,6 +614,20 @@ const handleLogout = async () => {
                   }}</a>
                 </DropdownMenuItem>
 
+                <DropdownMenuItem as-child>
+                  <a
+                    href="/profile"
+                    class="cursor-pointer w-full font-medium"
+                    >{{ labels.profile || 'Profile' }}</a
+                  >
+                </DropdownMenuItem>
+
+                <DropdownMenuItem as-child>
+                  <a href="/feed" class="cursor-pointer w-full font-medium"
+                    >Activity Feed</a
+                  >
+                </DropdownMenuItem>
+
                 <DropdownMenuItem
                   class="cursor-pointer text-destructive focus:text-destructive"
                   @click="handleLogout"
@@ -591,6 +636,26 @@ const handleLogout = async () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <!-- GAMIFICATION BADGE (Mobile/Desktop) -->
+            <div
+              v-if="currentUser"
+              class="hidden md:flex flex-col items-end mr-2"
+            >
+              <div class="text-xs font-bold text-primary">
+                Lvl {{ currentLevel }}
+              </div>
+              <div
+                class="w-20 h-1.5 bg-muted/20 rounded-full overflow-hidden mt-0.5"
+              >
+                <div
+                  class="h-full bg-primary transition-all duration-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"
+                  :style="{
+                    width: `${Math.min((currentXp / nextLevelXp) * 100, 100)}%`,
+                  }"
+                ></div>
+              </div>
+            </div>
           </div>
 
           <!-- GUEST USER -->
@@ -681,6 +746,7 @@ const handleLogout = async () => {
           <a href="/rankings/hidden-gems" class="text-foreground py-2"
             >💎 Pépites Cachées</a
           >
+          <a href="/arena" class="text-foreground py-2">⚔️ Arène</a>
 
           <a href="/about" class="text-foreground py-2 font-medium mt-2"
             >À Propos</a

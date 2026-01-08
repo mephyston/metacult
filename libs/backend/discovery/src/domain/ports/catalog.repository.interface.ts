@@ -22,4 +22,5 @@ export interface CatalogRepository {
     limit: number,
     type?: 'GAME' | 'MOVIE' | 'SHOW' | 'BOOK',
   ): Promise<Media[]>;
+  findByIds(ids: string[]): Promise<Media[]>;
 }
