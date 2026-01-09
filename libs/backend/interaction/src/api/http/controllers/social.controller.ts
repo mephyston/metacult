@@ -11,8 +11,8 @@ import {
 import { getDbConnection } from '@metacult/backend-infrastructure';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
 
-const { db } = getDbConnection();
-const interactionRepo = new DrizzleInteractionRepository(db);
+// const { db } = getDbConnection(); // Moved inside handlers
+// const interactionRepo = new DrizzleInteractionRepository(db); // Moved inside handlers
 
 export const socialController = new Elysia({ prefix: '/social' })
   .use(isAuthenticated)
@@ -96,6 +96,8 @@ export const socialController = new Elysia({ prefix: '/social' })
     async (ctx) => {
       try {
         const user = await resolveUserOrThrow(ctx);
+        const { db } = getDbConnection();
+        const interactionRepo = new DrizzleInteractionRepository(db);
         const following = await interactionRepo.getFollowing(user.id);
         return {
           success: true,
@@ -124,6 +126,8 @@ export const socialController = new Elysia({ prefix: '/social' })
     async (ctx) => {
       try {
         const user = await resolveUserOrThrow(ctx);
+        const { db } = getDbConnection();
+        const interactionRepo = new DrizzleInteractionRepository(db);
         const followers = await interactionRepo.getFollowers(user.id);
         return {
           success: true,

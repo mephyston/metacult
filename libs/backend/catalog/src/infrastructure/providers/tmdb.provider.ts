@@ -1,6 +1,6 @@
 import { fetchWithRetry } from '@metacult/shared-core';
 import { logger } from '@metacult/backend-infrastructure';
-import type { TmdbMovieRaw } from '../types/raw-responses';
+import type { TmdbMovieRaw, TmdbTvRaw } from '../types/raw-responses';
 
 /**
  * Provider Infrastructure pour l'API TMDB.
@@ -51,15 +51,14 @@ export class TmdbProvider {
    */
   async getMedia(
     id: string,
+    type: 'movie' | 'tv' = 'movie', // Default to movie to maintain backward compatibility if needed, though we should be explicit
     signal?: AbortSignal,
-  ): Promise<TmdbMovieRaw | null> {
+  ): Promise<TmdbMovieRaw | TmdbTvRaw | null> {
     if (!this.apiKey) return null;
     try {
-      // Note: On suppose ici 'movie' par défaut, mais idéalement l'ID devrait contenir le type ou on essaie les deux.
-      // Pour simplifier dans ce contexte legacy, on tente 'movie'.
-      // (Une vraie implémentation robuste distinguerait movie/tv dans l'ID ou ferait 2 appels)
+      const endpoint = type === 'movie' ? 'movie' : 'tv';
       const response = await fetchWithRetry(
-        `${this.apiUrl}/movie/${id}?api_key=${this.apiKey}&language=fr-FR&append_to_response=credits`,
+        `${this.apiUrl}/${endpoint}/${id}?api_key=${this.apiKey}&language=fr-FR&append_to_response=credits`,
         {
           timeoutMs: 5000,
           externalSignal: signal,
@@ -67,9 +66,9 @@ export class TmdbProvider {
       );
 
       if (!response.ok) return null; // Not found or error
-      return (await response.json()) as TmdbMovieRaw;
+      return (await response.json()) as TmdbMovieRaw | TmdbTvRaw;
     } catch (error) {
-      logger.error({ err: error }, '[TMDB] Get details error');
+      logger.error({ err: error, id, type }, '[TMDB] Get details error');
       return null;
     }
   }
@@ -97,13 +96,18 @@ export class TmdbProvider {
 
       const medias: TmdbMovieRaw[] = [];
 
-      for (const result of results) {
+      for (const [i, result] of results.entries()) {
         if (result.status === 'fulfilled') {
           const response = result.value;
           if (response.ok) {
             const data = (await response.json()) as any;
             if (data.results) {
-              medias.push(...data.results);
+              const type = i === 0 ? 'movie' : 'tv';
+              const items = data.results.map((item: any) => ({
+                ...item,
+                media_type: type,
+              }));
+              medias.push(...items);
             }
           }
         } else {

@@ -7,6 +7,7 @@ import {
   MediaNotFoundInProviderError,
   ProviderUnavailableError,
   UnsupportedMediaTypeError,
+  InvalidProviderDataError,
 } from '../../../domain/errors/catalog.errors';
 import { logger } from '@metacult/backend-infrastructure';
 
@@ -89,7 +90,10 @@ export class ImportMediaHandler {
       }
     } catch (error) {
       // Re-throw exceptions du domaine telles quelles
-      if (error instanceof UnsupportedMediaTypeError) {
+      if (
+        error instanceof UnsupportedMediaTypeError ||
+        error instanceof InvalidProviderDataError
+      ) {
         throw error;
       }
       // Encapsulation: On masque les erreurs techniques du provider derrière une erreur métier

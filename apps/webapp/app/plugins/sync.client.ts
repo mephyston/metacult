@@ -1,3 +1,5 @@
+import { defineNuxtPlugin, useRuntimeConfig } from '#app';
+import { useLogger } from '../composables/useLogger';
 import { processOutbox } from '@metacult/shared-sync-manager';
 
 export default defineNuxtPlugin((nuxtApp) => {

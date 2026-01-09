@@ -2,8 +2,6 @@ import { eq, sql } from 'drizzle-orm';
 import { getDbConnection } from '@metacult/backend-infrastructure';
 import { userStats } from '../infrastructure/db/gamification.schema';
 
-const { db } = getDbConnection();
-
 export class GamificationService {
   /**
    * Calculates level based on XP.
@@ -22,6 +20,7 @@ export class GamificationService {
    * Adds XP to a user and updates their level.
    */
   async addXp(userId: string, amount: number, source: string) {
+    const { db } = getDbConnection();
     // 1. Get or create stats
     let [stats] = await db
       .select()
@@ -65,6 +64,7 @@ export class GamificationService {
   }
 
   async getUserStats(userId: string) {
+    const { db } = getDbConnection();
     const [stats] = await db
       .select()
       .from(userStats)

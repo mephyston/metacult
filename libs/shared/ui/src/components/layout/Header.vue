@@ -20,7 +20,7 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
-import { cn, getWebappUrl } from '../../lib/utils';
+import { cn, getWebappUrl, getApiUrl } from '../../lib/utils';
 import { authClient } from '../../lib/auth-client';
 import { logger } from '../../lib/logger';
 
@@ -115,7 +115,7 @@ onMounted(async () => {
         // Fetch extra stats if we are in a context that supports it?
         // For now, simpler: Try to fetch me stats
         try {
-          const res = await fetch('/api/gamification/me');
+          const res = await fetch(`${getApiUrl()}/api/gamification/me`);
           if (res.ok) {
             const stats = await res.json();
             profile.level = stats.level;

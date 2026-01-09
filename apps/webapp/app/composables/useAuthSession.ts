@@ -3,16 +3,34 @@
  * Utilise useState pour persist la session entre client/serveur
  * Utilise Dexie pour la persistance locale (Optimistic Auth)
  */
+import { useState, useRequestHeaders } from '#app';
+import { readonly } from 'vue';
 import { authClient } from '../lib/auth-client';
 import { useLogger } from './useLogger';
 import { useApiUrl } from './useApiUrl';
 import { db } from '@metacult/shared-local-db';
+import { processOutbox } from '@metacult/shared-sync-manager';
 import type { UserProfile } from '@metacult/shared-types';
 
 export const useAuthSession = () => {
   // État global partagé (SSR-friendly)
   const user = useState<UserProfile | null>('auth-user', () => null);
   const isLoading = useState('auth-loading', () => true);
+
+  /**
+   * Explicit Logout
+   */
+  const clearSession = async () => {
+    user.value = null;
+    await authClient.signOut();
+    if (import.meta.client) {
+      const lastId = localStorage.getItem('metacult_current_user_id');
+      if (lastId) {
+        await db.userProfile.delete(lastId); // Remove from offline cache
+        localStorage.removeItem('metacult_current_user_id');
+      }
+    }
+  };
 
   /**
    * Boot Sequence:
@@ -32,7 +50,7 @@ export const useAuthSession = () => {
           logger.info('[useAuthSession] Loaded optimistic session from Dexie');
           isLoading.value = false; // UI is ready
         }
-      } catch (e) {
+      } catch (e: any) {
         logger.warn('[useAuthSession] Failed to load from Dexie', e);
       }
     }
@@ -76,7 +94,7 @@ export const useAuthSession = () => {
             mappedUser.xp = stats.xp;
             mappedUser.nextLevelXp = stats.nextLevelXp;
           }
-        } catch (err) {
+        } catch (err: any) {
           logger.warn(
             '[useAuthSession] Failed to fetch gamification stats',
             err,
@@ -102,8 +120,20 @@ export const useAuthSession = () => {
           // Re-reading db.ts: userProfile: 'id, email'.
           // Let's stick to: Put Real User in DB. Put 'currentUserId' in localStorage.
 
+          // Store user in local DB
           await db.userProfile.put(mappedUser);
           localStorage.setItem('metacult_current_user_id', mappedUser.id);
+
+          // Trigger Immediate Sync (Guest -> User transition)
+          // We don't await this to not block UI
+          // Explicit cast to avoid TS inference issues with Nuxt auto-imports
+          processOutbox(useApiUrl() as string, async () => null)
+            .then(() =>
+              logger.info('[useAuthSession] Post-login sync triggered'),
+            )
+            .catch((e) =>
+              logger.warn('[useAuthSession] Post-login sync failed', e),
+            );
         }
       } else {
         // Not logged in API side -> Verify if we need to clear local?
@@ -125,21 +155,6 @@ export const useAuthSession = () => {
       // DO NOT nullify user.value here. Offline Mode active.
     } finally {
       isLoading.value = false;
-    }
-  };
-
-  /**
-   * Explicit Logout
-   */
-  const clearSession = async () => {
-    user.value = null;
-    await authClient.signOut();
-    if (import.meta.client) {
-      const lastId = localStorage.getItem('metacult_current_user_id');
-      if (lastId) {
-        await db.userProfile.delete(lastId); // Remove from offline cache
-        localStorage.removeItem('metacult_current_user_id');
-      }
     }
   };
 

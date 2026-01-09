@@ -2,13 +2,14 @@ import { Elysia, t } from 'elysia';
 import { getDbConnection, logger } from '@metacult/backend-infrastructure';
 import { DrizzleCatalogRepository } from '../../../infrastructure/repositories/drizzle-catalog.repository';
 
-const { db } = getDbConnection();
-const catalogRepo = new DrizzleCatalogRepository(db as any); // Cast as any because db type inferred is generic
+// const { db } = getDbConnection(); // Moved inside handlers
 
 export const mediaController = new Elysia({ prefix: '/media' }).post(
   '/batch',
   async ({ body, set }) => {
     try {
+      const { db } = getDbConnection();
+      const catalogRepo = new DrizzleCatalogRepository(db as any);
       const medias = await catalogRepo.findByIds(body.ids);
       const mappedMedias = medias.map((m) => ({
         id: m.id,

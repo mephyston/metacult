@@ -11,6 +11,8 @@
   "dependencies": {
     "@astrojs/node": "^9.5.1",
     "@fontsource/roboto": "^5.2.9",
+    "@metacult/shared-local-db": "workspace:*",
+    "@metacult/shared-sync-manager": "workspace:*",
     "@metacult/shared-ui": "workspace:*",
     "@vueuse/core": "^14.1.0",
     "astro": "^5.16.6",
@@ -18,9 +20,11 @@
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.562.0",
     "radix-vue": "^1.9.17",
+    "rxjs": "^7.8.1",
     "sharp": "^0.34.5",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "vue": "^3.5.26"
+    "vue": "^3.5.26",
+    "@vueuse/rxjs": "^11.3.0"
   }
 }

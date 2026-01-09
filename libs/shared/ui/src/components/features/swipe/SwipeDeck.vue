@@ -14,13 +14,13 @@ interface SwipeItem {
 
 interface SwipePayload {
   action: 'LIKE' | 'DISLIKE' | 'WISHLIST' | 'SKIP';
-  sentiment?: 'BANGER' | 'GOOD' | 'OKAY';
+  sentiment?: string;
 }
 
 interface InteractionPayload {
   mediaId: string;
   action: 'LIKE' | 'DISLIKE' | 'WISHLIST' | 'SKIP';
-  sentiment?: 'BANGER' | 'GOOD' | 'OKAY';
+  sentiment?: string;
   timestamp: number;
 }
 
@@ -55,66 +55,6 @@ const isEmpty = computed(() => deck.value.length === 0);
 const totalProcessed = computed(() => history.value.length);
 const totalItems = computed(() => props.items.length);
 
-// --- LocalStorage Helpers ---
-const STORAGE_KEY = 'guest_swipes';
-
-function saveToLocalStorage(interaction: InteractionPayload) {
-  if (!props.guestMode) return;
-
-  try {
-    const existing = localStorage.getItem(STORAGE_KEY);
-    const swipes = existing ? JSON.parse(existing) : [];
-    swipes.push(interaction);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(swipes));
-  } catch (error) {
-    logger.error('[SwipeDeck] Failed to save to localStorage:', error);
-  }
-}
-
-function getSyncUrl(targetUrl: string): string {
-  if (!props.guestMode) return targetUrl;
-  try {
-    const existing = localStorage.getItem(STORAGE_KEY);
-    if (!existing) return targetUrl;
-
-    // Optimize payload: Remove timestamp/extra fields and keep only last 20 items to fix 431 Error
-    const allSwipes = JSON.parse(existing);
-    const optimizedSwipes = allSwipes
-      .slice(-20) // Keep only last 20 interactions
-      .map((s: any) => ({
-        mediaId: s.mediaId, // mediaId is already correct from handleSwipe
-        action: s.action,
-        sentiment: s.sentiment,
-      }));
-
-    // Encode optimized swipes to Base64
-    const b64 = btoa(JSON.stringify(optimizedSwipes));
-
-    // Handle targetUrl ensuring it has a base if relative
-    // We treat targetUrl as absolute or component handles it?
-    // Safer to just append query param.
-    const separator = targetUrl.includes('?') ? '&' : '?';
-    return `${targetUrl}${separator}sync=${b64}`;
-  } catch (error) {
-    logger.error('[SwipeDeck] Failed to generate sync URL:', error);
-    return targetUrl;
-  }
-}
-
-// Computed URLs that update when totalProcessed changes (= when user swipes)
-const signupUrlWithSync = computed(() => {
-  if (!props.signupUrl) return '';
-  // Force recomputation by accessing totalProcessed
-  const _ = totalProcessed.value;
-  return getSyncUrl(props.signupUrl);
-});
-
-const loginUrlWithSync = computed(() => {
-  if (!props.loginUrl) return '';
-  const _ = totalProcessed.value;
-  return getSyncUrl(props.loginUrl);
-});
-
 // --- Handlers ---
 function handleSwipe(payload: SwipePayload) {
   if (!currentCard.value) return;
@@ -128,9 +68,6 @@ function handleSwipe(payload: SwipePayload) {
 
   // Add to history
   history.value.push(interaction);
-
-  // Save to localStorage if guest mode
-  saveToLocalStorage(interaction);
 
   // Emit event for parent (API call, analytics, etc.)
   emit('interaction', interaction);
@@ -146,7 +83,7 @@ function resetDeck() {
 
 function triggerSwipe(
   action: 'LIKE' | 'DISLIKE' | 'WISHLIST' | 'SKIP',
-  sentiment?: 'BANGER' | 'GOOD' | 'OKAY',
+  sentiment?: string,
 ) {
   if (cardRef.value && currentCard.value) {
     cardRef.value.triggerSwipe(action, sentiment);
@@ -173,7 +110,7 @@ const handleKeydown = (e: KeyboardEvent) => {
       break;
     case 'ArrowRight':
       e.preventDefault();
-      triggerSwipe('LIKE', 'GOOD');
+      triggerSwipe('LIKE');
       break;
   }
 };
@@ -221,12 +158,7 @@ defineExpose({
 
       <!-- Empty State (Slot for customization) -->
       <div v-else class="flex items-center justify-center h-full">
-        <slot
-          name="empty"
-          :reset="resetDeck"
-          :history="history"
-          :get-sync-url="getSyncUrl"
-        >
+        <slot name="empty" :reset="resetDeck" :history="history">
           <div class="text-center space-y-4 p-8">
             <p class="text-3xl">🎉</p>
             <p class="text-xl font-bold text-foreground">Tout vu !</p>
@@ -236,7 +168,7 @@ defineExpose({
             <div v-if="guestMode && signupUrl" class="flex flex-col gap-2">
               <a
                 data-testid="btn-signup"
-                :href="signupUrlWithSync"
+                :href="signupUrl"
                 class="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium inline-block"
               >
                 Créer un compte pour sauvegarder
@@ -246,7 +178,7 @@ defineExpose({
                 <span v-if="loginUrl">
                   Déjà un compte ?
                   <a
-                    :href="loginUrlWithSync"
+                    :href="loginUrl"
                     class="text-primary hover:underline font-medium"
                   >
                     Se connecter
@@ -312,19 +244,9 @@ defineExpose({
         class="group flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-green-500/10 hover:bg-green-500/20 border-2 border-green-500/30 transition-all active:scale-95 hover:scale-110"
         title="Bien (→)"
         aria-label="Like"
-        @click="triggerSwipe('LIKE', 'GOOD')"
+        @click="triggerSwipe('LIKE')"
       >
         <ThumbsUp class="w-6 h-6 text-green-500" stroke-width="2.5" />
-      </button>
-
-      <!-- Banger -->
-      <button
-        class="group flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-purple-500/10 hover:bg-purple-500/20 border-2 border-purple-500/30 transition-all active:scale-95 hover:scale-110"
-        title="Banger!"
-        aria-label="Banger"
-        @click="triggerSwipe('LIKE', 'BANGER')"
-      >
-        <Flame class="w-5 h-5 text-purple-500" stroke-width="2.5" />
       </button>
     </div>
 

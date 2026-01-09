@@ -10,8 +10,8 @@ import { saveInteraction } from '../../../application/commands/save-interaction.
 import { syncInteractions } from '../../../application/commands/sync-interactions.command';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
 
-const { db } = getDbConnection();
-const interactionRepo = new DrizzleInteractionRepository(db);
+// const { db } = getDbConnection(); // Moved inside handlers
+// const interactionRepo = new DrizzleInteractionRepository(db); // Moved inside handlers
 
 /**
  * Controller pour la gestion des interactions (likes, skips, wishlists).
@@ -82,6 +82,8 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
       const user = await resolveUserOrThrow(ctx);
 
       try {
+        const { db } = getDbConnection();
+        const interactionRepo = new DrizzleInteractionRepository(db); // Instantiate repo here
         const results = await syncInteractions(user.id, body);
         return {
           success: true,
@@ -132,6 +134,8 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
     '/user/:userId',
     async ({ params, set }) => {
       try {
+        const { db } = getDbConnection();
+        const interactionRepo = new DrizzleInteractionRepository(db);
         const interactions = await interactionRepo.findAllByUser(params.userId);
         return {
           success: true,
@@ -170,6 +174,8 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         const user = await resolveUserOrThrow(ctx);
 
         // 1. Get who we follow
+        const { db } = getDbConnection();
+        const interactionRepo = new DrizzleInteractionRepository(db);
         const followingIds = await interactionRepo.getFollowing(user.id);
 
         // 2. Get their interactions

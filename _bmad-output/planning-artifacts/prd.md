@@ -252,11 +252,12 @@ Metacult est une **Progressive Web App (PWA)** "Mobile-First". L'expérience doi
 
 ### 3. Interaction Engine (Triage)
 
-- **FR-INT-01**: L'utilisateur doit pouvoir "Liker" (Swipe Right) un contenu, ce qui l'ajoute à son graph d'intérêts positif.
-- **FR-INT-02**: L'utilisateur doit pouvoir "Disliker" (Swipe Left) un contenu, ce qui l'exclut des futures recommandations.
-- **FR-INT-03**: L'utilisateur doit pouvoir ajouter à sa "Wishlist" (Swipe Up) un contenu pour consommation future.
-- **FR-INT-04**: L'utilisateur doit pouvoir "Passer" (Swipe Down) un contenu pour le revoir lors d'une prochaine session.
-- **FR-INT-05**: Le système doit permettre l'annulation de la dernière action (Undo) pendant la session courante.
+- **FR-INT-01**: L'utilisateur doit pouvoir "Liker" (Swipe Right) un contenu (Approbation).
+- **FR-INT-02**: L'utilisateur doit pouvoir "Disliker" (Swipe Left) un contenu (Rejection).
+- **FR-INT-03**: L'utilisateur doit pouvoir ajouter à sa "Wishlist" (Swipe Up) un contenu (Intent).
+- **FR-INT-04**: L'utilisateur doit pouvoir "Passer" (Swipe Down) un contenu (No Opinion / Skip).
+- **FR-INT-05**: L'utilisateur doit pouvoir accéder aux détails "Back of Card" via une interaction de Flip (Double Tap ou CTA dédié).
+- **FR-INT-06**: Le système doit permettre l'annulation de la dernière action (Undo).
 
 ### 4. Elo Duels (Refinement)
 
@@ -266,9 +267,9 @@ Metacult est une **Progressive Web App (PWA)** "Mobile-First". L'expérience doi
 
 ### 5. Affiliation & Monetization
 
-- **FR-AFF-01**: Le système doit détecter les opportunités commerciales pour les items en Wishlist (ex: Promo Steam, Dispo Prime Video).
-- **FR-AFF-02**: Le système doit injecter des cartes "Deal" contextuelles dans le flux de découverte.
-- **FR-AFF-03**: Le système doit rediriger l'utilisateur vers les partenaires via des liens trackés (Affiliation) lors du clic sur une offre.
+- **FR-AFF-01**: Le système doit détecter les opportunités commerciales pour les items lors de l'ajout en Wishlist (Swipe Up) et notifier l'utilisateur (Offre immédiate ou différée via Worker).
+- **FR-AFF-02**: Le système doit injecter des cartes "Gold" (Recommandation personnalisée à haute affinité) et "Sponsorisée" (Partenaire) dans le flux.
+- **FR-AFF-03**: Les cartes Gold et Sponsorisées doivent afficher un CTA explicite en bas de carte pour rediriger vers l'action/partenaire.
 
 ## Non-Functional Requirements
 

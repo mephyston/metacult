@@ -3,13 +3,13 @@ import { getDbConnection, logger } from '@metacult/backend-infrastructure';
 import { user } from '../../../infrastructure/db/auth.schema';
 import { eq } from 'drizzle-orm';
 
-const { db } = getDbConnection();
-
+// const { db } = getDbConnection(); // Moved inside handlers
 export const userController = new Elysia({ prefix: '/users' }).get(
   '/:id',
   async ({ params, set }) => {
     try {
       const userId = params.id;
+      const { db } = getDbConnection();
       const result = await db
         .select({
           id: user.id,

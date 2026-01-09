@@ -1,16 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useWindowSize } from '@vueuse/core';
-import {
-  Heart,
-  X,
-  Clock,
-  ThumbsUp,
-  Flame,
-  Bookmark,
-  Smile,
-  HelpCircle,
-} from 'lucide-vue-next';
+import { Heart, X, Clock, ThumbsUp, Bookmark, Flame } from 'lucide-vue-next';
 
 // --- Props & Emits ---
 const props = defineProps<{
@@ -26,7 +17,7 @@ const emit = defineEmits<{
     e: 'swipe',
     payload: {
       action: 'LIKE' | 'DISLIKE' | 'WISHLIST' | 'SKIP';
-      sentiment?: 'BANGER' | 'GOOD' | 'OKAY';
+      sentiment?: string;
     },
   ): void;
 }>();
@@ -162,7 +153,7 @@ type Zone = {
   color: string; // Tailwind class approx or hex
   bgGradient: string;
   action: 'LIKE' | 'DISLIKE' | 'WISHLIST' | 'SKIP';
-  sentiment?: 'BANGER' | 'GOOD' | 'OKAY';
+  sentiment?: string;
   range: [number, number]; // [minDeg, maxDeg]
 };
 
@@ -174,37 +165,16 @@ const zones: Zone[] = [
     color: 'text-blue-400',
     bgGradient: 'from-blue-500/50',
     action: 'WISHLIST',
-    range: [-110, -70], // Haut (12h) - Ajusté large
+    range: [-135, -45], // Haut (90° ± 45)
   },
   {
-    id: 'banger',
-    label: 'Banger!',
-    icon: Flame,
-    color: 'text-purple-400',
-    bgGradient: 'from-purple-500/50',
-    action: 'LIKE',
-    sentiment: 'BANGER',
-    range: [-69, -20], // Haut-Droite
-  },
-  {
-    id: 'good',
-    label: 'Bien',
+    id: 'like',
+    label: "J'aime",
     icon: ThumbsUp,
     color: 'text-green-400',
     bgGradient: 'from-green-500/50',
     action: 'LIKE',
-    sentiment: 'GOOD',
-    range: [-19, 20], // Droite
-  },
-  {
-    id: 'okay',
-    label: 'Sympa',
-    icon: Smile,
-    color: 'text-yellow-400',
-    bgGradient: 'from-yellow-500/50',
-    action: 'LIKE',
-    sentiment: 'OKAY',
-    range: [21, 70], // Bas-Droite
+    range: [-44, 45], // Droite (0° ± 45)
   },
   {
     id: 'skip',
@@ -213,7 +183,7 @@ const zones: Zone[] = [
     color: 'text-gray-400',
     bgGradient: 'from-gray-500/50',
     action: 'SKIP',
-    range: [71, 110], // Bas
+    range: [46, 135], // Bas (90° ± 45)
   },
   {
     id: 'dislike',
@@ -222,10 +192,11 @@ const zones: Zone[] = [
     color: 'text-red-500',
     bgGradient: 'from-red-500/50',
     action: 'DISLIKE',
-    range: [111, 180], // Gauche (et -180 à -111 géré par logique)
+    range: [136, 180], // Gauche (180° ± 45) - Partie 1
   },
 ];
 
+// Détection de la zone active
 // Détection de la zone active
 const activeZone = computed(() => {
   if (distance.value < 40) return null; // Deadzone au centre
@@ -234,7 +205,8 @@ const activeZone = computed(() => {
   let normalizedAngle = angle.value;
 
   // Cas spécial pour la gauche (Dislike) qui couvre la coupure +180/-180
-  if (normalizedAngle > 110 || normalizedAngle < -110) {
+  // Le range dislike est [136, 180]. On doit aussi capturer [-180, -136].
+  if (normalizedAngle > 135 || normalizedAngle < -135) {
     return zones.find((z) => z.id === 'dislike');
   }
 
@@ -287,7 +259,7 @@ const handleRelease = () => {
 // Méthode exposée pour déclencher le swipe programmatiquement
 const triggerSwipe = (
   action: 'LIKE' | 'DISLIKE' | 'WISHLIST' | 'SKIP',
-  sentiment?: 'BANGER' | 'GOOD' | 'OKAY',
+  sentiment?: string,
 ) => {
   if (!cardRef.value) return;
 
@@ -314,7 +286,7 @@ const triggerSwipe = (
       break;
     case 'LIKE':
       endX = 1000;
-      endY = sentiment === 'BANGER' ? -200 : 0;
+      endY = 0;
       rotation = MAX_ROTATION;
       break;
   }

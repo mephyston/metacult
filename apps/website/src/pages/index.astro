@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { Hero, SwipeDeck, getApiUrl } from '@metacult/shared-ui';
+import { Hero, getApiUrl } from '@metacult/shared-ui';
+import WebsiteSwipeDeck from '../components/WebsiteSwipeDeck.vue';
 import { getImage } from 'astro:assets';
 import heroImage from '../assets/hero.jpg';
 import { fr } from '../i18n/fr';
@@ -132,10 +133,10 @@ const appUrl = getWebappUrl();
 		<!-- Slot pour remplacer la carte statique par SwipeDeck -->
 		<div slot="interactive-card" class="relative w-full max-w-sm mx-auto">
 			<!-- @ts-expect-error - Astro client directives are not part of component props -->
-			<SwipeDeck
+			<!-- @ts-expect-error - Astro client directives are not part of component props -->
+			<WebsiteSwipeDeck
 				client:visible
 				items={interactions}
-				guestMode={true}
 				signupUrl={`${appUrl}/register`}
 				loginUrl={`${appUrl}/login`}
 			/>

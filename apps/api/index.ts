@@ -16,6 +16,7 @@ import {
 import {
   createAuthRoutes,
   userController as userRoutes,
+  initAuth,
 } from '@metacult/backend-identity';
 import {
   interactionController as interactionRoutes,
@@ -78,6 +79,7 @@ const fullSchema = {
 };
 // Initialisation du Singleton
 const { db } = getDbConnection(fullSchema);
+initAuth(); // Initialize Auth with correct DB instance
 
 /**
  * Point d'entrée de l'Application API (Composition Root).

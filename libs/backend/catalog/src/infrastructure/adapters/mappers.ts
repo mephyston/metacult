@@ -4,6 +4,7 @@ import type {
   TmdbTvRaw,
   GoogleBookRaw,
 } from '../types/raw-responses';
+import { InvalidProviderDataError } from '../../domain/errors/catalog.errors';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Rating } from '../../domain/value-objects/rating.vo';
@@ -54,7 +55,8 @@ const createReleaseYear = (
   }
 };
 // Helper for SEO Slugs
-const slugify = (text: string): string => {
+const slugify = (text: string | null | undefined): string => {
+  if (!text) return '';
   return text
     .toString()
     .toLowerCase()
@@ -77,11 +79,17 @@ const slugify = (text: string): string => {
  * @param {string} id - ID interne pré-généré.
  */
 export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
+  if (!raw.name) {
+    throw new InvalidProviderDataError(
+      'IGDB',
+      `Game missing name (ID: ${raw.id})`,
+    );
+  }
   const rating = raw.total_rating ? raw.total_rating / 10 : null;
   return new Game(
     id,
     raw.name,
-    slugify(raw.name),
+    slugify(`${raw.name}-igdb-${raw.id}`),
     raw.summary || null,
     // IGDB returns t_thumb (90x90) by default. Upgrade to t_cover_big (264x374).
     createCoverUrl(raw.cover?.url?.replace('t_thumb', 't_cover_big')),
@@ -102,13 +110,19 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
  * @param {string} id - ID interne pré-généré.
  */
 export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
+  if (!raw.title) {
+    throw new InvalidProviderDataError(
+      'TMDB',
+      `Movie missing title (ID: ${raw.id})`,
+    );
+  }
   const posterUrl = raw.poster_path
     ? `https://image.tmdb.org/t/p/w500${raw.poster_path}`
     : null;
   return new Movie(
     id,
     raw.title,
-    slugify(raw.title),
+    slugify(`${raw.title}-tmdb-${raw.id}`),
     raw.overview || null,
     createCoverUrl(posterUrl),
     createRating(raw.vote_average),
@@ -127,13 +141,19 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
  * @param {string} id - ID interne pré-généré.
  */
 export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
+  if (!raw.name) {
+    throw new InvalidProviderDataError(
+      'TMDB',
+      `TV missing name (ID: ${raw.id})`,
+    );
+  }
   const posterUrl = raw.poster_path
     ? `https://image.tmdb.org/t/p/w500${raw.poster_path}`
     : null;
   return new TV(
     id,
     raw.name,
-    slugify(raw.name),
+    slugify(`${raw.name}-tmdb-${raw.id}`),
     raw.overview || null,
     createCoverUrl(posterUrl),
     createRating(raw.vote_average),
@@ -154,10 +174,16 @@ export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
  */
 export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
   const info = raw.volumeInfo;
+  if (!info.title) {
+    throw new InvalidProviderDataError(
+      'GoogleBooks',
+      `Book missing title (ID: ${raw.id})`,
+    );
+  }
   return new Book(
     id,
     info.title,
-    slugify(info.title),
+    slugify(`${info.title}-gb-${raw.id}`),
     info.description || null,
     createCoverUrl(info.imageLinks?.thumbnail),
     null, // No rating

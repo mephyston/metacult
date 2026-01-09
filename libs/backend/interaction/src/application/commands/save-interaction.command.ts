@@ -8,7 +8,7 @@ import { userInteractions } from '../../infrastructure/db/interactions.schema';
 import { Queue } from 'bullmq';
 import { GamificationService } from '@metacult/backend-gamification';
 
-const { db } = getDbConnection();
+// const { db } = getDbConnection(); // Moved inside instructions
 
 const gamificationService = new GamificationService();
 
@@ -33,7 +33,8 @@ interface SaveInteractionPayload {
  * Enregistre ou met à jour une interaction utilisateur sur un média.
  * Utilise un UPSERT basé sur le couple (userId, mediaId).
  */
-export async function saveInteraction(payload: SaveInteractionPayload) {
+export const saveInteraction = async (payload: SaveInteractionPayload) => {
+  const { db } = getDbConnection();
   // Validation basique des enums (optionnelle si Zod le fait en amont, mais safe ici)
   // Note: On cast pour correspondre aux types Drizzle, Drizzle rejettera si invalide SQL mais pas TS runtime strict sans check
 
@@ -82,4 +83,4 @@ export async function saveInteraction(payload: SaveInteractionPayload) {
   }
 
   return result[0];
-}
+};

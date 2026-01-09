@@ -31,6 +31,7 @@ export { resolveUserOrThrow } from './api/helpers/auth.helper';
 // --- Infrastructure Layer (Better Auth & Schemas) ---
 export {
   auth,
+  initAuth,
   type AuthClient,
 } from './infrastructure/auth/better-auth.service';
 export {

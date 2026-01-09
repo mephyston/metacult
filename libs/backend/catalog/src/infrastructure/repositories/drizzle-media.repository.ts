@@ -709,7 +709,8 @@ export class DrizzleMediaRepository implements IMediaRepository {
             globalRating: mediaRow.globalRating,
             providerMetadata: mediaRow.providerMetadata,
           },
-        });
+        })
+        .returning();
 
       switch (media.type) {
         case MediaType.GAME: {
@@ -729,7 +730,8 @@ export class DrizzleMediaRepository implements IMediaRepository {
                   developer: media.developer,
                   timeToBeat: media.timeToBeat,
                 },
-              });
+              })
+              .returning();
           }
           break;
         }
@@ -748,7 +750,8 @@ export class DrizzleMediaRepository implements IMediaRepository {
                   director: media.director,
                   durationMinutes: media.durationMinutes,
                 },
-              });
+              })
+              .returning();
           }
           break;
         }
@@ -769,7 +772,8 @@ export class DrizzleMediaRepository implements IMediaRepository {
                   episodesCount: media.episodesCount,
                   seasonsCount: media.seasonsCount,
                 },
-              });
+              })
+              .returning();
           }
           break;
         }
@@ -788,7 +792,8 @@ export class DrizzleMediaRepository implements IMediaRepository {
                   author: media.author,
                   pages: media.pages,
                 },
-              });
+              })
+              .returning();
           }
           break;
         }

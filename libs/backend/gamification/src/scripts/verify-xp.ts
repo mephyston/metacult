@@ -16,6 +16,10 @@ async function main() {
   let stats = await service.getUserStats(userId);
   logger.info({ stats }, 'Stats after 100 XP');
 
+  if (!stats) {
+    throw new Error('Stats not found for user ' + userId);
+  }
+
   if (stats.xp !== 100) {
     logger.error({ expected: 100, actual: stats.xp }, 'XP mismatch');
     throw new Error('XP mismatch 100');
@@ -34,6 +38,10 @@ async function main() {
 
   stats = await service.getUserStats(userId);
   logger.info({ stats }, 'Stats after +50 XP');
+
+  if (!stats) {
+    throw new Error('Stats not found for user ' + userId);
+  }
 
   if (stats.xp !== 150) {
     logger.error({ expected: 150, actual: stats.xp }, 'XP mismatch');
