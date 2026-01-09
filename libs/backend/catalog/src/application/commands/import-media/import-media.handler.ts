@@ -19,6 +19,9 @@ import { logger } from '@metacult/backend-infrastructure';
  */
 export class ImportMediaHandler {
   private readonly importPolicy: MediaImportPolicy;
+  private readonly providers: Partial<
+    Record<MediaType, { adapter: IMediaProvider; name: string }>
+  >;
 
   /**
    * @param {IMediaRepository} mediaRepository - Port pour la persistance.
@@ -33,6 +36,15 @@ export class ImportMediaHandler {
     private readonly googleBooksAdapter: IMediaProvider,
   ) {
     this.importPolicy = new MediaImportPolicy(mediaRepository);
+    this.providers = {
+      [MediaType.GAME]: { adapter: this.igdbAdapter, name: 'igdb' },
+      [MediaType.MOVIE]: { adapter: this.tmdbAdapter, name: 'tmdb' },
+      [MediaType.TV]: { adapter: this.tmdbAdapter, name: 'tmdb' },
+      [MediaType.BOOK]: {
+        adapter: this.googleBooksAdapter,
+        name: 'google_books',
+      },
+    };
   }
 
   /**
@@ -54,15 +66,20 @@ export class ImportMediaHandler {
   ): Promise<{ id: string; slug: string }> {
     const { mediaId, type } = command;
 
+    const providerConfig = this.providers[type];
+    if (!providerConfig) {
+      throw new UnsupportedMediaTypeError(type);
+    }
+    const { adapter, name: providerName } = providerConfig;
+
     logger.info(
-      { type, mediaId, provider: this.mapTypeToProviderName(type) },
+      { type, mediaId, provider: providerName },
       '[ImportMediaHandler] Processing import',
     );
 
     // 1. Validation Domaine via Domain Service
     // Vérifie les doublons en utilisant les règles métier pures (ID externe)
     logger.debug('[ImportMediaHandler] Step 1: Domain Validation');
-    const providerName = this.mapTypeToProviderName(type);
     await this.importPolicy.validateImport(providerName, mediaId);
 
     // 2. Orchestration Infrastructure (Récupération Données)
@@ -74,20 +91,7 @@ export class ImportMediaHandler {
     const newId = this.mediaRepository.nextId();
 
     try {
-      switch (type) {
-        case MediaType.GAME:
-          media = await this.igdbAdapter.getMedia(mediaId, type, newId);
-          break;
-        case MediaType.MOVIE:
-        case MediaType.TV:
-          media = await this.tmdbAdapter.getMedia(mediaId, type, newId);
-          break;
-        case MediaType.BOOK:
-          media = await this.googleBooksAdapter.getMedia(mediaId, type, newId);
-          break;
-        default:
-          throw new UnsupportedMediaTypeError(type);
-      }
+      media = await adapter.getMedia(mediaId, type, newId);
     } catch (error) {
       // Re-throw exceptions du domaine telles quelles
       if (
@@ -126,20 +130,5 @@ export class ImportMediaHandler {
     );
 
     return { id: newId, slug: media.slug };
-  }
-
-  private mapTypeToProviderName(type: MediaType): string {
-    switch (type) {
-      case MediaType.GAME:
-        return 'igdb';
-      case MediaType.MOVIE:
-        return 'tmdb';
-      case MediaType.TV:
-        return 'tmdb';
-      case MediaType.BOOK:
-        return 'google_books';
-      default:
-        throw new UnsupportedMediaTypeError(type);
-    }
   }
 }
