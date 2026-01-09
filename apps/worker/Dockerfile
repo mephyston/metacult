@@ -16,7 +16,7 @@ COPY apps/worker/package.json ./apps/worker/
 
 # libs/backend/ranking has no package.json yet
 COPY libs/shared/core/package.json ./libs/shared/core/
-COPY libs/shared/ui/package.json ./libs/shared/ui/
+COPY libs/shared/types/package.json ./libs/shared/types/
 
 # Copy E2E package.json as it is a workspace in bun.lock
 COPY apps/e2e/package.json ./apps/e2e/
