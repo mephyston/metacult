@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /arena/
+Disallow: /profile/
+
+Sitemap: https://metacult.app/sitemap.xml

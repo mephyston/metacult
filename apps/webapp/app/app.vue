@@ -95,18 +95,26 @@ if (import.meta.client) {
 // If appVersion is present (Production), use it. Otherwise 'Dev'.
 const displayVersion = appVer ? `${appVer}` : 'vDev';
 const displayCommit = `#${sha.substring(0, 7)}`;
+// SEO Metadata
+useHead({
+  titleTemplate: (titleChunk) => {
+    return titleChunk ? `${titleChunk} | Metacult` : 'Metacult - Match, Rank & Discover';
+  },
+});
+
+useSeoMeta({
+  title: 'Metacult - Match, Rank & Discover',
+  ogTitle: 'Metacult - Match, Rank & Discover',
+  description: 'The ultimate platform to track, rank, and discover movies, games, and books with your friends.',
+  ogDescription: 'The ultimate platform to track, rank, and discover movies, games, and books with your friends.',
+  ogImage: 'https://metacult.app/og-image.jpg',
+  twitterCard: 'summary_large_image',
+});
 </script>
 
 <template>
-  <div
-    class="font-sans min-h-screen flex flex-col bg-background text-foreground dark"
-  >
-    <Header
-      :user="user"
-      :labels="headerLabels"
-      :trendingHighlights="trendingHighlights"
-      @logout="handleLogout"
-    >
+  <div class="font-sans min-h-screen flex flex-col bg-background text-foreground dark">
+    <Header :user="user" :labels="headerLabels" :trendingHighlights="trendingHighlights" @logout="handleLogout">
       <template #search>
         <div class="contents">
           <Search />
