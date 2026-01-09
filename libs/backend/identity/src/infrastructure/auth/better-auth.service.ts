@@ -6,7 +6,7 @@ import {
 } from '@metacult/backend-infrastructure';
 import { user, session, account, verification } from '../db/auth.schema';
 
-const { db } = getDbConnection();
+// const { db } = getDbConnection();
 
 /**
  * Configuration du domaine racine pour le partage de cookies entre sous-domaines.
@@ -26,24 +26,30 @@ const cookiePrefix = configService.get('AUTH_COOKIE_PREFIX') || 'metacult';
  *
  * @see https://better-auth.com/docs
  */
-// Safe Initialization: Check if Critical Secrets are present
-// Prevents Worker from crashing when importing this module implicitly (via repositories)
-const secret = configService.get('BETTER_AUTH_SECRET');
-const baseURL = configService.get('BETTER_AUTH_URL');
+export let auth: any;
 
-export const auth =
-  secret && baseURL
-    ? betterAuth({
+export const initAuth = () => {
+  if (auth) return auth;
+
+  const secret = configService.get('BETTER_AUTH_SECRET');
+  const baseURL = configService.get('BETTER_AUTH_URL');
+
+  // Ensure DB is initialized (by caller, but we get the instance here)
+  const { db } = getDbConnection();
+
+  auth =
+    secret && baseURL
+      ? betterAuth({
         baseURL: baseURL,
         basePath: '/api/auth',
         secret: secret,
         trustedOrigins: [
           ...(configService.isDevelopment
             ? [
-                'http://localhost:3000', // API: Default port
-                'http://localhost:4444', // Website dev fallback
-                'http://localhost:4201', // Webapp Nuxt
-              ]
+              'http://localhost:3000', // API: Default port
+              'http://localhost:4444', // Website dev fallback
+              'http://localhost:4201', // Webapp Nuxt
+            ]
             : []),
           ...(configService.get('BETTER_AUTH_TRUSTED_ORIGINS')
             ? configService.get('BETTER_AUTH_TRUSTED_ORIGINS')!.split(',')
@@ -70,10 +76,13 @@ export const auth =
           },
         },
       })
-    : // Return a proxy/mock that throws if accessed? Or just a dummy object?
+      : // Return a proxy/mock that throws if accessed? Or just a dummy object?
       // Since usage is only in API which has secrets, this branch is only hit by Worker which DOES NOT use it.
       // Returning a dummy strictly to satisfy export type.
       ({} as any);
+
+  return auth;
+};
 
 /**
  * Type du client Better Auth exposé.

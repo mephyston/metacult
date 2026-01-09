@@ -28,7 +28,7 @@ export const useAuthSession = () => {
       try {
         const localUser = await db.userProfile.get('me');
         if (localUser) {
-          user.value = localUser;
+          user.value = localUser as UserProfile;
           logger.info('[useAuthSession] Loaded optimistic session from Dexie');
           isLoading.value = false; // UI is ready
         }
@@ -68,6 +68,7 @@ export const useAuthSession = () => {
             nextLevelXp: number;
           }>(`${apiUrl}/api/gamification/me`, {
             headers: headers as any,
+            credentials: 'include', // Ensure cookies are sent (CORS)
           });
 
           if (stats) {
