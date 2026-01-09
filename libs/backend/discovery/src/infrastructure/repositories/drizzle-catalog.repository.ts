@@ -13,6 +13,7 @@ import {
   ReleaseYear,
 } from '@metacult/backend-catalog';
 
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { userInteractions } from '@metacult/backend-interaction';
 import type { CatalogRepository } from '../../domain/ports/catalog.repository.interface';
 
@@ -230,59 +231,67 @@ export class DrizzleCatalogRepository implements CatalogRepository {
 
     switch (type) {
       case 'GAME':
-        return new Game(
+        return new Game({
           id,
           title,
           slug,
-          null,
+          description: null,
           coverUrl,
           rating,
           releaseYear,
           externalReference,
-          (row.games?.platform as string[]) || [],
-          row.games?.developer || '',
-          row.games?.timeToBeat || 0,
-        );
+          platform: (row.games?.platform as string[]) || [],
+          developer: row.games?.developer || '',
+          timeToBeat: row.games?.timeToBeat || 0,
+          eloScore: eloScore,
+          matchCount: row.medias.matchCount,
+        });
       case 'MOVIE':
-        return new Movie(
+        return new Movie({
           id,
           title,
           slug,
-          null,
+          description: null,
           coverUrl,
           rating,
           releaseYear,
           externalReference,
-          row.movies?.director || '',
-          row.movies?.durationMinutes || 0,
-        );
+          director: row.movies?.director || '',
+          durationMinutes: row.movies?.durationMinutes || 0,
+          eloScore: eloScore,
+          matchCount: row.medias.matchCount,
+        });
       case 'TV':
-        return new TV(
+        return new TV({
           id,
           title,
           slug,
-          null,
+          description: null,
           coverUrl,
           rating,
           releaseYear,
           externalReference,
-          row.tv?.creator || '',
-          row.tv?.episodesCount || 0,
-          row.tv?.seasonsCount || 0,
-        );
+          creator: row.tv?.creator || '',
+          episodesCount: row.tv?.episodesCount || 0,
+          seasonsCount: row.tv?.seasonsCount || 0,
+          eloScore: eloScore,
+          matchCount: row.medias.matchCount,
+        });
       case 'BOOK':
-        return new Book(
+        return new Book({
           id,
           title,
           slug,
-          null,
+          description: null,
           coverUrl,
           rating,
           releaseYear,
           externalReference,
-          row.books?.author || '',
-          row.books?.pages || 0,
-        );
+          author: row.books?.author || '',
+          pages: row.books?.pages || 0,
+          eloScore: eloScore,
+          matchCount: row.medias.matchCount,
+        });
       default:
         throw new Error(`Unknown Type: ${type}`);
     }

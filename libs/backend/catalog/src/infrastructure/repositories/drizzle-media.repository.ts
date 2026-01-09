@@ -838,7 +838,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
           throw new Error(
             `Data integrity error: Media ${id} is TYPE GAME but has no games record.`,
           );
-        return new Game(
+        return new Game({
           id,
           title,
           slug,
@@ -847,17 +847,19 @@ export class DrizzleMediaRepository implements IMediaRepository {
           rating,
           releaseYear,
           externalReference,
-          row.games.platform as string[],
-          row.games.developer,
-          row.games.timeToBeat,
-        );
+          platform: row.games.platform as string[],
+          developer: row.games.developer,
+          timeToBeat: row.games.timeToBeat,
+          eloScore: row.medias.eloScore, // Assuming eloScore is available in row.medias
+          matchCount: row.medias.matchCount, // Assuming matchCount is available in row.medias
+        });
 
       case 'MOVIE':
         if (!row.movies)
           throw new Error(
             `Data integrity error: Media ${id} is TYPE MOVIE but has no movies record.`,
           );
-        return new Movie(
+        return new Movie({
           id,
           title,
           slug,
@@ -866,16 +868,18 @@ export class DrizzleMediaRepository implements IMediaRepository {
           rating,
           releaseYear,
           externalReference,
-          row.movies.director,
-          row.movies.durationMinutes,
-        );
+          director: row.movies.director,
+          durationMinutes: row.movies.durationMinutes,
+          eloScore: row.medias.eloScore,
+          matchCount: row.medias.matchCount,
+        });
 
       case 'TV':
         if (!row.tv)
           throw new Error(
             `Data integrity error: Media ${id} is TYPE TV but has no tv record.`,
           );
-        return new TV(
+        return new TV({
           id,
           title,
           slug,
@@ -884,17 +888,19 @@ export class DrizzleMediaRepository implements IMediaRepository {
           rating,
           releaseYear,
           externalReference,
-          row.tv.creator,
-          row.tv.episodesCount,
-          row.tv.seasonsCount,
-        );
+          creator: row.tv.creator,
+          episodesCount: row.tv.episodesCount,
+          seasonsCount: row.tv.seasonsCount,
+          eloScore: row.medias.eloScore,
+          matchCount: row.medias.matchCount,
+        });
 
       case 'BOOK':
         if (!row.books)
           throw new Error(
             `Data integrity error: Media ${id} is TYPE BOOK but has no books record.`,
           );
-        return new Book(
+        return new Book({
           id,
           title,
           slug,
@@ -903,9 +909,11 @@ export class DrizzleMediaRepository implements IMediaRepository {
           rating,
           releaseYear,
           externalReference,
-          row.books.author,
-          row.books.pages,
-        );
+          author: row.books.author,
+          pages: row.books.pages,
+          eloScore: row.medias.eloScore,
+          matchCount: row.medias.matchCount,
+        });
 
       default:
         throw new Error(`Unknown media type: ${row.medias.type}`);

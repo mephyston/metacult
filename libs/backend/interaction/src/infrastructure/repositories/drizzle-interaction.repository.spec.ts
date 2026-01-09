@@ -10,15 +10,15 @@ describe('DrizzleInteractionRepository', () => {
   let repository: DrizzleInteractionRepository;
   let mockDb: any;
 
-  const mockInteraction = new UserInteraction(
-    'uuid-123',
-    'user-1',
-    'media-1',
-    InteractionAction.LIKE,
-    InteractionSentiment.GOOD,
-    new Date('2024-01-01'),
-    new Date('2024-01-01'),
-  );
+  const mockInteraction = new UserInteraction({
+    id: 'uuid-123',
+    userId: 'user-1',
+    mediaId: 'media-1',
+    action: InteractionAction.LIKE,
+    sentiment: InteractionSentiment.GOOD,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+  });
 
   beforeEach(() => {
     // Mock chainable Drizzle methods
@@ -66,7 +66,6 @@ describe('DrizzleInteractionRepository', () => {
 
     // Setup the mock chain to return our result
     // select -> from -> where -> limit -> Promise resolves to array
-    const mockWhere = mock(() => mockDb);
     const mockLimit = mock(() => Promise.resolve(mockResult));
 
     mockDb.select.mockReturnValue(mockDb);

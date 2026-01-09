@@ -6,15 +6,13 @@ import {
   InteractionAction,
   InteractionSentiment,
 } from '../../domain/entities/user-interaction.entity';
-import {
-  userInteractions,
-  actionEnum,
-  sentimentEnum,
-  userFollows,
-} from '../db/interactions.schema';
+import { userInteractions, userFollows } from '../db/interactions.schema';
+import * as schema from '../db/interactions.schema';
 
 export class DrizzleInteractionRepository implements IInteractionRepository {
-  constructor(private readonly db: NodePgDatabase<any>) {}
+  constructor(private readonly db: NodePgDatabase<typeof schema>) {}
+
+  // ... (save method remains unchanged) ...
 
   async save(interaction: UserInteraction): Promise<void> {
     await this.db
@@ -38,6 +36,8 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
       });
   }
 
+  // ... (other methods) ...
+
   async findByUserAndMedia(
     userId: string,
     mediaId: string,
@@ -53,8 +53,9 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
       )
       .limit(1);
 
-    if (result.length === 0) return null;
-    return this.mapToEntity(result[0]);
+    const row = result[0];
+    if (!row) return null;
+    return this.mapToEntity(row);
   }
 
   async findAllByUser(userId: string): Promise<UserInteraction[]> {
@@ -63,7 +64,7 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
       .from(userInteractions)
       .where(eq(userInteractions.userId, userId));
 
-    return results.map(this.mapToEntity);
+    return results.map((row) => this.mapToEntity(row));
   }
 
   async getSwipedMediaIds(userId: string): Promise<string[]> {
@@ -133,18 +134,20 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
       .limit(limit)
       .offset(offset);
 
-    return results.map(this.mapToEntity);
+    return results.map((row) => this.mapToEntity(row));
   }
 
-  private mapToEntity(raw: any): UserInteraction {
-    return new UserInteraction(
-      raw.id,
-      raw.userId,
-      raw.mediaId,
-      raw.action as InteractionAction,
-      raw.sentiment as InteractionSentiment | null,
-      raw.createdAt,
-      raw.updatedAt,
-    );
+  private mapToEntity(
+    raw: typeof userInteractions.$inferSelect,
+  ): UserInteraction {
+    return new UserInteraction({
+      id: raw.id,
+      userId: raw.userId,
+      mediaId: raw.mediaId,
+      action: raw.action as InteractionAction,
+      sentiment: raw.sentiment as InteractionSentiment | null,
+      createdAt: raw.createdAt,
+      updatedAt: raw.updatedAt,
+    });
   }
 }

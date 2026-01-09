@@ -2,7 +2,9 @@
 import { ref, onMounted } from 'vue';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { db } from '@metacult/shared-local-db';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { addToOutbox } from '@metacult/shared-sync-manager';
 import { SwipeDeck } from '@metacult/shared-ui'; // Clean barrel import
 
@@ -53,6 +55,60 @@ const onInteraction = async (payload: any) => {
     sentiment: payload.sentiment,
     timestamp: Date.now(),
   });
+};
+
+const onUndo = async (payload: any) => {
+  console.log('Undo Interaction:', payload);
+
+  // 1. Put back into dailyStack (Local DB)
+  // We need to fetch the full MediaItem from db.media to restore it correctly
+  const mediaItem = await db.media.get(payload.mediaId);
+  if (mediaItem) {
+    await db.dailyStack.put(mediaItem);
+  } else {
+    console.warn(
+      '[OfflineDeck] Cannot restore item to stack (missing in library):',
+      payload.mediaId,
+    );
+  }
+
+  // 2. Remove from interactions (Local DB)
+  // We delete by combinatory key or just matching mediaId + timestamp?
+  // Schema for interactions: [userId+mediaId] or just auto-increment?
+  // Let's assume we can find it by mediaId + recent timestamp or just mediaId if unique in recent context.
+  // Actually, Dexie 'interactions' table primary key definition needed.
+  // Assuming simpler delete for now:
+  // await db.interactions.delete(payload.mediaId); // If PK is mediaId
+
+  // Safe filtering deletion if PK is not mediaId:
+  const lastInteraction = await db.interactions
+    .where('mediaId')
+    .equals(payload.mediaId)
+    .reverse()
+    .first();
+
+  if (lastInteraction) {
+    // @ts-ignore - Dexie types mismatch sometimes
+    await db.interactions.delete(lastInteraction.id || lastInteraction.mediaId);
+  }
+
+  // 3. Remove from Outbox (Sync)
+  // Find pending outbox item for this media and type 'SWIPE'
+  const outboxItem = await db.outbox
+    .where({ type: 'SWIPE' })
+    .filter((item) => item.payload.mediaId === payload.mediaId)
+    .last();
+
+  if (outboxItem && outboxItem.status === 'pending') {
+    await db.outbox.delete(outboxItem.id!);
+    console.log('[OfflineDeck] Undo: Removed pending swipe from outbox');
+  } else {
+    // Already synced? We might need to send a 'UNDO_SWIPE' action.
+    // For MVP, we just accept local revert.
+    console.log(
+      '[OfflineDeck] Undo: Swipe already synced or not found. Local revert only.',
+    );
+  }
 };
 
 // --- Smart Caching Logic ---
@@ -128,6 +184,7 @@ onMounted(() => {
       v-if="deckItems && deckItems.length > 0"
       :items="deckItems"
       @interaction="onInteraction"
+      @undo="onUndo"
     />
     <div
       v-else

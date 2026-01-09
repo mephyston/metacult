@@ -1,0 +1,1557 @@
+{
+  "graph": {
+    "nodes": {
+      "backend-infrastructure": {
+        "name": "backend-infrastructure",
+        "type": "lib",
+        "data": {
+          "root": "libs/backend/infrastructure",
+          "targets": {
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["libs/backend/infrastructure/**/*.ts"]
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun test --preload ./test/setup.ts libs/backend/infrastructure"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "backend-infrastructure",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "library",
+          "sourceRoot": "libs/backend/infrastructure/src",
+          "tags": ["type:util", "scope:shared", "layer:backend"],
+          "implicitDependencies": []
+        }
+      },
+      "interaction": {
+        "name": "interaction",
+        "type": "lib",
+        "data": {
+          "root": "libs/backend/interaction",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/backend/interaction",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/libs/backend/interaction/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "interaction",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/backend/interaction/src",
+          "projectType": "library",
+          "tags": [
+            "scope:interaction",
+            "layer:backend",
+            "type:bounded-context"
+          ],
+          "implicitDependencies": []
+        }
+      },
+      "shared-sync-manager": {
+        "name": "shared-sync-manager",
+        "type": "lib",
+        "data": {
+          "root": "libs/shared/sync-manager",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/shared/sync-manager",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish"],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "shared-sync-manager",
+          "tags": ["npm:public", "scope:shared"],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@metacult/shared-sync-manager",
+              "packageVersion": "0.0.1",
+              "packageMain": "./src/index.ts",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/shared/sync-manager/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "backend-discovery": {
+        "name": "backend-discovery",
+        "type": "lib",
+        "data": {
+          "root": "libs/backend/discovery",
+          "targets": {
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["libs/backend/discovery/**/*.ts"]
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun test libs/backend/discovery --preload ./test/setup.ts"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "backend-discovery",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "library",
+          "sourceRoot": "libs/backend/discovery/src",
+          "tags": ["scope:discovery", "layer:backend", "type:bounded-context"],
+          "implicitDependencies": []
+        }
+      },
+      "backend-marketing": {
+        "name": "backend-marketing",
+        "type": "lib",
+        "data": {
+          "root": "libs/backend/marketing",
+          "targets": {
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["libs/backend/marketing/**/*.ts"]
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun test --preload ./test/setup.ts libs/backend/marketing"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "backend-marketing",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "library",
+          "sourceRoot": "libs/backend/marketing/src",
+          "tags": ["scope:marketing", "layer:backend", "type:bounded-context"],
+          "implicitDependencies": []
+        }
+      },
+      "identity": {
+        "name": "identity",
+        "type": "lib",
+        "data": {
+          "root": "libs/backend/identity",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/backend/identity",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/libs/backend/identity/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "identity",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/backend/identity/src",
+          "projectType": "library",
+          "tags": ["scope:identity", "layer:backend", "type:bounded-context"],
+          "implicitDependencies": []
+        }
+      },
+      "@metacult/shared-local-db": {
+        "name": "@metacult/shared-local-db",
+        "type": "lib",
+        "data": {
+          "root": "libs/shared/local-db",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/shared/local-db",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish"],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "@metacult/shared-local-db",
+          "tags": ["npm:public"],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@metacult/shared-local-db",
+              "packageVersion": "0.0.1",
+              "packageMain": "./src/index.ts",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "implicitDependencies": []
+        }
+      },
+      "backend-catalog": {
+        "name": "backend-catalog",
+        "type": "lib",
+        "data": {
+          "root": "libs/backend/catalog",
+          "targets": {
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["libs/backend/catalog/**/*.ts"]
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun test --preload ./test/setup.ts libs/backend/catalog"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "backend-catalog",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "library",
+          "sourceRoot": "libs/backend/catalog/src",
+          "tags": ["scope:catalog", "layer:backend", "type:bounded-context"],
+          "implicitDependencies": []
+        }
+      },
+      "backend-ranking": {
+        "name": "backend-ranking",
+        "type": "lib",
+        "data": {
+          "root": "libs/backend/ranking",
+          "targets": {
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["libs/backend/ranking/**/*.ts"]
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun test --preload ./test/setup.ts libs/backend/ranking"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "backend-ranking",
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/backend/ranking/src",
+          "projectType": "library",
+          "tags": ["scope:ranking", "type:domain", "layer:backend"],
+          "implicitDependencies": []
+        }
+      },
+      "shared-types": {
+        "name": "shared-types",
+        "type": "lib",
+        "data": {
+          "root": "libs/shared/types",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/shared/types",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish"],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": ["{options.outputPath}"],
+              "options": {
+                "outputPath": "dist/libs/shared/types",
+                "main": "libs/shared/types/src/index.ts",
+                "tsConfig": "libs/shared/types/tsconfig.lib.json",
+                "assets": ["libs/shared/types/*.md"]
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "dependsOn": ["^build"],
+              "inputs": ["default", "^default"]
+            }
+          },
+          "name": "shared-types",
+          "tags": ["npm:public", "type:util", "scope:shared"],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@metacult/shared-types",
+              "packageVersion": "0.0.1",
+              "packageMain": "./src/index.ts",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/shared/types/src",
+          "projectType": "library",
+          "implicitDependencies": []
+        }
+      },
+      "shared-core": {
+        "name": "shared-core",
+        "type": "lib",
+        "data": {
+          "root": "libs/shared/core",
+          "targets": {
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": ["libs/shared/core/**/*.ts"]
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish"],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "@nx/js:tsc",
+              "outputs": ["{options.outputPath}"],
+              "options": {
+                "outputPath": "dist/libs/shared/core",
+                "main": "libs/shared/core/src/index.ts",
+                "tsConfig": "libs/shared/core/tsconfig.lib.json",
+                "assets": []
+              },
+              "configurations": {},
+              "parallelism": true,
+              "cache": true,
+              "dependsOn": ["^build"],
+              "inputs": ["default", "^default"]
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun test libs/shared/core"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "shared-core",
+          "tags": ["npm:public", "scope:shared", "type:util", "type:buildable"],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@metacult/shared-core",
+              "packageVersion": "0.3.0",
+              "packageExports": {
+                ".": "./src/index.ts"
+              },
+              "packageMain": "./src/index.ts",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "library",
+          "sourceRoot": "libs/shared/core/src",
+          "implicitDependencies": []
+        }
+      },
+      "ui": {
+        "name": "ui",
+        "type": "lib",
+        "data": {
+          "root": "libs/shared/ui",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "libs/shared/ui",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/libs/shared/ui/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "options": {
+                "cwd": "libs/shared/ui",
+                "command": "vite build"
+              },
+              "cache": true,
+              "dependsOn": ["^build"],
+              "inputs": [
+                "default",
+                "^default",
+                {
+                  "externalDependencies": ["vite"]
+                }
+              ],
+              "outputs": ["{workspaceRoot}/dist/libs/shared/ui"],
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Run Vite build",
+                "help": {
+                  "command": "bun vite build --help",
+                  "example": {
+                    "options": {
+                      "sourcemap": true,
+                      "manifest": "manifest.json"
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve": {
+              "continuous": true,
+              "options": {
+                "cwd": "libs/shared/ui",
+                "command": "vite"
+              },
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Starts Vite dev server",
+                "help": {
+                  "command": "bun vite --help",
+                  "example": {
+                    "options": {
+                      "port": 3000
+                    }
+                  }
+                },
+                "deprecated": "Use devTargetName instead. This option will be removed in Nx 22."
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "continuous": true,
+              "options": {
+                "cwd": "libs/shared/ui",
+                "command": "vite"
+              },
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Starts Vite dev server",
+                "help": {
+                  "command": "bun vite --help",
+                  "example": {
+                    "options": {
+                      "port": 3000
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "continuous": true,
+              "dependsOn": ["build"],
+              "options": {
+                "cwd": "libs/shared/ui",
+                "command": "vite preview"
+              },
+              "metadata": {
+                "technologies": ["vite"],
+                "description": "Locally preview Vite production build",
+                "help": {
+                  "command": "bun vite preview --help",
+                  "example": {
+                    "options": {
+                      "port": 3000
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve-static": {
+              "continuous": true,
+              "executor": "@nx/web:file-server",
+              "options": {
+                "buildTarget": "build",
+                "spa": true
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "typecheck": {
+              "cache": true,
+              "inputs": [
+                "default",
+                "^default",
+                {
+                  "externalDependencies": ["vue-tsc", "typescript"]
+                }
+              ],
+              "options": {
+                "cwd": "libs/shared/ui",
+                "command": "vue-tsc --noEmit -p tsconfig.lib.json"
+              },
+              "metadata": {
+                "description": "Runs type-checking for the project.",
+                "technologies": ["typescript", "vue"],
+                "help": {
+                  "command": "bun vue-tsc -p tsconfig.lib.json --help",
+                  "example": {
+                    "options": {
+                      "noEmit": true
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-deps": {
+              "dependsOn": ["^build"],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            },
+            "watch-deps": {
+              "continuous": true,
+              "dependsOn": ["build-deps"],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun nx watch --projects ui --includeDependentProjects -- bun nx build-deps ui"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish"],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "projectType": "library",
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@metacult/shared-ui",
+              "packageVersion": "0.2.0",
+              "packageExports": {
+                ".": {
+                  "types": "./index.d.ts",
+                  "import": "./src/index.ts",
+                  "require": "./src/index.ts"
+                },
+                "./styles/*": "./src/styles/*"
+              },
+              "packageMain": "./src/index.ts",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "name": "ui",
+          "tags": ["npm:public", "type:ui", "scope:shared", "layer:frontend"],
+          "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+          "sourceRoot": "libs/shared/ui/src",
+          "implicitDependencies": []
+        }
+      },
+      "website": {
+        "name": "website",
+        "type": "app",
+        "data": {
+          "root": "apps/website",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "apps/website",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "astro dev --port 4444",
+                "runCommand": "bun run dev -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preview"
+              },
+              "metadata": {
+                "scriptContent": "astro preview",
+                "runCommand": "bun run preview -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "astro": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "astro"
+              },
+              "metadata": {
+                "scriptContent": "astro",
+                "runCommand": "bun run astro -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish"],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun run dev",
+                "cwd": "apps/website"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun run build",
+                "cwd": "apps/website"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "website",
+          "tags": ["npm:public", "type:app", "scope:website", "layer:frontend"],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": ["dev", "preview", "astro"]
+            },
+            "js": {
+              "packageName": "apps-website",
+              "packageVersion": "0.6.2",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "application",
+          "sourceRoot": "apps/website/src",
+          "implicitDependencies": []
+        }
+      },
+      "webapp": {
+        "name": "webapp",
+        "type": "app",
+        "data": {
+          "root": "apps/webapp",
+          "targets": {
+            "lint": {
+              "executor": "@nx/eslint:lint",
+              "outputs": ["{options.outputFile}"],
+              "options": {
+                "lintFilePatterns": [
+                  "apps/webapp/app/**/*.{ts,tsx,js,jsx,vue}",
+                  "apps/webapp/server/**/*.{ts,tsx,js,jsx,vue}",
+                  "apps/webapp/*.{ts,tsx,js,jsx,vue}",
+                  "!apps/webapp/.nuxt/**"
+                ]
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "build"
+              },
+              "metadata": {
+                "scriptContent": "nuxt build",
+                "runCommand": "bun run build -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve": {
+              "options": {
+                "cwd": "apps/webapp",
+                "command": "nuxt dev"
+              },
+              "continuous": true,
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve-static": {
+              "dependsOn": ["build-static"],
+              "continuous": true,
+              "executor": "@nx/web:file-server",
+              "options": {
+                "buildTarget": "build-static",
+                "staticFilePath": "apps/webapp/dist",
+                "port": 4200,
+                "spa": false
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-static": {
+              "options": {
+                "cwd": "apps/webapp",
+                "command": "nuxt build --prerender"
+              },
+              "cache": true,
+              "dependsOn": ["^build-static"],
+              "inputs": [
+                "default",
+                "^default",
+                {
+                  "externalDependencies": ["nuxt"]
+                }
+              ],
+              "outputs": [
+                "{workspaceRoot}/node_modules/.cache/nuxt/.nuxt",
+                "{projectRoot}/.output"
+              ],
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "build-deps": {
+              "dependsOn": ["^build"],
+              "configurations": {},
+              "options": {},
+              "parallelism": true,
+              "executor": "nx:noop"
+            },
+            "watch-deps": {
+              "continuous": true,
+              "dependsOn": ["build-deps"],
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun nx watch --projects webapp --includeDependentProjects -- bun nx build-deps webapp"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "nx serve webapp",
+                "runCommand": "bun run dev -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "preview": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "preview"
+              },
+              "metadata": {
+                "scriptContent": "node .output/server/index.mjs",
+                "runCommand": "bun run preview -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "webapp",
+          "tags": ["npm:private", "type:app", "scope:webapp", "layer:frontend"],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": ["build", "dev", "preview"]
+            },
+            "js": {
+              "packageName": "apps-webapp",
+              "packageVersion": "0.6.2",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "application",
+          "sourceRoot": "apps/webapp/app",
+          "implicitDependencies": []
+        }
+      },
+      "worker": {
+        "name": "worker",
+        "type": "app",
+        "data": {
+          "root": "apps/worker",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "apps/worker",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish"],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun --watch src/index.ts",
+                "cwd": "apps/worker"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun test --preload test/setup.ts",
+                "cwd": "apps/worker"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "worker",
+          "tags": ["npm:public", "type:app", "scope:worker", "layer:backend"],
+          "metadata": {
+            "targetGroups": {},
+            "js": {
+              "packageName": "@metacult/worker",
+              "packageVersion": "0.6.2",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "application",
+          "sourceRoot": "apps/worker/src",
+          "implicitDependencies": []
+        }
+      },
+      "api": {
+        "name": "api",
+        "type": "app",
+        "data": {
+          "root": "apps/api",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "apps/api",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "dev": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "dev"
+              },
+              "metadata": {
+                "scriptContent": "bun --env-file=../../.env --watch index.ts",
+                "runCommand": "bun run dev -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "start": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "start"
+              },
+              "metadata": {
+                "scriptContent": "bun --env-file=../../.env index.ts",
+                "runCommand": "bun run start -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "nx-release-publish": {
+              "executor": "@nx/js:release-publish",
+              "dependsOn": ["^nx-release-publish"],
+              "options": {},
+              "configurations": {},
+              "parallelism": true
+            },
+            "serve": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun run --cwd ../../ db:migrate && bun run dev",
+                "cwd": "apps/api"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "api",
+          "tags": ["npm:public", "type:app", "scope:api", "layer:backend"],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": ["dev", "start"]
+            },
+            "js": {
+              "packageName": "@metacult/api",
+              "packageVersion": "0.6.2",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "application",
+          "sourceRoot": "apps/api",
+          "implicitDependencies": []
+        }
+      },
+      "e2e": {
+        "name": "e2e",
+        "type": "e2e",
+        "data": {
+          "root": "apps/e2e",
+          "targets": {
+            "lint": {
+              "cache": true,
+              "options": {
+                "cwd": "apps/e2e",
+                "command": "eslint ."
+              },
+              "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/tools/eslint-rules/**/*",
+                {
+                  "externalDependencies": ["eslint"]
+                }
+              ],
+              "outputs": ["{options.outputFile}"],
+              "metadata": {
+                "technologies": ["eslint"],
+                "description": "Runs ESLint on project",
+                "help": {
+                  "command": "bun eslint --help",
+                  "example": {
+                    "options": {
+                      "max-warnings": 0
+                    }
+                  }
+                }
+              },
+              "executor": "nx:run-commands",
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:headed": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "test:headed"
+              },
+              "metadata": {
+                "scriptContent": "playwright test --headed",
+                "runCommand": "bun run test:headed -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "report": {
+              "executor": "nx:run-script",
+              "options": {
+                "script": "report"
+              },
+              "metadata": {
+                "scriptContent": "playwright show-report",
+                "runCommand": "bun run report -- undefined"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "playwright test",
+                "cwd": "apps/e2e"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:ui": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "playwright test --ui",
+                "cwd": "apps/e2e"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "test:debug": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "playwright test --debug",
+                "cwd": "apps/e2e"
+              },
+              "configurations": {},
+              "parallelism": true
+            },
+            "install": {
+              "executor": "nx:run-commands",
+              "options": {
+                "command": "bun install && bunx playwright install chromium",
+                "cwd": "apps/e2e"
+              },
+              "configurations": {},
+              "parallelism": true
+            }
+          },
+          "name": "e2e",
+          "tags": ["npm:private", "type:app", "scope:e2e", "layer:testing"],
+          "metadata": {
+            "targetGroups": {
+              "NPM Scripts": ["test:headed", "report"]
+            },
+            "js": {
+              "packageName": "@metacult/e2e",
+              "packageVersion": "1.0.0",
+              "isInPackageManagerWorkspaces": true
+            }
+          },
+          "$schema": "../../node_modules/nx/schemas/project-schema.json",
+          "projectType": "application",
+          "sourceRoot": "apps/e2e",
+          "implicitDependencies": []
+        }
+      }
+    },
+    "dependencies": {
+      "backend-infrastructure": [],
+      "interaction": [
+        {
+          "source": "interaction",
+          "target": "identity",
+          "type": "static"
+        },
+        {
+          "source": "interaction",
+          "target": "backend-infrastructure",
+          "type": "static"
+        },
+        {
+          "source": "interaction",
+          "target": "shared-core",
+          "type": "static"
+        }
+      ],
+      "shared-sync-manager": [
+        {
+          "source": "shared-sync-manager",
+          "target": "@metacult/shared-local-db",
+          "type": "static"
+        },
+        {
+          "source": "shared-sync-manager",
+          "target": "shared-core",
+          "type": "static"
+        }
+      ],
+      "backend-discovery": [
+        {
+          "source": "backend-discovery",
+          "target": "backend-infrastructure",
+          "type": "static"
+        },
+        {
+          "source": "backend-discovery",
+          "target": "backend-catalog",
+          "type": "static"
+        },
+        {
+          "source": "backend-discovery",
+          "target": "interaction",
+          "type": "static"
+        },
+        {
+          "source": "backend-discovery",
+          "target": "identity",
+          "type": "static"
+        }
+      ],
+      "backend-marketing": [
+        {
+          "source": "backend-marketing",
+          "target": "backend-infrastructure",
+          "type": "static"
+        }
+      ],
+      "identity": [
+        {
+          "source": "identity",
+          "target": "backend-infrastructure",
+          "type": "static"
+        },
+        {
+          "source": "identity",
+          "target": "shared-core",
+          "type": "static"
+        }
+      ],
+      "@metacult/shared-local-db": [
+        {
+          "source": "@metacult/shared-local-db",
+          "target": "shared-types",
+          "type": "static"
+        }
+      ],
+      "backend-catalog": [
+        {
+          "source": "backend-catalog",
+          "target": "backend-infrastructure",
+          "type": "static"
+        },
+        {
+          "source": "backend-catalog",
+          "target": "shared-core",
+          "type": "static"
+        }
+      ],
+      "backend-ranking": [
+        {
+          "source": "backend-ranking",
+          "target": "identity",
+          "type": "static"
+        },
+        {
+          "source": "backend-ranking",
+          "target": "backend-infrastructure",
+          "type": "static"
+        },
+        {
+          "source": "backend-ranking",
+          "target": "shared-core",
+          "type": "static"
+        },
+        {
+          "source": "backend-ranking",
+          "target": "interaction",
+          "type": "static"
+        },
+        {
+          "source": "backend-ranking",
+          "target": "backend-catalog",
+          "type": "static"
+        }
+      ],
+      "shared-types": [],
+      "shared-core": [],
+      "ui": [
+        {
+          "source": "ui",
+          "target": "shared-types",
+          "type": "static"
+        },
+        {
+          "source": "ui",
+          "target": "shared-core",
+          "type": "static"
+        }
+      ],
+      "website": [
+        {
+          "source": "website",
+          "target": "@metacult/shared-local-db",
+          "type": "static"
+        },
+        {
+          "source": "website",
+          "target": "shared-sync-manager",
+          "type": "static"
+        },
+        {
+          "source": "website",
+          "target": "ui",
+          "type": "static"
+        },
+        {
+          "source": "website",
+          "target": "shared-core",
+          "type": "static"
+        }
+      ],
+      "webapp": [
+        {
+          "source": "webapp",
+          "target": "ui",
+          "type": "static"
+        },
+        {
+          "source": "webapp",
+          "target": "@metacult/shared-local-db",
+          "type": "static"
+        },
+        {
+          "source": "webapp",
+          "target": "shared-sync-manager",
+          "type": "static"
+        },
+        {
+          "source": "webapp",
+          "target": "shared-types",
+          "type": "static"
+        },
+        {
+          "source": "webapp",
+          "target": "shared-core",
+          "type": "static"
+        }
+      ],
+      "worker": [
+        {
+          "source": "worker",
+          "target": "backend-infrastructure",
+          "type": "static"
+        },
+        {
+          "source": "worker",
+          "target": "backend-ranking",
+          "type": "static"
+        },
+        {
+          "source": "worker",
+          "target": "backend-discovery",
+          "type": "static"
+        },
+        {
+          "source": "worker",
+          "target": "backend-catalog",
+          "type": "static"
+        }
+      ],
+      "api": [
+        {
+          "source": "api",
+          "target": "backend-catalog",
+          "type": "static"
+        },
+        {
+          "source": "api",
+          "target": "backend-discovery",
+          "type": "static"
+        },
+        {
+          "source": "api",
+          "target": "identity",
+          "type": "static"
+        },
+        {
+          "source": "api",
+          "target": "interaction",
+          "type": "static"
+        },
+        {
+          "source": "api",
+          "target": "backend-ranking",
+          "type": "static"
+        },
+        {
+          "source": "api",
+          "target": "backend-infrastructure",
+          "type": "static"
+        },
+        {
+          "source": "api",
+          "target": "backend-marketing",
+          "type": "static"
+        },
+        {
+          "source": "api",
+          "target": "shared-core",
+          "type": "static"
+        }
+      ],
+      "e2e": []
+    }
+  }
+}

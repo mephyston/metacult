@@ -158,9 +158,10 @@ describe('Feed Controller', () => {
   });
 
   it('GET /feed/trending should call GetTrendingHandler', async () => {
-    await app.handle(
+    const response = await app.handle(
       new Request('http://localhost/feed/trending?limit=5&type=movie'),
     );
+    expect(response.status).toBe(200);
     expect(mockGetTrendingHandler.execute).toHaveBeenCalled();
   });
 });

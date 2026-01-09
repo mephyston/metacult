@@ -35,7 +35,12 @@ export class DrizzleSimilarityRepository implements SimilarityRepository {
 
     return results.map(
       (r) =>
-        new Neighbor(r.userId, r.neighborId, r.similarityScore, r.lastUpdated),
+        new Neighbor({
+          userId: r.userId,
+          neighborId: r.neighborId,
+          similarityScore: r.similarityScore,
+          lastUpdated: r.lastUpdated,
+        }),
     );
   }
 }

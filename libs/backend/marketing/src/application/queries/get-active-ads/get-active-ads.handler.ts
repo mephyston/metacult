@@ -1,7 +1,7 @@
 import { Redis } from 'ioredis';
 import { logger } from '@metacult/backend-infrastructure';
 import type { GetActiveAdsQuery } from './get-active-ads.query';
-import type { Ad } from '../../../domain/ad.entity';
+import { Ad } from '../../../domain/ad.entity';
 
 /**
  * Cas d'Utilisation : Récupérer les campagnes pubs actives.
@@ -19,7 +19,7 @@ export class GetActiveAdsHandler {
    * @param {GetActiveAdsQuery} query - DTO vide.
    * @returns {Promise<Ad[]>} Liste de pubs.
    */
-  async execute(query: GetActiveAdsQuery): Promise<Ad[]> {
+  async execute(): Promise<Ad[]> {
     const cacheKey = 'marketing:ads:active';
 
     // 1. Try Cache
@@ -31,36 +31,36 @@ export class GetActiveAdsHandler {
     // 2. Simulate Fetch (Miss)
     logger.info('[Marketing] Fetching active ads from external provider');
     const ads: Ad[] = [
-      {
+      new Ad({
         id: 'ad-1',
         title: 'Buy Metacult Pro',
         type: 'SPONSORED',
         url: 'https://metacult.com/pro',
-      },
-      {
+      }),
+      new Ad({
         id: 'ad-2',
         title: 'New Game Release',
         type: 'SPONSORED',
         url: 'https://example.com/game',
-      },
-      {
+      }),
+      new Ad({
         id: 'ad-3',
         title: 'Energy Drink',
         type: 'SPONSORED',
         url: 'https://example.com/drink',
-      },
-      {
+      }),
+      new Ad({
         id: 'ad-4',
         title: 'Gaming Chair',
         type: 'SPONSORED',
         url: 'https://example.com/chair',
-      },
-      {
+      }),
+      new Ad({
         id: 'ad-5',
         title: 'Headset',
         type: 'SPONSORED',
         url: 'https://example.com/headset',
-      },
+      }),
     ];
 
     // 3. Set Cache (TTL 30 min = 1800s)

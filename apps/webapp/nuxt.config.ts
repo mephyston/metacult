@@ -1,4 +1,3 @@
-/* eslint-disable @nx/enforce-module-boundaries */
 import { fileURLToPath } from 'url';
 import tailwindcss from '@tailwindcss/vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
@@ -98,7 +97,7 @@ export default {
       type: 'module',
     },
   },
-  // @ts-ignore - i18n module config types not available until build
+
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'fr',

@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import SwipeCard from './SwipeCard.vue';
-import { X, Clock, Bookmark, ThumbsUp, Flame } from 'lucide-vue-next';
+import {
+  X,
+  Clock,
+  Bookmark,
+  ThumbsUp,
+  Flame,
+  RefreshCcw,
+} from 'lucide-vue-next';
 import { logger } from '../../../lib/logger';
 
 // --- Types ---
@@ -42,12 +49,15 @@ const props = withDefaults(
 // --- Emits ---
 const emit = defineEmits<{
   (e: 'interaction', payload: InteractionPayload): void;
+  (e: 'undo', payload: InteractionPayload): void;
 }>();
 
 // --- State ---
 const cardRef = ref();
 const deck = ref<SwipeItem[]>([...props.items]); // Copie locale
 const history = ref<InteractionPayload[]>([]);
+// Keep track of popped items to restore them
+const poppedItems = ref<SwipeItem[]>([]);
 
 // --- Computed ---
 const currentCard = computed(() => deck.value[0]);
@@ -68,6 +78,7 @@ function handleSwipe(payload: SwipePayload) {
 
   // Add to history
   history.value.push(interaction);
+  poppedItems.value.push(currentCard.value);
 
   // Emit event for parent (API call, analytics, etc.)
   emit('interaction', interaction);
@@ -76,9 +87,21 @@ function handleSwipe(payload: SwipePayload) {
   deck.value.shift();
 }
 
+function undo() {
+  const lastInteraction = history.value.pop();
+  const lastItem = poppedItems.value.pop();
+
+  if (lastInteraction && lastItem) {
+    // Restore logic: unshift to deck
+    deck.value.unshift(lastItem);
+    emit('undo', lastInteraction);
+  }
+}
+
 function resetDeck() {
   deck.value = [...props.items];
   history.value = [];
+  poppedItems.value = [];
 }
 
 function triggerSwipe(
@@ -111,6 +134,10 @@ const handleKeydown = (e: KeyboardEvent) => {
     case 'ArrowRight':
       e.preventDefault();
       triggerSwipe('LIKE');
+      break;
+    case 'Backspace':
+      e.preventDefault();
+      undo();
       break;
   }
 };
@@ -207,6 +234,18 @@ defineExpose({
       v-if="currentCard"
       class="hidden md:flex items-center justify-center gap-3 md:gap-5"
     >
+      <!-- Undo (Rewind) -->
+      <button
+        data-testid="btn-undo"
+        :disabled="history.length === 0"
+        class="group flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-yellow-500/10 hover:bg-yellow-500/20 border-2 border-yellow-500/30 transition-all active:scale-95 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Annuler (Backspace)"
+        aria-label="Undo"
+        @click="undo"
+      >
+        <RefreshCcw class="w-5 h-5 text-yellow-500" stroke-width="2.5" />
+      </button>
+
       <!-- Dislike -->
       <button
         data-testid="btn-dislike"

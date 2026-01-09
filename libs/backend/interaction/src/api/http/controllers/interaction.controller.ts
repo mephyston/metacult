@@ -8,14 +8,13 @@ import { logger, getDbConnection } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
 import { saveInteraction } from '../../../application/commands/save-interaction.command';
 import { syncInteractions } from '../../../application/commands/sync-interactions.command';
+import * as schema from '../../../infrastructure/db/interactions.schema';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
 
-// const { db } = getDbConnection(); // Moved inside handlers
-// const interactionRepo = new DrizzleInteractionRepository(db); // Moved inside handlers
+// ...
 
-/**
- * Controller pour la gestion des interactions (likes, skips, wishlists).
- */
+// In handlers:
 export const interactionController = new Elysia({ prefix: '/interactions' })
   .use(isAuthenticated) // Middleware d'authentification
   .post(
@@ -25,6 +24,11 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
       try {
         // Use helper to resolve user or throw 401
         const user = await resolveUserOrThrow(ctx);
+
+        const { db } = getDbConnection();
+        const interactionRepo = new DrizzleInteractionRepository(
+          db as unknown as NodePgDatabase<typeof schema>,
+        );
 
         const interaction = await saveInteraction({
           userId: user.id,
@@ -83,7 +87,9 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
 
       try {
         const { db } = getDbConnection();
-        const interactionRepo = new DrizzleInteractionRepository(db); // Instantiate repo here
+        const interactionRepo = new DrizzleInteractionRepository(
+          db as unknown as NodePgDatabase<typeof schema>,
+        );
         const results = await syncInteractions(user.id, body);
         return {
           success: true,
@@ -135,7 +141,9 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
     async ({ params, set }) => {
       try {
         const { db } = getDbConnection();
-        const interactionRepo = new DrizzleInteractionRepository(db);
+        const interactionRepo = new DrizzleInteractionRepository(
+          db as unknown as NodePgDatabase<typeof schema>,
+        );
         const interactions = await interactionRepo.findAllByUser(params.userId);
         return {
           success: true,
@@ -175,7 +183,9 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
 
         // 1. Get who we follow
         const { db } = getDbConnection();
-        const interactionRepo = new DrizzleInteractionRepository(db);
+        const interactionRepo = new DrizzleInteractionRepository(
+          db as unknown as NodePgDatabase<typeof schema>,
+        );
         const followingIds = await interactionRepo.getFollowing(user.id);
 
         // 2. Get their interactions

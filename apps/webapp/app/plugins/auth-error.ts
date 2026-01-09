@@ -7,14 +7,15 @@ export default defineNuxtPlugin((nuxtApp) => {
   const logger = useLogger();
 
   // Hook global pour intercepter les erreurs de l'application (SSR et Client)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  nuxtApp.hook('app:error', async (error: any) => {
+  nuxtApp.hook('app:error', async (error: unknown) => {
     // Détection d'une erreur 401 Unauthorized
+    const err = error as any; // Safe assumption for legacy error objects if we don't have a strict Error type
     if (
-      error?.statusCode === 401 ||
-      error?.response?.status === 401 ||
-      error?.message?.includes('401') ||
-      error?.message?.toLowerCase().includes('unauthorized')
+      err?.statusCode === 401 ||
+      err?.response?.status === 401 ||
+      err?.message?.includes('401') ||
+      (typeof err?.message === 'string' &&
+        err.message.toLowerCase().includes('unauthorized'))
     ) {
       logger.warn(
         '[AuthPlugin] 401 Unauthorized detected. Clearing session and redirecting to login.',

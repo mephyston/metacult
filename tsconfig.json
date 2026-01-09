@@ -15,5 +15,14 @@
     "noPropertyAccessFromIndexSignature": false
   },
   "extends": "./tsconfig.base.json",
-  "exclude": ["node_modules", "dist", "apps/webapp"]
+  "include": [
+    "libs/**/*",
+    "apps/api/**/*",
+    "apps/worker/**/*",
+    "apps/website/**/*",
+    "test/**/*",
+    "drizzle.config.ts",
+    "eslint.config.mjs"
+  ],
+  "exclude": ["node_modules", "dist", ".nuxt", ".output"]
 }

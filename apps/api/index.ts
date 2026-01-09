@@ -29,7 +29,6 @@ import {
 import {
   GamificationController as gamificationRoutes,
   userStats,
-  gamificationSchema,
 } from '@metacult/backend-gamification';
 import { importRoutes } from './src/routes/import.routes';
 import { debugRoutes } from './src/routes/debug.routes';
@@ -41,14 +40,10 @@ import {
   logger,
 } from '@metacult/backend-infrastructure';
 import * as infraSchema from '@metacult/backend-infrastructure';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { initCrons } from './src/cron/cron.service';
 import { errorMiddleware } from './src/middlewares/error.middleware';
-import {
-  GetActiveAdsHandler,
-  GetActiveAdsQuery,
-} from '@metacult/backend-marketing';
-
-import { version } from './package.json';
+import { GetActiveAdsHandler } from '@metacult/backend-marketing';
 
 import { runMigrations } from '@metacult/backend-infrastructure';
 
@@ -60,7 +55,7 @@ runMigrations()
   );
 
 // Initialisation de la BDD (Composition Root)
-import { mediaSchema, DrizzleMediaRepository } from '@metacult/backend-catalog';
+import { mediaSchema } from '@metacult/backend-catalog';
 import {
   userInteractions,
   userFollows,
@@ -179,7 +174,7 @@ const mediaSearchAdapter = {
 const adsAdapter = {
   getAds: async () => {
     // Adaptateur: Void -> Query -> DTO
-    return adsHandler.execute(new GetActiveAdsQuery());
+    return adsHandler.execute();
   },
 };
 
@@ -189,7 +184,11 @@ const mixedFeedHandler = new GetMixedFeedHandler(
   adsAdapter,
 );
 const personalizedFeedHandler = new GetPersonalizedFeedHandler(db);
-const interactionRepo = new DrizzleInteractionRepository(db);
+import * as interactionSchema from '@metacult/backend-interaction';
+// ...
+const interactionRepo = new DrizzleInteractionRepository(
+  db as unknown as NodePgDatabase<typeof interactionSchema>,
+);
 
 // --- Discovery Catalog Queries Wiring ---
 import {

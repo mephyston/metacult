@@ -1,6 +1,8 @@
 import { eq, and } from 'drizzle-orm';
 import { getDbConnection, logger } from '@metacult/backend-infrastructure';
 import { userInteractions } from '../../infrastructure/db/interactions.schema';
+import * as schema from '../../infrastructure/db/interactions.schema';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 interface SyncInteractionPayload {
   mediaId: string;
@@ -8,13 +10,17 @@ interface SyncInteractionPayload {
   sentiment?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function syncInteractions(
   userId: string,
   interactions: SyncInteractionPayload[],
-  injectedDb?: any,
+  injectedDb?: NodePgDatabase<typeof schema>,
 ) {
-  const db = injectedDb || getDbConnection().db;
+  const { db: defaultDb } = getDbConnection();
+  // Safe cast for defaultDb if needed or assume it matches
+  // getDbConnection returns NodePgDatabase<typeof infraSchema & ...>
+  // We need to ensure types match. The easiest way is to cast defaultDb too if schema is subset.
+  const db =
+    injectedDb || (defaultDb as unknown as NodePgDatabase<typeof schema>);
 
   // Debug checks
   if (!db) {

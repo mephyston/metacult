@@ -49,7 +49,12 @@ export class DrizzleAffinityRepository implements AffinityRepository {
     if (!row) {
       return null;
     }
-    return new Affinity(row.userId, row.mediaId, row.score, row.lastUpdated);
+    return new Affinity({
+      userId: row.userId,
+      mediaId: row.mediaId,
+      score: row.score,
+      lastUpdated: row.lastUpdated,
+    });
   }
 
   async findByUser(userId: string): Promise<Affinity[]> {
@@ -60,7 +65,12 @@ export class DrizzleAffinityRepository implements AffinityRepository {
 
     return results.map(
       (row) =>
-        new Affinity(row.userId, row.mediaId, row.score, row.lastUpdated),
+        new Affinity({
+          userId: row.userId,
+          mediaId: row.mediaId,
+          score: row.score,
+          lastUpdated: row.lastUpdated,
+        }),
     );
   }
 }
