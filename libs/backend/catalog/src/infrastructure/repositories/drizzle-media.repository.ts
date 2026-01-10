@@ -13,6 +13,7 @@ import {
   TV,
   Book,
 } from '../../domain/entities/media.entity';
+import { ProviderSource } from '@metacult/shared-core';
 import { Rating } from '../../domain/value-objects/rating.vo';
 import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
 import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
@@ -620,7 +621,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     externalId: string,
   ): Promise<Media | null> {
     let condition;
-    if (provider === 'igdb') {
+    if (provider === ProviderSource.IGDB) {
       condition = and(
         eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'IGDB'),
         eq(
@@ -628,7 +629,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
           externalId,
         ),
       );
-    } else if (provider === 'tmdb') {
+    } else if (provider === ProviderSource.TMDB) {
       condition = and(
         eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'TMDB'),
         eq(
@@ -636,7 +637,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
           externalId,
         ),
       );
-    } else if (provider === 'google_books') {
+    } else if (provider === ProviderSource.GOOGLE_BOOKS) {
       condition = and(
         eq(
           sql<string>`${schema.medias.providerMetadata}->>'source'`,

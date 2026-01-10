@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Rating } from '../../domain/value-objects/rating.vo';
 import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
 import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
+import { ProviderSource } from '@metacult/shared-core';
 import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
 import { Game, Movie, TV, Book } from '../../domain/entities/media.entity';
 
@@ -81,7 +82,7 @@ const slugify = (text: string | null | undefined): string => {
 export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
   if (!raw.name) {
     throw new InvalidProviderDataError(
-      'IGDB',
+      ProviderSource.IGDB,
       `Game missing name (ID: ${raw.id})`,
     );
   }
@@ -95,7 +96,10 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
     coverUrl: createCoverUrl(raw.cover?.url?.replace('t_thumb', 't_cover_big')),
     rating: createRating(rating),
     releaseYear: createReleaseYear(raw.first_release_date),
-    externalReference: new ExternalReference('igdb', String(raw.id)),
+    externalReference: new ExternalReference(
+      ProviderSource.IGDB,
+      String(raw.id),
+    ),
     platform: raw.platforms?.map((p) => p.name) || [],
     developer: null, // Developer not fetched
     timeToBeat: null, // TimeToBeat not fetched
@@ -112,7 +116,7 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
 export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
   if (!raw.title) {
     throw new InvalidProviderDataError(
-      'TMDB',
+      ProviderSource.TMDB,
       `Movie missing title (ID: ${raw.id})`,
     );
   }
@@ -127,7 +131,10 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
     coverUrl: createCoverUrl(posterUrl),
     rating: createRating(raw.vote_average),
     releaseYear: createReleaseYear(raw.release_date),
-    externalReference: new ExternalReference('tmdb', String(raw.id)),
+    externalReference: new ExternalReference(
+      ProviderSource.TMDB,
+      String(raw.id),
+    ),
     director: null, // Director
     durationMinutes: raw.runtime || null,
     eloScore: 1500,
@@ -143,7 +150,7 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
 export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
   if (!raw.name) {
     throw new InvalidProviderDataError(
-      'TMDB',
+      ProviderSource.TMDB,
       `TV missing name (ID: ${raw.id})`,
     );
   }
@@ -158,7 +165,10 @@ export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
     coverUrl: createCoverUrl(posterUrl),
     rating: createRating(raw.vote_average),
     releaseYear: createReleaseYear(raw.first_air_date),
-    externalReference: new ExternalReference('tmdb', String(raw.id)),
+    externalReference: new ExternalReference(
+      ProviderSource.TMDB,
+      String(raw.id),
+    ),
     creator: raw.created_by?.[0]?.name || null,
     episodesCount: raw.number_of_episodes || null,
     seasonsCount: raw.number_of_seasons || null,
@@ -176,7 +186,7 @@ export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
   const info = raw.volumeInfo;
   if (!info.title) {
     throw new InvalidProviderDataError(
-      'GoogleBooks',
+      ProviderSource.GOOGLE_BOOKS,
       `Book missing title (ID: ${raw.id})`,
     );
   }
@@ -188,7 +198,10 @@ export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
     coverUrl: createCoverUrl(info.imageLinks?.thumbnail),
     rating: null, // No rating
     releaseYear: createReleaseYear(info.publishedDate),
-    externalReference: new ExternalReference('google_books', String(raw.id)),
+    externalReference: new ExternalReference(
+      ProviderSource.GOOGLE_BOOKS,
+      String(raw.id),
+    ),
     author: info.authors?.[0] || 'Unknown',
     pages: info.pageCount || null,
     eloScore: 1500,

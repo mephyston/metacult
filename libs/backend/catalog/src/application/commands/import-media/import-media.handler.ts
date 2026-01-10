@@ -9,6 +9,7 @@ import {
   UnsupportedMediaTypeError,
   InvalidProviderDataError,
 } from '../../../domain/errors/catalog.errors';
+import { ProviderSource } from '@metacult/shared-core';
 import { logger } from '@metacult/backend-infrastructure';
 
 /**
@@ -20,7 +21,7 @@ import { logger } from '@metacult/backend-infrastructure';
 export class ImportMediaHandler {
   private readonly importPolicy: MediaImportPolicy;
   private readonly providers: Partial<
-    Record<MediaType, { adapter: IMediaProvider; name: string }>
+    Record<MediaType, { adapter: IMediaProvider; name: ProviderSource }>
   >;
 
   /**
@@ -37,12 +38,18 @@ export class ImportMediaHandler {
   ) {
     this.importPolicy = new MediaImportPolicy(mediaRepository);
     this.providers = {
-      [MediaType.GAME]: { adapter: this.igdbAdapter, name: 'igdb' },
-      [MediaType.MOVIE]: { adapter: this.tmdbAdapter, name: 'tmdb' },
-      [MediaType.TV]: { adapter: this.tmdbAdapter, name: 'tmdb' },
+      [MediaType.GAME]: {
+        adapter: this.igdbAdapter,
+        name: ProviderSource.IGDB,
+      },
+      [MediaType.MOVIE]: {
+        adapter: this.tmdbAdapter,
+        name: ProviderSource.TMDB,
+      },
+      [MediaType.TV]: { adapter: this.tmdbAdapter, name: ProviderSource.TMDB },
       [MediaType.BOOK]: {
         adapter: this.googleBooksAdapter,
-        name: 'google_books',
+        name: ProviderSource.GOOGLE_BOOKS,
       },
     };
   }
