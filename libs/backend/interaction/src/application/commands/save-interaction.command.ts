@@ -104,11 +104,13 @@ export class SaveInteractionHandler {
       globalElo: 1500, // Placeholder, worker should fetch latest
     });
 
-    // Gamification XP award
-    await getGamificationQueue().add('award-xp', {
+    // Gamification event (full payload for listener)
+    await getGamificationQueue().add('interaction-saved', {
       userId,
-      xp: 10,
-      source: 'SWIPE',
+      mediaId,
+      action: event.payload.action,
+      sentiment,
+      timestamp: event.payload.timestamp.toISOString(),
     });
   }
 }

@@ -1,39 +1,46 @@
 import { Job } from 'bullmq';
 import { logger } from '@metacult/backend-infrastructure';
-import { GamificationService } from '@metacult/backend-gamification';
+import {
+  GamificationService,
+  GrantXpOnInteractionListener,
+} from '@metacult/backend-gamification';
+import { InteractionSavedEvent } from '@metacult/backend-interaction';
 
 // Manual Dependency Injection
 const gamificationService = new GamificationService();
+const grantXpListener = new GrantXpOnInteractionListener(gamificationService);
 
-interface AwardXpPayload {
+interface InteractionEventPayload {
   userId: string;
-  xp: number;
-  source: string;
+  mediaId: string;
+  action: string;
+  sentiment: string | null;
+  timestamp?: string;
 }
 
 /**
  * Processor for the gamification-queue.
- * Handles XP awards and other gamification events.
+ * Delegates to GrantXpOnInteractionListener for event handling.
  */
-export const processGamification = async (job: Job<AwardXpPayload>) => {
-  const { userId, xp, source } = job.data;
+export const processGamification = async (
+  job: Job<InteractionEventPayload>,
+) => {
+  const { userId, mediaId, action, sentiment, timestamp } = job.data;
 
   logger.info(
-    { userId, xp, source, jobId: job.id },
-    '[Gamification] Processing XP award job',
+    { userId, action, jobId: job.id },
+    '[Gamification] Processing interaction event',
   );
 
-  try {
-    await gamificationService.addXp(userId, xp, source);
-    logger.info(
-      { userId, xp, source },
-      '[Gamification] XP awarded successfully',
-    );
-  } catch (error) {
-    logger.error(
-      { error, userId, xp, source },
-      '[Gamification] Failed to award XP',
-    );
-    throw error;
-  }
+  // Reconstruct domain event from job payload
+  const event = new InteractionSavedEvent({
+    userId,
+    mediaId,
+    action,
+    sentiment,
+    timestamp: timestamp ? new Date(timestamp) : new Date(),
+  });
+
+  // Delegate to listener
+  await grantXpListener.handle(event);
 };
