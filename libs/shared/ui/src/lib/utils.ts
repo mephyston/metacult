@@ -83,20 +83,35 @@ export function getApiUrl(): string {
 export function getWebappUrl(): string {
   let rawUrl: string | undefined;
 
+  // 1. Explicit config from window.__ENV__ (injected by SSR)
   if (typeof window !== 'undefined' && window.__ENV__?.PUBLIC_WEBAPP_URL) {
     rawUrl = window.__ENV__.PUBLIC_WEBAPP_URL;
-  } else if (
-    typeof process !== 'undefined' &&
-    process.env['PUBLIC_WEBAPP_URL']
-  ) {
+  }
+  // 2. Process env (SSR/Node context)
+  else if (typeof process !== 'undefined' && process.env['PUBLIC_WEBAPP_URL']) {
     rawUrl = process.env['PUBLIC_WEBAPP_URL'];
-  } else {
+  }
+  // 3. Build-time env
+  else {
     rawUrl = import.meta.env.PUBLIC_WEBAPP_URL;
   }
 
+  // 4. Smart fallback: use current origin ONLY if we're on the webapp (not website)
+  // Webapp hostnames contain "-app" (e.g., staging-app.metacult.app) or start with "app."
+  if (!rawUrl && typeof window !== 'undefined') {
+    const isWebapp =
+      window.location.hostname.includes('-app') ||
+      window.location.hostname.startsWith('app.');
+    if (isWebapp) {
+      rawUrl = window.location.origin;
+    }
+  }
+
+  // 5. Final fallback for local dev/SSR without config
   if (!rawUrl) {
     rawUrl = DEFAULT_DEV_URLS.WEBAPP;
   }
+
   if (!rawUrl.startsWith('http')) {
     return `https://${rawUrl}`;
   }
@@ -106,20 +121,38 @@ export function getWebappUrl(): string {
 export function getWebsiteUrl(): string {
   let rawUrl: string | undefined;
 
+  // 1. Explicit config from window.__ENV__ (injected by SSR)
   if (typeof window !== 'undefined' && window.__ENV__?.PUBLIC_WEBSITE_URL) {
     rawUrl = window.__ENV__.PUBLIC_WEBSITE_URL;
-  } else if (
+  }
+  // 2. Process env (SSR/Node context)
+  else if (
     typeof process !== 'undefined' &&
     process.env['PUBLIC_WEBSITE_URL']
   ) {
     rawUrl = process.env['PUBLIC_WEBSITE_URL'];
-  } else {
+  }
+  // 3. Build-time env
+  else {
     rawUrl = import.meta.env.PUBLIC_WEBSITE_URL;
   }
 
+  // 4. Smart fallback: use current origin ONLY if we're on the website (not webapp)
+  // Webapp hostnames contain "-app" (e.g., staging-app.metacult.app, app.metacult.app)
+  if (!rawUrl && typeof window !== 'undefined') {
+    const isWebsite =
+      !window.location.hostname.includes('-app') &&
+      !window.location.hostname.startsWith('app.');
+    if (isWebsite) {
+      rawUrl = window.location.origin;
+    }
+  }
+
+  // 5. Final fallback for local dev/SSR without config
   if (!rawUrl) {
     rawUrl = DEFAULT_DEV_URLS.WEBSITE;
   }
+
   if (!rawUrl.startsWith('http')) {
     return `https://${rawUrl}`;
   }
