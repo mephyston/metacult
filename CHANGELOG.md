@@ -1,3 +1,42 @@
+## 0.7.2 (2026-01-10)
+
+### 🚀 Features
+
+- implement rich mega-menu with trending highlights and fix cover images in webapp/website ([18af091](https://github.com/mephyston/metacult/commit/18af091))
+- implement F14 gamification and F15 duel UX enhancements ([8b2da79](https://github.com/mephyston/metacult/commit/8b2da79))
+- implement seo audit (robots.txt, meta tags) ([cc02ad2](https://github.com/mephyston/metacult/commit/cc02ad2))
+- migrate backend handlers to Result pattern for explicit error handling ([879015b](https://github.com/mephyston/metacult/commit/879015b))
+- **core:** implement Result pattern for explicit error handling ([00236b4](https://github.com/mephyston/metacult/commit/00236b4))
+- **discovery:** implement affinity domain, elo logic, and async worker updates ([dbda403](https://github.com/mephyston/metacult/commit/dbda403))
+- **discovery:** expose personalized feed endpoint securely ([0d8857b](https://github.com/mephyston/metacult/commit/0d8857b))
+- **discovery:** implement catalog queries with drizzle repo, tests and schema fixes ([86030d2](https://github.com/mephyston/metacult/commit/86030d2))
+- **gamification:** add GrantXpOnInteractionListener event handler ([8c4ad99](https://github.com/mephyston/metacult/commit/8c4ad99))
+
+### 🩹 Fixes
+
+- resolve TS errors, SwipeCard crash, and Website API 404 ([78c2540](https://github.com/mephyston/metacult/commit/78c2540))
+- **auth:** resolve gamification 401 error ([85676f0](https://github.com/mephyston/metacult/commit/85676f0))
+- **ci:** add missing shared lib package.json copies to api/worker dockerfiles ([6d19d53](https://github.com/mephyston/metacult/commit/6d19d53))
+- **db:** drop duplicate index media_idx before creation in migration 0003 ([05157ad](https://github.com/mephyston/metacult/commit/05157ad))
+- **nx:** align shared library tags with workspace boundaries ([8c32a00](https://github.com/mephyston/metacult/commit/8c32a00))
+- **shared-ui:** only fetch gamification stats when user is authenticated ([c924ab3](https://github.com/mephyston/metacult/commit/c924ab3))
+- **shared-ui:** log gamification fetch errors instead of silently swallowing ([e81657d](https://github.com/mephyston/metacult/commit/e81657d))
+- **tests:** secure integration tests execution and formatting ([3e0bf5c](https://github.com/mephyston/metacult/commit/3e0bf5c))
+- **tests:** implement transactional cleanup to isolate integration tests from local data ([fdc30a9](https://github.com/mephyston/metacult/commit/fdc30a9))
+- **tests:** skip integration tests if DATABASE_URL is a mock (CI fix) ([41fb402](https://github.com/mephyston/metacult/commit/41fb402))
+- **webapp:** syntax error in DuelArena.vue ([64ef973](https://github.com/mephyston/metacult/commit/64ef973))
+- **webapp:** correct api proxy config and replace hardcoded localhost urls ([b0f3e31](https://github.com/mephyston/metacult/commit/b0f3e31))
+- **webapp:** correct useWebsiteUrl usage in template ([23d5eee](https://github.com/mephyston/metacult/commit/23d5eee))
+- **webapp:** explicit import of useWebsiteUrl ([1fc3b9c](https://github.com/mephyston/metacult/commit/1fc3b9c))
+- **webapp:** use runtime API proxy instead of build-time routeRules ([0b38812](https://github.com/mephyston/metacult/commit/0b38812))
+- **worker:** mock bullmq in tests to prevent redis connection crash ([dbff5c4](https://github.com/mephyston/metacult/commit/dbff5c4))
+- **worker:** update ranking processor tests for Result pattern ([3f627f7](https://github.com/mephyston/metacult/commit/3f627f7))
+- **worker:** use REDIS_URL from configService instead of localhost fallback ([23cc98e](https://github.com/mephyston/metacult/commit/23cc98e))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.7.1 (2026-01-05)
 
 ### 🩹 Fixes
