@@ -112,10 +112,11 @@ onMounted(async () => {
           nextLevelXp: 100,
         };
 
-        // Fetch extra stats if we are in a context that supports it?
-        // For now, simpler: Try to fetch me stats
+        // Fetch gamification stats ONLY if user is authenticated
         try {
-          const res = await fetch(`${getApiUrl()}/api/gamification/me`);
+          const res = await fetch(`${getApiUrl()}/api/gamification/me`, {
+            credentials: 'include',
+          });
           if (res.ok) {
             const stats = await res.json();
             profile.level = stats.level;
@@ -123,13 +124,14 @@ onMounted(async () => {
             profile.nextLevelXp = stats.nextLevelXp;
           }
         } catch (e) {
-          /* ignore */
+          // Silently fail - gamification is non-critical
         }
 
         sessionUser.value = profile;
       }
     } catch (error) {
       logger.error('[Header] Failed to fetch session:', error);
+    } finally {
       isLoadingSession.value = false;
     }
   } else {
