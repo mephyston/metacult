@@ -1,3 +1,16 @@
+## 0.9.0 (2026-01-10)
+
+### 🩹 Fixes
+
+- **shared-ui:** use window.location.origin as smart fallback for getWebsiteUrl ([2712d54](https://github.com/mephyston/metacult/commit/2712d54))
+- **shared-ui:** detect app context before using window.location.origin fallback ([548ca58](https://github.com/mephyston/metacult/commit/548ca58))
+- **shared-ui:** add app context detection to getWebappUrl for symmetry ([1caa493](https://github.com/mephyston/metacult/commit/1caa493))
+- **website:** remove hardcoded production fallbacks - require Railway env vars ([20b10d6](https://github.com/mephyston/metacult/commit/20b10d6))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.8.0 (2026-01-10)
 
 ### 🩹 Fixes
