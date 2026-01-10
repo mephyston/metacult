@@ -1,3 +1,4 @@
+export * from './domain/value-objects/user-id.vo';
 /**
  * @module @metacult/backend-identity
  *

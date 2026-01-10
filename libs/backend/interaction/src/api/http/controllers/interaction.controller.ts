@@ -15,6 +15,7 @@ import type {
   SaveInteractionDto,
   InteractionResponseDto,
 } from '../../../application/dtos/interaction.dto';
+import { asUserId } from '@metacult/shared-core';
 
 // ..
 
@@ -155,7 +156,9 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const interactions = await interactionRepo.findAllByUser(params.userId);
+        const interactions = await interactionRepo.findAllByUser(
+          asUserId(params.userId),
+        );
         return {
           success: true,
           data: interactions,
@@ -197,7 +200,9 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const followingIds = await interactionRepo.getFollowing(user.id);
+        const followingIds = await interactionRepo.getFollowing(
+          asUserId(user.id),
+        );
 
         // 2. Get their interactions
         const feed = await interactionRepo.getFeed(followingIds);

@@ -13,6 +13,7 @@ import { DrizzleInteractionRepository } from '../../../infrastructure/repositori
 import * as schema from '../../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { FollowUserDto } from '../../../application/dtos/interaction.dto';
+import { asUserId } from '@metacult/shared-core';
 
 // const { db } = getDbConnection(); // Moved inside handlers
 // const interactionRepo = new DrizzleInteractionRepository(db); // Moved inside handlers
@@ -103,7 +104,7 @@ export const socialController = new Elysia({ prefix: '/social' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const following = await interactionRepo.getFollowing(user.id);
+        const following = await interactionRepo.getFollowing(asUserId(user.id));
         return {
           success: true,
           data: following,
@@ -135,7 +136,7 @@ export const socialController = new Elysia({ prefix: '/social' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const followers = await interactionRepo.getFollowers(user.id);
+        const followers = await interactionRepo.getFollowers(asUserId(user.id));
         return {
           success: true,
           data: followers,

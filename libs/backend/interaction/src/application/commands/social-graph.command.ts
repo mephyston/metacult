@@ -1,4 +1,5 @@
 import { getDbConnection } from '@metacult/backend-infrastructure';
+import { asUserId } from '@metacult/shared-core';
 import { DrizzleInteractionRepository } from '../../infrastructure/repositories/drizzle-interaction.repository';
 import * as schema from '../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -14,7 +15,7 @@ export const followUserCommand = async (
   const interactionRepo = new DrizzleInteractionRepository(
     db as unknown as NodePgDatabase<typeof schema>,
   );
-  await interactionRepo.followUser(followerId, followingId);
+  await interactionRepo.followUser(asUserId(followerId), asUserId(followingId));
 };
 
 export const unfollowUserCommand = async (
@@ -25,5 +26,8 @@ export const unfollowUserCommand = async (
   const interactionRepo = new DrizzleInteractionRepository(
     db as unknown as NodePgDatabase<typeof schema>,
   );
-  await interactionRepo.unfollowUser(followerId, followingId);
+  await interactionRepo.unfollowUser(
+    asUserId(followerId),
+    asUserId(followingId),
+  );
 };

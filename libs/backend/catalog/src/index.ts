@@ -1,5 +1,6 @@
 // ===== DOMAIN (Public API) =====
 export * from './domain/entities/media.entity';
+export * from './domain/value-objects/media-id.vo';
 export * from './domain/value-objects/rating.vo';
 export * from './domain/value-objects/cover-url.vo';
 export * from './domain/value-objects/release-year.vo';

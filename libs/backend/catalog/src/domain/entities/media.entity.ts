@@ -1,3 +1,4 @@
+import type { MediaId } from '../value-objects/media-id.vo';
 import { Rating } from '../value-objects/rating.vo';
 import { CoverUrl } from '../value-objects/cover-url.vo';
 import { ReleaseYear } from '../value-objects/release-year.vo';
@@ -19,7 +20,7 @@ export enum MediaType {
 }
 
 export interface MediaProps {
-  id: string;
+  id: MediaId;
   title: string;
   slug: string;
   description: string | null;
@@ -40,7 +41,7 @@ export interface MediaProps {
  * @abstract
  */
 export abstract class Media {
-  public readonly id: string;
+  public readonly id: MediaId;
   public readonly title: string;
   public readonly slug: string;
   public readonly description: string | null;

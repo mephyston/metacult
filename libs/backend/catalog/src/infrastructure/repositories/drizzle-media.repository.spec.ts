@@ -1,12 +1,14 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { DrizzleMediaRepository } from './drizzle-media.repository';
+import type { MediaId } from '../../domain/value-objects/media-id.vo';
 
 // --- Chain Mocks ---
-const mockExecute = mock(() =>
-  Promise.resolve([
-    { id: '1', title: 'Random Game', type: 'GAME', providerMetadata: {} },
-    { id: '2', title: 'Random Movie', type: 'MOVIE', providerMetadata: {} },
-  ]),
+const mockExecute = mock(
+  () =>
+    Promise.resolve([
+      { id: '1', title: 'Random Game', type: 'GAME', providerMetadata: {} },
+      { id: '2', title: 'Random Movie', type: 'MOVIE', providerMetadata: {} },
+    ] as any[]), // Cast to any to bypass strict type check for now, or use mapped entity structure
 );
 const mockLimit = mock(() => ({ execute: mockExecute }));
 const mockWhere = mock(() => ({ limit: mockLimit, execute: mockExecute })); // where returns object that has limit AND execute (if limit optional)
@@ -94,7 +96,7 @@ describe('DrizzleMediaRepository', () => {
 
   it('findRandom should construct query with exclusions and limit', async () => {
     const filters = {
-      excludedIds: ['exclude-1'],
+      excludedIds: ['exclude-1'] as any as MediaId[],
       limit: 5,
       orderBy: 'random' as const,
     };

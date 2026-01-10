@@ -1,4 +1,13 @@
-import { eq, ilike, and, desc, sql, notInArray, gte } from 'drizzle-orm';
+import {
+  eq,
+  ilike,
+  and,
+  desc,
+  sql,
+  notInArray,
+  inArray,
+  gte,
+} from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { logger } from '@metacult/backend-infrastructure';
 import type {
@@ -18,6 +27,8 @@ import { Rating } from '../../domain/value-objects/rating.vo';
 import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
 import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
 import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
+import type { MediaId } from '../../domain/value-objects/media-id.vo';
+import { asMediaId } from '../../domain/value-objects/media-id.vo';
 import * as schema from '../db/media.schema';
 import type { ProviderMetadata } from '../types/raw-responses';
 import { ProviderMetadataMapper } from '../mappers/provider-metadata.mapper';
@@ -65,7 +76,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     return crypto.randomUUID();
   }
 
-  async findById(id: string): Promise<Media | null> {
+  async findById(id: MediaId): Promise<Media | null> {
     const rows = await this.db
       .select()
       .from(schema.medias)
@@ -79,6 +90,27 @@ export class DrizzleMediaRepository implements IMediaRepository {
     if (rows.length === 0 || !rows[0]) return null;
 
     return this.mapRowToEntity(rows[0]);
+  }
+
+  async findByIds(ids: MediaId[]): Promise<Media[]> {
+    if (ids.length === 0) return [];
+
+    // Using simple IN clause on the ID
+    // Note: To be fully correct with JOINs (like findById), we should replicate the joins.
+    // However, for performance, if we just need lightweight entities, basic select might suffice?
+    // But mapRowToEntity EXPECTS the joins (lines 806+).
+    // So we MUST join.
+
+    const rows = await this.db
+      .select()
+      .from(schema.medias)
+      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
+      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
+      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
+      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
+      .where(inArray(schema.medias.id, ids));
+
+    return rows.map((row) => this.mapRowToEntity(row));
   }
 
   async findBySlug(slug: string): Promise<Media | null> {
@@ -531,7 +563,10 @@ export class DrizzleMediaRepository implements IMediaRepository {
     });
   }
 
-  async findRandom(filters: MediaSearchFilters): Promise<MediaReadDto[]> {
+  async findRandom(filters: {
+    limit: number;
+    excludedIds?: MediaId[];
+  }): Promise<MediaReadDto[]> {
     logger.debug(
       {
         excludedCount: filters.excludedIds?.length || 0,
@@ -809,7 +844,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     tv: typeof schema.tv.$inferSelect | null;
     books: typeof schema.books.$inferSelect | null;
   }): Media {
-    const id = row.medias.id;
+    const id = asMediaId(row.medias.id);
     const title = row.medias.title;
     const slug = row.medias.slug;
     const description = null;

@@ -1,3 +1,4 @@
+import type { MediaId } from '../../domain/value-objects/media-id.vo';
 import type { Media, MediaType } from '../../domain/entities/media.entity';
 
 /**
@@ -41,7 +42,7 @@ export interface IMediaRepository {
    * @param {string} id - UUID du média.
    * @returns {Promise<Media | null>} L'entité Média ou null si non trouvée.
    */
-  findById(id: string): Promise<Media | null>;
+  findById(id: MediaId): Promise<Media | null>;
 
   /**
    * Recherche un média par son slug URL.

@@ -12,6 +12,8 @@ import {
   CoverUrl,
   ReleaseYear,
 } from '@metacult/backend-catalog';
+import { asMediaId } from '@metacult/shared-core';
+import type { MediaId } from '@metacult/shared-core';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { userInteractions } from '@metacult/backend-interaction';
@@ -232,7 +234,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     switch (type) {
       case 'GAME':
         return new Game({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -248,7 +250,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
         });
       case 'MOVIE':
         return new Movie({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -263,7 +265,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
         });
       case 'TV':
         return new TV({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -279,7 +281,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
         });
       case 'BOOK':
         return new Book({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,

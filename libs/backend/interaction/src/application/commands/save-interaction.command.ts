@@ -46,6 +46,8 @@ export interface SaveInteractionCommand {
   sentiment?: string | null;
 }
 
+import { asUserId, asMediaId, asInteractionId } from '@metacult/shared-core';
+
 /**
  * Handler for SaveInteractionCommand.
  * Adheres to Clean Architecture: no direct DB access, uses repository.
@@ -55,18 +57,20 @@ export class SaveInteractionHandler {
 
   async execute(command: SaveInteractionCommand): Promise<UserInteraction> {
     const { userId, mediaId, action, sentiment } = command;
+    const userIdVO = asUserId(userId);
+    const mediaIdVO = asMediaId(mediaId);
 
     // 1. Create or update entity
     const now = new Date();
     const existing = await this.interactionRepository.findByUserAndMedia(
-      userId,
-      mediaId,
+      userIdVO,
+      mediaIdVO,
     );
 
     const interaction = new UserInteraction({
-      id: existing?.id ?? uuidv4(),
-      userId,
-      mediaId,
+      id: existing?.id ?? asInteractionId(uuidv4()),
+      userId: userIdVO,
+      mediaId: mediaIdVO,
       action: action as InteractionAction,
       sentiment: (sentiment as InteractionSentiment) ?? null,
       createdAt: existing?.createdAt ?? now,
