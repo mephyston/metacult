@@ -1,5 +1,5 @@
 import {
-  AppError,
+  ConflictError,
   NotFoundError,
   DomainError,
   InfrastructureError,
@@ -15,7 +15,7 @@ import {
  * Le média existe déjà dans le catalogue.
  * HTTP 409 Conflict
  */
-export class MediaAlreadyExistsError extends AppError {
+export class MediaAlreadyExistsError extends ConflictError {
   constructor(
     public readonly provider: string,
     public readonly externalId: string,
@@ -23,8 +23,6 @@ export class MediaAlreadyExistsError extends AppError {
   ) {
     super(
       `Media already exists: ${provider}/${externalId} (internal ID: ${internalId})`,
-      'MEDIA_ALREADY_EXISTS',
-      409,
       { provider, externalId, internalId },
     );
   }
