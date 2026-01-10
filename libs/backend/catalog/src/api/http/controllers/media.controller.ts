@@ -49,16 +49,22 @@ export class MediaController {
   /**
    * Import manuel d'un média.
    * @param {ImportMediaDto['body']} body
+   * @returns Import result or throws AppError
    */
   async import(body: ImportMediaDto['body']) {
     const { mediaId, type } = body;
     logger.info({ mediaId, type }, '[MediaController] Import request received');
 
-    const { id, slug } = await this.importMediaHandler.execute({
+    const result = await this.importMediaHandler.execute({
       mediaId,
       type: type as MediaType,
     });
 
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+
+    const { id, slug } = result.getValue();
     return { success: true, message: `Imported ${type}: ${mediaId}`, id, slug };
   }
 

@@ -8,9 +8,15 @@ import {
   ProviderUnavailableError,
   UnsupportedMediaTypeError,
   InvalidProviderDataError,
+  MediaAlreadyExistsError,
 } from '../../../domain/errors/catalog.errors';
-import { ProviderSource } from '@metacult/shared-core';
+import { Result, ProviderSource, type AppError } from '@metacult/shared-core';
 import { logger } from '@metacult/backend-infrastructure';
+
+interface ImportResult {
+  id: string;
+  slug: string;
+}
 
 /**
  * Cas d'Utilisation (Use Case) : Importer un média externe.
@@ -62,20 +68,16 @@ export class ImportMediaHandler {
    * 3. Persiste le nouveau média.
    *
    * @param {ImportMediaCommand} command - Les données de la commande.
-   * @throws {MediaAlreadyExistsError} Si le média est déjà présent en base.
-   * @throws {MediaNotFoundInProviderError} Si l'ID externe est invalide.
-   * @throws {ProviderUnavailableError} En cas d'échec technique de l'API externe.
-   * @throws {UnsupportedMediaTypeError} Si le type de média n'est pas géré.
-   * @returns {Promise<{ id: string, slug: string }>} L'UUID et le Slug du nouveau média créé.
+   * @returns {Promise<Result<ImportResult, AppError>>} Result contenant l'UUID et le Slug ou une erreur.
    */
   async execute(
     command: ImportMediaCommand,
-  ): Promise<{ id: string; slug: string }> {
+  ): Promise<Result<ImportResult, AppError>> {
     const { mediaId, type } = command;
 
     const providerConfig = this.providers[type];
     if (!providerConfig) {
-      throw new UnsupportedMediaTypeError(type);
+      return Result.fail(new UnsupportedMediaTypeError(type));
     }
     const { adapter, name: providerName } = providerConfig;
 
@@ -85,36 +87,40 @@ export class ImportMediaHandler {
     );
 
     // 1. Validation Domaine via Domain Service
-    // Vérifie les doublons en utilisant les règles métier pures (ID externe)
     logger.debug('[ImportMediaHandler] Step 1: Domain Validation');
-    await this.importPolicy.validateImport(providerName, mediaId);
+    try {
+      await this.importPolicy.validateImport(providerName, mediaId);
+    } catch (error) {
+      if (error instanceof MediaAlreadyExistsError) {
+        return Result.fail(error);
+      }
+      throw error; // Unexpected error
+    }
 
     // 2. Orchestration Infrastructure (Récupération Données)
-    // Appel au port (Interface) pour récupérer les données externes
     logger.debug('[ImportMediaHandler] Step 2: Fetching from Provider');
 
     let media;
-    // Generate ID ahead of time
     const newId = this.mediaRepository.nextId();
 
     try {
       media = await adapter.getMedia(mediaId, type, newId);
     } catch (error) {
-      // Re-throw exceptions du domaine telles quelles
       if (
         error instanceof UnsupportedMediaTypeError ||
         error instanceof InvalidProviderDataError
       ) {
-        throw error;
+        return Result.fail(error);
       }
-      // Encapsulation: On masque les erreurs techniques du provider derrière une erreur métier
       logger.error(
         { err: error, type, mediaId },
         '[ImportMediaHandler] Provider error',
       );
-      throw new ProviderUnavailableError(
-        providerName,
-        error instanceof Error ? error : new Error(String(error)),
+      return Result.fail(
+        new ProviderUnavailableError(
+          providerName,
+          error instanceof Error ? error : new Error(String(error)),
+        ),
       );
     }
 
@@ -124,11 +130,12 @@ export class ImportMediaHandler {
         { providerName, mediaId },
         '[ImportMediaHandler] Media not found in provider',
       );
-      throw new MediaNotFoundInProviderError(providerName, mediaId);
+      return Result.fail(
+        new MediaNotFoundInProviderError(providerName, mediaId),
+      );
     }
 
     // 4. Persistance
-    // Délégation au Repository pour sauvegarder l'état
     logger.debug('[ImportMediaHandler] Step 3: Persisting to Repository');
     await this.mediaRepository.create(media);
     logger.info(
@@ -136,6 +143,6 @@ export class ImportMediaHandler {
       '[ImportMediaHandler] Import successful',
     );
 
-    return { id: newId, slug: media.slug };
+    return Result.ok({ id: newId, slug: media.slug });
   }
 }

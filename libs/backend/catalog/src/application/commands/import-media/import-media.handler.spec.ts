@@ -3,7 +3,11 @@ import { ImportMediaHandler } from './import-media.handler';
 import { MediaType } from '../../../domain/entities/media.entity';
 import type { ImportMediaCommand } from './import-media.command';
 import type { Media } from '../../../domain/entities/media.entity';
-import { InvalidProviderDataError } from '../../../domain/errors/catalog.errors';
+import {
+  InvalidProviderDataError,
+  MediaAlreadyExistsError,
+  MediaNotFoundInProviderError,
+} from '../../../domain/errors/catalog.errors';
 
 describe('ImportMediaHandler', () => {
   let handler: ImportMediaHandler;
@@ -33,15 +37,17 @@ describe('ImportMediaHandler', () => {
     );
   });
 
-  it('should throw MediaAlreadyExistsError if media already exists', async () => {
+  it('should return MediaAlreadyExistsError if media already exists', async () => {
     mockRepo.findByProviderId.mockResolvedValue({ id: '123' });
     const command: ImportMediaCommand = {
       mediaId: '123',
       type: MediaType.GAME,
     };
 
-    await expect(handler.execute(command)).rejects.toThrow();
+    const result = await handler.execute(command);
 
+    expect(result.isFailure()).toBe(true);
+    expect(result.getError()).toBeInstanceOf(MediaAlreadyExistsError);
     expect(mockRepo.findByProviderId).toHaveBeenCalledWith('igdb', '123');
     expect(mockIgdb.getMedia).not.toHaveBeenCalled();
     expect(mockRepo.create).not.toHaveBeenCalled();
@@ -51,6 +57,7 @@ describe('ImportMediaHandler', () => {
     const mockMedia = {
       id: '123',
       title: 'Test Game',
+      slug: 'test-game',
       type: MediaType.GAME,
     } as Media;
     mockIgdb.getMedia.mockResolvedValue(mockMedia);
@@ -59,8 +66,13 @@ describe('ImportMediaHandler', () => {
       type: MediaType.GAME,
     };
 
-    await handler.execute(command);
+    const result = await handler.execute(command);
 
+    expect(result.isSuccess()).toBe(true);
+    expect(result.getValue()).toEqual({
+      id: 'generated-uuid',
+      slug: 'test-game',
+    });
     expect(mockIgdb.getMedia).toHaveBeenCalledWith(
       '123',
       MediaType.GAME,
@@ -73,6 +85,7 @@ describe('ImportMediaHandler', () => {
     const mockMedia = {
       id: '456',
       title: 'Test Movie',
+      slug: 'test-movie',
       type: MediaType.MOVIE,
     } as Media;
     mockTmdb.getMedia.mockResolvedValue(mockMedia);
@@ -81,8 +94,9 @@ describe('ImportMediaHandler', () => {
       type: MediaType.MOVIE,
     };
 
-    await handler.execute(command);
+    const result = await handler.execute(command);
 
+    expect(result.isSuccess()).toBe(true);
     expect(mockTmdb.getMedia).toHaveBeenCalledWith(
       '456',
       MediaType.MOVIE,
@@ -91,21 +105,22 @@ describe('ImportMediaHandler', () => {
     expect(mockRepo.create).toHaveBeenCalledWith(mockMedia);
   });
 
-  it('should throw if provider returns null', async () => {
+  it('should return MediaNotFoundInProviderError if provider returns null', async () => {
     mockIgdb.getMedia.mockResolvedValue(null);
     const command: ImportMediaCommand = {
       mediaId: '404',
       type: MediaType.GAME,
     };
 
-    // Expect to throw
-    await expect(handler.execute(command)).rejects.toThrow('Media not found');
+    const result = await handler.execute(command);
 
+    expect(result.isFailure()).toBe(true);
+    expect(result.getError()).toBeInstanceOf(MediaNotFoundInProviderError);
     expect(mockIgdb.getMedia).toHaveBeenCalled();
     expect(mockRepo.create).not.toHaveBeenCalled();
   });
 
-  it('should propagate InvalidProviderDataError without wrapping', async () => {
+  it('should return InvalidProviderDataError without wrapping', async () => {
     mockIgdb.getMedia.mockRejectedValue(
       new InvalidProviderDataError('IGDB', 'Missing name'),
     );
@@ -114,9 +129,9 @@ describe('ImportMediaHandler', () => {
       type: MediaType.GAME,
     };
 
-    // Should throw InvalidProviderDataError directly, NOT ProviderUnavailableError
-    await expect(handler.execute(command)).rejects.toThrow(
-      InvalidProviderDataError,
-    );
+    const result = await handler.execute(command);
+
+    expect(result.isFailure()).toBe(true);
+    expect(result.getError()).toBeInstanceOf(InvalidProviderDataError);
   });
 });
