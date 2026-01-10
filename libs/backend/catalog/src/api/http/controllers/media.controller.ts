@@ -80,8 +80,18 @@ export class MediaController {
   /**
    * Récupère un média par son identifiant.
    * @param id UUID du média.
+   * @returns MediaDetailDto or throws AppError
    */
   async getById(id: string) {
-    return this.getMediaByIdHandler.execute(new GetMediaByIdQuery(id));
+    const result = await this.getMediaByIdHandler.execute(
+      new GetMediaByIdQuery(id),
+    );
+
+    if (result.isFailure()) {
+      // Re-throw the error for the framework's error middleware to handle
+      throw result.getError();
+    }
+
+    return result.getValue();
   }
 }
