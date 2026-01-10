@@ -274,7 +274,13 @@ const app = new Elysia()
     app
       .group('/import', (app) => app.use(importRoutes))
       .use(userRoutes)
-      .use(debugRoutes)
+      // ⚠️ DANGER: Debug routes (Sync triggers, etc.) - DEV ONLY
+      .use((app) => {
+        if (process.env.NODE_ENV !== 'production') {
+          return app.use(debugRoutes);
+        }
+        return app;
+      })
       .use(syncRoutes)
       .use(catalogRoutes)
       .use(discoveryRoutes)
