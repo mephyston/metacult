@@ -3,6 +3,7 @@ import {
   createWorker,
   IMPORT_QUEUE_NAME,
   logger,
+  configService,
 } from '@metacult/backend-infrastructure';
 import { processRankingUpdate } from './processors/ranking.processor';
 import { RANKING_QUEUE_NAME } from '@metacult/backend-ranking';
@@ -22,13 +23,9 @@ export const startWorker = async () => {
   logger.info('🚀 Starting Metacult Worker Service...');
 
   // --- Redis Connection Config ---
-  // We reuse the connection logic implicitly managed by createWorker/getDbConnection
-  // or we need the connection string.
-  // IMPORTANT: For Queue to add jobs, we need the connection info.
-  // Assuming process.env.REDIS_URL or similar is available or we use default IOREDIS.
+  // Use the centralized REDIS_URL from configService (consistent with infrastructure)
   const redisConnection = {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
+    url: configService.get('REDIS_URL'),
   };
 
   /**
