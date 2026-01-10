@@ -34,7 +34,7 @@ export class MediaController {
     // Normalize tags to array if string
     const tagsArray = typeof tags === 'string' ? [tags] : tags;
 
-    const medias = await this.searchMediaHandler.execute({
+    const result = await this.searchMediaHandler.execute({
       search: q,
       type: mediaType,
       tags: tagsArray,
@@ -43,7 +43,11 @@ export class MediaController {
       page,
     });
 
-    return medias;
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+
+    return result.getValue();
   }
 
   /**
@@ -72,7 +76,11 @@ export class MediaController {
    * Récupère les médias récemment ajoutés.
    */
   async getRecent() {
-    return this.getRecentMediaHandler.execute({ limit: 10 });
+    const result = await this.getRecentMediaHandler.execute({ limit: 10 });
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+    return result.getValue();
   }
 
   /**
@@ -80,7 +88,11 @@ export class MediaController {
    * Endpoint: GET /trends
    */
   async getTrends() {
-    return this.getTopRatedMediaHandler.execute({ limit: 5 });
+    const result = await this.getTopRatedMediaHandler.execute({ limit: 5 });
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+    return result.getValue();
   }
 
   /**

@@ -21,8 +21,8 @@ describe('GetActiveAdsHandler', () => {
     const handler = new GetActiveAdsHandler(mockGateway);
     const result = await handler.execute();
 
-    expect(result).toHaveLength(1);
-    expect(result[0]?.id).toBe('ad-1');
+    expect(result.getValue()).toHaveLength(1);
+    expect(result.getValue()[0]?.id).toBe('ad-1');
     expect(mockGateway.getActiveAds).toHaveBeenCalledTimes(1);
   });
 
@@ -34,7 +34,7 @@ describe('GetActiveAdsHandler', () => {
     const handler = new GetActiveAdsHandler(mockGateway);
     const result = await handler.execute();
 
-    expect(result).toEqual([]);
+    expect(result.getValue()).toEqual([]);
     expect(mockGateway.getActiveAds).toHaveBeenCalled();
   });
 });

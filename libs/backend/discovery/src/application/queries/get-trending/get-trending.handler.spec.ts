@@ -16,14 +16,16 @@ describe('GetTrendingHandler', () => {
 
   it('should call repository with correct parameters', async () => {
     const query = new GetTrendingQuery(20, 'GAME');
-    await handler.execute(query);
+    const result = await handler.execute(query);
+    expect(result.isSuccess()).toBe(true);
 
     expect(mockRepo.findTrending).toHaveBeenCalledWith(20, 'GAME');
   });
 
   it('should handle missing optional parameters', async () => {
     const query = new GetTrendingQuery();
-    await handler.execute(query);
+    const result = await handler.execute(query);
+    expect(result.isSuccess()).toBe(true);
 
     expect(mockRepo.findTrending).toHaveBeenCalledWith(10, undefined);
   });

@@ -52,7 +52,7 @@ describe('SearchMediaHandler', () => {
     mockRepo.searchViews.mockResolvedValue(localResults);
 
     const query: SearchMediaQuery = { search: 'test' };
-    const response = (await handler.execute(query)) as any;
+    const response = (await handler.execute(query)).getValue() as any;
 
     expect(mockRepo.searchViews).toHaveBeenCalled();
     expect(mockIgdb.search).not.toHaveBeenCalled(); // Should NOT call remote
@@ -76,7 +76,7 @@ describe('SearchMediaHandler', () => {
     ]);
 
     const query: SearchMediaQuery = { search: 'remote' };
-    const response = (await handler.execute(query)) as any;
+    const response = (await handler.execute(query)).getValue() as any;
 
     expect(mockIgdb.search).toHaveBeenCalled();
     expect(response.games).toHaveLength(1);
@@ -134,7 +134,7 @@ describe('SearchMediaHandler', () => {
     ]);
 
     const query: SearchMediaQuery = { search: 'mario' };
-    const response = (await handler.execute(query)) as any;
+    const response = (await handler.execute(query)).getValue() as any;
 
     const games = response.games;
     expect(games).toHaveLength(2); // Mario (Local) + Zelda (Remote)
@@ -168,7 +168,7 @@ describe('SearchMediaHandler', () => {
     mockRedis.get.mockResolvedValue(JSON.stringify(cachedResponse));
 
     const query: SearchMediaQuery = { search: 'cache' };
-    const response = await handler.execute(query);
+    const response = (await handler.execute(query)).getValue();
 
     expect(mockRedis.get).toHaveBeenCalled();
     expect(mockRepo.searchViews).not.toHaveBeenCalled();
@@ -217,7 +217,7 @@ describe('SearchMediaHandler', () => {
       page: 1,
       limit: 10,
     };
-    const response: any = await handler.execute(query);
+    const response: any = (await handler.execute(query)).getValue();
 
     // Verify Mode B logic
     expect(mockRepo.searchAdvanced).toHaveBeenCalledWith(

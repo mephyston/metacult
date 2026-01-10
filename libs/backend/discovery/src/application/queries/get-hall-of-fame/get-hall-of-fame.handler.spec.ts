@@ -16,7 +16,8 @@ describe('GetHallOfFameHandler', () => {
 
   it('should call repository with correct parameters', async () => {
     const query = new GetHallOfFameQuery(20, 'MOVIE');
-    await handler.execute(query);
+    const result = await handler.execute(query);
+    expect(result.isSuccess()).toBe(true);
 
     expect(mockRepo.findHallOfFame).toHaveBeenCalledWith(20, 'MOVIE');
   });

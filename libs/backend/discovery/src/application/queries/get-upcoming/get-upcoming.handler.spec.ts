@@ -16,7 +16,8 @@ describe('GetUpcomingHandler', () => {
 
   it('should call repository with correct parameters', async () => {
     const query = new GetUpcomingQuery(20, 'BOOK');
-    await handler.execute(query);
+    const result = await handler.execute(query);
+    expect(result.isSuccess()).toBe(true);
 
     expect(mockRepo.findUpcoming).toHaveBeenCalledWith(20, 'BOOK');
   });

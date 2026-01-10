@@ -2,6 +2,7 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { MediaController } from './media.controller';
 import { createCatalogRoutes } from '../../routes'; // Import the Router Factory
 import { SearchMediaHandler } from '../../../application/queries/search-media/search-media.handler';
+import { Result } from '@metacult/shared-core';
 
 describe('Media Controller API (Routes & Validation)', () => {
   let controller: MediaController;
@@ -16,13 +17,25 @@ describe('Media Controller API (Routes & Validation)', () => {
     // 1. Setup Mocks
     mockSearchHandler = {
       execute: mock(() =>
-        Promise.resolve({ items: [], total: 0, page: 1, totalPages: 0 }),
+        Promise.resolve(
+          Result.ok({ items: [], total: 0, page: 1, totalPages: 0 }),
+        ),
       ), // Default response
     };
-    mockImportHandler = { execute: mock(() => Promise.resolve()) };
-    mockGetRecentHandler = { execute: mock(() => Promise.resolve([])) };
-    mockGetTopRatedHandler = { execute: mock(() => Promise.resolve([])) };
-    mockGetMediaByIdHandler = { execute: mock(() => Promise.resolve({})) };
+    mockImportHandler = {
+      execute: mock(() =>
+        Promise.resolve(Result.ok({ id: '1', slug: 'test' })),
+      ),
+    };
+    mockGetRecentHandler = {
+      execute: mock(() => Promise.resolve(Result.ok([]))),
+    };
+    mockGetTopRatedHandler = {
+      execute: mock(() => Promise.resolve(Result.ok([]))),
+    };
+    mockGetMediaByIdHandler = {
+      execute: mock(() => Promise.resolve(Result.ok({}))),
+    };
 
     // 2. Instantiate Controller
     controller = new MediaController(

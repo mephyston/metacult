@@ -16,7 +16,8 @@ describe('GetTopRatedByYearHandler', () => {
 
   it('should call repository with correct parameters', async () => {
     const query = new GetTopRatedByYearQuery(2023, 15, 'MOVIE');
-    await handler.execute(query);
+    const result = await handler.execute(query);
+    expect(result.isSuccess()).toBe(true);
 
     expect(mockRepo.findTopRatedByYear).toHaveBeenCalledWith(2023, 15, 'MOVIE');
   });

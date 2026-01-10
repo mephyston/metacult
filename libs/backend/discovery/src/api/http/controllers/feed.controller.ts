@@ -123,8 +123,9 @@ export class FeedController {
               limit,
             );
 
-            const feed = await this.getMixedFeedHandler.execute(feedQuery);
-            return feed;
+            const result = await this.getMixedFeedHandler.execute(feedQuery);
+            if (result.isFailure()) throw result.getError();
+            return result.getValue();
           },
           {
             query: t.Object({
@@ -152,9 +153,11 @@ export class FeedController {
             const type = this.mapToQueryType(
               query.type as MediaType | undefined,
             );
-            return this.getTrendingHandler.execute(
+            const result = await this.getTrendingHandler.execute(
               new GetTrendingQuery(limit, type),
             );
+            if (result.isFailure()) throw result.getError();
+            return result.getValue();
           },
           {
             query: t.Object({
@@ -171,9 +174,11 @@ export class FeedController {
             const type = this.mapToQueryType(
               query.type as MediaType | undefined,
             );
-            return this.getHallOfFameHandler.execute(
+            const result = await this.getHallOfFameHandler.execute(
               new GetHallOfFameQuery(limit, type),
             );
+            if (result.isFailure()) throw result.getError();
+            return result.getValue();
           },
           {
             query: t.Object({
@@ -190,9 +195,11 @@ export class FeedController {
             const type = this.mapToQueryType(
               query.type as MediaType | undefined,
             );
-            return this.getControversialHandler.execute(
+            const result = await this.getControversialHandler.execute(
               new GetControversialQuery(limit, type),
             );
+            if (result.isFailure()) throw result.getError();
+            return result.getValue();
           },
           {
             query: t.Object({
@@ -211,9 +218,11 @@ export class FeedController {
             const type = this.mapToQueryType(
               query.type as MediaType | undefined,
             );
-            return this.getUpcomingHandler.execute(
+            const result = await this.getUpcomingHandler.execute(
               new GetUpcomingQuery(limit, type),
             );
+            if (result.isFailure()) throw result.getError();
+            return result.getValue();
           },
           {
             query: t.Object({
@@ -237,9 +246,11 @@ export class FeedController {
               return 'Invalid Year';
             }
 
-            return this.getTopRatedByYearHandler.execute(
+            const result = await this.getTopRatedByYearHandler.execute(
               new GetTopRatedByYearQuery(year, limit, type),
             );
+            if (result.isFailure()) throw result.getError();
+            return result.getValue();
           },
           {
             params: t.Object({
@@ -267,10 +278,10 @@ export class FeedController {
               limit,
               offset,
             );
-            const feed =
+            const result =
               await this.getPersonalizedFeedHandler.execute(feedQuery);
-
-            return feed;
+            if (result.isFailure()) throw result.getError();
+            return result.getValue();
           },
           {
             query: t.Object({

@@ -16,7 +16,8 @@ describe('GetControversialHandler', () => {
 
   it('should call repository with correct parameters', async () => {
     const query = new GetControversialQuery(20, 'SHOW');
-    await handler.execute(query);
+    const result = await handler.execute(query);
+    expect(result.isSuccess()).toBe(true);
 
     expect(mockRepo.findControversial).toHaveBeenCalledWith(20, 'SHOW');
   });

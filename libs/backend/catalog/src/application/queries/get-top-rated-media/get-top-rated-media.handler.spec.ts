@@ -41,7 +41,7 @@ describe('GetTopRatedMediaHandler', () => {
 
     expect(mockRedis.get).toHaveBeenCalledWith('catalog:top-rated:limit:5');
     expect(mockRepo.findTopRated).not.toHaveBeenCalled(); // Should NOT query DB
-    expect(result).toEqual(cachedTrends);
+    expect(result.getValue()).toEqual(cachedTrends);
   });
 
   it('should fetch from DB and cache on cache miss', async () => {
@@ -85,7 +85,7 @@ describe('GetTopRatedMediaHandler', () => {
       'EX',
       300,
     );
-    expect(result).toEqual(dbTrends);
+    expect(result.getValue()).toEqual(dbTrends);
   });
 
   it('should include eloScore field in results', async () => {
@@ -121,10 +121,10 @@ describe('GetTopRatedMediaHandler', () => {
 
     const result = await handler.execute({ limit: 10 });
 
-    expect(result).toHaveLength(2);
-    expect(result[0]?.eloScore).toBe(2100);
-    expect(result[1]?.eloScore).toBe(1650);
-    expect(result.every((item) => 'eloScore' in item)).toBe(true);
+    expect(result.getValue()).toHaveLength(2);
+    expect(result.getValue()[0]?.eloScore).toBe(2100);
+    expect(result.getValue()[1]?.eloScore).toBe(1650);
+    expect(result.getValue().every((item) => 'eloScore' in item)).toBe(true);
   });
 
   it('should respect limit parameter', async () => {
@@ -148,7 +148,7 @@ describe('GetTopRatedMediaHandler', () => {
 
     const result = await handler.execute({ limit: 5 });
 
-    expect(result).toEqual([]);
+    expect(result.getValue()).toEqual([]);
     expect(mockRedis.set).toHaveBeenCalled(); // Should still cache empty result
   });
 });

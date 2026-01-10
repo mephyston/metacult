@@ -2,16 +2,20 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { Elysia } from 'elysia';
 import { FeedController } from './feed.controller';
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
+import { Result } from '@metacult/shared-core';
 
+// --- Mocks ---
 // --- Mocks ---
 const mockGetMixedFeedHandler = {
   execute: mock(() =>
-    Promise.resolve([{ id: '1', title: 'Test Media', type: 'movie' }]),
+    Promise.resolve(
+      Result.ok([{ id: '1', title: 'Test Media', type: 'movie' }]),
+    ),
   ),
 };
 
 const mockGetPersonalizedFeedHandler = {
-  execute: mock(() => Promise.resolve([])),
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
 };
 
 const mockInteractionRepository = {
@@ -20,19 +24,19 @@ const mockInteractionRepository = {
 
 // New Mocks
 const mockGetTrendingHandler = {
-  execute: mock(() => Promise.resolve([] as any[])),
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
 };
 const mockGetHallOfFameHandler = {
-  execute: mock(() => Promise.resolve([] as any[])),
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
 };
 const mockGetControversialHandler = {
-  execute: mock(() => Promise.resolve([] as any[])),
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
 };
 const mockGetUpcomingHandler = {
-  execute: mock(() => Promise.resolve([] as any[])),
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
 };
 const mockGetTopRatedByYearHandler = {
-  execute: mock(() => Promise.resolve([] as any[])),
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
 };
 
 // Standardized mock for @metacult/backend-identity
@@ -108,9 +112,9 @@ describe('Feed Controller', () => {
 
   it('GET /feed/personalized should return personalized feed', async () => {
     // Mock handler response
-    (mockGetPersonalizedFeedHandler.execute as any).mockResolvedValueOnce([
-      { id: 'p1', title: 'Personalized Movie' },
-    ]);
+    (mockGetPersonalizedFeedHandler.execute as any).mockResolvedValueOnce(
+      Result.ok([{ id: 'p1', title: 'Personalized Movie' }]),
+    );
 
     const response = await app.handle(
       new Request('http://localhost/feed/personalized'),
@@ -125,9 +129,9 @@ describe('Feed Controller', () => {
   });
 
   it('GET /feed/best-of/:year should return list for valid year', async () => {
-    mockGetTopRatedByYearHandler.execute.mockResolvedValueOnce([
-      { title: 'Best of 2024' },
-    ]);
+    mockGetTopRatedByYearHandler.execute.mockResolvedValueOnce(
+      Result.ok([{ title: 'Best of 2024' }]),
+    );
 
     const response = await app.handle(
       new Request('http://localhost/feed/best-of/2024'),

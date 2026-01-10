@@ -145,19 +145,25 @@ const mediaSearchAdapter = {
       orderBy: options?.orderBy,
     });
 
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+
+    const searchResponse = result.getValue();
+
     let all: any[] = [];
 
     // Type Guard pour déterminer si c'est Grouped ou Paginated
-    if ('items' in result) {
+    if ('items' in searchResponse) {
       // Mode Paginated (Mode B ou Empty Search)
-      all = result.items;
+      all = searchResponse.items;
     } else {
       // Mode Grouped (Mode A)
       all = [
-        ...result.games,
-        ...result.movies,
-        ...result.shows,
-        ...result.books,
+        ...searchResponse.games,
+        ...searchResponse.movies,
+        ...searchResponse.shows,
+        ...searchResponse.books,
       ];
     }
 
@@ -178,7 +184,11 @@ const mediaSearchAdapter = {
 const adsAdapter = {
   getAds: async () => {
     // Adaptateur: Void -> Query -> DTO
-    return adsHandler.execute();
+    const result = await adsHandler.execute();
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+    return result.getValue();
   },
 };
 
