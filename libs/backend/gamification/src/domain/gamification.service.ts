@@ -1,61 +1,60 @@
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { getDbConnection } from '@metacult/backend-infrastructure';
 import { userStats } from '../infrastructure/db/gamification.schema';
+import { UserStats } from './entities/user-stats.entity';
 
 export class GamificationService {
-  /**
-   * Calculates level based on XP.
-   * Simple formula: Level = floor(sqrt(XP / 100)) + 1
-   * Inverse: XP = 100 * (Level - 1)^2
-   */
-  private calculateLevel(xp: number): number {
-    return Math.floor(Math.sqrt(xp / 100)) + 1;
-  }
-
-  private calculateXpForLevel(level: number): number {
-    return 100 * Math.pow(level - 1, 2);
-  }
-
   /**
    * Adds XP to a user and updates their level.
    */
   async addXp(userId: string, amount: number, source: string) {
     const { db } = getDbConnection();
     // 1. Get or create stats
-    let [stats] = await db
+    const existingStats = await db
       .select()
       .from(userStats)
-      .where(eq(userStats.userId, userId));
+      .where(eq(userStats.userId, userId))
+      .then((rows) => rows[0]);
 
-    if (!stats) {
+    let rawStats = existingStats;
+
+    if (!rawStats) {
       const [newStats] = await db
         .insert(userStats)
         .values({ userId })
         .returning();
-      stats = newStats;
+
+      if (!newStats) {
+        throw new Error('Failed to initialize user stats');
+      }
+      rawStats = newStats;
     }
 
-    // 2. Calculate new state
-    const newXp = stats!.xp + amount;
-    const newLevel = this.calculateLevel(newXp);
+    // 2. Hydrate Entity (Factory logic, could be in Mapper)
+    const entity = new UserStats({
+      id: rawStats.id,
+      userId: rawStats.userId,
+      xp: rawStats.xp,
+      level: rawStats.level,
+      currLevelXp: rawStats.currLevelXp,
+      nextLevelXp: rawStats.nextLevelXp,
+      createdAt: rawStats.createdAt,
+      updatedAt: rawStats.updatedAt,
+    });
 
-    // XP needed for current level start
-    const currentLevelStartXp = this.calculateXpForLevel(newLevel);
-    // XP needed for next level start
-    const nextLevelStartXp = this.calculateXpForLevel(newLevel + 1);
+    // 3. Domain Logic (Command)
+    entity.addXp(amount);
 
-    // Progress in current level
-    const currLevelXp = newXp - currentLevelStartXp;
-    const levelRange = nextLevelStartXp - currentLevelStartXp;
-
-    // 3. Update DB
+    // 4. Update DB (Repository Logic)
+    const snapshot = entity.toSnapshot();
     const [updated] = await db
       .update(userStats)
       .set({
-        xp: newXp,
-        level: newLevel,
-        currLevelXp: currLevelXp,
-        nextLevelXp: levelRange, // Store range to make frontend math easier: progress = currLevelXp / nextLevelXp
+        xp: snapshot.xp,
+        level: snapshot.level,
+        currLevelXp: snapshot.currLevelXp,
+        nextLevelXp: snapshot.nextLevelXp,
+        // updatedAt handled by DB default usually but good to be explicit if entity changes it
       })
       .where(eq(userStats.userId, userId))
       .returning();
