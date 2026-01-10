@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import type { MediaItem } from '@metacult/shared-types';
+import { useWebsiteUrl } from '../../composables/useApiUrl';
 
 interface FeedItem {
   id: string; // interaction ID
