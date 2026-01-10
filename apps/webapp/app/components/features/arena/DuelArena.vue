@@ -178,6 +178,41 @@ const handleVote = (id: string, event?: MouseEvent) => {
   }, 600);
 };
 
+// --- Helper for Dynamic Styles ---
+const getCardStyle = (index: number, media: DuelMedia) => {
+  const other = props.pair[index === 0 ? 1 : 0];
+  const isFirst = index === 0;
+
+  let width = '100%';
+  let height = '100%';
+
+  if (isMobile.value) {
+    if (votingFor.value === media.id) {
+      height = '100%';
+    } else if (votingFor.value === other?.id) {
+      height = '0%';
+    } else {
+      // Logic: 50 +/- drag
+      // Index 0 (Top): 50 + drag.
+      // Index 1 (Bottom): 50 - drag.
+      height = 50 + (isFirst ? 1 : -1) * dragPercentage.value * 50 + '%';
+    }
+  } else {
+    // Desktop: Horizontal
+    if (votingFor.value === media.id) {
+      width = '100%';
+    } else if (votingFor.value === other?.id) {
+      width = '0%';
+    } else {
+      // Index 0 (Left): 50 + drag.
+      // Index 1 (Right): 50 - drag.
+      width = 50 + (isFirst ? 1 : -1) * dragPercentage.value * 50 + '%';
+    }
+  }
+
+  return { width, height };
+};
+
 // --- Helpers for Display ---
 const getYear = (m: DuelMedia) => m.releaseYear?.value || 'N/A';
 const getRating = (m: DuelMedia) =>
@@ -245,43 +280,27 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Carte 1 (Left/Top) -->
-    <!-- Logic:
-         - VotingFor === First: Full screen
-         - VotingFor === Second: Gone
-         - Dragging:
-             - If Drag > 0 (Favoring First): Grows
-             - If Drag < 0 (Favoring Second): Shrinks
-    -->
+    <!-- Dynamic Cards Loop -->
     <div
-      v-if="first"
-      class="group relative cursor-pointer overflow-hidden border-b-4 md:border-b-0 md:border-r-4 border-background transition-all duration-500 ease-out-expo"
+      v-for="(media, index) in pair"
+      :key="media.id"
+      class="group relative cursor-pointer overflow-hidden border-background transition-all duration-500 ease-out-expo"
       :class="[
-        votingFor === first.id ? 'z-20' : 'z-10',
-        peekingAt === second?.id ? 'opacity-60 grayscale' : '',
+        votingFor === media.id ? 'z-20' : 'z-10',
+        peekingAt === pair[index === 0 ? 1 : 0]?.id
+          ? 'opacity-60 grayscale'
+          : '',
+        index === 0
+          ? 'border-b-4 md:border-b-0 md:border-r-4'
+          : 'border-t-4 md:border-t-0 md:border-l-4',
       ]"
-      :style="{
-        width: isMobile
-          ? '100%'
-          : votingFor === first.id
-            ? '100%'
-            : votingFor === second?.id
-              ? '0%'
-              : 50 + dragPercentage * 50 + '%',
-        height: isMobile
-          ? votingFor === first.id
-            ? '100%'
-            : votingFor === second?.id
-              ? '0%'
-              : 50 + dragPercentage * 50 + '%'
-          : '100%',
-      }"
+      :style="getCardStyle(index, media)"
       @mousedown.stop="
-        first && startPeek(first.id);
+        media && startPeek(media.id);
         startDrag($event);
       "
       @touchstart.passive.stop="
-        first && startPeek(first.id);
+        media && startPeek(media.id);
         startDrag($event);
       "
       @mouseup="endPeek"
@@ -289,136 +308,20 @@ onUnmounted(() => {
       @mouseleave="endPeek"
       @click="
         (e) => {
-          !isDragging && first && handleVote(first.id, e);
+          !isDragging && media && handleVote(media.id, e);
         }
       "
     >
       <!-- Background Image -->
       <img
-        :src="first.coverUrl || ''"
-        :alt="first.title"
+        :src="media.coverUrl || ''"
+        :alt="media.title"
         class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out-expo will-change-transform"
         :class="{
-          'scale-100': votingFor === first.id,
+          'scale-100': votingFor === media.id,
           'scale-110':
-            peekingAt === first.id || (dragPercentage > 0.1 && !votingFor),
-          'group-hover:scale-105': !votingFor && !peekingAt && !isDragging,
-        }"
-      />
-
-      class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40
-      to-black/10 transition-opacity duration-300" :class="{ 'opacity-90':
-      peekingAt === first?.id, 'opacity-60': !peekingAt }" />
-
-      <!-- Content -->
-      <div
-        class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10"
-      >
-        <!-- Main Title -->
-        <h2
-          class="text-3xl md:text-5xl font-black text-white uppercase tracking-tight drop-shadow-2xl font-impact transition-all duration-500 ease-out-expo"
-          :class="{
-            'scale-125 translate-y-0': votingFor === first.id,
-            '-translate-y-8 scale-90': peekingAt === first.id,
-            'translate-y-0': !votingFor && !peekingAt,
-          }"
-          style="font-family: 'Impact', sans-serif"
-        >
-          {{ first.title }}
-        </h2>
-
-        <!-- Action / Status Text -->
-        <span
-          class="mt-2 text-white/90 text-sm md:text-lg font-bold uppercase tracking-widest transition-all duration-300 transform"
-          :class="{
-            'opacity-100 translate-y-0 scale-110 text-primary':
-              votingFor === first.id || dragPercentage > 0.15,
-            'opacity-0': peekingAt || dragPercentage < -0.1,
-            'opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0':
-              !votingFor && !peekingAt && !isDragging,
-          }"
-        >
-          {{ votingFor === first.id ? 'WINNER!' : 'TAP TO VOTE' }}
-        </span>
-
-        <!-- Details (Reveal on Peek) -->
-        <div
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-4 w-full px-8 flex flex-col items-center gap-2 transition-all duration-500 delay-75"
-          :class="{
-            'opacity-100 blur-0 translate-y-2': peekingAt === first.id,
-            'opacity-0 blur-sm translate-y-12': peekingAt !== first.id,
-          }"
-        >
-          <div class="h-px w-16 bg-white/30 mb-2"></div>
-          <p class="text-white/80 text-lg font-medium">
-            {{ getCreator(first) }}
-          </p>
-          <div
-            class="flex items-center gap-4 text-white/60 text-sm tracking-wider uppercase"
-          >
-            <span>{{ getYear(first) }}</span>
-            <span
-              v-if="getRating(first)"
-              class="flex items-center gap-1 text-primary"
-            >
-              <span class="i-lucide-star w-3 h-3 fill-current" />
-              {{ getRating(first) }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Carte 2 (Right/Bottom) -->
-    <div
-      v-if="second"
-      class="group relative cursor-pointer overflow-hidden border-t-4 md:border-t-0 md:border-l-4 border-background transition-all duration-500 ease-out-expo"
-      :class="[
-        votingFor === second.id ? 'z-20' : 'z-10',
-        peekingAt === first?.id ? 'opacity-60 grayscale' : '',
-      ]"
-      :style="{
-        width: isMobile
-          ? '100%'
-          : votingFor === second.id
-            ? '100%'
-            : votingFor === first?.id
-              ? '0%'
-              : 50 - dragPercentage * 50 + '%',
-        height: isMobile
-          ? votingFor === second.id
-            ? '100%'
-            : votingFor === first?.id
-              ? '0%'
-              : 50 - dragPercentage * 50 + '%'
-          : '100%',
-      }"
-      @mousedown.stop="
-        second && startPeek(second.id);
-        startDrag($event);
-      "
-      @touchstart.passive.stop="
-        second && startPeek(second.id);
-        startDrag($event);
-      "
-      @mouseup="endPeek"
-      @touchend="endPeek"
-      @mouseleave="endPeek"
-      @click="
-        (e) => {
-          !isDragging && second && handleVote(second.id, e);
-        }
-      "
-    >
-      <!-- Background Image -->
-      <img
-        :src="second.coverUrl || ''"
-        :alt="second.title"
-        class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out-expo will-change-transform"
-        :class="{
-          'scale-100': votingFor === second.id,
-          'scale-110':
-            peekingAt === second.id || (dragPercentage < -0.1 && !votingFor),
+            peekingAt === media.id ||
+            ((index === 0 ? 1 : -1) * dragPercentage > 0.1 && !votingFor),
           'group-hover:scale-105': !votingFor && !peekingAt && !isDragging,
         }"
       />
@@ -427,7 +330,7 @@ onUnmounted(() => {
       <div
         class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 transition-opacity duration-300"
         :class="{
-          'opacity-90': peekingAt === second.id,
+          'opacity-90': peekingAt === media.id,
           'opacity-60': !peekingAt,
         }"
       />
@@ -440,13 +343,13 @@ onUnmounted(() => {
         <h2
           class="text-3xl md:text-5xl font-black text-white uppercase tracking-tight drop-shadow-2xl font-impact transition-all duration-500 ease-out-expo"
           :class="{
-            'scale-125 translate-y-0': votingFor === second.id,
-            '-translate-y-8 scale-90': peekingAt === second.id,
+            'scale-125 translate-y-0': votingFor === media.id,
+            '-translate-y-8 scale-90': peekingAt === media.id,
             'translate-y-0': !votingFor && !peekingAt,
           }"
           style="font-family: 'Impact', sans-serif"
         >
-          {{ second.title }}
+          {{ media.title }}
         </h2>
 
         <!-- Action / Status Text -->
@@ -454,37 +357,39 @@ onUnmounted(() => {
           class="mt-2 text-white/90 text-sm md:text-lg font-bold uppercase tracking-widest transition-all duration-300 transform"
           :class="{
             'opacity-100 translate-y-0 scale-110 text-primary':
-              votingFor === second.id || dragPercentage < -0.15,
-            'opacity-0': peekingAt || dragPercentage > 0.1,
+              votingFor === media.id ||
+              (index === 0 ? 1 : -1) * dragPercentage > 0.15,
+            'opacity-0':
+              peekingAt || (index === 0 ? 1 : -1) * dragPercentage < -0.1,
             'opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0':
               !votingFor && !peekingAt && !isDragging,
           }"
         >
-          {{ votingFor === second.id ? 'WINNER!' : 'TAP TO VOTE' }}
+          {{ votingFor === media.id ? 'WINNER!' : 'TAP TO VOTE' }}
         </span>
 
         <!-- Details (Reveal on Peek) -->
         <div
           class="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-4 w-full px-8 flex flex-col items-center gap-2 transition-all duration-500 delay-75"
           :class="{
-            'opacity-100 blur-0 translate-y-2': peekingAt === second.id,
-            'opacity-0 blur-sm translate-y-12': peekingAt !== second.id,
+            'opacity-100 blur-0 translate-y-2': peekingAt === media.id,
+            'opacity-0 blur-sm translate-y-12': peekingAt !== media.id,
           }"
         >
           <div class="h-px w-16 bg-white/30 mb-2"></div>
           <p class="text-white/80 text-lg font-medium">
-            {{ getCreator(second) }}
+            {{ getCreator(media) }}
           </p>
           <div
             class="flex items-center gap-4 text-white/60 text-sm tracking-wider uppercase"
           >
-            <span>{{ getYear(second) }}</span>
+            <span>{{ getYear(media) }}</span>
             <span
-              v-if="getRating(second)"
+              v-if="getRating(media)"
               class="flex items-center gap-1 text-primary"
             >
               <span class="i-lucide-star w-3 h-3 fill-current" />
-              {{ getRating(second) }}
+              {{ getRating(media) }}
             </span>
           </div>
         </div>
