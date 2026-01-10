@@ -1,12 +1,13 @@
 import { describe, it, expect, mock, beforeEach, afterAll } from 'bun:test';
 import { Job } from 'bullmq';
+import { Result } from '@metacult/shared-core';
 import {
   rankingProcessorDeps,
   processRankingUpdate,
 } from './ranking.processor';
 
 // --- Mocks ---
-const mockExecute = mock(() => Promise.resolve());
+const mockExecute = mock(() => Promise.resolve(Result.ok({})));
 
 describe('Ranking Processor', () => {
   // Save original handler to restore after tests

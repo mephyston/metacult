@@ -50,7 +50,9 @@ describe('UpdateEloScoreHandler', () => {
   it('should update scores successfully when both media exist', async () => {
     const command = new UpdateEloScoreCommand('win-1', 'loss-1');
 
-    await handler.execute(command);
+    const result = await handler.execute(command);
+
+    expect(result.isSuccess()).toBe(true);
 
     // Verify Fetch
     expect(mockDuelRepository.findById).toHaveBeenCalledWith('win-1');
@@ -71,7 +73,7 @@ describe('UpdateEloScoreHandler', () => {
     );
   });
 
-  it('should throw MediaNotFoundError if winner is missing', async () => {
+  it('should return MediaNotFoundError if winner is missing', async () => {
     mockDuelRepository.findById = mock(async (id) =>
       id === 'loss-1' ? mockLoser : undefined,
     );
@@ -79,10 +81,13 @@ describe('UpdateEloScoreHandler', () => {
     handler = new UpdateEloScoreHandler(mockDuelRepository, mockEloCalculator);
     const command = new UpdateEloScoreCommand('missing', 'loss-1');
 
-    expect(handler.execute(command)).rejects.toThrow(MediaNotFoundError);
+    const result = await handler.execute(command);
+
+    expect(result.isFailure()).toBe(true);
+    expect(result.getError()).toBeInstanceOf(MediaNotFoundError);
   });
 
-  it('should throw MediaNotFoundError if loser is missing', async () => {
+  it('should return MediaNotFoundError if loser is missing', async () => {
     mockDuelRepository.findById = mock(async (id) =>
       id === 'win-1' ? mockWinner : undefined,
     );
@@ -90,6 +95,9 @@ describe('UpdateEloScoreHandler', () => {
     handler = new UpdateEloScoreHandler(mockDuelRepository, mockEloCalculator);
     const command = new UpdateEloScoreCommand('win-1', 'missing');
 
-    expect(handler.execute(command)).rejects.toThrow(MediaNotFoundError);
+    const result = await handler.execute(command);
+
+    expect(result.isFailure()).toBe(true);
+    expect(result.getError()).toBeInstanceOf(MediaNotFoundError);
   });
 });
