@@ -122,9 +122,15 @@ export function getWebsiteUrl(): string {
     rawUrl = import.meta.env.PUBLIC_WEBSITE_URL;
   }
 
-  // 4. Smart fallback: use current origin if in browser (the site knows itself)
+  // 4. Smart fallback: use current origin ONLY if we're on the website (not webapp)
+  // Webapp hostnames contain "-app" (e.g., staging-app.metacult.app, app.metacult.app)
   if (!rawUrl && typeof window !== 'undefined') {
-    rawUrl = window.location.origin;
+    const isWebsite =
+      !window.location.hostname.includes('-app') &&
+      !window.location.hostname.startsWith('app.');
+    if (isWebsite) {
+      rawUrl = window.location.origin;
+    }
   }
 
   // 5. Final fallback for local dev/SSR without config
