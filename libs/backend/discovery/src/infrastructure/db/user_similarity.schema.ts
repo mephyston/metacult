@@ -26,5 +26,6 @@ export const userSimilarity = pgTable(
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.neighborId] }),
     userIdIdx: index('idx_user_similarity_user_id').on(t.userId),
+    scoreIdx: index('idx_user_similarity_score').on(t.similarityScore),
   }),
 );

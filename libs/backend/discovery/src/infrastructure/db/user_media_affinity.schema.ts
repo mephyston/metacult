@@ -5,6 +5,7 @@ import {
   timestamp,
   primaryKey,
   text,
+  index,
 } from 'drizzle-orm/pg-core';
 
 /**
@@ -24,5 +25,7 @@ export const userMediaAffinity = pgTable(
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.mediaId] }),
+    scoreIdx: index('idx_affinity_score').on(t.score),
+    mediaIdx: index('idx_affinity_media_id').on(t.mediaId),
   }),
 );

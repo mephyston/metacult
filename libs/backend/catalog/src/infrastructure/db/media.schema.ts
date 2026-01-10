@@ -1,20 +1,33 @@
-import { pgTable, uuid, text, timestamp, real, jsonb, json, integer, pgEnum } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  real,
+  jsonb,
+  json,
+  integer,
+  pgEnum,
+  index,
+} from 'drizzle-orm/pg-core';
 import type { ProviderMetadata } from '../types/raw-responses';
 
 // --- Enums ---
 /** Enumération des types de médias persistés. */
 export const mediaTypeEnum = pgEnum('media_type', [
-    'GAME',
-    'MOVIE',
-    'TV',
-    'BOOK',
+  'GAME',
+  'MOVIE',
+  'TV',
+  'BOOK',
 ]);
 
 // --- Tables ---
 
 // Central Table
 /** Table principale des Médias (Pattern Table-Per-Type Inheritance). */
-export const medias = pgTable('medias', {
+export const medias = pgTable(
+  'medias',
+  {
     id: uuid('id').defaultRandom().primaryKey(),
     type: mediaTypeEnum('type').notNull(),
     slug: text('slug').unique().notNull(),
@@ -25,68 +38,80 @@ export const medias = pgTable('medias', {
     eloScore: integer('elo_score').notNull().default(1500),
     matchCount: integer('match_count').notNull().default(0),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+  },
+  (t) => ({
+    typeIdx: index('idx_medias_type').on(t.type),
+    releaseDateIdx: index('idx_medias_release_date').on(t.releaseDate),
+    eloScoreIdx: index('idx_medias_elo_score').on(t.eloScore),
+    createdAtIdx: index('idx_medias_created_at').on(t.createdAt),
+    typeEloIdx: index('idx_medias_type_elo').on(t.type, t.eloScore),
+  }),
+);
 
 // Extension: Games
 /** Table étendue pour les Jeux Vidéo. */
 export const games = pgTable('games', {
-    id: uuid('id')
-        .primaryKey()
-        .references(() => medias.id, { onDelete: 'cascade' }),
-    platform: json('platform').$type<string[]>().default([]),
-    developer: text('developer'),
-    timeToBeat: integer('time_to_beat'),
+  id: uuid('id')
+    .primaryKey()
+    .references(() => medias.id, { onDelete: 'cascade' }),
+  platform: json('platform').$type<string[]>().default([]),
+  developer: text('developer'),
+  timeToBeat: integer('time_to_beat'),
 });
 
 // Extension: Movies
 /** Table étendue pour les Films. */
 export const movies = pgTable('movies', {
-    id: uuid('id')
-        .primaryKey()
-        .references(() => medias.id, { onDelete: 'cascade' }),
-    director: text('director'),
-    durationMinutes: integer('duration_minutes'),
+  id: uuid('id')
+    .primaryKey()
+    .references(() => medias.id, { onDelete: 'cascade' }),
+  director: text('director'),
+  durationMinutes: integer('duration_minutes'),
 });
 
 // Extension: TV Shows
 /** Table étendue pour les Séries TV. */
 export const tv = pgTable('tv', {
-    id: uuid('id')
-        .primaryKey()
-        .references(() => medias.id, { onDelete: 'cascade' }),
-    creator: text('creator'), // Showrunner or Creator
-    episodesCount: integer('episodes_count'),
-    seasonsCount: integer('seasons_count'),
+  id: uuid('id')
+    .primaryKey()
+    .references(() => medias.id, { onDelete: 'cascade' }),
+  creator: text('creator'), // Showrunner or Creator
+  episodesCount: integer('episodes_count'),
+  seasonsCount: integer('seasons_count'),
 });
 
 // Extension: Books
 /** Table étendue pour les Livres. */
 export const books = pgTable('books', {
-    id: uuid('id')
-        .primaryKey()
-        .references(() => medias.id, { onDelete: 'cascade' }),
-    author: text('author'),
-    pages: integer('pages'),
+  id: uuid('id')
+    .primaryKey()
+    .references(() => medias.id, { onDelete: 'cascade' }),
+  author: text('author'),
+  pages: integer('pages'),
 });
 
 // Shared: Tags
 /** Table des Tags (Système de classification). */
 export const tags = pgTable('tags', {
-    id: uuid('id').defaultRandom().primaryKey(),
-    slug: text('slug').unique().notNull(),
-    label: text('label').notNull(),
-    category: text('category').notNull(),
+  id: uuid('id').defaultRandom().primaryKey(),
+  slug: text('slug').unique().notNull(),
+  label: text('label').notNull(),
+  category: text('category').notNull(),
 });
 
 // Join: Medias <-> Tags
 /** Table de jointure Many-to-Many entre Médias et Tags. */
-export const mediasToTags = pgTable('medias_to_tags', {
+export const mediasToTags = pgTable(
+  'medias_to_tags',
+  {
     mediaId: uuid('media_id')
-        .references(() => medias.id, { onDelete: 'cascade' })
-        .notNull(),
+      .references(() => medias.id, { onDelete: 'cascade' })
+      .notNull(),
     tagId: uuid('tag_id')
-        .references(() => tags.id, { onDelete: 'cascade' })
-        .notNull(),
-}, (t) => ({
+      .references(() => tags.id, { onDelete: 'cascade' })
+      .notNull(),
+  },
+  (t) => ({
     pk: [t.mediaId, t.tagId],
-}));
+  }),
+);
