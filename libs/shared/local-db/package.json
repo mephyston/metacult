@@ -6,5 +6,11 @@
   "peerDependencies": {
     "dexie": "^4.0.0",
     "@metacult/shared-types": "workspace:*"
+  },
+  "nx": {
+    "tags": [
+      "scope:shared",
+      "type:util"
+    ]
   }
 }
