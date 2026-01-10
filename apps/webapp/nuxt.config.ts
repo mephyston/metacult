@@ -94,7 +94,6 @@ export default {
       enabled: true,
       suppressWarnings: true,
       navigateFallback: '/',
-      type: 'module',
     },
   },
 
@@ -178,6 +177,15 @@ export default {
     ),
     '@metacult/shared-ui': fileURLToPath(
       new URL('../../libs/shared/ui/src/index.ts', import.meta.url),
+    ),
+    '@metacult/shared-types': fileURLToPath(
+      new URL('../../libs/shared/types/src/index.ts', import.meta.url),
+    ),
+    '@metacult/shared-local-db': fileURLToPath(
+      new URL('../../libs/shared/local-db/src/index.ts', import.meta.url),
+    ),
+    '@metacult/shared-sync-manager': fileURLToPath(
+      new URL('../../libs/shared/sync-manager/src/index.ts', import.meta.url),
     ),
   },
 };

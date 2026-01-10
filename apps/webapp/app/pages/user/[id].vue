@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import MediaGrid from '~/components/ui/MediaGrid.vue';
+import MediaGrid from '../../components/ui/MediaGrid.vue';
 import type { MediaItem } from '@metacult/shared-types';
 import { useAuthSession } from '../../composables/useAuthSession';
 
@@ -20,9 +20,10 @@ const wishlistItems = ref<MediaItem[]>([]);
 const historyItems = ref<MediaItem[]>([]);
 
 // Fetch User Profile
-const { data: userData, error: userError } = await useFetch(
-  `/api/users/${userId}`,
-);
+const { data: userData, error: userError } = await useFetch<{
+  success: boolean;
+  data: any;
+}>(`/api/users/${userId}`);
 if (userData.value?.success) {
   profileUser.value = userData.value.data;
 } else {
@@ -32,7 +33,9 @@ if (userData.value?.success) {
 // Check Follow Status
 const checkFollowStatus = async () => {
   if (!currentUser.value) return;
-  const { data } = await useFetch('/api/social/following');
+  const { data } = await useFetch<{ success: boolean; data: string[] }>(
+    '/api/social/following',
+  );
   if (data.value?.success) {
     isFollowing.value = data.value.data.includes(userId);
   }
@@ -43,9 +46,10 @@ const fetchContent = async () => {
   isLoading.value = true;
   try {
     // 1. Fetch Interactions
-    const { data: interactionsData } = await useFetch(
-      `/api/interactions/user/${userId}`,
-    );
+    const { data: interactionsData } = await useFetch<{
+      success: boolean;
+      data: any[];
+    }>(`/api/interactions/user/${userId}`);
     if (!interactionsData.value?.success) return;
 
     const interactions = interactionsData.value.data;
@@ -55,7 +59,10 @@ const fetchContent = async () => {
 
     // 3. Fetch Media Details (Batch)
     if (mediaIds.length > 0) {
-      const { data: mediaData } = await useFetch('/api/media/batch', {
+      const { data: mediaData } = await useFetch<{
+        success: boolean;
+        data: any[];
+      }>('/api/media/batch', {
         method: 'POST',
         body: { ids: mediaIds },
       });

@@ -4,7 +4,7 @@ import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import { db } from '@metacult/shared-local-db';
 import { from } from 'rxjs';
-import MediaGrid from '~/components/ui/MediaGrid.vue';
+import MediaGrid from '../components/ui/MediaGrid.vue';
 import type { MediaItem } from '@metacult/shared-types';
 import { useAuthSession } from '../composables/useAuthSession';
 

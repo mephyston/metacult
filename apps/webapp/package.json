@@ -5,7 +5,8 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nx serve webapp",
-    "preview": "node .output/server/index.mjs"
+    "preview": "node .output/server/index.mjs",
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@metacult/shared-core": "workspace:*",
