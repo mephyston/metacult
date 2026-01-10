@@ -1,3 +1,13 @@
+## 0.8.0 (2026-01-10)
+
+### 🩹 Fixes
+
+- **website:** use production fallback URLs instead of build-time import.meta.env ([db88f0f](https://github.com/mephyston/metacult/commit/db88f0f))
+
+### ❤️ Thank You
+
+- David PAGNACCO
+
 ## 0.7.2 (2026-01-10)
 
 ### 🚀 Features
