@@ -164,8 +164,8 @@ export default {
     },
     routeRules: {
       '/api/**': {
-        proxy: process.env.INTERNAL_API_URL
-          ? `${process.env.INTERNAL_API_URL}/api/**`
+        proxy: process.env.NUXT_INTERNAL_API_URL
+          ? `${process.env.NUXT_INTERNAL_API_URL}/api/**`
           : 'http://localhost:3000/api/**',
       },
     },
