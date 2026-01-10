@@ -78,6 +78,7 @@ const fetchFeed = async () => {
     isLoading.value = false;
   }
 };
+const websiteUrl = useWebsiteUrl();
 
 onMounted(() => {
   fetchFeed();
@@ -162,7 +163,7 @@ const getActionText = (action: string) => {
           <!-- Media Card -->
           <a
             v-if="item.media"
-            :href="`${useWebsiteUrl()}/catalog/${item.media.type}/${item.media.remoteId || item.media.id}`"
+            :href="`${websiteUrl}/catalog/${item.media.type}/${item.media.remoteId || item.media.id}`"
             class="flex gap-3 bg-muted/30 rounded-lg p-2 hover:bg-muted/50 transition-colors cursor-pointer no-underline text-foreground"
           >
             <div class="w-12 h-16 bg-zinc-800 rounded shrink-0 overflow-hidden">
