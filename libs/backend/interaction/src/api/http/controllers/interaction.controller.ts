@@ -6,13 +6,13 @@ import {
 } from '@metacult/backend-identity';
 import { logger, getDbConnection } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
-import { saveInteraction } from '../../../application/commands/save-interaction.command';
+import { SaveInteractionHandler } from '../../../application/commands/save-interaction.command';
 import { syncInteractions } from '../../../application/commands/sync-interactions.command';
 import * as schema from '../../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
 
-// ...
+// ..
 
 // In handlers:
 export const interactionController = new Elysia({ prefix: '/interactions' })
@@ -25,12 +25,14 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         // Use helper to resolve user or throw 401
         const user = await resolveUserOrThrow(ctx);
 
+        // Dependency Injection
         const { db } = getDbConnection();
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
+        const handler = new SaveInteractionHandler(interactionRepo);
 
-        const interaction = await saveInteraction({
+        const interaction = await handler.execute({
           userId: user.id,
           mediaId: body.mediaId,
           action: body.action,

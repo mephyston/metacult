@@ -1,28 +1,45 @@
-import { eq } from 'drizzle-orm';
-import {
-  getDbConnection,
-  configService,
-  logger,
-} from '@metacult/backend-infrastructure';
-import { userInteractions } from '../../infrastructure/db/interactions.schema';
 import { Queue } from 'bullmq';
-import { GamificationService } from '@metacult/backend-gamification';
+import { v4 as uuidv4 } from 'uuid';
+import { configService, logger } from '@metacult/backend-infrastructure';
+import type { IInteractionRepository } from '../ports/interaction.repository.interface';
+import {
+  UserInteraction,
+  InteractionAction,
+  InteractionSentiment,
+} from '../../domain/entities/user-interaction.entity';
+import { InteractionSavedEvent } from '../../domain/events/interaction-saved.event';
 
-// const { db } = getDbConnection(); // Moved inside instructions
-
-const gamificationService = new GamificationService();
-
-// Constant defined locally to avoid circular dependency with backend-discovery
+// Queue Names
 const AFFINITY_QUEUE_NAME = 'affinity-queue';
+const GAMIFICATION_QUEUE_NAME = 'gamification-queue';
 
-// Redis Connection for Queue
+// Redis Connection
 const connection = {
   url: configService.get('REDIS_URL'),
 };
 
-const affinityQueue = new Queue(AFFINITY_QUEUE_NAME, { connection });
+// Queues (lazy initialized)
+let affinityQueue: Queue | null = null;
+let gamificationQueue: Queue | null = null;
 
-interface SaveInteractionPayload {
+const getAffinityQueue = () => {
+  if (!affinityQueue) {
+    affinityQueue = new Queue(AFFINITY_QUEUE_NAME, { connection });
+  }
+  return affinityQueue;
+};
+
+const getGamificationQueue = () => {
+  if (!gamificationQueue) {
+    gamificationQueue = new Queue(GAMIFICATION_QUEUE_NAME, { connection });
+  }
+  return gamificationQueue;
+};
+
+/**
+ * Command DTO for saving an interaction.
+ */
+export interface SaveInteractionCommand {
   userId: string;
   mediaId: string;
   action: string;
@@ -30,57 +47,68 @@ interface SaveInteractionPayload {
 }
 
 /**
- * Enregistre ou met à jour une interaction utilisateur sur un média.
- * Utilise un UPSERT basé sur le couple (userId, mediaId).
+ * Handler for SaveInteractionCommand.
+ * Adheres to Clean Architecture: no direct DB access, uses repository.
  */
-export const saveInteraction = async (payload: SaveInteractionPayload) => {
-  const { db } = getDbConnection();
-  // Validation basique des enums (optionnelle si Zod le fait en amont, mais safe ici)
-  // Note: On cast pour correspondre aux types Drizzle, Drizzle rejettera si invalide SQL mais pas TS runtime strict sans check
+export class SaveInteractionHandler {
+  constructor(private readonly interactionRepository: IInteractionRepository) {}
 
-  // Check if sentiment is valid using type guard/check if needed, typically handled by controller validation
+  async execute(command: SaveInteractionCommand): Promise<UserInteraction> {
+    const { userId, mediaId, action, sentiment } = command;
 
-  const result = await db
-    .insert(userInteractions)
-    .values({
-      userId: payload.userId,
-      mediaId: payload.mediaId,
-      action: payload.action as any, // Cast vers enum type
-      sentiment: payload.sentiment as any,
-    })
-    .onConflictDoUpdate({
-      target: [userInteractions.userId, userInteractions.mediaId],
-      set: {
-        action: payload.action as any,
-        sentiment: payload.sentiment as any,
-        updatedAt: new Date(),
-      },
-    })
-    .returning();
+    // 1. Create or update entity
+    const now = new Date();
+    const existing = await this.interactionRepository.findByUserAndMedia(
+      userId,
+      mediaId,
+    );
 
-  // Async: Trigger Affinity Update
-  try {
-    // Send default globalElo (1500) as placeholder.
-    // Ideally the Worker/Handler should fetch the latest source-of-truth Elo from DB.
-    const globalElo = 1500;
-
-    await affinityQueue.add('update-sentiment', {
-      type: 'SENTIMENT',
-      userId: payload.userId,
-      mediaId: payload.mediaId,
-      sentiment: payload.sentiment || 'OKAY',
-      globalElo: globalElo,
+    const interaction = new UserInteraction({
+      id: existing?.id ?? uuidv4(),
+      userId,
+      mediaId,
+      action: action as InteractionAction,
+      sentiment: (sentiment as InteractionSentiment) ?? null,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
     });
-  } catch (err) {
-    logger.error({ err }, 'Failed to publish affinity update event');
+
+    // 2. Persist via repository
+    await this.interactionRepository.save(interaction);
+
+    // 3. Publish domain event to queues (async, fire-and-forget)
+    const event = new InteractionSavedEvent({
+      userId,
+      mediaId,
+      action,
+      sentiment: sentiment ?? null,
+      timestamp: now,
+    });
+
+    this.publishEvents(event).catch((err) => {
+      logger.error({ err }, 'Failed to publish interaction events');
+    });
+
+    return interaction;
   }
 
-  // --- GAMIFICATION: Award XP ---
-  try {
-    await gamificationService.addXp(payload.userId, 10, 'SWIPE');
-  } catch (e) {
-    logger.error({ err: e }, '[Gamification] Failed to award XP for SWIPE');
-  }
+  private async publishEvents(event: InteractionSavedEvent): Promise<void> {
+    const { userId, mediaId, sentiment } = event.payload;
 
-  return result[0];
-};
+    // Affinity update (Discovery module)
+    await getAffinityQueue().add('update-sentiment', {
+      type: 'SENTIMENT',
+      userId,
+      mediaId,
+      sentiment: sentiment || 'OKAY',
+      globalElo: 1500, // Placeholder, worker should fetch latest
+    });
+
+    // Gamification XP award
+    await getGamificationQueue().add('award-xp', {
+      userId,
+      xp: 10,
+      source: 'SWIPE',
+    });
+  }
+}

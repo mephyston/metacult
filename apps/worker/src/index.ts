@@ -8,11 +8,15 @@ import { processRankingUpdate } from './processors/ranking.processor';
 import { RANKING_QUEUE_NAME } from '@metacult/backend-ranking';
 import { processAffinityUpdate } from './processors/affinity.processor';
 import { processComputeNeighbors } from './processors/compute-neighbors.processor';
+import { processGamification } from './processors/gamification.processor';
 import {
   AFFINITY_QUEUE_NAME,
   COMPUTE_NEIGHBORS_QUEUE_NAME,
 } from '@metacult/backend-discovery';
 import { Queue } from 'bullmq';
+
+// Queue name for gamification (matches save-interaction.command.ts)
+const GAMIFICATION_QUEUE_NAME = 'gamification-queue';
 
 export const startWorker = async () => {
   logger.info('🚀 Starting Metacult Worker Service...');
@@ -64,6 +68,15 @@ export const startWorker = async () => {
     },
   );
 
+  // --- Gamification Worker ---
+  const gamificationWorker = createWorker(
+    GAMIFICATION_QUEUE_NAME,
+    processGamification,
+    {
+      concurrency: 10,
+    },
+  );
+
   // Schedule the Cron Job (Upsert)
   const computeNeighborsQueue = new Queue(COMPUTE_NEIGHBORS_QUEUE_NAME, {
     connection: redisConnection,
@@ -89,6 +102,7 @@ export const startWorker = async () => {
       rankingWorker.close(),
       affinityWorker.close(),
       computeNeighborsWorker.close(),
+      gamificationWorker.close(),
       computeNeighborsQueue.close(),
     ]);
     process.exit(0);
@@ -101,13 +115,14 @@ export const startWorker = async () => {
       rankingWorker.close(),
       affinityWorker.close(),
       computeNeighborsWorker.close(),
+      gamificationWorker.close(),
       computeNeighborsQueue.close(),
     ]);
     process.exit(0);
   });
 
   logger.info(
-    `👷 Worker listening on queues: ${IMPORT_QUEUE_NAME}, ${RANKING_QUEUE_NAME}, ${AFFINITY_QUEUE_NAME}, ${COMPUTE_NEIGHBORS_QUEUE_NAME}`,
+    `👷 Worker listening on queues: ${IMPORT_QUEUE_NAME}, ${RANKING_QUEUE_NAME}, ${AFFINITY_QUEUE_NAME}, ${COMPUTE_NEIGHBORS_QUEUE_NAME}, ${GAMIFICATION_QUEUE_NAME}`,
   );
 };
 
