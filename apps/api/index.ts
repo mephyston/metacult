@@ -1,5 +1,7 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
+import { helmet } from 'elysia-helmet';
+import { rateLimit } from 'elysia-rate-limit';
 import { swagger } from '@elysiajs/swagger';
 import {
   createCatalogRoutes,
@@ -249,10 +251,32 @@ initCrons().catch((err) =>
 
 const app = new Elysia()
   .use(errorMiddleware) // ✅ Global error handling FIRST
+  .use(helmet()) // 🛡️ Security Headers
+  .use(
+    rateLimit({
+      duration: 60000,
+      max: 100,
+      errorResponse: 'Rate limit exceeded',
+    }),
+  )
   .use(swagger())
   .use(
     cors({
-      origin: true, // Allow all origins in dev, or specify ['http://localhost:5173', 'http://localhost:4200']
+      origin: (request): boolean => {
+        const origin = request.headers.get('origin');
+        if (!origin) return true; // Allow non-browser requests (mobile/curl)
+
+        if (configService.isDevelopment) return true;
+
+        // Allow allowed origins
+        const allowedOrigins = [
+          configService.publicWebsiteUrl,
+          configService.publicWebappUrl,
+          ...configService.betterAuthTrustedOrigins,
+        ].filter(Boolean) as string[];
+
+        return allowedOrigins.includes(origin);
+      },
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization', 'x-request-id'],
     }),

@@ -23,6 +23,7 @@ const envSchema = z.object({
   INTERNAL_API_URL: z.string().url().optional(),
   PUBLIC_API_URL: z.string().url().optional(),
   PUBLIC_WEBSITE_URL: z.string().url().optional(),
+  PUBLIC_WEBAPP_URL: z.string().url().optional(),
 
   // Environment
   NODE_ENV: z
@@ -147,6 +148,10 @@ export class ConfigurationService {
 
   public get publicWebsiteUrl(): string | undefined {
     return this.config.PUBLIC_WEBSITE_URL;
+  }
+
+  public get publicWebappUrl(): string | undefined {
+    return this.config.PUBLIC_WEBAPP_URL;
   }
 
   // Environment Checks
