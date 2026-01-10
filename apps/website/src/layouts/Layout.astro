@@ -98,12 +98,13 @@ try {
         <ThemeHeadScript />
 
         <!-- Runtime Environment Variables for Client-Side Hydration (Railway) -->
+        <!-- NOTE: These MUST be set in Railway for each environment (staging/prod) -->
         <script
             is:inline
             define:vars={{
-                PUBLIC_WEBAPP_URL: process.env.PUBLIC_WEBAPP_URL || 'https://app.metacult.app',
-                PUBLIC_WEBSITE_URL: process.env.PUBLIC_WEBSITE_URL || 'https://metacult.app',
-                PUBLIC_API_URL: process.env.PUBLIC_API_URL || 'https://api.metacult.app',
+                PUBLIC_WEBAPP_URL: process.env.PUBLIC_WEBAPP_URL || '',
+                PUBLIC_WEBSITE_URL: process.env.PUBLIC_WEBSITE_URL || '',
+                PUBLIC_API_URL: process.env.PUBLIC_API_URL || '',
             }}
         >
             window.__ENV__ = {
