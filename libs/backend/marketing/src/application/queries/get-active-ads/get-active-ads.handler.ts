@@ -1,71 +1,24 @@
-import { Redis } from 'ioredis';
-import { logger } from '@metacult/backend-infrastructure';
+import type { AdsGateway } from '../../ports/ads.gateway.interface';
 import type { GetActiveAdsQuery } from './get-active-ads.query';
-import { Ad } from '../../../domain/ad.entity';
+import type { Ad } from '../../../domain/ad.entity';
 
 /**
  * Cas d'Utilisation : Récupérer les campagnes pubs actives.
- * Simule un appel externe (Vendor) et met en cache pour réduire latence et coûts.
+ * Délègue la récupération au Gateway (Port).
  *
  * @class GetActiveAdsHandler
  */
 export class GetActiveAdsHandler {
-  constructor(private readonly redis: Redis) {}
+  constructor(private readonly adsGateway: AdsGateway) {}
 
   /**
    * Récupère les pubs.
-   * Stratégie : Cache-First. Si expiré, simule un fetch et met en cache pour 30 minutes.
+   * Stratégie déléguée au Gateway : Cache-First, puis fetch externe si miss.
    *
    * @param {GetActiveAdsQuery} query - DTO vide.
    * @returns {Promise<Ad[]>} Liste de pubs.
    */
   async execute(): Promise<Ad[]> {
-    const cacheKey = 'marketing:ads:active';
-
-    // 1. Try Cache
-    const cached = await this.redis.get(cacheKey);
-    if (cached) {
-      return JSON.parse(cached);
-    }
-
-    // 2. Simulate Fetch (Miss)
-    logger.info('[Marketing] Fetching active ads from external provider');
-    const ads: Ad[] = [
-      new Ad({
-        id: 'ad-1',
-        title: 'Buy Metacult Pro',
-        type: 'SPONSORED',
-        url: 'https://metacult.com/pro',
-      }),
-      new Ad({
-        id: 'ad-2',
-        title: 'New Game Release',
-        type: 'SPONSORED',
-        url: 'https://example.com/game',
-      }),
-      new Ad({
-        id: 'ad-3',
-        title: 'Energy Drink',
-        type: 'SPONSORED',
-        url: 'https://example.com/drink',
-      }),
-      new Ad({
-        id: 'ad-4',
-        title: 'Gaming Chair',
-        type: 'SPONSORED',
-        url: 'https://example.com/chair',
-      }),
-      new Ad({
-        id: 'ad-5',
-        title: 'Headset',
-        type: 'SPONSORED',
-        url: 'https://example.com/headset',
-      }),
-    ];
-
-    // 3. Set Cache (TTL 30 min = 1800s)
-    await this.redis.set(cacheKey, JSON.stringify(ads), 'EX', 1800);
-
-    return ads;
+    return this.adsGateway.getActiveAds();
   }
 }

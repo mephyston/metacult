@@ -43,7 +43,10 @@ import * as infraSchema from '@metacult/backend-infrastructure';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { initCrons } from './src/cron/cron.service';
 import { errorMiddleware } from './src/middlewares/error.middleware';
-import { GetActiveAdsHandler } from '@metacult/backend-marketing';
+import {
+  GetActiveAdsHandler,
+  RedisAdsAdapter,
+} from '@metacult/backend-marketing';
 
 import { runMigrations } from '@metacult/backend-infrastructure';
 
@@ -124,7 +127,8 @@ const searchHandler = CatalogModuleFactory.createSearchMediaHandler(
 );
 
 // 2. Module Marketing
-const adsHandler = new GetActiveAdsHandler(redisClient);
+const adsGateway = new RedisAdsAdapter(redisClient);
+const adsHandler = new GetActiveAdsHandler(adsGateway);
 
 // 3. Module Discovery (Relie Catalog & Marketing)
 const mediaSearchAdapter = {
