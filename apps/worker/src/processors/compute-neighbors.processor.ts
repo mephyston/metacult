@@ -12,7 +12,6 @@ const { db } = getDbConnection();
 const affinityRepo = new DrizzleAffinityRepository(db as any); // Cast as any because infrastructure schema might differ slightly but compatible at runtime
 const similarityRepo = new DrizzleSimilarityRepository(db as any);
 const computeNeighborsService = new ComputeNeighborsService(
-  db as any,
   affinityRepo,
   similarityRepo,
 );

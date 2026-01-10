@@ -1,15 +1,11 @@
-import { sql } from 'drizzle-orm';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { AffinityRepository } from '../../domain/ports/affinity.repository.interface';
 import type { SimilarityRepository } from '../../domain/ports/similarity.repository.interface';
 import { SimilarityCalculator } from '../../domain/services/similarity-calculator.service';
-import { userMediaAffinity } from '../../infrastructure/db/user_media_affinity.schema';
 import { Neighbor } from '../../domain/entities/neighbor.entity';
 import { logger } from '@metacult/backend-infrastructure';
 
 export class ComputeNeighborsService {
   constructor(
-    private readonly db: NodePgDatabase<any>,
     private readonly affinityRepository: AffinityRepository,
     private readonly similarityRepository: SimilarityRepository,
   ) {}
@@ -26,10 +22,7 @@ export class ComputeNeighborsService {
     logger.info('[ComputeNeighborsService] Starting batch job...');
 
     // 1. Get all users who have atleast some activity
-    const usersResult = await this.db.execute(
-      sql`SELECT DISTINCT user_id FROM ${userMediaAffinity}`,
-    );
-    const userIds = usersResult.rows.map((r: any) => r.user_id as string);
+    const userIds = await this.affinityRepository.findAllUsersWithAffinity();
 
     logger.info(
       `[ComputeNeighborsService] Found ${userIds.length} users to process.`,
@@ -48,23 +41,11 @@ export class ComputeNeighborsService {
     // Filter for meaningful interactions (score > 1200 is a good heuristic for "liked" or "engaged",
     // but the prompt said "having at least 3 media in common with scores > 1200").
     // We assume this means BOTH users must have scored > 1200 on the item to count it as a "strong link".
-    const candidatesQuery = sql`
-        SELECT 
-            b.user_id as neighbor_id,
-            COUNT(*) as shared_count
-        FROM ${userMediaAffinity} a
-        JOIN ${userMediaAffinity} b ON a.media_id = b.media_id AND a.user_id != b.user_id
-        WHERE 
-            a.user_id = ${userId} 
-            AND a.score > 1200 
-            AND b.score > 1200
-        GROUP BY b.user_id
-        HAVING COUNT(*) >= 3
-    `;
 
-    const candidatesResult = await this.db.execute(candidatesQuery);
-    const candidateIds = candidatesResult.rows.map(
-      (r: any) => r.neighbor_id as string,
+    const candidateIds = await this.affinityRepository.findCandidateNeighbors(
+      userId,
+      3,
+      1200,
     );
 
     if (candidateIds.length === 0) {

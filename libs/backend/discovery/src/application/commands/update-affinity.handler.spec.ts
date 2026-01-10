@@ -12,6 +12,8 @@ describe('UpdateAffinityHandler', () => {
     save: mock(() => Promise.resolve()),
     findByUserAndMedia: mock(() => Promise.resolve(null)),
     findByUser: mock(() => Promise.resolve([])), // Assuming it returns an array of affinities
+    findAllUsersWithAffinity: mock(() => Promise.resolve([])),
+    findCandidateNeighbors: mock(() => Promise.resolve([])),
   };
 
   // Mock DB

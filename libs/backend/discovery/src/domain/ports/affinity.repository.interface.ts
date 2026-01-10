@@ -1,4 +1,5 @@
 import { Affinity } from '../entities/affinity.entity';
+import { Neighbor } from '../entities/neighbor.entity';
 
 export interface AffinityRepository {
   /**
@@ -21,4 +22,21 @@ export interface AffinityRepository {
    * @returns Array of affinity entities.
    */
   findByUser(userId: string): Promise<Affinity[]>;
+
+  /**
+   * Finds all users who have at least one affinity record.
+   */
+  findAllUsersWithAffinity(): Promise<string[]>;
+
+  /**
+   * Finds candidate neighbors for a user based on shared media interactions.
+   * @param userId The ID of the user to find candidates for.
+   * @param minSharedInteractions Minimum number of shared interactions (default 3).
+   * @param minScore Minimum score for an interaction to be considered (default 1200).
+   */
+  findCandidateNeighbors(
+    userId: string,
+    minSharedInteractions?: number,
+    minScore?: number,
+  ): Promise<string[]>;
 }

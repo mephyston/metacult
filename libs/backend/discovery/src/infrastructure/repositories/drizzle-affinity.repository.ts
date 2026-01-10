@@ -1,5 +1,5 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import type { AffinityRepository } from '../../domain/ports/affinity.repository.interface';
 import { Affinity } from '../../domain/entities/affinity.entity';
 import { userMediaAffinity } from '../db/user_media_affinity.schema';
@@ -72,5 +72,52 @@ export class DrizzleAffinityRepository implements AffinityRepository {
           lastUpdated: row.lastUpdated,
         }),
     );
+  }
+
+  async findAllUsersWithAffinity(): Promise<string[]> {
+    const result = await this.db
+      .selectDistinct({ userId: userMediaAffinity.userId })
+      .from(userMediaAffinity);
+    return result.map((r) => r.userId);
+  }
+
+  async findCandidateNeighbors(
+    userId: string,
+    minSharedInteractions = 3,
+    minScore = 1200,
+  ): Promise<string[]> {
+    /*
+     SQL Logic moved from ComputeNeighborsService:
+     SELECT
+         b.user_id as neighbor_id,
+         COUNT(*) as shared_count
+     FROM user_media_affinity a
+     JOIN user_media_affinity b ON a.media_id = b.media_id AND a.user_id != b.user_id
+     WHERE
+         a.user_id = ${userId}
+         AND a.score > 1200
+         AND b.score > 1200
+     GROUP BY b.user_id
+     HAVING COUNT(*) >= 3
+    */
+    // We need raw SQL for the self-join/complex condition or use Drizzle's query builder if possible.
+    // Using `sql` tag is cleaner for this specific complex join.
+    // Accessing the table name directly or via sql interpolation.
+
+    const candidatesQuery = sql`
+        SELECT 
+            b.user_id as neighbor_id
+        FROM ${userMediaAffinity} a
+        JOIN ${userMediaAffinity} b ON a.media_id = b.media_id AND a.user_id != b.user_id
+        WHERE 
+            a.user_id = ${userId} 
+            AND a.score > ${minScore} 
+            AND b.score > ${minScore}
+        GROUP BY b.user_id
+        HAVING COUNT(*) >= ${minSharedInteractions}
+    `;
+
+    const result = await this.db.execute(candidatesQuery);
+    return result.rows.map((r: any) => r.neighbor_id as string);
   }
 }

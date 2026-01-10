@@ -7,16 +7,13 @@ import { Neighbor } from '../../domain/entities/neighbor.entity';
 import { Affinity } from '../../domain/entities/affinity.entity';
 
 describe('ComputeNeighborsService', () => {
-  // Mock DB
-  const mockDb = {
-    execute: mock(),
-  };
-
   // Mock Repositories
   const mockAffinityRepo: AffinityRepository = {
     save: mock(() => Promise.resolve()),
     findByUserAndMedia: mock(() => Promise.resolve(null)),
     findByUser: mock(() => Promise.resolve([])),
+    findAllUsersWithAffinity: mock(() => Promise.resolve([])),
+    findCandidateNeighbors: mock(() => Promise.resolve([])),
   };
 
   const mockSimilarityRepo: SimilarityRepository = {
@@ -30,30 +27,28 @@ describe('ComputeNeighborsService', () => {
   } as any as SimilarityCalculator;
 
   const service = new ComputeNeighborsService(
-    mockDb as any,
     mockAffinityRepo,
     mockSimilarityRepo,
   );
 
   // FIX: Clear mocks between tests
   (mockAffinityRepo.findByUser as any).mockClear();
+  (mockAffinityRepo.findAllUsersWithAffinity as any).mockClear();
+  (mockAffinityRepo.findCandidateNeighbors as any).mockClear();
   (mockSimilarityRepo.save as any).mockClear();
-  mockDb.execute.mockClear();
 
   it('should process users and save neighbors', async () => {
     // 1. Mock finding users
-    mockDb.execute.mockResolvedValueOnce({
-      rows: [{ user_id: 'u1' }],
-    });
+    (mockAffinityRepo.findAllUsersWithAffinity as any).mockResolvedValueOnce([
+      'u1',
+    ]);
 
     // 2. Mock finding candidates for u1
-    // Return u2 and u3 as candidates
-    mockDb.execute.mockResolvedValueOnce({
-      rows: [
-        { neighbor_id: 'u2', shared_count: 5 },
-        { neighbor_id: 'u3', shared_count: 4 },
-      ],
-    });
+    // Return u2 and u3 as candidates (IDs)
+    (mockAffinityRepo.findCandidateNeighbors as any).mockResolvedValueOnce([
+      'u2',
+      'u3',
+    ]);
 
     // 3. Mock Repositories finding affinities
     const u1Affinities = [Affinity.create('u1', 'm1', 1400)];
@@ -69,25 +64,25 @@ describe('ComputeNeighborsService', () => {
     await service.execute();
 
     // 5. Verify
-    expect(mockDb.execute).toHaveBeenCalledTimes(2); // Get users + Get candidates
+    expect(mockAffinityRepo.findAllUsersWithAffinity).toHaveBeenCalledTimes(1);
+    expect(mockAffinityRepo.findCandidateNeighbors).toHaveBeenCalledTimes(1);
     expect(mockAffinityRepo.findByUser).toHaveBeenCalledTimes(3); // u1, u2, u3
     expect(mockSimilarityRepo.save).toHaveBeenCalledTimes(2); // saved u2 and u3 (both mock calc returns 0.5 > 0)
   });
 
   it('should ignore users with no candidates', async () => {
     // Clear mocks manually for this test case isolation
-    mockDb.execute.mockClear();
+    (mockAffinityRepo.findAllUsersWithAffinity as any).mockClear();
+    (mockAffinityRepo.findCandidateNeighbors as any).mockClear();
     (mockAffinityRepo.findByUser as any).mockClear();
     (mockSimilarityRepo.save as any).mockClear();
 
-    mockDb.execute.mockResolvedValueOnce({
-      rows: [{ user_id: 'u1' }],
-    });
+    (mockAffinityRepo.findAllUsersWithAffinity as any).mockResolvedValueOnce([
+      'u1',
+    ]);
 
     // No candidates
-    mockDb.execute.mockResolvedValueOnce({
-      rows: [],
-    });
+    (mockAffinityRepo.findCandidateNeighbors as any).mockResolvedValueOnce([]);
 
     await service.execute();
 
