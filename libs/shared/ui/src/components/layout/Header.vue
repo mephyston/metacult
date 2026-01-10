@@ -124,7 +124,8 @@ onMounted(async () => {
             profile.nextLevelXp = stats.nextLevelXp;
           }
         } catch (e) {
-          // Silently fail - gamification is non-critical
+          // Non-critical: log for debugging but don't break the UI
+          logger.debug('[Header] Failed to fetch gamification stats:', e);
         }
 
         sessionUser.value = profile;
