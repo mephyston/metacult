@@ -101,15 +101,9 @@ try {
         <script
             is:inline
             define:vars={{
-                PUBLIC_WEBAPP_URL:
-                    process.env.PUBLIC_WEBAPP_URL ||
-                    import.meta.env.PUBLIC_WEBAPP_URL,
-                PUBLIC_WEBSITE_URL:
-                    process.env.PUBLIC_WEBSITE_URL ||
-                    import.meta.env.PUBLIC_WEBSITE_URL,
-                PUBLIC_API_URL:
-                    process.env.PUBLIC_API_URL ||
-                    import.meta.env.PUBLIC_API_URL,
+                PUBLIC_WEBAPP_URL: process.env.PUBLIC_WEBAPP_URL || 'https://app.metacult.app',
+                PUBLIC_WEBSITE_URL: process.env.PUBLIC_WEBSITE_URL || 'https://metacult.app',
+                PUBLIC_API_URL: process.env.PUBLIC_API_URL || 'https://api.metacult.app',
             }}
         >
             window.__ENV__ = {
