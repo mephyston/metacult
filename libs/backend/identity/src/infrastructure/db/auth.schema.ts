@@ -1,4 +1,4 @@
-import { pgSchema, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgSchema, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 import { type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 
 /**
@@ -9,17 +9,19 @@ export const identitySchema = pgSchema('identity');
 
 /** Table des utilisateurs (pour l'authentification). */
 export const user = identitySchema.table('user', {
-    id: text('id').primaryKey(),
-    name: text('name').notNull(),
-    email: text('email').notNull().unique(),
-    emailVerified: boolean('email_verified').notNull(),
-    image: text('image'),
-    createdAt: timestamp('created_at').notNull(),
-    updatedAt: timestamp('updated_at').notNull(),
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  emailVerified: boolean('email_verified').notNull(),
+  image: text('image'),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
 });
 
 /** Table des sessions actives. */
-export const session = identitySchema.table('session', {
+export const session = identitySchema.table(
+  'session',
+  {
     id: text('id').primaryKey(),
     expiresAt: timestamp('expires_at').notNull(),
     token: text('token').notNull().unique(),
@@ -28,18 +30,24 @@ export const session = identitySchema.table('session', {
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
     userId: text('user_id')
-        .notNull()
-        .references(() => user.id, { onDelete: 'cascade' }),
-});
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+  },
+  (t) => ({
+    userIdIdx: index('idx_session_user_id').on(t.userId),
+  }),
+);
 
 /** Table des comptes liés (OAuth, etc.). */
-export const account = identitySchema.table('account', {
+export const account = identitySchema.table(
+  'account',
+  {
     id: text('id').primaryKey(),
     accountId: text('account_id').notNull(),
     providerId: text('provider_id').notNull(),
     userId: text('user_id')
-        .notNull()
-        .references(() => user.id, { onDelete: 'cascade' }),
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
     accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
     idToken: text('id_token'),
@@ -49,16 +57,20 @@ export const account = identitySchema.table('account', {
     password: text('password'),
     createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at').notNull(),
-});
+  },
+  (t) => ({
+    userIdIdx: index('idx_account_user_id').on(t.userId),
+  }),
+);
 
 /** Table de vérification (tokens email, etc.). */
 export const verification = identitySchema.table('verification', {
-    id: text('id').primaryKey(),
-    identifier: text('identifier').notNull(),
-    value: text('value').notNull(),
-    expiresAt: timestamp('expires_at').notNull(),
-    createdAt: timestamp('created_at'),
-    updatedAt: timestamp('updated_at'),
+  id: text('id').primaryKey(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at'),
+  updatedAt: timestamp('updated_at'),
 });
 
 // --- Types ---

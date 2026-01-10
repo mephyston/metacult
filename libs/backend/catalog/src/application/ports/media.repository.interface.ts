@@ -17,6 +17,14 @@ export interface MediaSearchFilters {
   limit?: number;
   /** Tri des résultats */
   orderBy?: 'random' | 'recent' | 'popularity';
+  /** Année de sortie (Filtre Strict) */
+  releaseYear?: number;
+  /** Score Elo Minimum */
+  minElo?: number;
+  /** Tags (ex: 'sci-fi', 'horror') */
+  tags?: string[];
+  /** Pagination : Page actuelle (1-indexed) */
+  page?: number;
 }
 
 import type { MediaReadDto } from '../queries/search-media/media-read.dto';
@@ -48,6 +56,16 @@ export interface IMediaRepository {
    * @returns {Promise<Media[]>} Liste d'entités du domaine.
    */
   search(filters: MediaSearchFilters): Promise<Media[]>;
+
+  /**
+   * Recherche avancée avec pagination et filtres complexes.
+   * (Mode B : DB Locale uniquement)
+   * @param {MediaSearchFilters} filters
+   * @returns {Promise<{ items: Media[]; total: number }>}
+   */
+  searchAdvanced(
+    filters: MediaSearchFilters,
+  ): Promise<{ items: Media[]; total: number }>;
 
   /**
    * Recherche optimisée pour la lecture (CQRS).

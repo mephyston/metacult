@@ -1,0 +1,16 @@
+{
+  "name": "@metacult/shared-local-db",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/index.ts",
+  "peerDependencies": {
+    "dexie": "^4.0.0",
+    "@metacult/shared-types": "workspace:*"
+  },
+  "nx": {
+    "tags": [
+      "scope:shared",
+      "type:util"
+    ]
+  }
+}

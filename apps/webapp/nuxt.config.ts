@@ -1,4 +1,3 @@
-/* eslint-disable @nx/enforce-module-boundaries */
 import { fileURLToPath } from 'url';
 import tailwindcss from '@tailwindcss/vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
@@ -15,8 +14,90 @@ export default {
     host: 'localhost',
     port: 4201,
   },
-  modules: ['@nuxtjs/i18n', '@nuxtjs/google-fonts'],
-  // @ts-ignore - i18n module config types not available until build
+  modules: ['@nuxtjs/i18n', '@nuxtjs/google-fonts', '@vite-pwa/nuxt'],
+
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'Metacult',
+      short_name: 'Metacult',
+      theme_color: '#09090b',
+      background_color: '#09090b',
+      display: 'standalone',
+      orientation: 'portrait',
+      scope: '/',
+      start_url: '/',
+      icons: [
+        {
+          src: 'pwa-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+        },
+        {
+          src: 'pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+        },
+      ],
+    },
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      runtimeCaching: [
+        {
+          // Cache Google Books Images
+          urlPattern: /^https:\/\/books\.google\.com\/books\/.*$/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'google-books-cache',
+            expiration: {
+              maxEntries: 500,
+              maxAgeSeconds: 60 * 60 * 24 * 365, // 1 Year
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+        {
+          // Cache IGDB Images (images.igdb.com)
+          urlPattern: /^https:\/\/images\.igdb\.com\/.*$/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'igdb-images-cache',
+            expiration: {
+              maxEntries: 500,
+              maxAgeSeconds: 60 * 60 * 24 * 365, // 1 Year
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+        {
+          // Cache Placeholder Images
+          urlPattern: /^https:\/\/placehold\.co\/.*$/,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'placeholder-cache',
+            expiration: {
+              maxEntries: 20,
+              maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+      ],
+    },
+    devOptions: {
+      enabled: true,
+      suppressWarnings: true,
+      navigateFallback: '/',
+      type: 'module',
+    },
+  },
+
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'fr',
@@ -81,13 +162,7 @@ export default {
         target: 'esnext',
       },
     },
-    routeRules: {
-      '/api/**': {
-        proxy: process.env.INTERNAL_API_URL
-          ? `${process.env.INTERNAL_API_URL}/api/**`
-          : 'http://localhost:3000/api/**',
-      },
-    },
+    // NOTE: API proxy is now handled by server/api/[...].ts for runtime env var support
   },
   googleFonts: {
     families: {

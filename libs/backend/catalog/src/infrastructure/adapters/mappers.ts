@@ -4,11 +4,13 @@ import type {
   TmdbTvRaw,
   GoogleBookRaw,
 } from '../types/raw-responses';
+import { InvalidProviderDataError } from '../../domain/errors/catalog.errors';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Rating } from '../../domain/value-objects/rating.vo';
 import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
 import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
+import { ProviderSource } from '@metacult/shared-core';
 import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
 import { Game, Movie, TV, Book } from '../../domain/entities/media.entity';
 
@@ -54,7 +56,8 @@ const createReleaseYear = (
   }
 };
 // Helper for SEO Slugs
-const slugify = (text: string): string => {
+const slugify = (text: string | null | undefined): string => {
+  if (!text) return '';
   return text
     .toString()
     .toLowerCase()
@@ -77,23 +80,32 @@ const slugify = (text: string): string => {
  * @param {string} id - ID interne pré-généré.
  */
 export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
+  if (!raw.name) {
+    throw new InvalidProviderDataError(
+      ProviderSource.IGDB,
+      `Game missing name (ID: ${raw.id})`,
+    );
+  }
   const rating = raw.total_rating ? raw.total_rating / 10 : null;
-  return new Game(
+  return new Game({
     id,
-    raw.name,
-    slugify(raw.name),
-    raw.summary || null,
+    title: raw.name,
+    slug: slugify(`${raw.name}-igdb-${raw.id}`),
+    description: raw.summary || null,
     // IGDB returns t_thumb (90x90) by default. Upgrade to t_cover_big (264x374).
-    createCoverUrl(raw.cover?.url?.replace('t_thumb', 't_cover_big')),
-    createRating(rating),
-    createReleaseYear(raw.first_release_date),
-    new ExternalReference('igdb', String(raw.id)),
-    raw.platforms?.map((p) => p.name) || [],
-    null, // Developer not fetched
-    null, // TimeToBeat not fetched
-    1500,
-    0,
-  );
+    coverUrl: createCoverUrl(raw.cover?.url?.replace('t_thumb', 't_cover_big')),
+    rating: createRating(rating),
+    releaseYear: createReleaseYear(raw.first_release_date),
+    externalReference: new ExternalReference(
+      ProviderSource.IGDB,
+      String(raw.id),
+    ),
+    platform: raw.platforms?.map((p) => p.name) || [],
+    developer: null, // Developer not fetched
+    timeToBeat: null, // TimeToBeat not fetched
+    eloScore: 1500,
+    matchCount: 0,
+  });
 }
 
 /**
@@ -102,23 +114,32 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
  * @param {string} id - ID interne pré-généré.
  */
 export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
+  if (!raw.title) {
+    throw new InvalidProviderDataError(
+      ProviderSource.TMDB,
+      `Movie missing title (ID: ${raw.id})`,
+    );
+  }
   const posterUrl = raw.poster_path
     ? `https://image.tmdb.org/t/p/w500${raw.poster_path}`
     : null;
-  return new Movie(
+  return new Movie({
     id,
-    raw.title,
-    slugify(raw.title),
-    raw.overview || null,
-    createCoverUrl(posterUrl),
-    createRating(raw.vote_average),
-    createReleaseYear(raw.release_date),
-    new ExternalReference('tmdb', String(raw.id)),
-    null, // Director
-    raw.runtime || null,
-    1500,
-    0,
-  );
+    title: raw.title,
+    slug: slugify(`${raw.title}-tmdb-${raw.id}`),
+    description: raw.overview || null,
+    coverUrl: createCoverUrl(posterUrl),
+    rating: createRating(raw.vote_average),
+    releaseYear: createReleaseYear(raw.release_date),
+    externalReference: new ExternalReference(
+      ProviderSource.TMDB,
+      String(raw.id),
+    ),
+    director: null, // Director
+    durationMinutes: raw.runtime || null,
+    eloScore: 1500,
+    matchCount: 0,
+  });
 }
 
 /**
@@ -127,24 +148,33 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
  * @param {string} id - ID interne pré-généré.
  */
 export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
+  if (!raw.name) {
+    throw new InvalidProviderDataError(
+      ProviderSource.TMDB,
+      `TV missing name (ID: ${raw.id})`,
+    );
+  }
   const posterUrl = raw.poster_path
     ? `https://image.tmdb.org/t/p/w500${raw.poster_path}`
     : null;
-  return new TV(
+  return new TV({
     id,
-    raw.name,
-    slugify(raw.name),
-    raw.overview || null,
-    createCoverUrl(posterUrl),
-    createRating(raw.vote_average),
-    createReleaseYear(raw.first_air_date),
-    new ExternalReference('tmdb', String(raw.id)),
-    raw.created_by?.[0]?.name || null,
-    raw.number_of_episodes || null,
-    raw.number_of_seasons || null,
-    1500,
-    0,
-  );
+    title: raw.name,
+    slug: slugify(`${raw.name}-tmdb-${raw.id}`),
+    description: raw.overview || null,
+    coverUrl: createCoverUrl(posterUrl),
+    rating: createRating(raw.vote_average),
+    releaseYear: createReleaseYear(raw.first_air_date),
+    externalReference: new ExternalReference(
+      ProviderSource.TMDB,
+      String(raw.id),
+    ),
+    creator: raw.created_by?.[0]?.name || null,
+    episodesCount: raw.number_of_episodes || null,
+    seasonsCount: raw.number_of_seasons || null,
+    eloScore: 1500,
+    matchCount: 0,
+  });
 }
 
 /**
@@ -154,20 +184,29 @@ export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
  */
 export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
   const info = raw.volumeInfo;
-  return new Book(
+  if (!info.title) {
+    throw new InvalidProviderDataError(
+      ProviderSource.GOOGLE_BOOKS,
+      `Book missing title (ID: ${raw.id})`,
+    );
+  }
+  return new Book({
     id,
-    info.title,
-    slugify(info.title),
-    info.description || null,
-    createCoverUrl(info.imageLinks?.thumbnail),
-    null, // No rating
-    createReleaseYear(info.publishedDate),
-    new ExternalReference('google_books', String(raw.id)),
-    info.authors?.[0] || 'Unknown',
-    info.pageCount || null,
-    1500,
-    0,
-  );
+    title: info.title,
+    slug: slugify(`${info.title}-gb-${raw.id}`),
+    description: info.description || null,
+    coverUrl: createCoverUrl(info.imageLinks?.thumbnail),
+    rating: null, // No rating
+    releaseYear: createReleaseYear(info.publishedDate),
+    externalReference: new ExternalReference(
+      ProviderSource.GOOGLE_BOOKS,
+      String(raw.id),
+    ),
+    author: info.authors?.[0] || 'Unknown',
+    pages: info.pageCount || null,
+    eloScore: 1500,
+    matchCount: 0,
+  });
 }
 
 // processMediaImport removed. Use ImportMediaHandler instead.

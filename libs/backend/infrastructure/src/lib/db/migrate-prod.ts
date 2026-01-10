@@ -5,6 +5,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { sql } from 'drizzle-orm';
 
+import { configService } from '../config/configuration.service';
+
 const LOCK_ID = 8675309; // Use a constant arbitrary integer for the advisory lock
 const MAX_RETRIES = 10;
 const RETRY_DELAY_MS = 2000;
@@ -16,13 +18,13 @@ async function runSafeMigrations() {
 
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const migrationsFolder =
-    process.env.MIGRATIONS_FOLDER ||
+    configService.get('MIGRATIONS_FOLDER') ||
     path.resolve(__dirname, '../../../drizzle');
 
   logger.info({ migrationsFolder }, '📂 Migrations Folder');
 
   // Masked URL debug
-  const dbUrl = process.env.DATABASE_URL || '';
+  const dbUrl = configService.get('DATABASE_URL');
   const maskedUrl = dbUrl.replace(/:([^:@]+)@/, ':****@');
   logger.info({ maskedUrl }, 'Checking DATABASE_URL');
 

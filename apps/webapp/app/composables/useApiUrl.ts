@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-ignore - useRuntimeConfig is auto-imported by Nuxt
 /**
  * Nuxt composable for resolving API URL based on context (SSR vs Client)
  * Uses Split Horizon architecture: internal URL for SSR, public URL for client
@@ -24,7 +22,7 @@ export const useApiUrl = () => {
 /**
  * Nuxt composable for resolving Website URL
  */
-// @ts-ignore - useRuntimeConfig is auto-imported by Nuxt
+
 export const useWebsiteUrl = () => {
   const config = useRuntimeConfig();
   return config.public.websiteUrl || 'http://localhost:4444';

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import { ofetch } from 'ofetch';
 
 export default defineNuxtPlugin(() => {
@@ -9,17 +7,17 @@ export default defineNuxtPlugin(() => {
 
   // Intercept globall $fetch
   const $fetch = ofetch.create({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onRequest({ options }: { options: any }) {
+    onRequest({ options }) {
       options.headers = options.headers || {};
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (options.headers as any)['x-request-id'] = requestId;
+      if (typeof options.headers === 'object' && options.headers !== null) {
+        (options.headers as unknown as Record<string, string>)['x-request-id'] =
+          requestId;
+      }
     },
   });
 
   // Override global $fetch
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  globalThis.$fetch = $fetch as any;
+  (globalThis as any).$fetch = $fetch;
 
   return {
     provide: {

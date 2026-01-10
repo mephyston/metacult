@@ -15,6 +15,8 @@ import {
   IgdbProvider,
   GoogleBooksProvider,
   MediaAlreadyExistsError,
+  InvalidProviderDataError,
+  MediaNotFoundInProviderError,
 } from '@metacult/backend-catalog';
 import { Job } from 'bullmq';
 
@@ -154,7 +156,10 @@ export const processImportMedia = async (
 
         logger.info('✅ [Worker] Daily Global Sync completed successfully.');
       } catch (err: any) {
-        logger.error({ err }, '💥 [Worker] Critical Error in Daily Global Sync');
+        logger.error(
+          { err },
+          '💥 [Worker] Critical Error in Daily Global Sync',
+        );
       }
 
       return;
@@ -218,6 +223,18 @@ export const processImportMedia = async (
           '[Worker] Job skipped (Duplicate)',
         );
         return;
+      }
+
+      if (
+        error instanceof InvalidProviderDataError ||
+        error instanceof MediaNotFoundInProviderError
+      ) {
+        logger.error(
+          // Changed from WARN to ERROR as per request
+          { jobId: job.id, err: error },
+          '[Worker] Job skipped (Invalid Data / Not Found)',
+        );
+        return; // Do NOT rethrow -> Marks job as Completed (but effectively skipped/failed) to prevent Retries
       }
 
       logger.error(

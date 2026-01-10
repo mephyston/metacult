@@ -54,10 +54,16 @@ export const RankingController = new Elysia({ prefix: '/ranking' })
         }
 
         // Exécution de la query
-        const rankings = await getUserRankingsHandler.execute({
+        const result = await getUserRankingsHandler.execute({
           userId,
           limit,
         });
+
+        if (result.isFailure()) {
+          throw result.getError();
+        }
+
+        const rankings = result.getValue();
 
         return {
           data: rankings,

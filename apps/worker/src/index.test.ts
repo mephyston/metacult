@@ -64,6 +64,19 @@ mock.module('@metacult/backend-infrastructure', () => {
   };
 });
 
+// Mock BullMQ to prevent real Redis connection attempts during test
+mock.module('bullmq', () => {
+  return {
+    Queue: class {
+      add = mock(() => Promise.resolve());
+      close = mock(() => Promise.resolve());
+    },
+    Worker: class {
+      close = mock(() => Promise.resolve());
+    },
+  };
+});
+
 describe('Worker Configuration', () => {
   it('should initialize import-queue worker with rate limiting', async () => {
     // 2. Import the worker index

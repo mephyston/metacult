@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'bun:test';
 import { mapMovieToEntity, mapTvToEntity, mapGameToEntity } from './mappers';
 import { MediaType } from '../../domain/entities/media.entity';
+import { InvalidProviderDataError } from '../../domain/errors/catalog.errors';
 
 describe('Media Mappers', () => {
   describe('TMDB Mapper', () => {
@@ -20,7 +21,7 @@ describe('Media Mappers', () => {
       const result = mapMovieToEntity(mockTmdbMovie as any, '123');
 
       expect(result.type as any).toBe('movie');
-      expect(result.title).toBe('Inception');
+      expect(result.slug).toBe('inception-tmdb-101');
       expect((result.releaseYear as any).value).toBe(2010);
       expect((result.rating as any).value).toBe(8.8);
       expect(result.externalReference.id).toBe('101');
@@ -47,7 +48,7 @@ describe('Media Mappers', () => {
       const result = mapTvToEntity(mockTmdbTv as any, '123');
 
       expect(result.type as any).toBe('tv');
-      expect(result.title).toBe('Breaking Bad');
+      expect(result.slug).toBe('breaking-bad-tmdb-202');
       expect(result.creator).toBe('Vince Gilligan');
       expect(result.episodesCount).toBe(62);
       expect(result.seasonsCount).toBe(5);
@@ -86,6 +87,20 @@ describe('Media Mappers', () => {
       expect(result.platform).toEqual(['PC']);
       expect(result.externalReference.id).toBe('303');
       expect(result.externalReference.provider).toBe('igdb');
+    });
+    it('should throw InvalidProviderDataError when name is missing', () => {
+      const mockIgdbGame = {
+        id: 304,
+        // name is missing
+        first_release_date: 1431993600,
+        total_rating: 92.5,
+        platforms: [{ name: 'PC' }],
+      };
+
+      // Should throw specific domain error
+      expect(() => mapGameToEntity(mockIgdbGame as any, '124')).toThrow(
+        InvalidProviderDataError,
+      );
     });
   });
 });

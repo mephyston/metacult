@@ -4,6 +4,7 @@ import ThemeHeadScript from '../components/shared/ThemeHeadScript.astro';
 import { fr } from '../i18n/fr';
 import pkg from '../../package.json';
 import '@metacult/shared-ui/styles/global.css';
+import { getApiUrl } from '../utils/get-api-url';
 
 // ✅ Self-hosted fonts
 import '@fontsource/roboto/300.css';
@@ -22,6 +23,50 @@ const {
     description = 'Le Radar Social pour votre Culture.',
     bodyClass = '',
 } = Astro.props;
+
+// Fetch trending highlights for mega-menu (SSR)
+let trendingHighlights = {
+    movie: null as any,
+    tv: null as any,
+    game: null as any,
+    book: null as any,
+};
+
+try {
+    const baseUrl = getApiUrl();
+
+    // Parallel fetch for all categories
+    const [movieRes, tvRes, gameRes, bookRes] = await Promise.all([
+        fetch(
+            `${baseUrl}/api/discovery/feed/trending?type=movie&limit=1`,
+        ).catch(() => null),
+        fetch(`${baseUrl}/api/discovery/feed/trending?type=tv&limit=1`).catch(
+            () => null,
+        ),
+        fetch(`${baseUrl}/api/discovery/feed/trending?type=game&limit=1`).catch(
+            () => null,
+        ),
+        fetch(`${baseUrl}/api/discovery/feed/trending?type=book&limit=1`).catch(
+            () => null,
+        ),
+    ]);
+
+    // Parse responses safely
+    const parseResponse = async (res: Response | null) => {
+        if (!res?.ok) return null;
+        const data = await res.json();
+        return Array.isArray(data) && data.length > 0 ? data[0] : null;
+    };
+
+    trendingHighlights = {
+        movie: await parseResponse(movieRes),
+        tv: await parseResponse(tvRes),
+        game: await parseResponse(gameRes),
+        book: await parseResponse(bookRes),
+    };
+} catch (error) {
+    console.error('[Layout] Failed to fetch trending highlights:', error);
+}
 ---
 
 <!doctype html>
@@ -34,6 +79,22 @@ const {
         <meta name="generator" content={Astro.generator} />
         <title>{title}</title>
 
+        <!-- Open Graph / Twitter -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={Astro.url} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content="https://metacult.app/og-image.jpg" />
+
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={Astro.url} />
+        <meta property="twitter:title" content={title} />
+        <meta property="twitter:description" content={description} />
+        <meta
+            property="twitter:image"
+            content="https://metacult.app/og-image.jpg"
+        />
+
         <ThemeHeadScript />
 
         <!-- Runtime Environment Variables for Client-Side Hydration (Railway) -->
@@ -43,6 +104,9 @@ const {
                 PUBLIC_WEBAPP_URL:
                     process.env.PUBLIC_WEBAPP_URL ||
                     import.meta.env.PUBLIC_WEBAPP_URL,
+                PUBLIC_WEBSITE_URL:
+                    process.env.PUBLIC_WEBSITE_URL ||
+                    import.meta.env.PUBLIC_WEBSITE_URL,
                 PUBLIC_API_URL:
                     process.env.PUBLIC_API_URL ||
                     import.meta.env.PUBLIC_API_URL,
@@ -50,12 +114,17 @@ const {
         >
             window.__ENV__ = {
                 PUBLIC_WEBAPP_URL: PUBLIC_WEBAPP_URL,
+                PUBLIC_WEBSITE_URL: PUBLIC_WEBSITE_URL,
                 PUBLIC_API_URL: PUBLIC_API_URL,
             };
         </script>
     </head>
     <body class={`font-sans min-h-screen flex flex-col ${bodyClass}`}>
-        <Header client:load labels={fr.header}>
+        <Header
+            client:load
+            labels={fr.header}
+            trendingHighlights={trendingHighlights}
+        >
             <!-- Shared Navigation from default slot -->
             <div slot="search" class="contents">
                 <Search client:load />

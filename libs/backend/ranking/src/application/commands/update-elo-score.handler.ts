@@ -3,6 +3,12 @@ import type { DuelRepository } from '../ports/duel.repository.interface';
 import { MediaNotFoundError } from '../../domain/errors/ranking.errors';
 import { EloCalculator } from '../../domain/services/elo-calculator.service';
 import { UpdateEloScoreCommand } from './update-elo-score.command';
+import { Result, type AppError } from '@metacult/shared-core';
+
+interface EloUpdateResult {
+  winner: { id: string; oldElo: number; newElo: number };
+  loser: { id: string; oldElo: number; newElo: number };
+}
 
 /**
  * Handler pour la commande de mise à jour des scores ELO.
@@ -14,7 +20,9 @@ export class UpdateEloScoreHandler {
     private readonly eloCalculator: EloCalculator,
   ) {}
 
-  async execute(command: UpdateEloScoreCommand): Promise<void> {
+  async execute(
+    command: UpdateEloScoreCommand,
+  ): Promise<Result<EloUpdateResult, AppError>> {
     const { winnerId, loserId } = command;
 
     logger.info(
@@ -32,11 +40,10 @@ export class UpdateEloScoreHandler {
       const missingIds = [];
       if (!winner) missingIds.push(winnerId);
       if (!loser) missingIds.push(loserId);
-      throw new MediaNotFoundError(missingIds);
+      return Result.fail(new MediaNotFoundError(missingIds));
     }
 
     // 2. Calculate New Scores
-    // eloService expects (winnerElo, loserElo)
     const { winnerNewElo, loserNewElo } = this.eloCalculator.calculateNewScores(
       winner.eloScore,
       loser.eloScore,
@@ -49,6 +56,11 @@ export class UpdateEloScoreHandler {
       loserId,
       loserNewElo,
     );
+
+    const result: EloUpdateResult = {
+      winner: { id: winnerId, oldElo: winner.eloScore, newElo: winnerNewElo },
+      loser: { id: loserId, oldElo: loser.eloScore, newElo: loserNewElo },
+    };
 
     logger.info(
       {
@@ -65,5 +77,7 @@ export class UpdateEloScoreHandler {
       },
       '✅ [UpdateEloScoreHandler] Update Complete',
     );
+
+    return Result.ok(result);
   }
 }

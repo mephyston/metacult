@@ -10,7 +10,7 @@ import type {
   GoogleBookRaw,
 } from '../types/raw-responses';
 import { InvalidProviderDataError } from '../../domain/errors/catalog.errors';
-import { API_MESSAGES } from '@metacult/shared-core';
+import { API_MESSAGES, ProviderSource } from '@metacult/shared-core';
 
 /**
  * Valide la structure de réponse d'un jeu IGDB.
@@ -19,7 +19,7 @@ import { API_MESSAGES } from '@metacult/shared-core';
 export function validateIgdbGame(data: unknown): asserts data is IgdbGameRaw {
   if (!data || typeof data !== 'object') {
     throw new InvalidProviderDataError(
-      'igdb',
+      ProviderSource.IGDB,
       API_MESSAGES.VALIDATION.IGDB_NOT_OBJECT,
     );
   }
@@ -28,14 +28,14 @@ export function validateIgdbGame(data: unknown): asserts data is IgdbGameRaw {
 
   if (typeof game.id !== 'number') {
     throw new InvalidProviderDataError(
-      'igdb',
+      ProviderSource.IGDB,
       API_MESSAGES.VALIDATION.IGDB_INVALID_ID,
     );
   }
 
   if (!game.name || typeof game.name !== 'string') {
     throw new InvalidProviderDataError(
-      'igdb',
+      ProviderSource.IGDB,
       API_MESSAGES.VALIDATION.IGDB_INVALID_NAME,
     );
   }
@@ -47,7 +47,7 @@ export function validateIgdbGame(data: unknown): asserts data is IgdbGameRaw {
     typeof game.rating !== 'number'
   ) {
     throw new InvalidProviderDataError(
-      'igdb',
+      ProviderSource.IGDB,
       API_MESSAGES.VALIDATION.IGDB_INVALID_RATING,
     );
   }
@@ -58,7 +58,7 @@ export function validateIgdbGame(data: unknown): asserts data is IgdbGameRaw {
     typeof game.first_release_date !== 'number'
   ) {
     throw new InvalidProviderDataError(
-      'igdb',
+      ProviderSource.IGDB,
       API_MESSAGES.VALIDATION.IGDB_INVALID_RELEASE_DATE,
     );
   }
@@ -69,7 +69,7 @@ export function validateIgdbGame(data: unknown): asserts data is IgdbGameRaw {
     !Array.isArray(game.platforms)
   ) {
     throw new InvalidProviderDataError(
-      'igdb',
+      ProviderSource.IGDB,
       API_MESSAGES.VALIDATION.IGDB_INVALID_PLATFORMS,
     );
   }
@@ -82,7 +82,7 @@ export function validateIgdbGame(data: unknown): asserts data is IgdbGameRaw {
 export function validateTmdbMovie(data: unknown): asserts data is TmdbMovieRaw {
   if (!data || typeof data !== 'object') {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_NOT_OBJECT,
     );
   }
@@ -91,14 +91,14 @@ export function validateTmdbMovie(data: unknown): asserts data is TmdbMovieRaw {
 
   if (typeof movie.id !== 'number') {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_INVALID_ID,
     );
   }
 
   if (!movie.title || typeof movie.title !== 'string') {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_INVALID_TITLE,
     );
   }
@@ -106,7 +106,7 @@ export function validateTmdbMovie(data: unknown): asserts data is TmdbMovieRaw {
   // Vérifie que le media_type est 'movie' pour la cohérence
   if (movie.media_type !== 'movie' && movie.media_type !== undefined) {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_INVALID_MEDIA_TYPE_MOVIE,
     );
   }
@@ -117,7 +117,7 @@ export function validateTmdbMovie(data: unknown): asserts data is TmdbMovieRaw {
     typeof movie.vote_average !== 'number'
   ) {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_INVALID_VOTE_AVERAGE,
     );
   }
@@ -130,7 +130,7 @@ export function validateTmdbMovie(data: unknown): asserts data is TmdbMovieRaw {
 export function validateTmdbTv(data: unknown): asserts data is TmdbTvRaw {
   if (!data || typeof data !== 'object') {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_NOT_OBJECT,
     );
   }
@@ -139,14 +139,14 @@ export function validateTmdbTv(data: unknown): asserts data is TmdbTvRaw {
 
   if (typeof tv.id !== 'number') {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_INVALID_ID,
     );
   }
 
   if (!tv.name || typeof tv.name !== 'string') {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_INVALID_NAME,
     );
   }
@@ -154,7 +154,7 @@ export function validateTmdbTv(data: unknown): asserts data is TmdbTvRaw {
   // Vérifie que le media_type est 'tv' pour la cohérence
   if (tv.media_type !== 'tv' && tv.media_type !== undefined) {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_INVALID_MEDIA_TYPE_TV,
     );
   }
@@ -165,7 +165,7 @@ export function validateTmdbTv(data: unknown): asserts data is TmdbTvRaw {
     typeof tv.vote_average !== 'number'
   ) {
     throw new InvalidProviderDataError(
-      'tmdb',
+      ProviderSource.TMDB,
       API_MESSAGES.VALIDATION.TMDB_INVALID_VOTE_AVERAGE,
     );
   }
@@ -180,7 +180,7 @@ export function validateGoogleBook(
 ): asserts data is GoogleBookRaw {
   if (!data || typeof data !== 'object') {
     throw new InvalidProviderDataError(
-      'google_books',
+      ProviderSource.GOOGLE_BOOKS,
       API_MESSAGES.VALIDATION.GOOGLE_BOOKS_NOT_OBJECT,
     );
   }
@@ -189,14 +189,14 @@ export function validateGoogleBook(
 
   if (!book.id || typeof book.id !== 'string') {
     throw new InvalidProviderDataError(
-      'google_books',
+      ProviderSource.GOOGLE_BOOKS,
       API_MESSAGES.VALIDATION.GOOGLE_BOOKS_INVALID_ID,
     );
   }
 
   if (!book.volumeInfo || typeof book.volumeInfo !== 'object') {
     throw new InvalidProviderDataError(
-      'google_books',
+      ProviderSource.GOOGLE_BOOKS,
       API_MESSAGES.VALIDATION.GOOGLE_BOOKS_INVALID_VOLUME_INFO,
     );
   }
@@ -205,7 +205,7 @@ export function validateGoogleBook(
 
   if (!volumeInfo.title || typeof volumeInfo.title !== 'string') {
     throw new InvalidProviderDataError(
-      'google_books',
+      ProviderSource.GOOGLE_BOOKS,
       API_MESSAGES.VALIDATION.GOOGLE_BOOKS_INVALID_TITLE,
     );
   }
@@ -217,7 +217,7 @@ export function validateGoogleBook(
     !Array.isArray(volumeInfo.authors)
   ) {
     throw new InvalidProviderDataError(
-      'google_books',
+      ProviderSource.GOOGLE_BOOKS,
       API_MESSAGES.VALIDATION.GOOGLE_BOOKS_INVALID_AUTHORS,
     );
   }

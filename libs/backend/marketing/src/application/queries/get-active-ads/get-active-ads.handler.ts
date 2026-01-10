@@ -1,71 +1,36 @@
-import { Redis } from 'ioredis';
-import { logger } from '@metacult/backend-infrastructure';
+import type { AdsGateway } from '../../ports/ads.gateway.interface';
 import type { GetActiveAdsQuery } from './get-active-ads.query';
 import type { Ad } from '../../../domain/ad.entity';
 
+import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+
 /**
  * Cas d'Utilisation : Récupérer les campagnes pubs actives.
- * Simule un appel externe (Vendor) et met en cache pour réduire latence et coûts.
+ * Délègue la récupération au Gateway (Port).
  *
  * @class GetActiveAdsHandler
  */
 export class GetActiveAdsHandler {
-  constructor(private readonly redis: Redis) {}
+  constructor(private readonly adsGateway: AdsGateway) {}
 
   /**
    * Récupère les pubs.
-   * Stratégie : Cache-First. Si expiré, simule un fetch et met en cache pour 30 minutes.
+   * Stratégie déléguée au Gateway : Cache-First, puis fetch externe si miss.
    *
-   * @param {GetActiveAdsQuery} query - DTO vide.
-   * @returns {Promise<Ad[]>} Liste de pubs.
+   * @returns {Promise<Result<Ad[], AppError>>} Liste de pubs encapsulée dans Result.
    */
-  async execute(query: GetActiveAdsQuery): Promise<Ad[]> {
-    const cacheKey = 'marketing:ads:active';
-
-    // 1. Try Cache
-    const cached = await this.redis.get(cacheKey);
-    if (cached) {
-      return JSON.parse(cached);
+  async execute(): Promise<Result<Ad[], AppError>> {
+    try {
+      const ads = await this.adsGateway.getActiveAds();
+      return Result.ok(ads);
+    } catch (error) {
+      return Result.fail(
+        error instanceof AppError
+          ? error
+          : new InfrastructureError(
+              error instanceof Error ? error.message : 'Unknown error',
+            ),
+      );
     }
-
-    // 2. Simulate Fetch (Miss)
-    logger.info('[Marketing] Fetching active ads from external provider');
-    const ads: Ad[] = [
-      {
-        id: 'ad-1',
-        title: 'Buy Metacult Pro',
-        type: 'SPONSORED',
-        url: 'https://metacult.com/pro',
-      },
-      {
-        id: 'ad-2',
-        title: 'New Game Release',
-        type: 'SPONSORED',
-        url: 'https://example.com/game',
-      },
-      {
-        id: 'ad-3',
-        title: 'Energy Drink',
-        type: 'SPONSORED',
-        url: 'https://example.com/drink',
-      },
-      {
-        id: 'ad-4',
-        title: 'Gaming Chair',
-        type: 'SPONSORED',
-        url: 'https://example.com/chair',
-      },
-      {
-        id: 'ad-5',
-        title: 'Headset',
-        type: 'SPONSORED',
-        url: 'https://example.com/headset',
-      },
-    ];
-
-    // 3. Set Cache (TTL 30 min = 1800s)
-    await this.redis.set(cacheKey, JSON.stringify(ads), 'EX', 1800);
-
-    return ads;
   }
 }

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metacult UX Design Directions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zinc: { 900: '#18181b', 950: '#09090b' },
+                        violet: { 500: '#8b5cf6' },
+                        emerald: { 400: '#34d399' },
+                        rose: { 500: '#f43f5e' },
+                        amber: { 400: '#fbbf24' },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'], // Simulated
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Outfit', sans-serif; }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white p-8">
+
+    <header class="mb-12 text-center">
+        <h1 class="font-display text-4xl font-bold mb-2 tracking-tight text-white">Metacult Design Directions</h1>
+        <p class="text-zinc-400">Comparing 3 distinct visual strategies for the "Reptilian Swipe"</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl mx-auto">
+
+        <!-- DIRECTION 1: CINEMATIC IMMERSIVE -->
+        <div class="flex flex-col items-center">
+            <h2 class="font-display text-2xl font-bold mb-4 text-violet-400">1. Cinematic Immersive</h2>
+            <p class="text-sm text-zinc-500 mb-6 text-center">Full bleed. Zero UI friction. TikTok energy.</p>
+            
+            <!-- Phone Frame -->
+            <div class="relative w-[320px] h-[640px] bg-black rounded-[40px] border-[8px] border-zinc-900 overflow-hidden shadow-2xl shadow-violet-900/20">
+                <!-- Status Bar -->
+                <div class="absolute top-0 w-full h-12 flex justify-between px-6 items-center z-20 text-white/50 text-xs font-medium">
+                    <span>9:41</span>
+                    <div class="flex gap-1"><span>Wi-Fi</span><span>Bat</span></div>
+                </div>
+
+                <!-- Content Layer (Full Image) -->
+                <div class="absolute inset-0 bg-zinc-800">
+                    <img src="https://images.unsplash.com/photo-1534809027769-b00d750a6bac?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover opacity-80" alt="Movie Poster">
+                    <!-- Gradient Overlay -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30"></div>
+                </div>
+
+                <!-- Info Layer (Floating at bottom) -->
+                <div class="absolute bottom-0 w-full p-6 pb-10 z-10">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider">Sci-Fi</span>
+                        <span class="text-amber-400 text-xs">★ 8.8</span>
+                    </div>
+                    <h3 class="font-display text-3xl font-bold leading-none mb-2">Blade Runner 2049</h3>
+                    <p class="text-sm text-zinc-300 line-clamp-2 leading-snug">Young Blade Runner K's discovery of a long-buried secret leads him to track down former Blade Runner Rick Deckard...</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- DIRECTION 2: MUSEUM CURATOR -->
+        <div class="flex flex-col items-center">
+            <h2 class="font-display text-2xl font-bold mb-4 text-emerald-400">2. Museum Curator</h2>
+            <p class="text-sm text-zinc-500 mb-6 text-center">Framed art. Elegant typography. Gallery feel.</p>
+            
+            <!-- Phone Frame -->
+            <div class="relative w-[320px] h-[640px] bg-zinc-950 rounded-[40px] border-[8px] border-zinc-800 overflow-hidden shadow-2xl">
+                <!-- Header -->
+                <div class="pt-12 px-6 mb-4 flex justify-between items-end">
+                    <h1 class="font-display text-lg text-white tracking-widest uppercase">Daily Stack</h1>
+                    <span class="text-zinc-500 text-xs font-mono">03 / 10</span>
+                </div>
+
+                <!-- Card Container -->
+                <div class="mx-4 h-[440px] relative">
+                     <!-- Next Card Peeking -->
+                    <div class="absolute inset-0 top-2 scale-[0.96] bg-zinc-900 rounded-3xl border border-zinc-800"></div>
+                    
+                    <!-- Main Card -->
+                    <div class="absolute inset-0 bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden shadow-xl p-1">
+                        <div class="relative w-full h-full rounded-2xl overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1596727147705-54a9d0c2067d?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover" alt="Art">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meta Data Below -->
+                <div class="px-6 mt-6">
+                    <h2 class="font-display text-xl text-white mb-1">Architecture of Light</h2>
+                    <div class="flex justify-between text-zinc-500 text-xs font-mono">
+                        <span>DOCU-SERIES</span>
+                        <span>2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- DIRECTION 3: ARCADE TRIAGE -->
+        <div class="flex flex-col items-center">
+            <h2 class="font-display text-2xl font-bold mb-4 text-rose-400">3. Arcade Triage</h2>
+            <p class="text-sm text-zinc-500 mb-6 text-center">Gamified. Big buttons. High contrast UI.</p>
+            
+            <!-- Phone Frame -->
+            <div class="relative w-[320px] h-[640px] bg-zinc-900 rounded-[40px] border-[8px] border-zinc-700 overflow-hidden shadow-2xl">
+               <!-- Progress Bar -->
+               <div class="absolute top-0 w-full h-1.5 bg-zinc-800 z-30">
+                   <div class="h-full w-[30%] bg-gradient-to-r from-violet-500 to-rose-500"></div>
+               </div>
+
+                <!-- Card -->
+                <div class="mt-8 mx-4 h-[420px] bg-black rounded-3xl relative border-2 border-zinc-800 overflow-hidden group">
+                     <img src="https://images.unsplash.com/photo-1616530940355-351fabd9524b?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover opacity-60" alt="Cyberpunk">
+                     <div class="absolute inset-0 flex items-center justify-center">
+                         <h2 class="font-display text-4xl font-black text-white px-4 text-center drop-shadow-lg italic -rotate-6">CYBERPUNK 2077</h2>
+                     </div>
+                     <div class="absolute top-4 right-4 bg-rose-600 text-white text-xs font-bold px-2 py-1 rounded rotate-3">HOT</div>
+                </div>
+
+                <!-- Controls -->
+                <div class="absolute bottom-8 w-full px-6 flex justify-between items-center">
+                    <button class="w-16 h-16 rounded-full border-2 border-rose-500/50 flex items-center justify-center text-rose-500 text-2xl hover:bg-rose-500 hover:text-white transition">✕</button>
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs text-zinc-500 font-mono mb-1">SWIPE</span>
+                        <div class="w-12 h-1 bg-zinc-700 rounded-full"></div>
+                    </div>
+                    <button class="w-16 h-16 rounded-full border-2 border-emerald-500/50 flex items-center justify-center text-emerald-500 text-2xl hover:bg-emerald-500 hover:text-white transition">♥</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="max-w-3xl mx-auto mt-16 p-6 bg-zinc-900 rounded-xl border border-zinc-800">
+        <h3 class="font-display text-xl mb-4 text-white">Your Decision</h3>
+        <p class="text-zinc-400 mb-4">Each direction serves a different emotional goal:</p>
+        <ul class="list-disc pl-5 space-y-2 text-zinc-300 text-sm mb-6">
+            <li><strong class="text-violet-400">Cinematic:</strong> Maximum immersion. Best for "Flow". Feels like TikTok.</li>
+            <li><strong class="text-emerald-400">Curator:</strong> More respectful of the content. Easier to read metadata. Feels like a gallery.</li>
+            <li><strong class="text-rose-400">Arcade:</strong> Clearest actions. Fastest "Game Feel". Feels like Tinder.</li>
+        </ul>
+        <div class="p-4 bg-zinc-950 rounded text-center text-zinc-500 text-xs font-mono">
+            Open this file in browser to view full fidelity
+        </div>
+    </div>
+
+</body>
+</html>

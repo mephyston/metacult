@@ -3,12 +3,30 @@ import {
   createWorker,
   IMPORT_QUEUE_NAME,
   logger,
+  configService,
 } from '@metacult/backend-infrastructure';
 import { processRankingUpdate } from './processors/ranking.processor';
 import { RANKING_QUEUE_NAME } from '@metacult/backend-ranking';
+import { processAffinityUpdate } from './processors/affinity.processor';
+import { processComputeNeighbors } from './processors/compute-neighbors.processor';
+import { processGamification } from './processors/gamification.processor';
+import {
+  AFFINITY_QUEUE_NAME,
+  COMPUTE_NEIGHBORS_QUEUE_NAME,
+} from '@metacult/backend-discovery';
+import { Queue } from 'bullmq';
+
+// Queue name for gamification (matches save-interaction.command.ts)
+const GAMIFICATION_QUEUE_NAME = 'gamification-queue';
 
 export const startWorker = async () => {
   logger.info('🚀 Starting Metacult Worker Service...');
+
+  // --- Redis Connection Config ---
+  // Use the centralized REDIS_URL from configService (consistent with infrastructure)
+  const redisConnection = {
+    url: configService.get('REDIS_URL'),
+  };
 
   /**
    * Point d'entrée du Worker.
@@ -29,21 +47,79 @@ export const startWorker = async () => {
     concurrency: 10, // Traitement rapide en parallèle
   });
 
+  // --- Affinity Worker ---
+  const affinityWorker = createWorker(
+    AFFINITY_QUEUE_NAME,
+    processAffinityUpdate,
+    {
+      concurrency: 10,
+    },
+  );
+
+  // --- Compute Neighbors Worker (Batch Job) ---
+  const computeNeighborsWorker = createWorker(
+    COMPUTE_NEIGHBORS_QUEUE_NAME,
+    processComputeNeighbors,
+    {
+      concurrency: 1, // Sequential execution is safer for heavy batch jobs
+    },
+  );
+
+  // --- Gamification Worker ---
+  const gamificationWorker = createWorker(
+    GAMIFICATION_QUEUE_NAME,
+    processGamification,
+    {
+      concurrency: 10,
+    },
+  );
+
+  // Schedule the Cron Job (Upsert)
+  const computeNeighborsQueue = new Queue(COMPUTE_NEIGHBORS_QUEUE_NAME, {
+    connection: redisConnection,
+  });
+
+  await computeNeighborsQueue.add(
+    'compute-neighbors-daily',
+    {},
+    {
+      repeat: {
+        pattern: '0 0 * * *', // Every day at midnight
+      },
+      jobId: 'compute-neighbors-daily-job', // Ensure singleton
+    },
+  );
+  logger.info('📅 Scheduled Compute Neighbors batch job (Daily at 00:00)');
+
   // Daemon mode checks
   process.on('SIGINT', async () => {
     logger.info('🛑 Shutting down workers...');
-    await Promise.all([worker.close(), rankingWorker.close()]);
+    await Promise.all([
+      worker.close(),
+      rankingWorker.close(),
+      affinityWorker.close(),
+      computeNeighborsWorker.close(),
+      gamificationWorker.close(),
+      computeNeighborsQueue.close(),
+    ]);
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
     logger.info('🛑 Shutting down workers...');
-    await Promise.all([worker.close(), rankingWorker.close()]);
+    await Promise.all([
+      worker.close(),
+      rankingWorker.close(),
+      affinityWorker.close(),
+      computeNeighborsWorker.close(),
+      gamificationWorker.close(),
+      computeNeighborsQueue.close(),
+    ]);
     process.exit(0);
   });
 
   logger.info(
-    `👷 Worker listening on queues: ${IMPORT_QUEUE_NAME}, ${RANKING_QUEUE_NAME}`,
+    `👷 Worker listening on queues: ${IMPORT_QUEUE_NAME}, ${RANKING_QUEUE_NAME}, ${AFFINITY_QUEUE_NAME}, ${COMPUTE_NEIGHBORS_QUEUE_NAME}, ${GAMIFICATION_QUEUE_NAME}`,
   );
 };
 

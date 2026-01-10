@@ -28,31 +28,47 @@ export class MediaController {
    * @param {SearchMediaDto['query']} query
    */
   async search(query: SearchMediaDto['query']) {
-    const { q, type, tag } = query;
+    const { q, type, tags, minElo, releaseYear, page } = query;
     const mediaType = type as MediaType | undefined;
 
-    const medias = await this.searchMediaHandler.execute({
+    // Normalize tags to array if string
+    const tagsArray = typeof tags === 'string' ? [tags] : tags;
+
+    const result = await this.searchMediaHandler.execute({
       search: q,
       type: mediaType,
-      tag,
+      tags: tagsArray,
+      minElo,
+      releaseYear,
+      page,
     });
 
-    return medias;
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+
+    return result.getValue();
   }
 
   /**
    * Import manuel d'un média.
    * @param {ImportMediaDto['body']} body
+   * @returns Import result or throws AppError
    */
   async import(body: ImportMediaDto['body']) {
     const { mediaId, type } = body;
     logger.info({ mediaId, type }, '[MediaController] Import request received');
 
-    const { id, slug } = await this.importMediaHandler.execute({
+    const result = await this.importMediaHandler.execute({
       mediaId,
       type: type as MediaType,
     });
 
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+
+    const { id, slug } = result.getValue();
     return { success: true, message: `Imported ${type}: ${mediaId}`, id, slug };
   }
 
@@ -60,7 +76,11 @@ export class MediaController {
    * Récupère les médias récemment ajoutés.
    */
   async getRecent() {
-    return this.getRecentMediaHandler.execute({ limit: 10 });
+    const result = await this.getRecentMediaHandler.execute({ limit: 10 });
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+    return result.getValue();
   }
 
   /**
@@ -68,14 +88,28 @@ export class MediaController {
    * Endpoint: GET /trends
    */
   async getTrends() {
-    return this.getTopRatedMediaHandler.execute({ limit: 5 });
+    const result = await this.getTopRatedMediaHandler.execute({ limit: 5 });
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+    return result.getValue();
   }
 
   /**
    * Récupère un média par son identifiant.
    * @param id UUID du média.
+   * @returns MediaDetailDto or throws AppError
    */
   async getById(id: string) {
-    return this.getMediaByIdHandler.execute(new GetMediaByIdQuery(id));
+    const result = await this.getMediaByIdHandler.execute(
+      new GetMediaByIdQuery(id),
+    );
+
+    if (result.isFailure()) {
+      // Re-throw the error for the framework's error middleware to handle
+      throw result.getError();
+    }
+
+    return result.getValue();
   }
 }

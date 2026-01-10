@@ -1,6 +1,5 @@
 import { Queue } from 'bullmq';
-import { logger } from '@metacult/backend-infrastructure';
-import { DEFAULT_DEV_URLS } from '@metacult/shared-core';
+import { configService, logger } from '@metacult/backend-infrastructure';
 
 export const RANKING_QUEUE_NAME = 'ranking-updates';
 
@@ -19,7 +18,7 @@ export class RankingQueue {
 
   constructor() {
     const connection = {
-      url: process.env.REDIS_URL || DEFAULT_DEV_URLS.REDIS,
+      url: configService.get('REDIS_URL'),
       maxRetriesPerRequest: null, // Required by BullMQ
       enableReadyCheck: false,
       // family: 0 // Auto-detect IPv4/IPv6 (Railway compatible)

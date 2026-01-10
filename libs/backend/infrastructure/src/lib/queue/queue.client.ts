@@ -1,7 +1,9 @@
 import { Queue, Worker, type Processor, type WorkerOptions } from 'bullmq';
 import { logger } from '../logger/logger.service';
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+import { configService } from '../config/configuration.service';
+
+const REDIS_URL = configService.get('REDIS_URL');
 
 // Parse Redis URL slightly more robustly or rely on IORedis auto-parse
 const connection = {

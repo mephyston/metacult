@@ -2,6 +2,7 @@ import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { SearchMediaQuery } from './search-media.query';
 import type {
   GroupedSearchResponseDto,
+  PaginatedSearchResponseDto,
   SearchResultItemSchema,
 } from '../../../api/http/dtos/media.dtos';
 import type { Static } from 'elysia';
@@ -11,8 +12,9 @@ import type {
   TmdbAdapter,
   GoogleBooksAdapter,
 } from '../../../infrastructure/adapters/media.adapters';
-import { MediaType } from '../../../domain/entities/media.entity';
+import { MediaType, Media } from '../../../domain/entities/media.entity';
 import { logger } from '@metacult/backend-infrastructure';
+import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
 
 type SearchResultItem = Static<typeof SearchResultItemSchema>;
 
@@ -32,119 +34,159 @@ export class SearchMediaHandler {
   /**
    * Exécute la logique de recherche unifiée.
    */
-  async execute(query: SearchMediaQuery): Promise<GroupedSearchResponseDto> {
-    const searchTerm = query.search?.trim();
+  async execute(
+    query: SearchMediaQuery,
+  ): Promise<
+    Result<GroupedSearchResponseDto | PaginatedSearchResponseDto, AppError>
+  > {
+    try {
+      const searchTerm = query.search?.trim();
 
-    // FEATURE: Random Feed support
-    if (query.orderBy === 'random') {
-      return this.mapLocalToGrouped(
-        await this.mediaRepository.findRandom({
+      // Check Advanced Filters
+      const isAdvancedFilterActive =
+        !!query.minElo ||
+        !!query.releaseYear ||
+        (!!query.tags && query.tags.length > 0) ||
+        !!query.page;
+
+      if (isAdvancedFilterActive || !searchTerm) {
+        // --- MODE B: Advanced Search (Local Only) ---
+        const page = query.page || 1;
+        const limit = query.limit || 20;
+
+        const { items, total } = await this.mediaRepository.searchAdvanced({
+          search: searchTerm,
+          minElo: query.minElo,
+          releaseYear: query.releaseYear,
+          tags: query.tags,
+          type: query.type,
           excludedIds: query.excludedIds,
-          limit: query.limit ?? 10,
-        }),
-      );
-    }
+          page: page,
+          limit: limit,
+          orderBy: query.orderBy,
+        });
 
-    // FEATURE: If search is empty, return "Discovery" feed (Most Recent)
-    if (!searchTerm) {
-      const recent = await this.mediaRepository.findMostRecent(20);
-      return this.mapLocalToGrouped(recent);
-    }
+        const dtos = items.map((entity) => this.mapEntityToItem(entity));
 
-    if (searchTerm.length < 3) {
-      return this.emptyResponse();
-    }
+        return Result.ok({
+          items: dtos,
+          total,
+          page,
+          totalPages: Math.ceil(total / limit),
+        });
+      }
 
-    const normalizedQuery = searchTerm.toLowerCase();
-    const cacheKey = `search:unified:${normalizedQuery}`;
+      // --- MODE A: Simple Text Search (Hybrid + Grouped) ---
 
-    // 1. Check Redis Cache
-    const cached = await this.redis.get(cacheKey);
-    if (cached) {
-      logger.info({ searchTerm }, '[Search] Cache Hit');
-      return JSON.parse(cached);
-    }
+      // 1. Random Feed specific case (Legacy)
+      if (query.orderBy === 'random') {
+        return Result.ok(
+          this.mapLocalToGrouped(
+            await this.mediaRepository.findRandom({
+              excludedIds: query.excludedIds,
+              limit: query.limit ?? 10,
+            }),
+          ),
+        );
+      }
 
-    logger.info(
-      { searchTerm },
-      '[Search] Cache Miss - Launching hybrid search',
-    );
+      // 2. Short Query Check
+      if (searchTerm!.length < 3) {
+        return Result.ok(this.emptyResponse());
+      }
 
-    // 2. Parallel Execution (Local DB + Remote Providers if needed)
-    // On lance toujours la locale. Pour la distante, on pourrait optimiser,
-    // mais pour le parallélisme demandé, on lance tout si c'est pertinent.
+      const normalizedQuery = searchTerm!.toLowerCase();
+      const cacheKey = `search:unified:${normalizedQuery}`;
 
-    // D'abord, on cherche en local pour voir si on a assez de résultats
-    // Note: Pour une vraie expérience "Unified", on veut souvent mélanger.
-    // La règle demandée est: SI (résultats locaux < 5) => Appelle Distant
+      // 3. Check Redis Cache
+      const cached = await this.redis.get(cacheKey);
+      if (cached) {
+        logger.info({ searchTerm }, '[Search] Cache Hit');
+        return Result.ok(JSON.parse(cached));
+      }
 
-    const localResults = await this.mediaRepository.searchViews({
-      search: searchTerm,
-    });
-
-    const shouldCallRemote = localResults.length < 5;
-    // Si filtre par type spécifique, on peut ajuster, mais ici on reste simple.
-
-    const groupedResponse = this.mapLocalToGrouped(localResults);
-
-    if (shouldCallRemote) {
       logger.info(
-        { localResults: localResults.length },
-        '[Search] Insufficient local results - calling remote providers',
+        { searchTerm },
+        '[Search] Cache Miss - Launching hybrid search',
       );
 
-      // Promise.allSettled pour ne pas fail si un provider est down (429, 500...)
-      const results = await Promise.allSettled([
-        this.igdbAdapter.search(searchTerm),
-        this.tmdbAdapter.search(searchTerm),
-        this.googleBooksAdapter.search(searchTerm),
-      ]);
+      // 4. Local Search
+      const localResults = await this.mediaRepository.searchViews({
+        search: searchTerm,
+        type: query.type, // Legacy support for type in simple search
+        limit: query.limit, // Legacy limit support
+      });
 
-      // Traitement des résultats distants
-      const [igdbRes, tmdbRes, gbooksRes] = results;
+      const shouldCallRemote = localResults.length < 5;
+      const groupedResponse = this.mapLocalToGrouped(localResults);
 
-      if (igdbRes.status === 'fulfilled') {
-        this.mergeRemoteResults(
-          groupedResponse.games,
-          igdbRes.value,
-          MediaType.GAME,
+      // 5. Remote Search (if needed)
+      if (shouldCallRemote) {
+        logger.info(
+          { localResults: localResults.length },
+          '[Search] Insufficient local results - calling remote providers',
         );
-      } else {
-        logger.error({ err: igdbRes.reason }, '[Search] IGDB Error');
-      }
 
-      if (tmdbRes.status === 'fulfilled') {
-        // TMDB retourne Movies et TV mélangés par l'adapter search() ?
-        // Vérifions l'adapter... TmdbAdapter.search renvoie Media[] (Movie | TV).
-        // On doit les trier.
+        const results = await Promise.allSettled([
+          this.igdbAdapter.search(searchTerm!),
+          this.tmdbAdapter.search(searchTerm!),
+          this.googleBooksAdapter.search(searchTerm!),
+        ]);
 
-        for (const media of tmdbRes.value) {
-          const item = this.mapRemoteToItem(media);
-          if (media.type === MediaType.MOVIE) {
-            this.addUnique(groupedResponse.movies, item);
-          } else if (media.type === MediaType.TV) {
-            this.addUnique(groupedResponse.shows, item);
-          }
+        const [igdbRes, tmdbRes, gbooksRes] = results;
+
+        if (igdbRes.status === 'fulfilled') {
+          this.mergeRemoteResults(
+            groupedResponse.games,
+            igdbRes.value,
+            MediaType.GAME,
+          );
+        } else {
+          logger.error({ err: igdbRes.reason }, '[Search] IGDB Error');
         }
-      } else {
-        logger.error({ err: tmdbRes.reason }, '[Search] TMDB Error');
+
+        if (tmdbRes.status === 'fulfilled') {
+          for (const media of tmdbRes.value) {
+            const item = this.mapRemoteToItem(media);
+            if (media.type === MediaType.MOVIE) {
+              this.addUnique(groupedResponse.movies, item);
+            } else if (media.type === MediaType.TV) {
+              this.addUnique(groupedResponse.shows, item);
+            }
+          }
+        } else {
+          logger.error({ err: tmdbRes.reason }, '[Search] TMDB Error');
+        }
+
+        if (gbooksRes.status === 'fulfilled') {
+          this.mergeRemoteResults(
+            groupedResponse.books,
+            gbooksRes.value,
+            MediaType.BOOK,
+          );
+        } else {
+          logger.error({ err: gbooksRes.reason }, '[Search] GoogleBooks Error');
+        }
       }
 
-      if (gbooksRes.status === 'fulfilled') {
-        this.mergeRemoteResults(
-          groupedResponse.books,
-          gbooksRes.value,
-          MediaType.BOOK,
-        );
-      } else {
-        logger.error({ err: gbooksRes.reason }, '[Search] GoogleBooks Error');
-      }
+      // 6. Save to Cache
+      await this.redis.set(
+        cacheKey,
+        JSON.stringify(groupedResponse),
+        'EX',
+        3600,
+      );
+
+      return Result.ok(groupedResponse);
+    } catch (error) {
+      return Result.fail(
+        error instanceof AppError
+          ? error
+          : new InfrastructureError(
+              error instanceof Error ? error.message : 'Unknown error',
+            ),
+      );
     }
-
-    // 3. Save to Cache (TTL 1h)
-    await this.redis.set(cacheKey, JSON.stringify(groupedResponse), 'EX', 3600);
-
-    return groupedResponse;
   }
 
   private emptyResponse(): GroupedSearchResponseDto {
@@ -204,9 +246,21 @@ export class SearchMediaHandler {
     }
   }
 
+  private mapEntityToItem(entity: Media): SearchResultItem {
+    return {
+      id: entity.id,
+      title: entity.title,
+      slug: entity.slug,
+      year: entity.releaseYear?.getValue() ?? null,
+      poster: entity.coverUrl?.getValue() ?? null,
+      type: entity.type,
+      isImported: true,
+      externalId: entity.externalReference?.id ?? null,
+    };
+  }
+
   private mapRemoteToItem(media: any): SearchResultItem {
-    // media is a Domain Entity (Media/Game/Movie/etc)
-    // console.log(`[Debug] Mapping Remote Item: ${media.title}, ExternalRef:`, media.externalReference);
+    // media is a Domain Entity (Media/Game/Movie/etc) or similar shape from remote adapter
     const extId = media.externalReference?.id;
     if (!extId) {
       logger.warn(

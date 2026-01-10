@@ -1,32 +1,40 @@
 import { describe, it, expect, mock } from 'bun:test';
 import { GetActiveAdsHandler } from './get-active-ads.handler';
-import { GetActiveAdsQuery } from './get-active-ads.query';
+import type { AdsGateway } from '../../ports/ads.gateway.interface';
+import { Ad } from '../../../domain/ad.entity';
 
 describe('GetActiveAdsHandler', () => {
-    it('should return ads from cache if available', async () => {
-        const mockRedis = {
-            get: mock(() => Promise.resolve(JSON.stringify([{ id: 'cached-ad' }]))),
-            set: mock(() => Promise.resolve('OK')),
-        } as any;
+  it('should return ads from gateway', async () => {
+    const mockAds = [
+      new Ad({
+        id: 'ad-1',
+        title: 'Test Ad',
+        type: 'SPONSORED',
+        url: 'https://example.com',
+      }),
+    ];
 
-        const handler = new GetActiveAdsHandler(mockRedis);
-        const result = await handler.execute(new GetActiveAdsQuery());
+    const mockGateway: AdsGateway = {
+      getActiveAds: mock(() => Promise.resolve(mockAds)),
+    };
 
-        expect(result).toHaveLength(1);
-        expect(result[0]?.id).toBe('cached-ad');
-        expect(mockRedis.get).toHaveBeenCalledWith('marketing:ads:active');
-    });
+    const handler = new GetActiveAdsHandler(mockGateway);
+    const result = await handler.execute();
 
-    it('should fetch and cache ads if cache miss', async () => {
-        const mockRedis = {
-            get: mock(() => Promise.resolve(null)),
-            set: mock(() => Promise.resolve('OK')),
-        } as any;
+    expect(result.getValue()).toHaveLength(1);
+    expect(result.getValue()[0]?.id).toBe('ad-1');
+    expect(mockGateway.getActiveAds).toHaveBeenCalledTimes(1);
+  });
 
-        const handler = new GetActiveAdsHandler(mockRedis);
-        const result = await handler.execute(new GetActiveAdsQuery());
+  it('should delegate to gateway for ad retrieval', async () => {
+    const mockGateway: AdsGateway = {
+      getActiveAds: mock(() => Promise.resolve([])),
+    };
 
-        expect(result.length).toBeGreaterThan(0);
-        expect(mockRedis.set).toHaveBeenCalled();
-    });
+    const handler = new GetActiveAdsHandler(mockGateway);
+    const result = await handler.execute();
+
+    expect(result.getValue()).toEqual([]);
+    expect(mockGateway.getActiveAds).toHaveBeenCalled();
+  });
 });

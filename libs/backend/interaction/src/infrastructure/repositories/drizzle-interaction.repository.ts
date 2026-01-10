@@ -1,73 +1,153 @@
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, inArray, desc } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { IInteractionRepository } from '../../application/ports/interaction.repository.interface';
-import { UserInteraction, InteractionAction, InteractionSentiment } from '../../domain/entities/user-interaction.entity';
-import { userInteractions, actionEnum, sentimentEnum } from '../db/interactions.schema';
+import {
+  UserInteraction,
+  InteractionAction,
+  InteractionSentiment,
+} from '../../domain/entities/user-interaction.entity';
+import { userInteractions, userFollows } from '../db/interactions.schema';
+import * as schema from '../db/interactions.schema';
 
 export class DrizzleInteractionRepository implements IInteractionRepository {
-    constructor(private readonly db: NodePgDatabase<any>) { }
+  constructor(private readonly db: NodePgDatabase<typeof schema>) {}
 
-    async save(interaction: UserInteraction): Promise<void> {
-        await this.db.insert(userInteractions).values({
-            id: interaction.id,
-            userId: interaction.userId,
-            mediaId: interaction.mediaId,
-            action: interaction.action,
-            sentiment: interaction.sentiment,
-            createdAt: interaction.createdAt,
-            updatedAt: interaction.updatedAt
-        }).onConflictDoUpdate({
-            target: [userInteractions.userId, userInteractions.mediaId],
-            set: {
-                action: interaction.action,
-                sentiment: interaction.sentiment,
-                updatedAt: new Date()
-            }
-        });
-    }
+  // ... (save method remains unchanged) ...
 
-    async findByUserAndMedia(userId: string, mediaId: string): Promise<UserInteraction | null> {
-        const result = await this.db.select()
-            .from(userInteractions)
-            .where(and(eq(userInteractions.userId, userId), eq(userInteractions.mediaId, mediaId)))
-            .limit(1);
+  async save(interaction: UserInteraction): Promise<void> {
+    await this.db
+      .insert(userInteractions)
+      .values({
+        id: interaction.id,
+        userId: interaction.userId,
+        mediaId: interaction.mediaId,
+        action: interaction.action,
+        sentiment: interaction.sentiment,
+        createdAt: interaction.createdAt,
+        updatedAt: interaction.updatedAt,
+      })
+      .onConflictDoUpdate({
+        target: [userInteractions.userId, userInteractions.mediaId],
+        set: {
+          action: interaction.action,
+          sentiment: interaction.sentiment,
+          updatedAt: new Date(),
+        },
+      });
+  }
 
-        if (result.length === 0) return null;
-        return this.mapToEntity(result[0]);
-    }
+  // ... (other methods) ...
 
-    async findAllByUser(userId: string): Promise<UserInteraction[]> {
-        const results = await this.db.select()
-            .from(userInteractions)
-            .where(eq(userInteractions.userId, userId));
+  async findByUserAndMedia(
+    userId: string,
+    mediaId: string,
+  ): Promise<UserInteraction | null> {
+    const result = await this.db
+      .select()
+      .from(userInteractions)
+      .where(
+        and(
+          eq(userInteractions.userId, userId),
+          eq(userInteractions.mediaId, mediaId),
+        ),
+      )
+      .limit(1);
 
-        return results.map(this.mapToEntity);
-    }
+    const row = result[0];
+    if (!row) return null;
+    return this.mapToEntity(row);
+  }
 
-    async getSwipedMediaIds(userId: string): Promise<string[]> {
-        const results = await this.db.select({ mediaId: userInteractions.mediaId })
-            .from(userInteractions)
-            .where(and(
-                eq(userInteractions.userId, userId),
-                // Exclure la Wishlist car ces items peuvent réapparaître dans d'autres contextes (mais pas en Swipe pur, à voir selon règles produit. 
-                // La demande est explicite: "à l'exception de la Wishlist")
-                // En SQL: AND action != 'WISHLIST'
-                // Note: Drizzle `ne` means Not Equal
-                sql`${userInteractions.action} != 'WISHLIST'`
-            ));
+  async findAllByUser(userId: string): Promise<UserInteraction[]> {
+    const results = await this.db
+      .select()
+      .from(userInteractions)
+      .where(eq(userInteractions.userId, userId));
 
-        return results.map(r => r.mediaId);
-    }
+    return results.map((row) => this.mapToEntity(row));
+  }
 
-    private mapToEntity(raw: any): UserInteraction {
-        return new UserInteraction(
-            raw.id,
-            raw.userId,
-            raw.mediaId,
-            raw.action as InteractionAction,
-            raw.sentiment as InteractionSentiment | null,
-            raw.createdAt,
-            raw.updatedAt
-        );
-    }
+  async getSwipedMediaIds(userId: string): Promise<string[]> {
+    const results = await this.db
+      .select({ mediaId: userInteractions.mediaId })
+      .from(userInteractions)
+      .where(
+        and(
+          eq(userInteractions.userId, userId),
+          // Exclude wishlist
+          sql`${userInteractions.action} != 'WISHLIST'`,
+        ),
+      );
+
+    return results.map((r) => r.mediaId);
+  }
+
+  async followUser(followerId: string, followingId: string): Promise<void> {
+    await this.db
+      .insert(userFollows)
+      .values({
+        followerId,
+        followingId,
+      })
+      .onConflictDoNothing();
+  }
+
+  async unfollowUser(followerId: string, followingId: string): Promise<void> {
+    await this.db
+      .delete(userFollows)
+      .where(
+        and(
+          eq(userFollows.followerId, followerId),
+          eq(userFollows.followingId, followingId),
+        ),
+      );
+  }
+
+  async getFollowers(userId: string): Promise<string[]> {
+    const results = await this.db
+      .select({ followerId: userFollows.followerId })
+      .from(userFollows)
+      .where(eq(userFollows.followingId, userId));
+    return results.map((r) => r.followerId);
+  }
+
+  async getFollowing(userId: string): Promise<string[]> {
+    const results = await this.db
+      .select({ followingId: userFollows.followingId })
+      .from(userFollows)
+      .where(eq(userFollows.followerId, userId));
+    return results.map((r) => r.followingId);
+  }
+
+  async getFeed(
+    userIds: string[],
+    limit = 50,
+    offset = 0,
+  ): Promise<UserInteraction[]> {
+    if (userIds.length === 0) return [];
+
+    const results = await this.db
+      .select()
+      .from(userInteractions)
+      .where(inArray(userInteractions.userId, userIds))
+      .orderBy(desc(userInteractions.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return results.map((row) => this.mapToEntity(row));
+  }
+
+  private mapToEntity(
+    raw: typeof userInteractions.$inferSelect,
+  ): UserInteraction {
+    return new UserInteraction({
+      id: raw.id,
+      userId: raw.userId,
+      mediaId: raw.mediaId,
+      action: raw.action as InteractionAction,
+      sentiment: raw.sentiment as InteractionSentiment | null,
+      createdAt: raw.createdAt,
+      updatedAt: raw.updatedAt,
+    });
+  }
 }

@@ -2,12 +2,19 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { Elysia } from 'elysia';
 import { FeedController } from './feed.controller';
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
+import { Result } from '@metacult/shared-core';
 
 // --- Mocks ---
 const mockGetMixedFeedHandler = {
   execute: mock(() =>
-    Promise.resolve([{ id: '1', title: 'Test Media', type: 'movie' }]),
+    Promise.resolve(
+      Result.ok([{ id: '1', title: 'Test Media', type: 'movie' }]),
+    ),
   ),
+};
+
+const mockGetPersonalizedFeedHandler = {
+  execute: mock(() => Promise.resolve(Result.ok([]))),
 };
 
 const mockInteractionRepository = {
@@ -27,17 +34,45 @@ mock.module('@metacult/backend-identity', () => ({
   },
 }));
 
+const mockGetTrendingHandler = {
+  execute: mock(() => Promise.resolve(Result.ok([]))),
+};
+const mockGetHallOfFameHandler = {
+  execute: mock(() => Promise.resolve(Result.ok([]))),
+};
+const mockGetControversialHandler = {
+  execute: mock(() => Promise.resolve(Result.ok([]))),
+};
+const mockGetUpcomingHandler = {
+  execute: mock(() => Promise.resolve(Result.ok([]))),
+};
+const mockGetTopRatedByYearHandler = {
+  execute: mock(() => Promise.resolve(Result.ok([]))),
+};
+
 describe('Feed Controller (Guest)', () => {
   let controller: FeedController;
   let app: Elysia;
 
   beforeEach(() => {
     mockGetMixedFeedHandler.execute.mockClear();
+    mockGetPersonalizedFeedHandler.execute.mockClear();
     mockInteractionRepository.getSwipedMediaIds.mockClear();
+    mockGetTrendingHandler.execute.mockClear();
+    mockGetHallOfFameHandler.execute.mockClear();
+    mockGetControversialHandler.execute.mockClear();
+    mockGetUpcomingHandler.execute.mockClear();
+    mockGetTopRatedByYearHandler.execute.mockClear();
 
     controller = new FeedController(
       mockGetMixedFeedHandler as any,
+      mockGetPersonalizedFeedHandler as any,
       mockInteractionRepository as any,
+      mockGetTrendingHandler as any,
+      mockGetHallOfFameHandler as any,
+      mockGetControversialHandler as any,
+      mockGetUpcomingHandler as any,
+      mockGetTopRatedByYearHandler as any,
     );
 
     app = new Elysia().use(controller.routes() as any);

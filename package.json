@@ -79,6 +79,7 @@
     "bullmq": "^5.66.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dexie": "^4.2.1",
     "drizzle-orm": "^0.45.1",
     "elysia": "^1.4.19",
     "ioredis": "^5.8.2",

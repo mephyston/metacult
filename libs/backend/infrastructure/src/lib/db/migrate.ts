@@ -4,6 +4,8 @@ import { logger } from '../logger/logger.service';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { configService } from '../config/configuration.service';
+
 const MAX_RETRIES = 10;
 const RETRY_DELAY_MS = 2000;
 
@@ -19,7 +21,7 @@ async function runMigrations() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   // Allow overriding via ENV (for Docker), otherwise use relative dev path
   const migrationsFolder =
-    process.env.MIGRATIONS_FOLDER ||
+    configService.get('MIGRATIONS_FOLDER') ||
     path.resolve(__dirname, '../../../drizzle');
 
   for (let i = 1; i <= MAX_RETRIES; i++) {

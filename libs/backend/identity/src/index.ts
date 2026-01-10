@@ -19,6 +19,7 @@
 
 // --- API Layer (Routes & Middleware) ---
 export { createAuthRoutes } from './api/auth.routes';
+export { userController } from './api/http/controllers/user.controller';
 export {
   isAuthenticated,
   maybeAuthenticated,
@@ -30,6 +31,7 @@ export { resolveUserOrThrow } from './api/helpers/auth.helper';
 // --- Infrastructure Layer (Better Auth & Schemas) ---
 export {
   auth,
+  initAuth,
   type AuthClient,
 } from './infrastructure/auth/better-auth.service';
 export {

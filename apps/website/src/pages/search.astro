@@ -1,0 +1,160 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SearchFilters from '../components/search/SearchFilters.vue';
+import { getApiUrl } from '../utils/get-api-url';
+import { Card, CardContent, CardHeader, CardTitle } from '@metacult/shared-ui';
+
+export const prerender = false;
+
+// Read search params from URL
+const searchParams = Astro.url.searchParams;
+const query = searchParams.get('q') || '';
+const type = searchParams.get('type') || '';
+const releaseYear = searchParams.get('releaseYear') || '';
+const minElo = parseInt(searchParams.get('minElo') || '800', 10);
+
+// Build API query
+const apiParams = new URLSearchParams();
+if (query) apiParams.set('q', query);
+if (type) apiParams.set('type', type);
+if (releaseYear) apiParams.set('releaseYear', releaseYear);
+if (minElo > 800) apiParams.set('minElo', minElo.toString());
+
+// Fetch search results
+let results: any[] = [];
+let total = 0;
+let error = null;
+let hasSearched = query || type || releaseYear || minElo > 800;
+
+if (hasSearched) {
+    try {
+        const baseUrl = getApiUrl();
+        const res = await fetch(
+            `${baseUrl}/api/media/search?${apiParams.toString()}`,
+        );
+
+        if (!res.ok) {
+            throw new Error(`API Error: ${res.status}`);
+        }
+
+        const data = await res.json();
+        results = data.items || data || [];
+        total = data.total || results.length;
+    } catch (e) {
+        console.error('Search failed:', e);
+        error = e;
+    }
+}
+
+const title = query ? `Recherche: ${query} - MetaCult` : 'Recherche - MetaCult';
+const description =
+    'Recherchez parmi notre catalogue de jeux, films, séries et livres.';
+---
+
+<Layout title={title} description={description}>
+    <div class="container py-8">
+        <h1 class="text-3xl font-bold mb-6">Recherche</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8">
+            <!-- Sidebar Filters -->
+            <aside>
+                <SearchFilters
+                    client:load
+                    initialQuery={query}
+                    initialType={type}
+                    initialYear={releaseYear}
+                    initialMinElo={minElo}
+                />
+            </aside>
+
+            <!-- Results Grid -->
+            <main>
+                {
+                    !hasSearched && (
+                        <Card>
+                            <CardContent class="py-12 text-center text-muted-foreground">
+                                <p class="text-lg">
+                                    Utilisez les filtres pour rechercher dans le
+                                    catalogue.
+                                </p>
+                            </CardContent>
+                        </Card>
+                    )
+                }
+
+                {
+                    error && (
+                        <Card class="border-destructive/50">
+                            <CardContent class="py-4 text-destructive">
+                                Une erreur est survenue lors de la recherche.
+                            </CardContent>
+                        </Card>
+                    )
+                }
+
+                {
+                    hasSearched && !error && results.length === 0 && (
+                        <Card>
+                            <CardContent class="py-12 text-center text-muted-foreground">
+                                <p class="text-lg">Aucun résultat trouvé.</p>
+                                <p class="text-sm mt-2">
+                                    Essayez de modifier vos filtres.
+                                </p>
+                            </CardContent>
+                        </Card>
+                    )
+                }
+
+                {
+                    results.length > 0 && (
+                        <div>
+                            <p class="text-sm text-muted-foreground mb-4">
+                                {total} résultat{total > 1 ? 's' : ''} trouvé
+                                {total > 1 ? 's' : ''}
+                            </p>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {results.map((media: any) => (
+                                    <a
+                                        href={`/catalog/${media.type}/${media.slug}`}
+                                        class="group block rounded-lg border bg-card overflow-hidden hover:shadow-md transition-shadow"
+                                    >
+                                        <div class="aspect-[2/3] overflow-hidden bg-muted">
+                                            {media.posterUrl ? (
+                                                <img
+                                                    src={media.posterUrl}
+                                                    alt={media.title}
+                                                    class="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <div class="h-full w-full flex items-center justify-center text-muted-foreground text-sm">
+                                                    No Image
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div class="p-3">
+                                            <h3 class="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                                                {media.title}
+                                            </h3>
+                                            <div class="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                                {media.releaseYear && (
+                                                    <span>
+                                                        {media.releaseYear}
+                                                    </span>
+                                                )}
+                                                <span class="uppercase">
+                                                    {media.type}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )
+                }
+            </main>
+        </div>
+    </div>
+</Layout>

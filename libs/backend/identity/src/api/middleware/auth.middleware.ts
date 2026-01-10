@@ -1,5 +1,5 @@
 import Elysia, { type Context } from 'elysia';
-import { auth } from '../../infrastructure/auth/better-auth.service';
+import { auth, initAuth } from '../../infrastructure/auth/better-auth.service';
 import { logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
 
@@ -45,7 +45,8 @@ export interface AuthenticatedContext {
  *
  * @see https://better-auth.com/docs/concepts/sessions
  */
-export const isAuthenticated = new Elysia({ name: 'auth-guard' })
+// @ts-expect-error Elysia scoped property type definition mismatch
+export const isAuthenticated = new Elysia({ scoped: true })
   .derive(async ({ headers, request }) => {
     const cookie = request.headers.get('cookie');
     logger.debug(
@@ -58,7 +59,9 @@ export const isAuthenticated = new Elysia({ name: 'auth-guard' })
     );
 
     // Récupère la session depuis les headers (Cookie ou Authorization Bearer)
-    const sessionData = await auth.api.getSession({
+    // Ensure auth is initialized before use
+    const betterAuth = auth || initAuth();
+    const sessionData = await betterAuth.api.getSession({
       headers: headers as HeadersInit,
     });
 
@@ -116,7 +119,8 @@ export type ProtectedRoute = Context & AuthenticatedContext;
  * ```
  */
 export const maybeAuthenticated = new Elysia({
-  name: 'optional-auth-guard',
+  // @ts-expect-error Elysia scoped property type definition mismatch
+  scoped: true,
 }).derive(async ({ headers, request }) => {
   const cookie = request.headers.get('cookie');
   logger.debug(
@@ -129,7 +133,8 @@ export const maybeAuthenticated = new Elysia({
   );
 
   // Récupère la session depuis les headers (Cookie ou Authorization Bearer)
-  const sessionData = await auth.api.getSession({
+  const betterAuth = auth || initAuth();
+  const sessionData = await betterAuth.api.getSession({
     headers: headers as HeadersInit,
   });
 

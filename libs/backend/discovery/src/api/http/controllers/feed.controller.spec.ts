@@ -1,18 +1,42 @@
-import { describe, it, expect, mock, spyOn, beforeEach } from 'bun:test';
+import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { Elysia } from 'elysia';
 import { FeedController } from './feed.controller';
-import { GetMixedFeedHandler } from '../../../application/queries/get-mixed-feed/get-mixed-feed.handler';
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
+import { Result } from '@metacult/shared-core';
 
+// --- Mocks ---
 // --- Mocks ---
 const mockGetMixedFeedHandler = {
   execute: mock(() =>
-    Promise.resolve([{ id: '1', title: 'Test Media', type: 'movie' }]),
+    Promise.resolve(
+      Result.ok([{ id: '1', title: 'Test Media', type: 'movie' }]),
+    ),
   ),
+};
+
+const mockGetPersonalizedFeedHandler = {
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
 };
 
 const mockInteractionRepository = {
   getSwipedMediaIds: mock(() => Promise.resolve(['exclude-1', 'exclude-2'])),
+};
+
+// New Mocks
+const mockGetTrendingHandler = {
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
+};
+const mockGetHallOfFameHandler = {
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
+};
+const mockGetControversialHandler = {
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
+};
+const mockGetUpcomingHandler = {
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
+};
+const mockGetTopRatedByYearHandler = {
+  execute: mock(() => Promise.resolve(Result.ok<any[]>([]))),
 };
 
 // Standardized mock for @metacult/backend-identity
@@ -40,22 +64,31 @@ describe('Feed Controller', () => {
 
   beforeEach(() => {
     mockGetMixedFeedHandler.execute.mockClear();
+    mockGetPersonalizedFeedHandler.execute.mockClear();
     mockInteractionRepository.getSwipedMediaIds.mockClear();
+    mockGetTrendingHandler.execute.mockClear();
+    mockGetHallOfFameHandler.execute.mockClear();
+    mockGetControversialHandler.execute.mockClear();
+    mockGetUpcomingHandler.execute.mockClear();
+    mockGetTopRatedByYearHandler.execute.mockClear();
 
     controller = new FeedController(
       mockGetMixedFeedHandler as any,
+      mockGetPersonalizedFeedHandler as any,
       mockInteractionRepository as any,
+      mockGetTrendingHandler as any,
+      mockGetHallOfFameHandler as any,
+      mockGetControversialHandler as any,
+      mockGetUpcomingHandler as any,
+      mockGetTopRatedByYearHandler as any,
     );
 
-    // Mount routes - Cast to any to avoid complex Elysia type mismatch in tests
+    // Mount routes
     app = new Elysia().use(controller.routes() as any);
   });
 
   it('GET /feed should return feed for authenticated user', async () => {
-    const response = await app.handle(new Request('http://localhost/feed')); // isAuthenticated mock usually forces user?
-    // Wait, my mock above forces user. So checking "Guest" might require a different app setup or condition.
-    // The mock provided above injects `user: { id: 'test-user-id' }` UNCONDITIONALLY.
-    // So this test checks User scenario.
+    const response = await app.handle(new Request('http://localhost/feed'));
 
     expect(response.status).toBe(200);
     const json = await response.json();
@@ -76,29 +109,63 @@ describe('Feed Controller', () => {
       expect(lastCallArgs.excludedMediaIds).toEqual(['exclude-1', 'exclude-2']);
     }
   });
-});
 
-describe('Feed Controller (Guest)', () => {
-  // Need a separate describe block because module mocking is global/tricky in Bun unless handled carefully.
-  // Actually, Bun mocking of modules is static.
-  // To test Guest, I can assume `isAuthenticated` returns undefined user?
-  // Or I can test the controller logic directly without Elysia mounting for granular unit testing.
-
-  it('should configure specific Guest limits when called directly', async () => {
-    const controller = new FeedController(
-      mockGetMixedFeedHandler as any,
-      mockInteractionRepository as any,
+  it('GET /feed/personalized should return personalized feed', async () => {
+    // Mock handler response
+    (mockGetPersonalizedFeedHandler.execute as any).mockResolvedValueOnce(
+      Result.ok([{ id: 'p1', title: 'Personalized Movie' }]),
     );
 
-    // Bypass Elysia and call the logic that was inside the route handler?
-    // Logic is inside `.get('/', ...)` closure. Hard to test without Elysia handle.
-    // I will rely on the property that `FeedController` construction is independent,
-    // BUT the route handler is defined in `routes()`.
+    const response = await app.handle(
+      new Request('http://localhost/feed/personalized'),
+    );
 
-    // I'll stick to testing User flow here given the Mock constraint.
-    // Use a second file or assume User flow is enough coverage for "Orchestration" if manual code review confirmed logic.
-    // BUT valid Guest test is needed.
-    // I'll mock `isAuthenticated` to be flexible?
-    // "isAuthenticated" usually adds user to context. If I define a mock that checks headers...
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json).toHaveLength(1);
+    expect(json[0].id).toBe('p1');
+
+    expect(mockGetPersonalizedFeedHandler.execute).toHaveBeenCalled();
+  });
+
+  it('GET /feed/best-of/:year should return list for valid year', async () => {
+    mockGetTopRatedByYearHandler.execute.mockResolvedValueOnce(
+      Result.ok([{ title: 'Best of 2024' }]),
+    );
+
+    const response = await app.handle(
+      new Request('http://localhost/feed/best-of/2024'),
+    );
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json).toHaveLength(1);
+    expect(json[0].title).toBe('Best of 2024');
+
+    expect(mockGetTopRatedByYearHandler.execute).toHaveBeenCalled();
+  });
+
+  it('GET /feed/best-of/:year should return 422 for invalid year', async () => {
+    const response = await app.handle(
+      new Request('http://localhost/feed/best-of/invalid'),
+    );
+    expect(response.status).toBe(422); // Validation error (not numeric)
+  });
+
+  it('GET /feed/best-of/:year should return 400 for year out of range', async () => {
+    const response = await app.handle(
+      new Request('http://localhost/feed/best-of/1800'),
+    );
+    expect(response.status).toBe(400); // Logical validation
+    const text = await response.text();
+    expect(text).toBe('Invalid Year');
+  });
+
+  it('GET /feed/trending should call GetTrendingHandler', async () => {
+    const response = await app.handle(
+      new Request('http://localhost/feed/trending?limit=5&type=movie'),
+    );
+    expect(response.status).toBe(200);
+    expect(mockGetTrendingHandler.execute).toHaveBeenCalled();
   });
 });

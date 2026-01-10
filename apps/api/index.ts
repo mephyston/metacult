@@ -10,15 +10,29 @@ import {
   createDiscoveryRoutes,
   FeedController,
   GetMixedFeedHandler,
+  GetPersonalizedFeedHandler,
+  mediaController as mediaRoutes,
 } from '@metacult/backend-discovery';
-import { createAuthRoutes } from '@metacult/backend-identity';
-import { interactionController as interactionRoutes } from '@metacult/backend-interaction';
+import {
+  createAuthRoutes,
+  userController as userRoutes,
+  initAuth,
+} from '@metacult/backend-identity';
+import {
+  interactionController as interactionRoutes,
+  socialController as socialRoutes,
+} from '@metacult/backend-interaction';
 import {
   DuelController as duelRoutes,
   RankingController as rankingRoutes,
 } from '@metacult/backend-ranking';
+import {
+  GamificationController as gamificationRoutes,
+  userStats,
+} from '@metacult/backend-gamification';
 import { importRoutes } from './src/routes/import.routes';
 import { debugRoutes } from './src/routes/debug.routes';
+import { syncRoutes } from './src/routes/sync.routes';
 import {
   getDbConnection,
   redisClient,
@@ -26,14 +40,13 @@ import {
   logger,
 } from '@metacult/backend-infrastructure';
 import * as infraSchema from '@metacult/backend-infrastructure';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { initCrons } from './src/cron/cron.service';
 import { errorMiddleware } from './src/middlewares/error.middleware';
 import {
   GetActiveAdsHandler,
-  GetActiveAdsQuery,
+  RedisAdsAdapter,
 } from '@metacult/backend-marketing';
-
-import { version } from './package.json';
 
 import { runMigrations } from '@metacult/backend-infrastructure';
 
@@ -45,9 +58,10 @@ runMigrations()
   );
 
 // Initialisation de la BDD (Composition Root)
-import { mediaSchema, DrizzleMediaRepository } from '@metacult/backend-catalog';
+import { mediaSchema } from '@metacult/backend-catalog';
 import {
   userInteractions,
+  userFollows,
   actionEnum,
   sentimentEnum,
   DrizzleInteractionRepository,
@@ -56,11 +70,14 @@ const fullSchema = {
   ...infraSchema,
   ...mediaSchema,
   userInteractions,
+  userFollows,
   actionEnum,
   sentimentEnum,
+  userStats, // Gamification
 };
 // Initialisation du Singleton
 const { db } = getDbConnection(fullSchema);
+initAuth(); // Initialize Auth with correct DB instance
 
 /**
  * Point d'entrée de l'Application API (Composition Root).
@@ -110,7 +127,8 @@ const searchHandler = CatalogModuleFactory.createSearchMediaHandler(
 );
 
 // 2. Module Marketing
-const adsHandler = new GetActiveAdsHandler(redisClient);
+const adsGateway = new RedisAdsAdapter(redisClient);
+const adsHandler = new GetActiveAdsHandler(adsGateway);
 
 // 3. Module Discovery (Relie Catalog & Marketing)
 const mediaSearchAdapter = {
@@ -119,19 +137,35 @@ const mediaSearchAdapter = {
     options: { excludedIds?: string[]; limit?: number; orderBy?: 'random' },
   ) => {
     // Adaptateur: String -> SearchQuery -> DTO
-    // Le handler retourne maintenant une réponse groupée. On doit l'aplatir pour le module Discovery.
-    const grouped = await searchHandler.execute({
+    // Le handler retourne maintenant une réponse groupée ou paginée (Mode B).
+    const result = await searchHandler.execute({
       search: q,
       excludedIds: options?.excludedIds,
       limit: options?.limit,
       orderBy: options?.orderBy,
     });
-    const all = [
-      ...grouped.games,
-      ...grouped.movies,
-      ...grouped.shows,
-      ...grouped.books,
-    ];
+
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+
+    const searchResponse = result.getValue();
+
+    let all: any[] = [];
+
+    // Type Guard pour déterminer si c'est Grouped ou Paginated
+    if ('items' in searchResponse) {
+      // Mode Paginated (Mode B ou Empty Search)
+      all = searchResponse.items;
+    } else {
+      // Mode Grouped (Mode A)
+      all = [
+        ...searchResponse.games,
+        ...searchResponse.movies,
+        ...searchResponse.shows,
+        ...searchResponse.books,
+      ];
+    }
 
     // Mapping vers MediaReadDto (attendu par Discovery ?)
     return all.map((item) => ({
@@ -150,7 +184,11 @@ const mediaSearchAdapter = {
 const adsAdapter = {
   getAds: async () => {
     // Adaptateur: Void -> Query -> DTO
-    return adsHandler.execute(new GetActiveAdsQuery());
+    const result = await adsHandler.execute();
+    if (result.isFailure()) {
+      throw result.getError();
+    }
+    return result.getValue();
   },
 };
 
@@ -159,8 +197,44 @@ const mixedFeedHandler = new GetMixedFeedHandler(
   mediaSearchAdapter,
   adsAdapter,
 );
-const interactionRepo = new DrizzleInteractionRepository(db);
-const feedController = new FeedController(mixedFeedHandler, interactionRepo);
+const personalizedFeedHandler = new GetPersonalizedFeedHandler(db);
+import * as interactionSchema from '@metacult/backend-interaction';
+// ...
+const interactionRepo = new DrizzleInteractionRepository(
+  db as unknown as NodePgDatabase<typeof interactionSchema>,
+);
+
+// --- Discovery Catalog Queries Wiring ---
+import {
+  DrizzleCatalogRepository,
+  GetTrendingHandler,
+  GetHallOfFameHandler,
+  GetControversialHandler,
+  GetUpcomingHandler,
+  GetTopRatedByYearHandler,
+} from '@metacult/backend-discovery';
+
+const discoveryCatalogRepo = new DrizzleCatalogRepository(db as any);
+const getTrendingHandler = new GetTrendingHandler(discoveryCatalogRepo);
+const getHallOfFameHandler = new GetHallOfFameHandler(discoveryCatalogRepo);
+const getControversialHandler = new GetControversialHandler(
+  discoveryCatalogRepo,
+);
+const getUpcomingHandler = new GetUpcomingHandler(discoveryCatalogRepo);
+const getTopRatedByYearHandler = new GetTopRatedByYearHandler(
+  discoveryCatalogRepo,
+);
+
+const feedController = new FeedController(
+  mixedFeedHandler,
+  personalizedFeedHandler,
+  interactionRepo,
+  getTrendingHandler,
+  getHallOfFameHandler,
+  getControversialHandler,
+  getUpcomingHandler,
+  getTopRatedByYearHandler,
+);
 const discoveryRoutes = createDiscoveryRoutes(feedController);
 
 // 4. Module Identity (Auth routes)
@@ -213,13 +287,23 @@ const app = new Elysia()
   .group('/api', (app) =>
     app
       .group('/import', (app) => app.use(importRoutes))
-      .use(debugRoutes)
+      .use(userRoutes)
+      // ⚠️ DANGER: Debug routes (Sync triggers, etc.) - DEV ONLY
+      .use((app) => {
+        if (process.env.NODE_ENV !== 'production') {
+          return app.use(debugRoutes);
+        }
+        return app;
+      })
+      .use(syncRoutes)
       .use(catalogRoutes)
       .use(discoveryRoutes)
-
+      .use(mediaRoutes)
       .use(interactionRoutes)
+      .use(socialRoutes)
       .use(duelRoutes)
-      .use(rankingRoutes),
+      .use(rankingRoutes)
+      .use(gamificationRoutes),
   );
 
 const port = configService.get('API_PORT');

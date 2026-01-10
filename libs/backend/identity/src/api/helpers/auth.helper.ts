@@ -1,4 +1,4 @@
-import { auth } from '../../infrastructure/auth/better-auth.service';
+import { auth, initAuth } from '../../infrastructure/auth/better-auth.service';
 import { logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
 
@@ -24,7 +24,8 @@ export async function resolveUserOrThrow(ctx: any) {
 
   // 2. Try manual recovery using Better Auth API
   try {
-    const sessionData = await auth.api.getSession({
+    const betterAuth = auth || initAuth();
+    const sessionData = await betterAuth.api.getSession({
       headers: ctx.request.headers,
     });
 

@@ -29,5 +29,9 @@ export const processRankingUpdate = async (job: Job<RankingUpdateJob>) => {
 
   const command = new UpdateEloScoreCommand(winnerId, loserId);
 
-  await rankingProcessorDeps.handler.execute(command);
+  const result = await rankingProcessorDeps.handler.execute(command);
+
+  if (result.isFailure()) {
+    throw result.getError();
+  }
 };

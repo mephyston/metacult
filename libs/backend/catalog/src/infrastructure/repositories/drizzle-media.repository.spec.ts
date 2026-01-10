@@ -66,9 +66,10 @@ mock.module('@metacult/backend-catalog', () => ({
     tags: { id: 'tid', label: 'lbl' },
   },
   // Add other necessary exports
-  MediaType: { GAME: 'GAME', MOVIE: 'MOVIE' },
+  MediaType: { GAME: 'game', MOVIE: 'movie' },
 }));
 
+/*
 mock.module('drizzle-orm', () => ({
   sql: (strings: any) => strings,
   eq: () => 'eq',
@@ -76,6 +77,7 @@ mock.module('drizzle-orm', () => ({
   desc: () => 'desc',
   and: () => 'and',
 }));
+*/
 
 describe('DrizzleMediaRepository', () => {
   let repository: DrizzleMediaRepository;

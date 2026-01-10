@@ -73,11 +73,11 @@ export default [
               onlyDependOnLibsWithTags: ['scope:interaction', 'scope:shared', 'scope:identity'],
               notDependOnLibsWithTags: ['scope:catalog', 'scope:discovery', 'scope:marketing']
             },
-            // Discovery context: Cannot import other bounded contexts
+            // Discovery context: Needs Catalog access for Media Metadata
             {
               sourceTag: 'scope:discovery',
-              onlyDependOnLibsWithTags: ['scope:discovery', 'scope:shared'],
-              notDependOnLibsWithTags: ['scope:catalog', 'scope:identity', 'scope:interaction', 'scope:marketing']
+              onlyDependOnLibsWithTags: ['scope:discovery', 'scope:shared', 'scope:catalog'],
+              notDependOnLibsWithTags: ['scope:identity', 'scope:interaction', 'scope:marketing']
             },
             // Marketing context: Cannot import other bounded contexts
             {

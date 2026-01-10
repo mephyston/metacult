@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import { useApiUrl } from './useApiUrl';
 import { useLogger } from './useLogger';
 
@@ -15,7 +13,6 @@ interface GuestSwipe {
   mediaId: string;
   action: string;
   sentiment?: string;
-  [key: string]: unknown;
 }
 
 export const useGuestSync = () => {
@@ -45,7 +42,13 @@ export const useGuestSync = () => {
           logger.info(
             `[GuestSync] Found ${swipes.length} pending swipes. Storing...`,
           );
-          pendingSwipes.value = swipes;
+          // Simple validation/casting
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pendingSwipes.value = swipes.map((s: any) => ({
+            mediaId: s.mediaId,
+            action: s.action,
+            sentiment: s.sentiment,
+          }));
 
           // Nettoyage de l'URL pour ne pas polluer
           const query = { ...route.query };
