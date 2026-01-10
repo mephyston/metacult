@@ -83,3 +83,18 @@ export type InsertSession = InferInsertModel<typeof session>;
 
 export type SelectAccount = InferSelectModel<typeof account>;
 export type InsertAccount = InferInsertModel<typeof account>;
+
+// --- Zod Schemas ---
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+
+export const insertUserSchema = createInsertSchema(user);
+export const selectUserSchema = createSelectSchema(user);
+
+export const insertSessionSchema = createInsertSchema(session);
+export const selectSessionSchema = createSelectSchema(session);
+
+export const insertAccountSchema = createInsertSchema(account);
+export const selectAccountSchema = createSelectSchema(account);
+
+export const insertVerificationSchema = createInsertSchema(verification);
+export const selectVerificationSchema = createSelectSchema(verification);

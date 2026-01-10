@@ -21,7 +21,7 @@ import { ExternalReference } from '../../domain/value-objects/external-reference
 import * as schema from '../db/media.schema';
 import type { ProviderMetadata } from '../types/raw-responses';
 import { ProviderMetadataMapper } from '../mappers/provider-metadata.mapper';
-import type { MediaReadDto } from '../../application/queries/search-media/media-read.dto';
+import type { MediaReadDto } from '../../application/dtos/media-read.dto';
 
 // Helper to safely create VOs from DB data
 const createRating = (val: number | null): Rating | null => {

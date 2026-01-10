@@ -11,6 +11,12 @@ import { syncInteractions } from '../../../application/commands/sync-interaction
 import * as schema from '../../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
+import type {
+  SaveInteractionDto,
+  InteractionResponseDto,
+} from '../../../application/dtos/interaction.dto';
+
+// ..
 
 // ..
 
@@ -20,7 +26,10 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
   .post(
     '/',
     async (ctx) => {
-      const { body, set } = ctx as any; // Cast temporaire
+      const { body, set } = ctx as unknown as {
+        body: SaveInteractionDto;
+        set: any;
+      };
       try {
         // Use helper to resolve user or throw 401
         const user = await resolveUserOrThrow(ctx);

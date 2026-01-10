@@ -8,16 +8,24 @@ import {
 import { mediaSchema } from '@metacult/backend-catalog';
 import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
 
-const { medias } = mediaSchema;
+import { z } from 'zod';
 
-export interface FeedMediaDto {
-  id: string;
-  title: string;
-  slug: string;
-  type: string;
-  coverUrl: string | null;
-  rankScore: number;
-}
+// Destructure Zod schema
+const { medias, selectMediaSchema } = mediaSchema;
+
+export const FeedMediaSchema = selectMediaSchema
+  .pick({
+    id: true,
+    title: true,
+    slug: true,
+    type: true,
+  })
+  .extend({
+    coverUrl: z.string().nullable(),
+    rankScore: z.number(),
+  });
+
+export type FeedMediaDto = z.infer<typeof FeedMediaSchema>;
 
 export class GetPersonalizedFeedHandler {
   constructor(private readonly db: NodePgDatabase<any>) {}

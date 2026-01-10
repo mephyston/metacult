@@ -27,7 +27,7 @@ export interface MediaSearchFilters {
   page?: number;
 }
 
-import type { MediaReadDto } from '../queries/search-media/media-read.dto';
+import type { MediaReadDto } from '../dtos/media-read.dto';
 
 /**
  * Port de sortie (Output Port) pour la persistance des médias.

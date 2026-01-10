@@ -2,6 +2,7 @@ import { Elysia, t } from 'elysia';
 import { getDbConnection, logger } from '@metacult/backend-infrastructure';
 import { user } from '../../../infrastructure/db/auth.schema';
 import { eq } from 'drizzle-orm';
+import type { UserPublicProfileDto } from '../../../application/dtos/user.dto';
 
 // const { db } = getDbConnection(); // Moved inside handlers
 export const userController = new Elysia({ prefix: '/users' }).get(
@@ -25,9 +26,11 @@ export const userController = new Elysia({ prefix: '/users' }).get(
         return { success: false, message: 'User not found' };
       }
 
+      const profile: UserPublicProfileDto = result[0]!;
+
       return {
         success: true,
-        data: result[0],
+        data: profile,
       };
     } catch (e: any) {
       logger.error({ err: e }, '[UserController] Error fetching user');

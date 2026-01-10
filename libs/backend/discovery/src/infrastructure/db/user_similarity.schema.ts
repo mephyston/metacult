@@ -29,3 +29,9 @@ export const userSimilarity = pgTable(
     scoreIdx: index('idx_user_similarity_score').on(t.similarityScore),
   }),
 );
+
+// --- Zod Schemas ---
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+
+export const insertSimilaritySchema = createInsertSchema(userSimilarity);
+export const selectSimilaritySchema = createSelectSchema(userSimilarity);

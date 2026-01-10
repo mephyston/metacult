@@ -12,6 +12,7 @@ import { getDbConnection } from '@metacult/backend-infrastructure';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
 import * as schema from '../../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { FollowUserDto } from '../../../application/dtos/interaction.dto';
 
 // const { db } = getDbConnection(); // Moved inside handlers
 // const interactionRepo = new DrizzleInteractionRepository(db); // Moved inside handlers
@@ -21,7 +22,7 @@ export const socialController = new Elysia({ prefix: '/social' })
   .post(
     '/follow',
     async (ctx) => {
-      const { body, set } = ctx as any;
+      const { body, set } = ctx as unknown as { body: FollowUserDto; set: any };
       try {
         const user = await resolveUserOrThrow(ctx);
         const targetUserId = body.targetUserId;
@@ -61,7 +62,7 @@ export const socialController = new Elysia({ prefix: '/social' })
   .delete(
     '/follow',
     async (ctx) => {
-      const { body, set } = ctx as any;
+      const { body, set } = ctx as unknown as { body: FollowUserDto; set: any };
       try {
         const user = await resolveUserOrThrow(ctx);
         const targetUserId = body.targetUserId;

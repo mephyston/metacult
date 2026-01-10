@@ -64,3 +64,12 @@ export const userFollows = interactionSchema.table(
     };
   },
 );
+
+// --- Zod Schemas ---
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+
+export const insertInteractionSchema = createInsertSchema(userInteractions);
+export const selectInteractionSchema = createSelectSchema(userInteractions);
+
+export const insertFollowSchema = createInsertSchema(userFollows);
+export const selectFollowSchema = createSelectSchema(userFollows);

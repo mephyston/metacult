@@ -43,7 +43,7 @@ export interface SaveInteractionCommand {
   userId: string;
   mediaId: string;
   action: string;
-  sentiment?: string;
+  sentiment?: string | null;
 }
 
 /**
