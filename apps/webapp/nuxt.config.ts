@@ -162,13 +162,7 @@ export default {
         target: 'esnext',
       },
     },
-    routeRules: {
-      '/api/**': {
-        proxy: process.env.NUXT_INTERNAL_API_URL
-          ? `${process.env.NUXT_INTERNAL_API_URL}/api/**`
-          : 'http://localhost:3000/api/**',
-      },
-    },
+    // NOTE: API proxy is now handled by server/api/[...].ts for runtime env var support
   },
   googleFonts: {
     families: {
