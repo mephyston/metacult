@@ -78,6 +78,6 @@ export const processOutbox = async (
     await db.outbox.bulkDelete(ids);
     logger.info(`[Sync] Successfully synced ${ids.length} items.`);
   } catch (error) {
-    logger.error(`[Sync] Network error during batch sync`, error);
+    logger.error(error, '[Sync] Network error during batch sync');
   }
 };

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logger } from '@metacult/shared-core';
 
 // 1. Définition du Schema Strict avec Zod
 const envSchema = z.object({
@@ -79,15 +80,15 @@ export class ConfigurationService {
     const result = envSchema.safeParse(rawEnv);
 
     if (!result.success) {
-      console.error(
-        '❌ Invalid Environment Configuration:',
-        JSON.stringify(result.error.format(), null, 2),
+      logger.fatal(
+        { err: result.error.format() },
+        '❌ Invalid Environment Configuration',
       );
       process.exit(1);
     }
 
     this.config = result.data;
-    console.log('✅ Configuration Loaded & Validated');
+    logger.info('✅ Configuration Loaded & Validated');
   }
 
   public static getInstance(): ConfigurationService {

@@ -1,24 +1,24 @@
-/**
- * Simple logger for shared core library
- * Provides consistent logging interface
- */
+import pino from 'pino';
 
-export const logger = {
-  info: (...args: any[]) => {
-    console.info('[Core]', ...args);
+const isProduction = process.env.NODE_ENV === 'production';
+const isTest = process.env.NODE_ENV === 'test';
+
+export const logger = pino({
+  level: isProduction ? 'info' : 'debug',
+  transport:
+    !isProduction && !isTest
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'HH:MM:ss',
+            ignore: 'pid,hostname',
+            singleLine: false,
+          },
+        }
+      : undefined,
+  base: {
+    service: 'shared-core',
+    env: process.env.NODE_ENV,
   },
-  
-  warn: (...args: any[]) => {
-    console.warn('[Core]', ...args);
-  },
-  
-  error: (...args: any[]) => {
-    console.error('[Core]', ...args);
-  },
-  
-  debug: (...args: any[]) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[Core Debug]', ...args);
-    }
-  },
-};
+});
