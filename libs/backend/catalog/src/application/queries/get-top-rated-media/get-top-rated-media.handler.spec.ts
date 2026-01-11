@@ -1,6 +1,6 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { GetTopRatedMediaHandler } from './get-top-rated-media.handler';
-import type { MediaReadDto } from '../../dtos/media-read.dto';
+import type { MediaReadDto } from '../../../infrastructure/dtos/media-read.dto';
 
 describe('GetTopRatedMediaHandler', () => {
   let handler: GetTopRatedMediaHandler;

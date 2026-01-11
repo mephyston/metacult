@@ -32,7 +32,7 @@ import { asMediaId } from '../../domain/value-objects/media-id.vo';
 import * as schema from '../db/media.schema';
 import type { ProviderMetadata } from '../types/raw-responses';
 import { ProviderMetadataMapper } from '../mappers/provider-metadata.mapper';
-import type { MediaReadDto } from '../../application/dtos/media-read.dto';
+import type { MediaReadDto } from '../dtos/media-read.dto';
 
 // Helper to safely create VOs from DB data
 const createRating = (val: number | null): Rating | null => {

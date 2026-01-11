@@ -1,6 +1,6 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { GetRecentMediaQuery } from './get-recent-media.query';
-import type { RecentMediaItemDto } from '../../dtos/recent-media.dto';
+import type { RecentMediaItemDto } from '../../../infrastructure/dtos/recent-media.dto';
 import { logger } from '@metacult/backend-infrastructure';
 
 import type { Redis } from 'ioredis';

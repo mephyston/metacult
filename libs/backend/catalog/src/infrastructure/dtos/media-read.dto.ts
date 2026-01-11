@@ -4,7 +4,7 @@
  * Ne contient pas de logique métier, juste des données.
  */
 import { z } from 'zod';
-import { selectMediaSchema } from '../../infrastructure/db/media.schema';
+import { selectMediaSchema } from '../db/media.schema';
 
 /**
  * DTO de Lecture (Read Model).

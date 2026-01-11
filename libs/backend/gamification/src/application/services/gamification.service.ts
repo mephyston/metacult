@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { getDbConnection } from '@metacult/backend-infrastructure';
-import { userStats } from '../infrastructure/db/gamification.schema';
-import { UserStats } from './entities/user-stats.entity';
+import { userStats } from '../../infrastructure/db/gamification.schema';
+import { UserStats } from '../../domain/entities/user-stats.entity';
 
 export class GamificationService {
   /**

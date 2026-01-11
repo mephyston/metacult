@@ -3,7 +3,7 @@ import {
   isAuthenticated,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
-import { GamificationService } from '../../../domain/gamification.service';
+import { GamificationService } from '../../../application/services/gamification.service';
 
 const gamificationService = new GamificationService();
 

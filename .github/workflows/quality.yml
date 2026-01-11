@@ -25,3 +25,6 @@ jobs:
 
       - name: Run Quality Gate (Lint + Test)
         run: bun run quality
+
+      - name: Architecture Audit (Clean Architecture)
+        run: bun run audit:arch

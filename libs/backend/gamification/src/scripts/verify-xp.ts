@@ -1,4 +1,4 @@
-import { GamificationService } from '../domain/gamification.service';
+import { GamificationService } from '../application/services/gamification.service';
 import { getDbConnection, logger } from '@metacult/backend-infrastructure';
 
 async function main() {

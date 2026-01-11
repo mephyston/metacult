@@ -41,6 +41,7 @@
     "ajv": "^8.0.0",
     "bun-types": "^1.3.5",
     "confusing-browser-globals": "^1.0.11",
+    "dependency-cruiser": "^17.3.6",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
@@ -112,6 +113,7 @@
     "test:all": "bun test --preload ./test/setup.ts --ignore='apps/e2e/**'",
     "quality": "bun run lint:all && bun run test:all",
     "quality:full": "bun run lint:all && bun run test:all && bun run test:e2e",
+    "audit:arch": "depcruise libs apps --config .dependency-cruiser.cjs",
     "release": "nx release --skip-publish",
     "prepare": "husky",
     "typecheck": "tsc --noEmit"

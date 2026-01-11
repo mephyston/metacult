@@ -1,8 +1,5 @@
 import { z } from 'zod';
-import {
-  selectMediaSchema,
-  selectTagSchema,
-} from '../../infrastructure/db/media.schema';
+import { selectMediaSchema, selectTagSchema } from '../db/media.schema';
 
 export const MediaDetailSchema = selectMediaSchema
   .pick({

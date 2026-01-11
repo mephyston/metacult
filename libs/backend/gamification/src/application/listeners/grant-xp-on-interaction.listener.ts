@@ -1,6 +1,6 @@
 import type { IEventHandler } from '@metacult/shared-core';
 import type { InteractionSavedEvent } from '@metacult/backend-interaction';
-import { GamificationService } from '../../domain/gamification.service';
+import { GamificationService } from '../services/gamification.service';
 import { logger } from '@metacult/backend-infrastructure';
 
 /**

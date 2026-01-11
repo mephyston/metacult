@@ -22,8 +22,8 @@ export * from './application/queries/search-media/search-media.query';
 export * from './application/queries/search-media/search-media.handler';
 export * from './application/commands/import-media/import-media.command';
 export * from './application/commands/import-media/import-media.handler';
-export * from './application/factories/catalog.factory'; // ✅ Preferred way to get dependencies
-export type { CatalogModuleConfig } from './application/factories/catalog.factory'; // Export config type
+export * from './infrastructure/factories/catalog.factory'; // ✅ Preferred way to get dependencies
+export type { CatalogModuleConfig } from './infrastructure/factories/catalog.factory'; // Export config type
 
 // ===== APPLICATION PORTS (Interfaces) =====
 export * from './application/ports/media.repository.interface';

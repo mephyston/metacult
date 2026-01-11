@@ -1,6 +1,6 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { Redis } from 'ioredis';
-import type { MediaReadDto } from '../../dtos/media-read.dto';
+import type { MediaReadDto } from '../../../infrastructure/dtos/media-read.dto';
 import { logger } from '@metacult/backend-infrastructure';
 
 import { Result, AppError, InfrastructureError } from '@metacult/shared-core';

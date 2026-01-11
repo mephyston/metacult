@@ -1,6 +1,6 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { GetMediaByIdQuery } from './get-media-by-id.query';
-import type { MediaDetailDto } from '../../dtos/media-detail.dto';
+import type { MediaDetailDto } from '../../../infrastructure/dtos/media-detail.dto';
 import { asMediaId } from '../../../domain/value-objects/media-id.vo';
 import { MediaNotFoundInProviderError } from '../../../domain/errors/catalog.errors';
 import { logger } from '@metacult/backend-infrastructure';

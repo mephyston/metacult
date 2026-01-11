@@ -2,7 +2,7 @@
 export * from './infrastructure/db/gamification.schema';
 
 // Domain
-export * from './domain/gamification.service';
+export * from './application/services/gamification.service';
 
 // Application
 export * from './application/listeners/grant-xp-on-interaction.listener';

@@ -1,18 +1,18 @@
-import { ImportMediaHandler } from '../commands/import-media/import-media.handler';
-import { DrizzleMediaRepository } from '../../infrastructure/repositories/drizzle-media.repository';
-import { IgdbProvider } from '../../infrastructure/providers/igdb.provider';
-import { TmdbProvider } from '../../infrastructure/providers/tmdb.provider';
-import { GoogleBooksProvider } from '../../infrastructure/providers/google-books.provider';
+import { ImportMediaHandler } from '../../application/commands/import-media/import-media.handler';
+import { DrizzleMediaRepository } from '../repositories/drizzle-media.repository';
+import { IgdbProvider } from '../providers/igdb.provider';
+import { TmdbProvider } from '../providers/tmdb.provider';
+import { GoogleBooksProvider } from '../providers/google-books.provider';
 import {
   IgdbAdapter,
   TmdbAdapter,
   GoogleBooksAdapter,
-} from '../../infrastructure/adapters/media.adapters';
-import { GetMediaByIdHandler } from '../queries/get-media-by-id/get-media-by-id.handler';
-import { GetTopRatedMediaHandler } from '../queries/get-top-rated-media/get-top-rated-media.handler';
+} from '../adapters/media.adapters';
+import { GetMediaByIdHandler } from '../../application/queries/get-media-by-id/get-media-by-id.handler';
+import { GetTopRatedMediaHandler } from '../../application/queries/get-top-rated-media/get-top-rated-media.handler';
 import { MediaController } from '../../api/http/controllers/media.controller';
-import { SearchMediaHandler } from '../queries/search-media/search-media.handler';
-import { GetRecentMediaHandler } from '../queries/get-recent-media/get-recent-media.handler';
+import { SearchMediaHandler } from '../../application/queries/search-media/search-media.handler';
+import { GetRecentMediaHandler } from '../../application/queries/get-recent-media/get-recent-media.handler';
 
 // ✅ Configuration injectée (pas d'accès direct à process.env)
 export interface CatalogModuleConfig {
