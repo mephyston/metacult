@@ -145,6 +145,15 @@ export class DrizzleMediaRepository implements IMediaRepository {
       conditions.push(eq(schema.medias.type, filters.type as any));
     }
 
+    if (filters.types && filters.types.length > 0) {
+      conditions.push(
+        inArray(
+          schema.medias.type,
+          filters.types.map((t) => t.toUpperCase()) as any[],
+        ),
+      );
+    }
+
     if (filters.search) {
       conditions.push(ilike(schema.medias.title, `%${filters.search}%`));
     }
@@ -260,17 +269,17 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const conditions = [];
 
     if (filters.type) {
-      // Safe cast as DB type matches upper case strings used in enum mostly, or logic adapts
-      // In this repo, DB Enum is 'GAME', 'MOVIE' etc. App Enum is likely 'game', 'movie'.
-      // Existing search code uses `eq(schema.medias.type, filters.type as any)`.
-      // Let's assume the input is correct casing or cast it.
-      // Actually existing `types/raw-responses` or schema defines it.
-      // Let's force uppercase to be safe if provided as lowercase?
-      // Check mapRowToEntity: `row.medias.type` is 'GAME' etc.
-      // `filters.type` is likely 'game'.
-      // existing `search` does `filters.type as any`. I will convert.
       conditions.push(
         eq(schema.medias.type, filters.type.toUpperCase() as any),
+      );
+    }
+
+    if (filters.types && filters.types.length > 0) {
+      conditions.push(
+        inArray(
+          schema.medias.type,
+          filters.types.map((t) => t.toUpperCase()) as any[],
+        ),
       );
     }
 
@@ -386,6 +395,15 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (filters.type) {
       conditions.push(eq(schema.medias.type, filters.type as any));
+    }
+
+    if (filters.types && filters.types.length > 0) {
+      conditions.push(
+        inArray(
+          schema.medias.type,
+          filters.types.map((t) => t.toUpperCase()) as any[],
+        ),
+      );
     }
 
     if (filters.search) {
@@ -566,6 +584,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
   async findRandom(filters: {
     limit: number;
     excludedIds?: MediaId[];
+    types?: MediaType[];
   }): Promise<MediaReadDto[]> {
     logger.debug(
       {
@@ -583,6 +602,16 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (filters.excludedIds && filters.excludedIds.length > 0) {
       query.where(notInArray(schema.medias.id, filters.excludedIds));
+    }
+
+    // Add type filtering for random search
+    if (filters.types && filters.types.length > 0) {
+      query.where(
+        inArray(
+          schema.medias.type,
+          filters.types.map((t) => t.toUpperCase()) as any[],
+        ),
+      );
     }
 
     if (filters.limit) {

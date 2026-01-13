@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Header, Footer, Search } from '@metacult/shared-ui';
+import { Header, Footer, Search, TabBar } from '@metacult/shared-ui';
 import { useAuthSession } from './composables/useAuthSession';
 import { useGuestSync } from './composables/useGuestSync';
 import { useWebsiteUrl, useApiUrl } from './composables/useApiUrl';
@@ -98,34 +98,68 @@ const displayCommit = `#${sha.substring(0, 7)}`;
 // SEO Metadata
 useHead({
   titleTemplate: (titleChunk) => {
-    return titleChunk ? `${titleChunk} | Metacult` : 'Metacult - Match, Rank & Discover';
+    return titleChunk
+      ? `${titleChunk} | Metacult`
+      : 'Metacult - Match, Rank & Discover';
   },
 });
 
 useSeoMeta({
   title: 'Metacult - Match, Rank & Discover',
   ogTitle: 'Metacult - Match, Rank & Discover',
-  description: 'The ultimate platform to track, rank, and discover movies, games, and books with your friends.',
-  ogDescription: 'The ultimate platform to track, rank, and discover movies, games, and books with your friends.',
+  description:
+    'The ultimate platform to track, rank, and discover movies, games, and books with your friends.',
+  ogDescription:
+    'The ultimate platform to track, rank, and discover movies, games, and books with your friends.',
   ogImage: 'https://metacult.app/og-image.jpg',
   twitterCard: 'summary_large_image',
 });
+
+const route = useRoute();
+const isOnboarding = computed(
+  () =>
+    route.path.startsWith('/onboarding') || route.query.mode === 'onboarding',
+);
+const isSwipe = computed(() => route.path.startsWith('/swipe'));
 </script>
 
 <template>
-  <div class="font-sans min-h-screen flex flex-col bg-background text-foreground dark">
-    <Header :user="user" :labels="headerLabels" :trendingHighlights="trendingHighlights" @logout="handleLogout">
-      <template #search>
-        <div class="contents">
-          <Search />
-        </div>
-      </template>
-    </Header>
+  <div
+    class="font-sans min-h-screen flex flex-col bg-background text-foreground dark"
+  >
+    <div v-if="!isOnboarding" :class="{ 'hidden md:block': isSwipe }">
+      <Header
+        :user="user"
+        :labels="headerLabels"
+        :trendingHighlights="trendingHighlights"
+        @logout="handleLogout"
+      >
+        <template #search>
+          <div class="contents">
+            <Search />
+          </div>
+        </template>
+      </Header>
+    </div>
 
-    <main class="flex-1">
+    <div class="flex-1" :class="{ 'pb-16 md:pb-0': !isOnboarding || isSwipe }">
+      <!-- Mobile Swipe Floating Search -->
+      <div
+        v-if="!isOnboarding && isSwipe"
+        class="md:hidden absolute bottom-24 right-4 z-50 pointer-events-auto bg-background/80 backdrop-blur-md rounded-full shadow-lg border border-border"
+      >
+        <Search />
+      </div>
+
       <NuxtPage :keepalive="{ max: 10 }" />
-    </main>
+    </div>
 
-    <Footer :version="displayVersion" :commit="displayCommit" />
+    <TabBar v-if="!isOnboarding || isSwipe" />
+    <Footer
+      v-if="!isOnboarding"
+      :version="displayVersion"
+      :commit="displayCommit"
+      class="hidden md:block"
+    />
   </div>
 </template>

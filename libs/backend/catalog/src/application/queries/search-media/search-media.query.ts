@@ -8,6 +8,7 @@ export class SearchMediaQuery {
   constructor(
     public readonly search?: string,
     public readonly type?: MediaType,
+    public readonly types?: MediaType[], // New: Filter by multiple types
     public readonly tag?: string,
     public readonly excludedIds?: string[],
     public readonly limit?: number,

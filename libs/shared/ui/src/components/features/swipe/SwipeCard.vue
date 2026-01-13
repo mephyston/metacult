@@ -18,6 +18,8 @@ const props = defineProps<{
     id: string;
     title: string;
     image: string;
+    mediaType?: string;
+    type?: string;
   };
   isGold?: boolean;
   affiliateUrl?: string;
@@ -194,6 +196,26 @@ const cardTransform = computed(() => {
       : 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Spring effect au retour
     cursor: isDragging.value ? 'grabbing' : 'grab',
   };
+});
+
+// Translation Label
+const mediaTypeLabel = computed(() => {
+  const type = props.item?.mediaType || props.item?.type || 'unknown';
+  const normalized = type.toUpperCase();
+
+  switch (normalized) {
+    case 'MOVIE':
+      return 'Film';
+    case 'SHOW':
+    case 'TV':
+      return 'Série';
+    case 'BOOK':
+      return 'Livre';
+    case 'GAME':
+      return 'Jeu Vidéo';
+    default:
+      return null;
+  }
 });
 
 // --- Zone Logic ---
@@ -431,10 +453,11 @@ defineExpose({
               Sponsored
             </span>
             <span
-              v-else
+              v-else-if="mediaTypeLabel"
               class="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider text-white"
-              >Movie</span
             >
+              {{ mediaTypeLabel }}
+            </span>
             <span
               class="text-amber-400 text-xs font-bold flex items-center gap-1"
             >

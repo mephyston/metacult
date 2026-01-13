@@ -42,11 +42,20 @@ export class SearchMediaHandler {
     try {
       const searchTerm = query.search?.trim();
 
+      // Normalize types (Debt cleanup: prefer types array over single type)
+      const effectiveTypes =
+        query.types && query.types.length > 0
+          ? query.types
+          : query.type
+            ? [query.type]
+            : undefined;
+
       // Check Advanced Filters
       const isAdvancedFilterActive =
         !!query.minElo ||
         !!query.releaseYear ||
         (!!query.tags && query.tags.length > 0) ||
+        (!!effectiveTypes && effectiveTypes.length > 0) ||
         !!query.page;
 
       if (isAdvancedFilterActive || !searchTerm) {
@@ -59,7 +68,8 @@ export class SearchMediaHandler {
           minElo: query.minElo,
           releaseYear: query.releaseYear,
           tags: query.tags,
-          type: query.type,
+          // type: query.type, // Legacy support removed (using normalized types)
+          types: effectiveTypes,
           excludedIds: query.excludedIds,
           page: page,
           limit: limit,
@@ -85,6 +95,7 @@ export class SearchMediaHandler {
             await this.mediaRepository.findRandom({
               excludedIds: query.excludedIds,
               limit: query.limit ?? 10,
+              types: effectiveTypes,
             }),
           ),
         );
@@ -113,7 +124,8 @@ export class SearchMediaHandler {
       // 4. Local Search
       const localResults = await this.mediaRepository.searchViews({
         search: searchTerm,
-        type: query.type, // Legacy support for type in simple search
+        // type: query.type, // Legacy support removed
+        types: effectiveTypes,
         limit: query.limit, // Legacy limit support
       });
 

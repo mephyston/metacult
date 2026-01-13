@@ -7,6 +7,7 @@ import {
   createCatalogRoutes,
   CatalogModuleFactory,
   type CatalogModuleConfig,
+  MediaType,
 } from '@metacult/backend-catalog';
 import {
   createDiscoveryRoutes,
@@ -136,7 +137,12 @@ const adsHandler = new GetActiveAdsHandler(adsGateway);
 const mediaSearchAdapter = {
   search: async (
     q: string,
-    options: { excludedIds?: string[]; limit?: number; orderBy?: 'random' },
+    options: {
+      excludedIds?: string[];
+      limit?: number;
+      orderBy?: 'random';
+      types?: string[];
+    },
   ) => {
     // Adaptateur: String -> SearchQuery -> DTO
     // Le handler retourne maintenant une réponse groupée ou paginée (Mode B).
@@ -145,6 +151,16 @@ const mediaSearchAdapter = {
       excludedIds: options?.excludedIds,
       limit: options?.limit,
       orderBy: options?.orderBy,
+      types: options?.types
+        ? (options.types
+            .map((t) => {
+              const upper = t.toUpperCase();
+              return Object.values(MediaType).includes(upper as MediaType)
+                ? (upper as MediaType)
+                : undefined;
+            })
+            .filter(Boolean) as MediaType[])
+        : undefined,
     });
 
     if (result.isFailure()) {

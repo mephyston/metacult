@@ -8,6 +8,8 @@ import type { Media, MediaType } from '../entities/media.entity';
 export interface MediaSearchFilters {
   /** Filtrer par type de média (Jeu, Film, etc.) */
   type?: MediaType;
+  /** Filtrer par plusieurs types (OU logique) */
+  types?: MediaType[];
   /** Recherche par slug (tag) */
   tag?: string;
   /** Recherche textuelle (titre) */

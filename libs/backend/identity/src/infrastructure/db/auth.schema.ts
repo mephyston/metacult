@@ -1,4 +1,11 @@
-import { pgSchema, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import {
+  pgSchema,
+  text,
+  timestamp,
+  boolean,
+  index,
+  jsonb,
+} from 'drizzle-orm/pg-core';
 import { type InferSelectModel, type InferInsertModel } from 'drizzle-orm';
 
 /**
@@ -14,6 +21,8 @@ export const user = identitySchema.table('user', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull(),
   image: text('image'),
+  onboardingCompleted: boolean('onboarding_completed').default(false).notNull(),
+  preferences: jsonb('preferences'),
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
 });
