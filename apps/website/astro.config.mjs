@@ -29,7 +29,7 @@ export default defineConfig({
         plugins: [nxViteTsPaths(), tailwindcss()],
         ssr: {
             noExternal: isProduction
-                ? ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'vue', 'vue-router', 'thread-stream', 'real-require', '@astrojs/vue', 'better-auth', '@vueuse/core']
+                ? ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'vue', 'vue-router', '@astrojs/vue', 'better-auth', '@vueuse/core']
                 : ['@metacult/shared-ui', 'radix-vue', 'lucide-vue-next', 'better-auth', '@vueuse/core'],
         },
         optimizeDeps: {
