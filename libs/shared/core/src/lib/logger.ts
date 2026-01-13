@@ -1,7 +1,14 @@
 import pino from 'pino';
 
-const isProduction = process.env.NODE_ENV === 'production';
-const isTest = process.env.NODE_ENV === 'test';
+// Safe logger implementation that avoids worker threads in production
+const env = process.env.NODE_ENV || 'production';
+const isDevelopment = env === 'development';
+const isTest = env === 'test';
+const shouldUsePino = isDevelopment || isTest;
+
+console.log(
+  `[Logger] Initializing logger for env: ${env}. Using Pino: ${shouldUsePino}`,
+);
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -34,25 +41,19 @@ class ConsoleLogger {
   level = 'info';
 }
 
-// In production, use a simple console logger to avoid pino/thread-stream worker issues in bundled environments
-export const logger = isProduction
+// In production (or unknown envs), use a simple console logger to avoid pino/thread-stream worker issues
+export const logger = !shouldUsePino
   ? (new ConsoleLogger() as unknown as pino.Logger)
   : pino({
-      level: isProduction ? 'info' : 'debug',
-      transport:
-        !isProduction && !isTest
-          ? {
-              target: 'pino-pretty',
-              options: {
-                colorize: true,
-                translateTime: 'HH:MM:ss',
-                ignore: 'pid,hostname',
-                singleLine: false,
-              },
-            }
-          : undefined,
-      base: {
-        service: 'shared-core',
-        env: process.env.NODE_ENV,
+      level: 'debug',
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'HH:MM:ss',
+          ignore: 'pid,hostname',
+          service: 'shared-core',
+          singleLine: false,
+        },
       },
     });
