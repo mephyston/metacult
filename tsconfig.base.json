@@ -31,7 +31,8 @@
         "libs/backend/gamification/src/index.ts"
       ],
       "interaction": ["libs/backend/interaction/src/index.ts"],
-      "identity": ["libs/backend/identity/src/index.ts"]
+      "identity": ["libs/backend/identity/src/index.ts"],
+      "@metacult/backend-commerce": ["libs/backend/commerce/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "dist", "build", ".nx", "tmp"]

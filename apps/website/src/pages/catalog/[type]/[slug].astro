@@ -3,6 +3,7 @@ import Layout from '../../../layouts/Layout.astro';
 import { getApiUrl } from '@metacult/shared-ui';
 import { getCurrentCatalogYear } from '../../../utils/date.utils';
 import { MoveLeft, Star, Calendar } from 'lucide-vue-next';
+import { MediaOffers } from '@metacult/shared-ui';
 
 export const prerender = false;
 
@@ -318,6 +319,16 @@ const pageDescription = isCategoryView ? categoryDescription : mediaDescription;
                     </span>
                   </div>
                 )}
+              </div>
+
+              {/* Media Offers / Commercial Actions */}
+              <div class="mt-4 pt-6 border-t">
+                <MediaOffers
+                  client:visible
+                  offers={media.offers}
+                  mediaTitle={media.title}
+                  variant="detail"
+                />
               </div>
             </div>
           </div>

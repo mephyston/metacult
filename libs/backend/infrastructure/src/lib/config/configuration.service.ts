@@ -36,6 +36,10 @@ const envSchema = z.object({
   TMDB_API_KEY: z.string().optional(),
   GOOGLE_BOOKS_API_KEY: z.string().optional(),
 
+  // Affiliate
+  INSTANT_GAMING_REF: z.string().optional(),
+  AMAZON_TAG: z.string().optional(),
+
   // Debug & Dev Tools
   DEBUG_SQL: z
     .preprocess((val) => {
@@ -66,15 +70,15 @@ export class ConfigurationService {
     const rawEnv = { ...process.env };
 
     // Compatibilité Railway: PORT -> API_PORT
-    if (!rawEnv.API_PORT && rawEnv.PORT) {
-      rawEnv.API_PORT = rawEnv.PORT;
+    if (!rawEnv['API_PORT'] && rawEnv['PORT']) {
+      rawEnv['API_PORT'] = rawEnv['PORT'];
     }
 
     // Compatibilité Railway: RAILWAY_ENVIRONMENT_NAME -> NODE_ENV
-    if (rawEnv.RAILWAY_ENVIRONMENT_NAME) {
-      const railwayEnv = rawEnv.RAILWAY_ENVIRONMENT_NAME.toLowerCase();
+    if (rawEnv['RAILWAY_ENVIRONMENT_NAME']) {
+      const railwayEnv = rawEnv['RAILWAY_ENVIRONMENT_NAME'].toLowerCase();
       if (['staging', 'production', 'development'].includes(railwayEnv)) {
-        rawEnv.NODE_ENV = railwayEnv;
+        rawEnv['NODE_ENV'] = railwayEnv;
       }
     }
 
@@ -184,6 +188,15 @@ export class ConfigurationService {
 
   public get migrationsFolder(): string | undefined {
     return this.config.MIGRATIONS_FOLDER;
+  }
+
+  // Affiliate
+  public get instantGamingRef(): string | undefined {
+    return this.config.INSTANT_GAMING_REF;
+  }
+
+  public get amazonTag(): string | undefined {
+    return this.config.AMAZON_TAG;
   }
 
   // Generic Getter (Deprecated - prefer typed getters)

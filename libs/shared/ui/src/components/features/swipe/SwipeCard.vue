@@ -11,6 +11,7 @@ import {
   Info,
   ExternalLink,
 } from 'lucide-vue-next';
+import MediaOffers from '../offers/MediaOffers.vue';
 
 // --- Props & Emits ---
 const props = defineProps<{
@@ -20,6 +21,7 @@ const props = defineProps<{
     image: string;
     mediaType?: string;
     type?: string;
+    offers?: any[];
   };
   isGold?: boolean;
   affiliateUrl?: string;
@@ -481,7 +483,15 @@ defineExpose({
         </div>
 
         <!-- BUTTONS (Info & CTA) -->
-        <div class="absolute bottom-4 right-4 z-40 flex gap-3">
+        <div class="absolute bottom-4 right-4 z-40 flex gap-3 items-center">
+          <!-- OFFERS LINK (Commercial) -->
+          <MediaOffers
+            v-if="item.offers"
+            :offers="item.offers"
+            :mediaTitle="item.title"
+            variant="card"
+          />
+
           <!-- INFO BUTTON (Flip Trigger) -->
           <button
             @touchstart.stop.prevent="toggleFlip"
