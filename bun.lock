@@ -182,7 +182,11 @@
       "name": "@metacult/backend-commerce",
       "version": "0.0.1",
       "dependencies": {
+        "@metacult/shared-core": "0.3.0",
+        "@nx/vite": "^22.3.3",
+        "drizzle-orm": "^0.45.1",
         "tslib": "^2.3.0",
+        "vitest": "^4.0.0",
       },
     },
     "libs/shared/core": {
