@@ -20,7 +20,7 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
-import { cn, getWebappUrl, getApiUrl } from '../../lib/utils';
+import { cn, getWebappUrl, getApiUrl, getWebsiteUrl } from '../../lib/utils';
 import { authClient } from '../../lib/auth-client';
 import { logger } from '../../lib/logger';
 
@@ -87,7 +87,9 @@ const isOpen = ref(false);
 const sessionUser = ref<UserProfile | null>(null);
 const isLoadingSession = ref(true);
 
-const currentUser = computed(() => props.user ?? sessionUser.value);
+const currentUser = computed(
+  () => (props.user ?? sessionUser.value) as UserProfile | null,
+);
 const isMounted = ref(false);
 
 const currentLevel = computed(() => currentUser.value?.level ?? 1);
@@ -144,6 +146,15 @@ const webappUrl = getWebappUrl();
 const loginUrl = `${webappUrl}/login`;
 const registerUrl = `${webappUrl}/register`;
 const appUrl = `${webappUrl}/`;
+const websiteUrl = getWebsiteUrl();
+
+const getPublicUrl = (path: string) => {
+  // If we are in the app context, ensure we link to the website for public pages
+  if (props.context === 'app') {
+    return `${websiteUrl}${path}`;
+  }
+  return path;
+};
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value;
@@ -151,12 +162,14 @@ const toggleMenu = () => {
 
 const userInitials = computed(() => {
   const user = currentUser.value;
-  if (!user?.username) return 'U';
-  const names = user.username.split(' ');
+  if (!user) return 'U';
+  const username = user.username as unknown as string;
+  if (!username) return 'U';
+  const names = username.split(' ');
   if (names.length >= 2) {
     return `${names[0]?.[0] || ''}${names[1]?.[0] || ''}`.toUpperCase();
   }
-  return user.username.substring(0, 2).toUpperCase();
+  return username.substring(0, 2).toUpperCase();
 });
 
 const handleLogout = async () => {
@@ -203,9 +216,11 @@ const handleLogout = async () => {
                       <NavigationMenuLink as-child>
                         <a
                           :href="
-                            trendingHighlights?.movie
-                              ? `/catalog/movie/${trendingHighlights.movie.slug}`
-                              : '/catalog/movie/trending'
+                            getPublicUrl(
+                              trendingHighlights?.movie
+                                ? `/catalog/movie/${trendingHighlights.movie.slug}`
+                                : '/catalog/movie/trending',
+                            )
                           "
                           class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-4 no-underline outline-none focus:shadow-md overflow-hidden relative"
                         >
@@ -239,7 +254,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/catalog/movie/upcoming"
+                              :href="getPublicUrl('/catalog/movie/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >📅 Bientôt</a
                             ></NavigationMenuLink
@@ -248,7 +263,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              :href="`/catalog/movie/best-of`"
+                              :href="getPublicUrl(`/catalog/movie/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🏆 Le Top {{ currentCatalogYear }}</a
                             >
@@ -257,7 +272,9 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/catalog/movie/hall-of-fame"
+                              :href="
+                                getPublicUrl('/catalog/movie/hall-of-fame')
+                              "
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >⭐ Hall of Fame</a
                             ></NavigationMenuLink
@@ -266,7 +283,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/search?type=movie"
+                              :href="getPublicUrl('/search?type=movie')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🔍 Recherche avancée</a
                             >
@@ -287,9 +304,11 @@ const handleLogout = async () => {
                       <NavigationMenuLink as-child>
                         <a
                           :href="
-                            trendingHighlights?.tv
-                              ? `/catalog/tv/${trendingHighlights.tv.slug}`
-                              : '/catalog/tv/trending'
+                            getPublicUrl(
+                              trendingHighlights?.tv
+                                ? `/catalog/tv/${trendingHighlights.tv.slug}`
+                                : '/catalog/tv/trending',
+                            )
                           "
                           class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-4 no-underline outline-none focus:shadow-md overflow-hidden relative"
                         >
@@ -320,7 +339,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/catalog/tv/upcoming"
+                              :href="getPublicUrl('/catalog/tv/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >📅 Bientôt</a
                             ></NavigationMenuLink
@@ -329,7 +348,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              :href="`/catalog/tv/best-of`"
+                              :href="getPublicUrl(`/catalog/tv/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🏆 Le Top {{ currentCatalogYear }}</a
                             >
@@ -338,7 +357,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/catalog/tv/hall-of-fame"
+                              :href="getPublicUrl('/catalog/tv/hall-of-fame')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >⭐ Hall of Fame</a
                             ></NavigationMenuLink
@@ -347,7 +366,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/search?type=tv"
+                              :href="getPublicUrl('/search?type=tv')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🔍 Recherche avancée</a
                             >
@@ -368,9 +387,11 @@ const handleLogout = async () => {
                       <NavigationMenuLink as-child>
                         <a
                           :href="
-                            trendingHighlights?.game
-                              ? `/catalog/game/${trendingHighlights.game.slug}`
-                              : '/catalog/game/trending'
+                            getPublicUrl(
+                              trendingHighlights?.game
+                                ? `/catalog/game/${trendingHighlights.game.slug}`
+                                : '/catalog/game/trending',
+                            )
                           "
                           class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-4 no-underline outline-none focus:shadow-md overflow-hidden relative"
                         >
@@ -403,7 +424,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/catalog/game/upcoming"
+                              :href="getPublicUrl('/catalog/game/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >📅 Bientôt</a
                             ></NavigationMenuLink
@@ -412,7 +433,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              :href="`/catalog/game/best-of`"
+                              :href="getPublicUrl(`/catalog/game/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🏆 Le Top {{ currentCatalogYear }}</a
                             >
@@ -421,7 +442,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/catalog/game/hall-of-fame"
+                              :href="getPublicUrl('/catalog/game/hall-of-fame')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >⭐ Hall of Fame</a
                             ></NavigationMenuLink
@@ -430,7 +451,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/search?type=game"
+                              :href="getPublicUrl('/search?type=game')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🔍 Recherche avancée</a
                             >
@@ -439,16 +460,6 @@ const handleLogout = async () => {
                       </ul>
                     </div>
                   </NavigationMenuContent>
-                </NavigationMenuItem>
-
-                <!-- Arena Menu -->
-                <NavigationMenuItem>
-                  <NavigationMenuLink
-                    href="/arena"
-                    :class="cn(navigationMenuTriggerStyle(), 'uppercase')"
-                  >
-                    ⚔️ Arène
-                  </NavigationMenuLink>
                 </NavigationMenuItem>
 
                 <!-- Livres Menu -->
@@ -461,9 +472,11 @@ const handleLogout = async () => {
                       <NavigationMenuLink as-child>
                         <a
                           :href="
-                            trendingHighlights?.book
-                              ? `/catalog/book/${trendingHighlights.book.slug}`
-                              : '/catalog/book/trending'
+                            getPublicUrl(
+                              trendingHighlights?.book
+                                ? `/catalog/book/${trendingHighlights.book.slug}`
+                                : '/catalog/book/trending',
+                            )
                           "
                           class="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted to-muted/50 p-4 no-underline outline-none focus:shadow-md overflow-hidden relative"
                         >
@@ -496,7 +509,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/catalog/book/upcoming"
+                              :href="getPublicUrl('/catalog/book/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >📅 Bientôt</a
                             ></NavigationMenuLink
@@ -505,7 +518,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              :href="`/catalog/book/best-of`"
+                              :href="getPublicUrl(`/catalog/book/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🏆 Le Top {{ currentCatalogYear }}</a
                             >
@@ -514,7 +527,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/catalog/book/hall-of-fame"
+                              :href="getPublicUrl('/catalog/book/hall-of-fame')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >⭐ Hall of Fame</a
                             ></NavigationMenuLink
@@ -523,7 +536,7 @@ const handleLogout = async () => {
                         <li>
                           <NavigationMenuLink as-child
                             ><a
-                              href="/search?type=book"
+                              :href="getPublicUrl('/search?type=book')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🔍 Recherche avancée</a
                             >
@@ -532,16 +545,6 @@ const handleLogout = async () => {
                       </ul>
                     </div>
                   </NavigationMenuContent>
-                </NavigationMenuItem>
-
-                <!-- À Propos Item -->
-                <NavigationMenuItem>
-                  <NavigationMenuLink
-                    href="/about"
-                    :class="cn(navigationMenuTriggerStyle(), 'uppercase')"
-                  >
-                    À Propos
-                  </NavigationMenuLink>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
@@ -587,8 +590,8 @@ const handleLogout = async () => {
                   >
                     <AvatarImage
                       v-if="currentUser?.avatarUrl"
-                      :src="currentUser.avatarUrl"
-                      :alt="currentUser.username || 'User avatar'"
+                      :src="currentUser.avatarUrl as string"
+                      :alt="(currentUser.username as string) || 'User avatar'"
                     />
                     <AvatarFallback>{{ userInitials }}</AvatarFallback>
                   </Avatar>
@@ -654,7 +657,7 @@ const handleLogout = async () => {
                 <div
                   class="h-full bg-primary transition-all duration-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"
                   :style="{
-                    width: `${Math.min((currentXp / nextLevelXp) * 100, 100)}%`,
+                    width: `${Math.min(((currentXp as number) / (nextLevelXp as number)) * 100, 100)}%`,
                   }"
                 ></div>
               </div>
@@ -748,11 +751,6 @@ const handleLogout = async () => {
           >
           <a href="/rankings/hidden-gems" class="text-foreground py-2"
             >💎 Pépites Cachées</a
-          >
-          <a href="/arena" class="text-foreground py-2">⚔️ Arène</a>
-
-          <a href="/about" class="text-foreground py-2 font-medium mt-2"
-            >À Propos</a
           >
         </div>
 

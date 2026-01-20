@@ -38,14 +38,28 @@ const cheapSharkOffer = computed(() => {
   );
 });
 
-// 2. Instant Gaming URL
-const instantGamingUrl = computed(() => {
-  const igOffer = props.offers.find((o) => o.provider === 'Instant Gaming');
-  if (igOffer) return igOffer.url;
+// 2. Primary Purchase Offer (Instant Gaming OR Amazon)
+const primaryOffer = computed(() => {
+  // Priority: Instant Gaming > Amazon > Generic Purchase
+  const ig = props.offers.find((o) => o.provider === 'Instant Gaming');
+  if (ig)
+    return {
+      ...ig,
+      label: 'Instant Gaming',
+      color: 'bg-orange-500 hover:bg-orange-600',
+      icon: 'ig',
+    };
 
-  // Fallback generation logic
-  const ref = 'metacult'; // Should ideally come from ref/config, but hardcoded fallback per prompt instruction implicitly or valid generic
-  return `https://www.instant-gaming.com/fr/search/?q=${encodeURIComponent(props.mediaTitle)}&igr=${ref}`;
+  const amz = props.offers.find((o) => o.provider === 'Amazon');
+  if (amz)
+    return {
+      ...amz,
+      label: 'Amazon',
+      color: 'bg-[#FF9900] hover:bg-[#FF9900]/90 text-black',
+      icon: 'amz',
+    }; // Amazon colors
+
+  return null;
 });
 
 // 3. Streaming Offers
@@ -65,7 +79,7 @@ const streamingOffers = computed(() => {
     });
 });
 
-const hasOffers = computed(() => props.offers.length > 0 || props.mediaTitle);
+const hasOffers = computed(() => props.offers.length > 0);
 
 // 4. Price Formatting
 const formatPrice = (price: number | null, currency: string) => {
@@ -102,28 +116,31 @@ const getProviderInitials = (provider: string) => {
     <!-- === CARD VARIANT (Compact / Swipe) === -->
     <div v-if="variant === 'card'" class="pointer-events-auto">
       <a
-        :href="instantGamingUrl"
+        v-if="primaryOffer"
+        :href="primaryOffer.url"
         target="_blank"
         @click.stop
-        class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 dark:bg-zinc-800/90 backdrop-blur shadow-lg border border-white/10 transition-transform active:scale-95 group hover:bg-white dark:hover:bg-zinc-700"
+        @touchstart.stop
+        @mousedown.stop
+        title="Voir l'offre / Acheter"
+        class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95 group hover:bg-white/20 shadow-lg"
       >
-        <ShoppingCart class="w-4 h-4 text-orange-500" />
-        <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-          {{
-            cheapSharkOffer?.price
-              ? `Dès ${formatPrice(cheapSharkOffer.price, cheapSharkOffer.currency)}`
-              : 'Acheter'
-          }}
-        </span>
-        <ExternalLink class="w-3 h-3 text-zinc-400 group-hover:text-zinc-500" />
+        <ShoppingCart
+          class="w-5 h-5 text-white"
+          :class="{
+            'text-amber-400': primaryOffer.icon === 'amz',
+            'text-orange-400': primaryOffer.icon === 'ig',
+          }"
+        />
       </a>
+      <!-- Fallback or alternative for Card when no IG offer? For now, nothing -->
     </div>
 
     <!-- === DETAIL VARIANT (Full Page) === -->
     <div v-else class="w-full flex flex-col gap-6">
       <!-- Section Header -->
       <h3 class="text-lg font-semibold flex items-center gap-2">
-        <Gamepad2 v-if="cheapSharkOffer || instantGamingUrl" class="w-5 h-5" />
+        <Gamepad2 v-if="cheapSharkOffer || primaryOffer" class="w-5 h-5" />
         <Tv v-else class="w-5 h-5" />
         Où regarder / Acheter
       </h3>
@@ -145,7 +162,7 @@ const getProviderInitials = (provider: string) => {
 
       <!-- 2. Games Pricing Block -->
       <div
-        v-if="cheapSharkOffer || instantGamingUrl.includes('instant-gaming')"
+        v-if="cheapSharkOffer || primaryOffer"
         class="flex flex-col gap-3 p-4 rounded-xl bg-secondary/30 border border-border/50"
       >
         <!-- Official Price (Neutral) -->
@@ -159,18 +176,23 @@ const getProviderInitials = (provider: string) => {
           }}</span>
         </div>
 
-        <!-- CTA Instant Gaming (Primary) -->
+        <!-- CTA Primary (IG or Amazon) -->
         <a
-          :href="instantGamingUrl"
+          v-if="primaryOffer"
+          :href="primaryOffer.url"
           target="_blank"
-          class="flex items-center justify-center gap-3 w-full py-4 rounded-xl font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]"
+          class="flex items-center justify-center gap-3 w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all active:scale-[0.98]"
+          :class="[primaryOffer.color]"
         >
           <ShoppingCart class="w-5 h-5" />
-          <span>Voir sur Instant Gaming</span>
+          <span>Voir sur {{ primaryOffer.label }}</span>
           <ExternalLink class="w-4 h-4 opacity-70" />
         </a>
 
-        <p class="text-[10px] text-center opacity-40 mt-1">
+        <p
+          v-if="primaryOffer?.icon === 'ig'"
+          class="text-[10px] text-center opacity-40 mt-1"
+        >
           Partenaire officiel - Code: Metacult
         </p>
       </div>

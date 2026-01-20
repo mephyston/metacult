@@ -2,35 +2,29 @@ import { Offer } from '../../domain/Offer';
 import type { OffersProvider } from '../../domain/gateway/OffersProvider';
 import { CheapSharkProvider } from '../../infrastructure/cheapshark/CheapSharkProvider';
 import { AffiliateLinkService } from '../../domain/service/AffiliateLinkService';
+import type { MediaDetailsProvider } from '../../domain/gateway/MediaDetailsProvider';
 
 export class GetOffersHandler {
   constructor(
     private readonly offersProvider: OffersProvider, // TMDB for standard streaming
     private readonly cheapSharkProvider: CheapSharkProvider,
     private readonly affiliateLinkService: AffiliateLinkService,
+    private readonly mediaDetailsProvider: MediaDetailsProvider,
   ) {}
 
   async execute(mediaId: string): Promise<Offer[]> {
     const offers: Offer[] = [];
 
-    // --- MOCK RESOLUTION LOGIC (Catalog Integration placeholder) ---
-    // In a real app: const media = await catalog.getMedia(mediaId);
-    let tmdbId: string | null = null;
-    let type: 'movie' | 'tv' = 'movie'; // Default
-    let isGame = false;
-    let title = '';
+    const media = await this.mediaDetailsProvider.getMediaDetails(mediaId);
+    if (!media) return []; // Media not found, no offers.
 
-    if (mediaId === 'test-media-id') {
-      tmdbId = '550'; // Fight Club
-      type = 'movie';
-      title = 'Fight Club';
-    } else if (mediaId === 'test-game-id') {
-      isGame = true;
-      title = 'Elden Ring';
-    } else if (mediaId === 'test-book-id') {
-      title = 'The Lord of the Rings';
-    }
-    // -------------------------------------------------------------
+    const tmdbId = media.tmdbId;
+    const type =
+      media.type === 'game' ? 'movie' : media.type === 'tv' ? 'tv' : 'movie'; // Fallback, but actually type usage depends on TMDB logic logic below.
+    // Wait, TMDB only supports movie/tv.
+
+    const isGame = media.type === 'game';
+    const title = media.title;
 
     // 1. TMDB Offers (Movies/TV)
     // If we have a TMDB ID, we assume it's a Movie or TV Show
@@ -87,6 +81,26 @@ export class GetOffersHandler {
           price: null, // Unknown, search link
           currency: 'EUR',
           url: igUrl,
+          isAffiliated: true,
+          lastUpdated: new Date(),
+        }),
+      );
+
+      // C. Amazon Games Affiliate Link (Added for older titles coverage)
+      const amazonUrl = this.affiliateLinkService.generateAmazonSearchLink(
+        title,
+        'videogames',
+      );
+      offers.push(
+        Offer.create({
+          id: `${mediaId}-amazon-game`,
+          mediaId,
+          provider: 'Amazon',
+          category: 'game',
+          type: 'purchase',
+          price: null,
+          currency: 'EUR',
+          url: amazonUrl,
           isAffiliated: true,
           lastUpdated: new Date(),
         }),

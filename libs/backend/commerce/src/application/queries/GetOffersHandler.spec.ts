@@ -5,6 +5,11 @@ import { Offer } from '../../domain/Offer';
 import { CheapSharkProvider } from '../../infrastructure/cheapshark/CheapSharkProvider';
 import { AffiliateLinkService } from '../../domain/service/AffiliateLinkService';
 
+import type {
+  MediaDetails,
+  MediaDetailsProvider,
+} from '../../domain/gateway/MediaDetailsProvider';
+
 class MockOffersProvider implements OffersProvider {
   async getOffers(
     tmdbId: string,
@@ -54,6 +59,37 @@ const mockAffiliateService = new AffiliateLinkService(
   'my-amazon-tag',
 );
 
+// Mock Media Details Provider
+class MockMediaDetailsProvider implements MediaDetailsProvider {
+  async getMediaDetails(mediaId: string): Promise<MediaDetails | null> {
+    if (mediaId === 'test-media-id') {
+      return {
+        id: mediaId,
+        title: 'Fight Club',
+        type: 'movie',
+        tmdbId: '550',
+      };
+    }
+    if (mediaId === 'test-game-id') {
+      return {
+        id: mediaId,
+        title: 'Elden Ring',
+        type: 'game',
+      };
+    }
+    if (mediaId === 'test-book-id') {
+      return {
+        id: mediaId,
+        title: 'The Lord of the Rings',
+        type: 'book',
+      };
+    }
+    return null;
+  }
+}
+
+const mockMediaDetailsProvider = new MockMediaDetailsProvider();
+
 describe('GetOffersHandler', () => {
   it('should return empty array for unknown mediaId', async () => {
     const provider = new MockOffersProvider();
@@ -61,6 +97,7 @@ describe('GetOffersHandler', () => {
       provider,
       mockCheapSharkProvider,
       mockAffiliateService,
+      mockMediaDetailsProvider,
     );
     const result = await handler.execute('unknown-id');
     expect(result).toEqual([]);
@@ -72,6 +109,7 @@ describe('GetOffersHandler', () => {
       provider,
       mockCheapSharkProvider,
       mockAffiliateService,
+      mockMediaDetailsProvider,
     );
     const result = await handler.execute('test-media-id');
     expect(result).toHaveLength(2);
@@ -108,10 +146,11 @@ describe('GetOffersHandler', () => {
       provider,
       mockCheapSharkProvider,
       mockAffiliateService,
+      mockMediaDetailsProvider,
     );
     const result = await handler.execute('test-game-id');
 
-    expect(result).toHaveLength(2); // CheapShark + IG
+    expect(result).toHaveLength(3); // CheapShark + IG + Amazon
 
     const csOffer = result.find((o) => o.provider.includes('CheapShark'));
     expect(csOffer).toBeDefined();
@@ -121,6 +160,10 @@ describe('GetOffersHandler', () => {
     expect(igOffer).toBeDefined();
     expect(igOffer?.url).toContain('igr=my-ig-ref');
     expect(igOffer?.url).toContain('Elden%20Ring');
+
+    const amazonOffer = result.find((o) => o.provider === 'Amazon');
+    expect(amazonOffer).toBeDefined();
+    expect(amazonOffer?.url).toContain('tag=my-amazon-tag');
 
     expect(mockCheapSharkProvider.getBestDeal).toHaveBeenCalledWith(
       'Elden Ring',
@@ -134,6 +177,7 @@ describe('GetOffersHandler', () => {
       provider,
       mockCheapSharkProvider,
       mockAffiliateService,
+      mockMediaDetailsProvider,
     );
     const result = await handler.execute('test-book-id');
 

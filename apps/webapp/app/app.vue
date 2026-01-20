@@ -130,6 +130,7 @@ const isSwipe = computed(() => route.path.startsWith('/swipe'));
     <div v-if="!isOnboarding" :class="{ 'hidden md:block': isSwipe }">
       <Header
         :user="user"
+        context="app"
         :labels="headerLabels"
         :trendingHighlights="trendingHighlights"
         @logout="handleLogout"

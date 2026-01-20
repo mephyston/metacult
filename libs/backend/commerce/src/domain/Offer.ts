@@ -51,4 +51,8 @@ export class Offer {
   static create(props: OfferProps): Offer {
     return new Offer(props);
   }
+
+  toPrimitives(): OfferProps {
+    return { ...this.props };
+  }
 }

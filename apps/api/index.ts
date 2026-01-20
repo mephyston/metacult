@@ -33,6 +33,11 @@ import {
   GamificationController as gamificationRoutes,
   userStats,
 } from '@metacult/backend-gamification';
+import {
+  createCommerceRoutes,
+  CommerceModuleFactory,
+  type CommerceModuleConfig,
+} from '@metacult/backend-commerce';
 import { importRoutes } from './src/routes/import.routes';
 import { debugRoutes } from './src/routes/debug.routes';
 import { syncRoutes } from './src/routes/sync.routes';
@@ -185,17 +190,46 @@ const mediaSearchAdapter = {
       ];
     }
 
-    // Mapping vers MediaReadDto (attendu par Discovery ?)
-    return all.map((item) => ({
-      id: item.id,
-      title: item.title,
-      type: item.type,
-      coverUrl: item.poster,
-      rating: null, // Pas dispo dans search result léger
-      releaseYear: item.year,
-      description: null, // Pas dispo
-      isImported: item.isImported,
-    }));
+    // Populate offers (N+1 but limited by page size, e.g., 5 items)
+    // In production, use a DataLoader or BatchQuery.
+    const itemsWithOffers = await Promise.all(
+      all.map(async (item) => {
+        let offers: any[] = [];
+        try {
+          // We reuse the Commerce Handler directly via Controller
+          const domainOffers = await commerceController.getOffers(item.id);
+          offers = [...domainOffers];
+        } catch (e) {
+          logger.warn(
+            { err: e, mediaId: item.id },
+            '[Discovery] Failed to fetch offers for feed item',
+          );
+        }
+
+        const mappedItem = {
+          id: item.id,
+          title: item.title,
+          type: item.type,
+          coverUrl: item.poster,
+          rating: null,
+          releaseYear: item.year,
+          description: null,
+          isImported: item.isImported,
+          offers, // Attached offers
+        };
+
+        if (!mappedItem.type) {
+          logger.warn(
+            { itemId: item.id, itemTitle: item.title },
+            '[Discovery] Item missing type in adapter',
+          );
+        }
+
+        return mappedItem;
+      }),
+    );
+
+    return itemsWithOffers;
   },
 };
 
@@ -257,6 +291,22 @@ const discoveryRoutes = createDiscoveryRoutes(feedController);
 
 // 4. Module Identity (Auth routes)
 const authRoutes = createAuthRoutes();
+
+// 5. Module Commerce
+const commerceConfig: CommerceModuleConfig = {
+  tmdb: {
+    apiKey: configService.get('TMDB_API_KEY') || '',
+  },
+  affiliate: {
+    instantGamingRef: configService.get('INSTANT_GAMING_REF'),
+    amazonTag: configService.get('AMAZON_TAG'),
+  },
+};
+const commerceController = CommerceModuleFactory.createController(
+  db as unknown as NodePgDatabase<typeof mediaSchema>,
+  commerceConfig,
+);
+const commerceRoutes = createCommerceRoutes(commerceController);
 
 // Initialisation des tâches Cron
 initCrons().catch((err) =>
@@ -338,9 +388,11 @@ const app = new Elysia()
       .use(syncRoutes)
       .use(catalogRoutes)
       .use(discoveryRoutes)
-      .use(mediaRoutes)
+
       .use(interactionRoutes)
+      .use(mediaRoutes)
       .use(socialRoutes)
+      .use(commerceRoutes)
       .use(duelRoutes)
       .use(rankingRoutes)
       .use(gamificationRoutes),

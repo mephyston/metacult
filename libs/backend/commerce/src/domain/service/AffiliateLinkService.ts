@@ -12,7 +12,7 @@ export class AffiliateLinkService {
     const refParam = this.instantGamingRef
       ? `&igr=${this.instantGamingRef}`
       : '';
-    return `https://www.instant-gaming.com/fr/search/?q=${encodeURIComponent(title)}${refParam}`;
+    return `https://www.instant-gaming.com/fr/rechercher/?q=${encodeURIComponent(title)}${refParam}`;
   }
 
   /**
@@ -22,6 +22,14 @@ export class AffiliateLinkService {
   generateAmazonBookLink(title: string): string {
     const tagParam = this.amazonTag ? `&tag=${this.amazonTag}` : '';
     return `https://www.amazon.fr/s?k=${encodeURIComponent(title)}&i=stripbooks${tagParam}`;
+  }
+
+  /**
+   * Generates a generic Amazon search link (e.g. for Video Games).
+   */
+  generateAmazonSearchLink(title: string, category = 'videogames'): string {
+    const tagParam = this.amazonTag ? `&tag=${this.amazonTag}` : '';
+    return `https://www.amazon.fr/s?k=${encodeURIComponent(title)}&i=${category}${tagParam}`;
   }
 
   /**

@@ -210,13 +210,30 @@ const mediaTypeLabel = computed(() => {
       return 'Film';
     case 'SHOW':
     case 'TV':
+    case 'SERIE': // Handle potential variations
       return 'Série';
     case 'BOOK':
       return 'Livre';
     case 'GAME':
+    case 'VIDEOGAME':
       return 'Jeu Vidéo';
     default:
+      // Fallback: Si le type est "MEDIA" (générique) et qu'on n'a pas trouvé mieux, on ne retourne rien
+      // Mais si c'est un autre string, on peut essayer de l'afficher proprement ?
+      // Pour l'instant, on laisse null et on garde le log warning
+      console.warn('[SwipeCard] Unknown/Unhandled media type:', {
+        type,
+        normalized,
+        item: props.item,
+      });
       return null;
+  }
+});
+
+// Debug
+onMounted(() => {
+  if (!mediaTypeLabel.value) {
+    console.log('[SwipeCard] Badge not showing for:', props.item);
   }
 });
 
@@ -496,7 +513,7 @@ defineExpose({
           <button
             @touchstart.stop.prevent="toggleFlip"
             @click.stop.prevent="toggleFlip"
-            class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            class="w-10 h-10 shrink-0 aspect-square rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors shadow-lg"
             aria-label="More Info"
           >
             <Info class="w-5 h-5" />
@@ -507,10 +524,10 @@ defineExpose({
             v-if="isGold && affiliateUrl"
             @touchstart.stop.prevent="openAffiliate"
             @click.stop.prevent="openAffiliate"
-            class="px-4 h-10 rounded-full bg-amber-500 text-black font-bold text-xs uppercase tracking-wider hover:bg-amber-400 transition-colors shadow-lg shadow-amber-900/20 flex items-center gap-2"
+            title="Voir l'offre exclusive"
+            class="w-10 h-10 shrink-0 aspect-square rounded-full bg-amber-500 text-black font-bold hover:bg-amber-400 transition-colors shadow-lg shadow-amber-900/20 flex items-center justify-center"
           >
-            Voir l'offre
-            <ExternalLink class="w-3 h-3" />
+            <ExternalLink class="w-5 h-5" />
           </button>
         </div>
 

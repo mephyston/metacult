@@ -4,16 +4,5 @@
   "sourceRoot": "libs/backend/commerce/src",
   "projectType": "library",
   "tags": ["scope:commerce", "layer:backend", "type:bounded-context"],
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/libs/backend/commerce",
-        "main": "libs/backend/commerce/src/index.ts",
-        "tsConfig": "libs/backend/commerce/tsconfig.lib.json",
-        "assets": []
-      }
-    }
-  }
+  "targets": {}
 }
