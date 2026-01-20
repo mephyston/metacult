@@ -31,6 +31,7 @@ export class CheapSharkProvider {
       }
 
       const bestDeal = games[0];
+      if (!bestDeal) return null;
       const price = parseFloat(bestDeal.cheapest);
       const dealUrl = `https://www.cheapshark.com/redirect?dealID=${bestDeal.cheapestDealID}`;
 

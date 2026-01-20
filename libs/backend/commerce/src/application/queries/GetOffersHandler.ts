@@ -1,5 +1,5 @@
 import { Offer } from '../../domain/Offer';
-import { OffersProvider } from '../../domain/gateway/OffersProvider';
+import type { OffersProvider } from '../../domain/gateway/OffersProvider';
 import { CheapSharkProvider } from '../../infrastructure/cheapshark/CheapSharkProvider';
 import { AffiliateLinkService } from '../../domain/service/AffiliateLinkService';
 

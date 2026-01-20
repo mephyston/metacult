@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { GetOffersHandler } from './GetOffersHandler';
-import { OffersProvider } from '../../domain/gateway/OffersProvider';
+import type { OffersProvider } from '../../domain/gateway/OffersProvider';
 import { Offer } from '../../domain/Offer';
 import { CheapSharkProvider } from '../../infrastructure/cheapshark/CheapSharkProvider';
 import { AffiliateLinkService } from '../../domain/service/AffiliateLinkService';
@@ -140,6 +140,7 @@ describe('GetOffersHandler', () => {
     expect(result).toHaveLength(1);
 
     const amazonBookOffer = result[0];
+    if (!amazonBookOffer) throw new Error('Offer not found');
     expect(amazonBookOffer.provider).toBe('Amazon');
     expect(amazonBookOffer.category).toBe('book');
     expect(amazonBookOffer.url).toContain('tag=my-amazon-tag');

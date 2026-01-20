@@ -1,6 +1,6 @@
 import { fetchWithRetry } from '@metacult/shared-core';
-import { OffersProvider } from '../../domain/gateway/OffersProvider';
-import { Offer, OfferType } from '../../domain/Offer';
+import type { OffersProvider } from '../../domain/gateway/OffersProvider';
+import { Offer, type OfferType } from '../../domain/Offer';
 
 interface TmdbProviderItem {
   provider_id: number;
