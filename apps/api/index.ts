@@ -329,6 +329,23 @@ const app = new Elysia()
       duration: 60000,
       max: 100,
       errorResponse: 'Rate limit exceeded',
+      // Extract client IP from proxy headers (Railway, Nginx, etc.)
+      generator: (request) => {
+        // Try X-Forwarded-For first (most common proxy header)
+        const forwarded = request.headers.get('x-forwarded-for');
+        if (forwarded) {
+          // X-Forwarded-For can be a comma-separated list, take the first (original client)
+          const clientIp = forwarded.split(',')[0]?.trim();
+          if (clientIp) return clientIp;
+        }
+
+        // Fallback to X-Real-IP
+        const realIp = request.headers.get('x-real-ip');
+        if (realIp) return realIp;
+
+        // Last resort: try to get from request context (may be undefined in Docker)
+        return 'unknown';
+      },
     }),
   )
   .use(swagger())
