@@ -10,14 +10,23 @@ const mockExecute = mock(
       { id: '2', title: 'Random Movie', type: 'MOVIE', providerMetadata: {} },
     ] as any[]), // Cast to any to bypass strict type check for now, or use mapped entity structure
 );
-const mockLimit = mock(() => ({ execute: mockExecute }));
-const mockWhere = mock(() => ({ limit: mockLimit, execute: mockExecute })); // where returns object that has limit AND execute (if limit optional)
+
+const mockLimit = mock(() => ({
+  execute: mockExecute,
+  then: (resolve: any) => resolve(mockExecute()),
+}));
+const mockWhere = mock(() => ({
+  limit: mockLimit,
+  execute: mockExecute,
+  then: (resolve: any) => resolve(mockExecute()),
+}));
+const mockLeftJoin = mock(() => ({ leftJoin: mockLeftJoin, where: mockWhere })); // Recursive chain for joins
 const mockOrderBy = mock(() => ({
   where: mockWhere,
   limit: mockLimit,
   execute: mockExecute,
 }));
-const mockFrom = mock(() => ({ orderBy: mockOrderBy }));
+const mockFrom = mock(() => ({ orderBy: mockOrderBy, leftJoin: mockLeftJoin }));
 // mockSelect acts as the entry point, it returns the chain.
 const mockSelect = mock((_?: any) => ({ from: mockFrom }));
 
@@ -30,6 +39,11 @@ const mockWhereTags = mock(() =>
 ); // execute is implied if awaitable? Drizzle awaits promise-like.
 const mockInnerJoinTags = mock(() => ({ where: mockWhereTags }));
 const mockFromTags = mock(() => ({ innerJoin: mockInnerJoinTags }));
+
+// ... (other mocks unchanged)
+
+// ...
+
 
 // DB Mock
 const mockDb = {
@@ -89,9 +103,13 @@ describe('DrizzleMediaRepository', () => {
     // If constructor only takes DB, then 2nd arg is extra.
     // If it takes Logger, then 2nd arg is correct.
     repository = new DrizzleMediaRepository(mockDb as any);
-    // DON'T clear mockExecute here - we set it per test
+    mockSelect.mockClear();
+    mockFrom.mockClear();
+    mockLeftJoin.mockClear();
     mockWhere.mockClear();
     mockLimit.mockClear();
+    mockExecute.mockClear();
+    mockOrderBy.mockClear();
   });
 
   it('findRandom should construct query with exclusions and limit', async () => {
@@ -116,7 +134,40 @@ describe('DrizzleMediaRepository', () => {
     }
   });
 
-  // Note: findTopRated tests are skipped due to complex Drizzle mock setup.
-  // The method is tested indirectly through GetTopRatedMediaHandler.spec.ts
-  // which tests the complete flow with mocked repository.
+  it('findByProviderId should validate inputs', async () => {
+    // Invalid provider (symbol)
+    const result1 = await repository.findByProviderId('!', '123');
+    expect(result1).toBeNull();
+    expect(mockSelect).not.toHaveBeenCalled();
+
+    // Invalid externalId (empty)
+    const result2 = await repository.findByProviderId('IGDB', '');
+    expect(result2).toBeNull();
+  });
+
+  it('findByProviderId should construct query for valid input', async () => {
+    mockExecute.mockResolvedValue([
+      {
+        medias: {
+          id: '1',
+          title: 'Random Game',
+          type: 'GAME',
+          providerMetadata: {},
+        },
+        games: { id: '1', platform: [], developer: 'Dev', timeToBeat: 10 },
+        movies: null,
+        tv: null,
+        books: null,
+      },
+    ]);
+
+    const result = await repository.findByProviderId('igdb', 'valid-id');
+
+    expect(mockSelect).toHaveBeenCalled();
+    expect(mockFrom).toHaveBeenCalled();
+    expect(mockLeftJoin).toHaveBeenCalledTimes(4); // 4 joins
+    expect(mockWhere).toHaveBeenCalled();
+    expect(mockLimit).toHaveBeenCalledWith(1);
+    expect(mockExecute).toHaveBeenCalled();
+  });
 });

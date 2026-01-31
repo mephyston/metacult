@@ -158,13 +158,13 @@ const mediaSearchAdapter = {
       orderBy: options?.orderBy,
       types: options?.types
         ? (options.types
-            .map((t) => {
-              const upper = t.toUpperCase();
-              return Object.values(MediaType).includes(upper as MediaType)
-                ? (upper as MediaType)
-                : undefined;
-            })
-            .filter(Boolean) as MediaType[])
+          .map((t) => {
+            const upper = t.toUpperCase();
+            return Object.values(MediaType).includes(upper as MediaType)
+              ? (upper as MediaType)
+              : undefined;
+          })
+          .filter(Boolean) as MediaType[])
         : undefined,
     });
 
@@ -424,4 +424,5 @@ const server = Bun.serve({
 
 logger.info({ port, hostname: server.hostname }, `✅ Elysia API running`);
 logger.info(`✨ Production Build Triggered`);
-logger.info(`📖 Swagger: http://localhost:${port}/swagger`);
+
+export type App = typeof app;

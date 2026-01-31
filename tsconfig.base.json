@@ -4,36 +4,75 @@
     "moduleResolution": "bundler",
     "target": "ESNext",
     "module": "Preserve",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@metacult/shared-ui": ["libs/shared/ui/src/index.ts"],
-      "@metacult/shared-core": ["libs/shared/core/src/index.ts"],
-      "@metacult/shared-ui/styles/*": ["libs/shared/ui/src/styles/*"],
-      "@metacult/shared-types": ["libs/shared/types/src/index.ts"],
-      "@metacult/shared-local-db": ["libs/shared/local-db/src/index.ts"],
+      "@metacult/shared-ui": [
+        "libs/shared/ui/src/index.ts"
+      ],
+      "@metacult/shared-core": [
+        "libs/shared/core/src/index.ts"
+      ],
+      "@metacult/shared-ui/styles/*": [
+        "libs/shared/ui/src/styles/*"
+      ],
+      "@metacult/shared-types": [
+        "libs/shared/types/src/index.ts"
+      ],
+      "@metacult/shared-local-db": [
+        "libs/shared/local-db/src/index.ts"
+      ],
       "@metacult/shared-sync-manager": [
         "libs/shared/sync-manager/src/index.ts"
       ],
-      "@metacult/backend-identity": ["libs/backend/identity/src/index.ts"],
-      "@metacult/backend-catalog": ["libs/backend/catalog/src/index.ts"],
-      "@metacult/backend-marketing": ["libs/backend/marketing/src/index.ts"],
-      "@metacult/backend-discovery": ["libs/backend/discovery/src/index.ts"],
+      "@metacult/backend-identity": [
+        "libs/backend/identity/src/index.ts"
+      ],
+      "@metacult/backend-catalog": [
+        "libs/backend/catalog/src/index.ts"
+      ],
+      "@metacult/backend-marketing": [
+        "libs/backend/marketing/src/index.ts"
+      ],
+      "@metacult/backend-discovery": [
+        "libs/backend/discovery/src/index.ts"
+      ],
       "@metacult/backend-interaction": [
         "libs/backend/interaction/src/index.ts"
       ],
-      "@metacult/backend-ranking": ["libs/backend/ranking/src/index.ts"],
+      "@metacult/backend-ranking": [
+        "libs/backend/ranking/src/index.ts"
+      ],
       "@metacult/backend-infrastructure": [
         "libs/backend/infrastructure/src/index.ts"
       ],
       "@metacult/backend-gamification": [
         "libs/backend/gamification/src/index.ts"
       ],
-      "interaction": ["libs/backend/interaction/src/index.ts"],
-      "identity": ["libs/backend/identity/src/index.ts"],
-      "@metacult/backend-commerce": ["libs/backend/commerce/src/index.ts"]
+      "interaction": [
+        "libs/backend/interaction/src/index.ts"
+      ],
+      "identity": [
+        "libs/backend/identity/src/index.ts"
+      ],
+      "@metacult/backend-commerce": [
+        "libs/backend/commerce/src/index.ts"
+      ],
+      "@metacult/api": [
+        "apps/api/index.ts"
+      ]
     }
   },
-  "exclude": ["node_modules", "dist", "build", ".nx", "tmp"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    ".nx",
+    "tmp"
+  ]
 }

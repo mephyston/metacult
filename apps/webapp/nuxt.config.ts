@@ -187,5 +187,35 @@ export default {
     '@metacult/shared-sync-manager': fileURLToPath(
       new URL('../../libs/shared/sync-manager/src/index.ts', import.meta.url),
     ),
+    '@metacult/api': fileURLToPath(
+      new URL('../../apps/api/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-catalog': fileURLToPath(
+      new URL('../../libs/backend/catalog/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-discovery': fileURLToPath(
+      new URL('../../libs/backend/discovery/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-identity': fileURLToPath(
+      new URL('../../libs/backend/identity/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-interaction': fileURLToPath(
+      new URL('../../libs/backend/interaction/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-ranking': fileURLToPath(
+      new URL('../../libs/backend/ranking/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-gamification': fileURLToPath(
+      new URL('../../libs/backend/gamification/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-infrastructure': fileURLToPath(
+      new URL('../../libs/backend/infrastructure/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-commerce': fileURLToPath(
+      new URL('../../libs/backend/commerce/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-marketing': fileURLToPath(
+      new URL('../../libs/backend/marketing/src/index.ts', import.meta.url),
+    ),
   },
 };

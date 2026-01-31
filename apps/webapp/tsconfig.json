@@ -1,6 +1,40 @@
 {
-  "files": [],
-  "include": [".nuxt/nuxt.d.ts", "app/**/*", "server/**/*"],
-  "references": [],
-  "extends": "./.nuxt/tsconfig.json"
+  "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@metacult/shared-types": [
+        "../../libs/shared/types/src/index.ts"
+      ],
+      "@metacult/shared-local-db": [
+        "../../libs/shared/local-db/src/index.ts"
+      ],
+      "@metacult/shared-sync-manager": [
+        "../../libs/shared/sync-manager/src/index.ts"
+      ],
+      "@metacult/shared-ui": [
+        "../../libs/shared/ui/src/index.ts"
+      ],
+      "@metacult/shared-core": [
+        "../../libs/shared/core/src/index.ts"
+      ],
+      "@metacult/api": [
+        "../../apps/api/index.ts"
+      ],
+      "#app": [
+        "../../node_modules/nuxt/dist/app"
+      ]
+    },
+    "skipLibCheck": true,
+    "types": [
+      "bun-types"
+    ]
+  },
+  "include": [
+    ".nuxt/nuxt.d.ts",
+    "app/**/*",
+    "server/**/*",
+    "../../apps/api/index.ts",
+    "../../libs/**/*"
+  ]
 }

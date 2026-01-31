@@ -8,6 +8,7 @@ import {
   inArray,
   gte,
 } from 'drizzle-orm';
+import { z } from 'zod';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { logger } from '@metacult/backend-infrastructure';
 import type {
@@ -23,44 +24,12 @@ import {
   Book,
 } from '../../domain/entities/media.entity';
 import { ProviderSource } from '@metacult/shared-core';
-import { Rating } from '../../domain/value-objects/rating.vo';
-import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
-import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
-import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
 import type { MediaId } from '../../domain/value-objects/media-id.vo';
-import { asMediaId } from '../../domain/value-objects/media-id.vo';
 import * as schema from '../db/media.schema';
-import type { ProviderMetadata } from '../types/raw-responses';
 import { ProviderMetadataMapper } from '../mappers/provider-metadata.mapper';
 import type { MediaReadDto } from '../dtos/media-read.dto';
+import { MediaMapper } from '../mappers/media.mapper';
 
-// Helper to safely create VOs from DB data
-const createRating = (val: number | null): Rating | null => {
-  if (val === null) return null;
-  try {
-    return new Rating(val);
-  } catch {
-    return null;
-  }
-};
-
-const createCoverUrl = (val: string | null): CoverUrl | null => {
-  if (!val) return null;
-  try {
-    return new CoverUrl(val);
-  } catch {
-    return null;
-  }
-};
-
-const createReleaseYear = (date: Date | null): ReleaseYear | null => {
-  if (!date) return null;
-  try {
-    return new ReleaseYear(date.getFullYear());
-  } catch {
-    return null;
-  }
-};
 
 // Helper type for the DB instance
 type Db = NodePgDatabase<typeof schema>;
@@ -70,7 +39,7 @@ type Db = NodePgDatabase<typeof schema>;
  * Gère le mapping entre les Entités du Domaine et le schéma relationnel SQL.
  */
 export class DrizzleMediaRepository implements IMediaRepository {
-  constructor(private readonly db: Db) {}
+  constructor(private readonly db: Db) { }
 
   nextId(): string {
     return crypto.randomUUID();
@@ -89,7 +58,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (rows.length === 0 || !rows[0]) return null;
 
-    return this.mapRowToEntity(rows[0]);
+    return MediaMapper.toDomain(rows[0]);
   }
 
   async findByIds(ids: MediaId[]): Promise<Media[]> {
@@ -110,7 +79,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
       .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
       .where(inArray(schema.medias.id, ids));
 
-    return rows.map((row) => this.mapRowToEntity(row));
+    return rows.map((row) => MediaMapper.toDomain(row));
   }
 
   async findBySlug(slug: string): Promise<Media | null> {
@@ -126,7 +95,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (rows.length === 0 || !rows[0]) return null;
 
-    return this.mapRowToEntity(rows[0]);
+    return MediaMapper.toDomain(rows[0]);
   }
 
   async search(filters: MediaSearchFilters): Promise<Media[]> {
@@ -233,7 +202,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const results: Media[] = [];
     for (const id of mediaIds) {
       const row = uniqueMap.get(id);
-      const entity = this.mapRowToEntity(row);
+      const entity = MediaMapper.toDomain(row);
       // Si l'entité a une méthode ou propriété setTags, on l'utilise. Sinon on ignore.
       // Comme je ne vois pas l'entité, je ne peux pas deviner.
       // Hack: Si 'tags' existe sur l'entité (via getter/setter ou prop publique), on assigne.
@@ -368,7 +337,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const rows = await query.execute();
 
     // Map to entities
-    const items = rows.map((r) => this.mapRowToEntity(r));
+    const items = rows.map((r) => MediaMapper.toDomain(r));
 
     return { items, total };
   }
@@ -684,37 +653,66 @@ export class DrizzleMediaRepository implements IMediaRepository {
     provider: string,
     externalId: string,
   ): Promise<Media | null> {
-    let condition;
-    if (provider === ProviderSource.IGDB) {
-      condition = and(
-        eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'IGDB'),
-        eq(
-          sql<string>`${schema.medias.providerMetadata}->>'igdbId'`,
-          externalId,
-        ),
+    // 1. Input Validation
+    const inputSchema = z.object({
+      provider: z.string().min(1).regex(/^[a-zA-Z0-9_]+$/), // Alphanumeric only
+      externalId: z.string().min(1),
+    });
+
+    try {
+      inputSchema.parse({ provider, externalId });
+    } catch (error) {
+      logger.warn(
+        { provider, externalId, error },
+        '[DrizzleMediaRepository] Invalid input for findByProviderId',
       );
-    } else if (provider === ProviderSource.TMDB) {
-      condition = and(
-        eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'TMDB'),
-        eq(
-          sql<string>`${schema.medias.providerMetadata}->>'tmdbId'`,
-          externalId,
-        ),
-      );
-    } else if (provider === ProviderSource.GOOGLE_BOOKS) {
-      condition = and(
-        eq(
-          sql<string>`${schema.medias.providerMetadata}->>'source'`,
-          'GOOGLE_BOOKS',
-        ),
-        eq(
-          sql<string>`${schema.medias.providerMetadata}->>'googleId'`,
-          externalId,
-        ),
-      );
-    } else {
       return null;
     }
+
+    // 2. Safe Query Construction
+    let sourceKey: string;
+    let idKey: string;
+
+    switch (provider) {
+      case ProviderSource.IGDB:
+        sourceKey = 'IGDB';
+        idKey = 'igdbId';
+        break;
+      case ProviderSource.TMDB:
+        sourceKey = 'TMDB';
+        idKey = 'tmdbId';
+        break;
+      case ProviderSource.GOOGLE_BOOKS:
+        sourceKey = 'GOOGLE_BOOKS';
+        idKey = 'googleId';
+        break;
+      default:
+        return null;
+    }
+
+    // Note on SQL Injection Protection:
+    // Even though we use `sql` operator, the values `sourceKey` and `idKey` are
+    // determined by our internal switch/case, NOT user input.
+    // The `externalId` is the only user input that goes into the query,
+    // and it must be passed as a parameter to the `sql` template literal for binding.
+
+    // Postgres JSONB operator ->> extracts text.
+    // We construct the condition safely.
+
+    // We can't easily dynamicize the key in `->> 'key'` part inside a single sql`` without risk if we didn't sanitize.
+    // Since we sanitize sourceKey/idKey via hardcoded strings in switch above, it is safe to interpolate them.
+    // `externalId` is passed as a value parameter.
+
+    const condition = and(
+      eq(
+        sql<string>`${schema.medias.providerMetadata}->>'source'`,
+        sourceKey,
+      ),
+      eq(
+        sql<string>`${schema.medias.providerMetadata}->>${sql.raw(`'${idKey}'`)}`,
+        externalId,
+      ),
+    );
 
     const rows = await this.db
       .select()
@@ -728,7 +726,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (rows.length === 0 || !rows[0]) return null;
 
-    return this.mapRowToEntity(rows[0]);
+    return MediaMapper.toDomain(rows[0]);
   }
 
   async create(media: Media): Promise<void> {
@@ -864,124 +862,5 @@ export class DrizzleMediaRepository implements IMediaRepository {
         }
       }
     });
-  }
-
-  private mapRowToEntity(row: {
-    medias: typeof schema.medias.$inferSelect;
-    games: typeof schema.games.$inferSelect | null;
-    movies: typeof schema.movies.$inferSelect | null;
-    tv: typeof schema.tv.$inferSelect | null;
-    books: typeof schema.books.$inferSelect | null;
-  }): Media {
-    const id = asMediaId(row.medias.id);
-    const title = row.medias.title;
-    const slug = row.medias.slug;
-    const description = null;
-
-    // Use mapper to convert ProviderMetadata back to ExternalReference
-    let externalReference: ExternalReference;
-    const metadata = row.medias.providerMetadata;
-
-    if (metadata) {
-      try {
-        externalReference =
-          ProviderMetadataMapper.toExternalReference(metadata);
-      } catch {
-        externalReference = new ExternalReference('unknown', 'unknown');
-      }
-    } else {
-      externalReference = new ExternalReference('unknown', 'unknown');
-    }
-
-    const coverUrl = createCoverUrl(metadata?.coverUrl || null);
-    const rating = createRating(row.medias.globalRating);
-    const releaseYear = createReleaseYear(row.medias.releaseDate);
-
-    switch (row.medias.type) {
-      case 'GAME':
-        if (!row.games)
-          throw new Error(
-            `Data integrity error: Media ${id} is TYPE GAME but has no games record.`,
-          );
-        return new Game({
-          id,
-          title,
-          slug,
-          description,
-          coverUrl,
-          rating,
-          releaseYear,
-          externalReference,
-          platform: row.games.platform as string[],
-          developer: row.games.developer,
-          timeToBeat: row.games.timeToBeat,
-          eloScore: row.medias.eloScore, // Assuming eloScore is available in row.medias
-          matchCount: row.medias.matchCount, // Assuming matchCount is available in row.medias
-        });
-
-      case 'MOVIE':
-        if (!row.movies)
-          throw new Error(
-            `Data integrity error: Media ${id} is TYPE MOVIE but has no movies record.`,
-          );
-        return new Movie({
-          id,
-          title,
-          slug,
-          description,
-          coverUrl,
-          rating,
-          releaseYear,
-          externalReference,
-          director: row.movies.director,
-          durationMinutes: row.movies.durationMinutes,
-          eloScore: row.medias.eloScore,
-          matchCount: row.medias.matchCount,
-        });
-
-      case 'TV':
-        if (!row.tv)
-          throw new Error(
-            `Data integrity error: Media ${id} is TYPE TV but has no tv record.`,
-          );
-        return new TV({
-          id,
-          title,
-          slug,
-          description,
-          coverUrl,
-          rating,
-          releaseYear,
-          externalReference,
-          creator: row.tv.creator,
-          episodesCount: row.tv.episodesCount,
-          seasonsCount: row.tv.seasonsCount,
-          eloScore: row.medias.eloScore,
-          matchCount: row.medias.matchCount,
-        });
-
-      case 'BOOK':
-        if (!row.books)
-          throw new Error(
-            `Data integrity error: Media ${id} is TYPE BOOK but has no books record.`,
-          );
-        return new Book({
-          id,
-          title,
-          slug,
-          description,
-          coverUrl,
-          rating,
-          releaseYear,
-          externalReference,
-          author: row.books.author,
-          pages: row.books.pages,
-          eloScore: row.medias.eloScore,
-          matchCount: row.medias.matchCount,
-        });
-
-      default:
-        throw new Error(`Unknown media type: ${row.medias.type}`);
-    }
   }
 }

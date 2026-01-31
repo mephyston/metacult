@@ -1,14 +1,15 @@
 import { sql, eq, and, or, inArray } from 'drizzle-orm';
-import { Media, mediaSchema } from '@metacult/backend-catalog';
+import { mediaSchema } from '@metacult/backend-catalog';
 import { userInteractions } from '@metacult/backend-interaction';
 import { getDbConnection } from '@metacult/backend-infrastructure';
 import type { DuelRepository } from '../../application/ports/duel.repository.interface';
+import type { RankedMedia } from '../../domain/types/ranked-media.type';
 
 /**
  * Implémentation Drizzle du DuelRepository.
  */
 export class DrizzleDuelRepository implements DuelRepository {
-  async getRandomPairForUser(userId: string): Promise<Media[]> {
+  async getRandomPairForUser(userId: string): Promise<RankedMedia[]> {
     const { db } = getDbConnection();
 
     // On récupère les médias "aimés" par l'utilisateur (LIKE/WISHLIST ou Sentiment positif)
@@ -34,7 +35,13 @@ export class DrizzleDuelRepository implements DuelRepository {
       .limit(2);
 
     if (rows.length < 2) {
-      return rows.map((row: any) => row.medias) as unknown as Media[];
+      return rows.map((row: any) => ({
+        ...row.medias,
+        coverUrl:
+          row.medias.providerMetadata?.coverUrl ||
+          row.medias.providerMetadata?.posterUrl ||
+          null,
+      })) as unknown as RankedMedia[];
     }
 
     const rawMedias = rows.map((row: any) => row.medias);
@@ -43,9 +50,9 @@ export class DrizzleDuelRepository implements DuelRepository {
       ...m,
       coverUrl:
         m.providerMetadata?.coverUrl || m.providerMetadata?.posterUrl || null,
-    })) as unknown as Media[];
+    })) as unknown as RankedMedia[];
   }
-  async findById(id: string): Promise<Media | undefined> {
+  async findById(id: string): Promise<RankedMedia | undefined> {
     const { db } = getDbConnection();
     const rows = await db
       .select()
@@ -57,7 +64,7 @@ export class DrizzleDuelRepository implements DuelRepository {
       return undefined;
     }
 
-    // Cast pour correspondre au type Media (approximatif ici car on utilise le schema Drizzle direct)
+    // Cast pour correspondre au type RankedMedia
     const m = rows[0];
     return {
       ...m,
@@ -65,7 +72,7 @@ export class DrizzleDuelRepository implements DuelRepository {
         (m as any).providerMetadata?.coverUrl ||
         (m as any).providerMetadata?.posterUrl ||
         null,
-    } as unknown as Media;
+    } as unknown as RankedMedia;
   }
 
   async updateEloScores(

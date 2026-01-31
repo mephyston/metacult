@@ -11,6 +11,7 @@ import { useApiUrl } from './useApiUrl';
 import { db } from '@metacult/shared-local-db';
 import { processOutbox } from '@metacult/shared-sync-manager';
 import type { UserProfile } from '@metacult/shared-types';
+import { api } from '../lib/api';
 
 export const useAuthSession = () => {
   // État global partagé (SSR-friendly)
@@ -74,20 +75,25 @@ export const useAuthSession = () => {
 
         // Fetch Gamification Stats
         try {
-          const apiUrl = useApiUrl();
           // Headers for SSR cookie forwarding
           const headers = import.meta.server
             ? useRequestHeaders(['cookie'])
             : undefined;
 
-          const stats = await $fetch<{
-            level: number;
-            xp: number;
-            nextLevelXp: number;
-          }>(`${apiUrl}/api/gamification/me`, {
-            headers: headers as any,
-            credentials: 'include', // Ensure cookies are sent (CORS)
-          });
+          // Eden Treaty Call (Type-Safe)
+          const { data: statsObject, error } =
+            await api.api.gamification.me.get({
+              headers: headers as any,
+              fetch: {
+                credentials: 'include',
+              },
+            });
+
+          if (error) {
+            throw error;
+          }
+
+          const stats = statsObject;
 
           if (stats) {
             mappedUser.level = stats.level;
@@ -122,7 +128,7 @@ export const useAuthSession = () => {
 
           // Store user in local DB
           await db.userProfile.put(mappedUser);
-          localStorage.setItem('metacult_current_user_id', mappedUser.id);
+          localStorage.setItem('metacult_current_user_id', String(mappedUser.id));
 
           // Trigger Immediate Sync (Guest -> User transition)
           // We don't await this to not block UI

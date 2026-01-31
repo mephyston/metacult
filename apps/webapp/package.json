@@ -9,6 +9,7 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@elysiajs/eden": "^1.4.6",
     "@metacult/shared-core": "workspace:*",
     "@metacult/shared-local-db": "workspace:*",
     "@metacult/shared-sync-manager": "workspace:*",
@@ -31,6 +32,9 @@
     "workbox-window": "^7.4.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.16.0",
+    "drizzle-orm": "^0.45.1",
+    "elysia": "^1.4.22",
     "ofetch": "^1.5.1"
   },
   "version": "0.6.2"
