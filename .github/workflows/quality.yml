@@ -4,6 +4,7 @@ run-name: '🛡️ Quality Gate: ${{ github.event.pull_request.title || github.r
 on:
   pull_request:
     branches: [develop, main]
+  workflow_dispatch:
 
 jobs:
   quality:
@@ -38,27 +39,14 @@ jobs:
         with:
           fetch-depth: 0 # Full history for Qodana analysis
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install Dependencies
-        run: bun install
-
       - name: Run Qodana Analysis
-        uses: JetBrains/qodana-action@v2024.1
+        uses: JetBrains/qodana-action@v2023.3
         with:
-          # Use local analysis without Qodana Cloud token
-          use-caches: true
-        env:
-          # Disable cloud features (no token required)
-          QODANA_TOKEN: ''
+          args: --linter,jetbrains/qodana-js
 
       - name: Upload Qodana Report
-        if: always() # Upload even if analysis fails
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: qodana-report
-          path: ${{ runner.temp }}/qodana/results
-          retention-days: 7
+          path: ${{ runner.temp }}/qodana/report
