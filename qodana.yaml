@@ -1,0 +1,52 @@
+---
+#-------------------------------------------------------------------------------#
+#               Qodana analysis is configured by qodana.yaml file               #
+#             https://www.jetbrains.com/help/qodana/qodana-yaml.html            #
+#-------------------------------------------------------------------------------#
+version: '1.0'
+
+# Linter image for JavaScript/TypeScript projects
+linter: jetbrains/qodana-js:latest
+
+# Project root directory (usually current directory)
+projectJDK: '20'
+
+# Include patterns - scan these directories
+include:
+  - name: Apps
+    paths:
+      - apps
+  - name: Libraries
+    paths:
+      - libs
+
+# Exclude patterns - skip these files/directories
+exclude:
+  - name: Build artifacts
+    paths:
+      - '**/dist'
+      - '**/.nx'
+      - '**/node_modules'
+      - '**/.nuxt'
+      - '**/.output'
+      - '**/build'
+  - name: Test files
+    paths:
+      - '**/*.spec.ts'
+      - '**/*.test.ts'
+      - '**/*.spec.js'
+      - '**/*.test.js'
+      - '**/test/**'
+      - '**/__tests__/**'
+  - name: Config files
+    paths:
+      - '**/*.config.ts'
+      - '**/*.config.js'
+
+# Fail threshold - report will fail if number of problems exceeds this
+# Set to 0 to fail on any critical issue
+failThreshold: 0
+
+# Profile - use recommended set of inspections
+profile:
+  name: qodana.recommended

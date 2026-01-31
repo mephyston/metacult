@@ -28,3 +28,37 @@ jobs:
 
       - name: Architecture Audit (Clean Architecture)
         run: bun run audit:arch
+
+  code-quality:
+    name: Static Code Analysis (Qodana)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for Qodana analysis
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Run Qodana Analysis
+        uses: JetBrains/qodana-action@v2024.1
+        with:
+          # Use local analysis without Qodana Cloud token
+          use-caches: true
+        env:
+          # Disable cloud features (no token required)
+          QODANA_TOKEN: ''
+
+      - name: Upload Qodana Report
+        if: always() # Upload even if analysis fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: qodana-report
+          path: ${{ runner.temp }}/qodana/results
+          retention-days: 7
