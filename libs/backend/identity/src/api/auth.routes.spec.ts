@@ -4,7 +4,7 @@ import { Elysia } from 'elysia';
 // Mock auth.handler before importing auth.routes
 mock.module('../infrastructure/auth/better-auth.service', () => ({
   auth: {
-    handler: async (request: Request) => new Response('OK'),
+    handler: async () => new Response('OK'),
   },
 }));
 

@@ -16,11 +16,10 @@ import { auth } from '../infrastructure/auth/better-auth.service';
 export const createAuthRoutes = () => {
   return (
     new Elysia()
-      // CRITICAL: Use .mount() instead of .use() or route handlers
-      // .mount() mounts the handler as a raw fetch function, bypassing Elysia's
-      // request processing (body parsing, context wrapping, etc.)
-      // This is the official Better Auth integration method for Elysia
-      .mount('/api/auth', auth.handler)
+      // CRITICAL: Mount at root since Better Auth config has basePath: '/api/auth'
+      // Mounting at '/api/auth' would create double prefix: /api/auth/api/auth/*
+      // Better Auth internally routes to configured basePath
+      .mount(auth.handler)
       .as('global')
   );
 };
