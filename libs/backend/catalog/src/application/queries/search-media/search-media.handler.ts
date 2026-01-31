@@ -5,7 +5,7 @@ import type {
   PaginatedSearchResponse,
   SearchMediaReadModel,
 } from '../../../domain/read-models/search-media.read-model';
-import type { Static } from 'elysia';
+
 import type { Redis } from 'ioredis';
 import type { IMediaProvider } from '../../ports/media-provider.interface';
 import { MediaType, Media } from '../../../domain/entities/media.entity';

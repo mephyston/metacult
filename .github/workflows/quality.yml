@@ -49,8 +49,6 @@ jobs:
 
       - name: Run Qodana Analysis
         uses: JetBrains/qodana-action@v2023.3
-        with:
-          args: --linter,jetbrains/qodana-js:2024.3-eap
 
       - name: Upload Qodana Report
         if: always()

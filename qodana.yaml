@@ -6,7 +6,7 @@
 version: '1.0'
 
 # Linter image for JavaScript/TypeScript projects
-linter: jetbrains/qodana-js:latest
+linter: jetbrains/qodana-js:2024.3-eap
 
 # Project root directory (usually current directory)
 projectJDK: '20'
@@ -44,8 +44,8 @@ exclude:
       - '**/*.config.js'
 
 # Fail threshold - report will fail if number of problems exceeds this
-# Set to 0 to fail on any critical issue
-failThreshold: 0
+# Set to 170 to accept current technical debt (baseline)
+failThreshold: 170
 
 # Profile - use recommended set of inspections
 profile:

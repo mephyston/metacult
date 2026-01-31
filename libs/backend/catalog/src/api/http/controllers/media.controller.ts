@@ -4,7 +4,7 @@ import { GetRecentMediaHandler } from '../../../application/queries/get-recent-m
 import { GetMediaByIdQuery } from '../../../application/queries/get-media-by-id/get-media-by-id.query';
 import { GetMediaByIdHandler } from '../../../application/queries/get-media-by-id/get-media-by-id.handler';
 import type { SearchMediaDto, ImportMediaDto } from '../dtos/media.dtos';
-import type { MediaDetailDto } from '../../../infrastructure/dtos/media-detail.dto';
+
 import type { MediaReadDto } from '../../../infrastructure/dtos/media-read.dto'; // Assuming it might be used or needed explicitly
 
 import { MediaType } from '../../../domain/entities/media.entity';

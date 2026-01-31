@@ -2,9 +2,9 @@
 import { ref, computed } from 'vue';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+
 import { db } from '@metacult/shared-local-db';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+
 import { addToOutbox } from '@metacult/shared-sync-manager';
 import { SwipeDeck } from '@metacult/shared-ui';
 import { from } from 'rxjs';

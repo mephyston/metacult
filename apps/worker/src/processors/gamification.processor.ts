@@ -4,10 +4,7 @@ import {
   GrantXpOnInteractionListener,
   DrizzleGamificationRepository,
 } from '@metacult/backend-gamification';
-// eslint-disable-next-line no-restricted-syntax -- Schema import for DB initialization
-import * as schema from '@metacult/backend-gamification';
 import { getDbConnection } from '@metacult/backend-infrastructure';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { InteractionSavedEvent } from '@metacult/backend-interaction';
 import { Job } from 'bullmq';
 

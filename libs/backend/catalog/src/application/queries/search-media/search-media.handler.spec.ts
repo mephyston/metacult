@@ -3,7 +3,6 @@ import { SearchMediaHandler } from './search-media.handler';
 import { MediaType } from '../../../domain/entities/media.entity';
 import type { SearchMediaQuery } from './search-media.query';
 import type { SearchMediaReadModel } from '../../../domain/read-models/search-media.read-model';
-import type { Static } from 'elysia';
 
 type SearchResultItem = SearchMediaReadModel;
 

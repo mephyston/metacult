@@ -2,7 +2,7 @@ import { fileURLToPath } from 'url';
 import tailwindcss from '@tailwindcss/vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
-import { themeScript } from '../../libs/shared/ui/src/lib/theme-script';
+import { themeScript } from '@metacult/shared-ui/lib/theme-script';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default {
