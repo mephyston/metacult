@@ -5,8 +5,6 @@ import { GetMediaByIdQuery } from '../../../application/queries/get-media-by-id/
 import { GetMediaByIdHandler } from '../../../application/queries/get-media-by-id/get-media-by-id.handler';
 import type { SearchMediaDto, ImportMediaDto } from '../dtos/media.dtos';
 
-import type { MediaReadDto } from '../../../infrastructure/dtos/media-read.dto'; // Assuming it might be used or needed explicitly
-
 import { MediaType } from '../../../domain/entities/media.entity';
 import { logger } from '@metacult/backend-infrastructure';
 

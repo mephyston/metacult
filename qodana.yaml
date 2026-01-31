@@ -45,7 +45,7 @@ exclude:
 
 # Fail threshold - report will fail if number of problems exceeds this
 # Set to 170 to accept current technical debt (baseline)
-failThreshold: 170
+failThreshold: 150
 
 # Profile - use recommended set of inspections
 profile:
