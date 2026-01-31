@@ -4,7 +4,8 @@ import {
   GrantXpOnInteractionListener,
   DrizzleGamificationRepository,
 } from '@metacult/backend-gamification';
-import * as schema from '@metacult/backend-gamification'; // Check if schema is exported, if not, use internal path if possible or ignore schema type safety for now by using any
+// eslint-disable-next-line no-restricted-syntax -- Schema import for DB initialization
+import * as schema from '@metacult/backend-gamification';
 import { getDbConnection } from '@metacult/backend-infrastructure';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { InteractionSavedEvent } from '@metacult/backend-interaction';

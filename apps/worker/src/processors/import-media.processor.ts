@@ -5,6 +5,7 @@ import {
   logger,
   type ImportJob,
 } from '@metacult/backend-infrastructure';
+// eslint-disable-next-line no-restricted-syntax -- Schema import for DB initialization
 import * as mediaSchema from '@metacult/backend-catalog';
 import {
   MediaType,

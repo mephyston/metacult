@@ -1,5 +1,5 @@
 {
-  "name": "apps-website",
+  "name": "@metacult/website",
   "type": "module",
   "version": "0.6.2",
   "scripts": {

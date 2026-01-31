@@ -47,6 +47,7 @@ import {
   requestContext,
   logger,
 } from '@metacult/backend-infrastructure';
+// eslint-disable-next-line no-restricted-syntax -- Schema import for DB initialization
 import * as infraSchema from '@metacult/backend-infrastructure';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { initCrons } from './src/cron/cron.service';
@@ -253,6 +254,7 @@ const recommendationRepo = new DrizzleRecommendationRepository(db as any);
 const personalizedFeedHandler = new GetPersonalizedFeedHandler(
   recommendationRepo,
 );
+// eslint-disable-next-line no-restricted-syntax -- Schema import for DB initialization
 import * as interactionSchema from '@metacult/backend-interaction';
 // ...
 const interactionRepo = new DrizzleInteractionRepository(

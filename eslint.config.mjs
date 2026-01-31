@@ -185,7 +185,32 @@ export default [
       '**/*.cjs',
       '**/*.mjs',
     ],
-    // Override or add rules here
-    rules: {},
+    rules: {
+      // Discourage wildcard imports to enforce minimal, explicit imports
+      // Use eslint-disable-next-line for legitimate cases like database schemas
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector:
+            'ImportDeclaration[source.value=/^@metacult/] ImportNamespaceSpecifier',
+          message:
+            'Avoid wildcard imports from @metacult modules. Import only what you need (e.g., import { Media, MediaType } from \'@metacult/backend-catalog\'). If you need to import a schema namespace (e.g., import * as mediaSchema), add // eslint-disable-next-line no-restricted-syntax above the import.',
+        },
+      ],
+      // Prevent cross-module relative imports
+      // Force usage of @metacult/* aliases for better encapsulation
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/libs/**', '**/apps/**'],
+              message:
+                'Do not import across module boundaries using relative paths. Use @metacult/* aliases instead (e.g., import { Media } from \'@metacult/backend-catalog\').',
+            },
+          ],
+        },
+      ],
+    },
   },
 ];

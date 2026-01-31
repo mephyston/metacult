@@ -1,10 +1,10 @@
 {
-  "name": "shared-sync-manager",
+  "name": "@metacult/shared-sync-manager",
   "version": "0.0.1",
   "type": "module",
   "main": "./src/index.ts",
   "peerDependencies": {
-    "shared-local-db": "workspace:*",
-    "shared-core": "workspace:*"
+    "@metacult/shared-local-db": "workspace:*",
+    "@metacult/shared-core": "workspace:*"
   }
 }

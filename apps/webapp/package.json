@@ -1,5 +1,5 @@
 {
-  "name": "apps-webapp",
+  "name": "@metacult/webapp",
   "private": true,
   "type": "module",
   "scripts": {

@@ -1,11 +1,13 @@
 {
-  "name": "@metacult/backend-commerce",
+  "name": "@metacult/backend-discovery",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
   "peerDependencies": {
     "@metacult/backend-infrastructure": "workspace:*",
+    "@metacult/backend-catalog": "workspace:*",
+    "@metacult/backend-marketing": "workspace:*",
     "@metacult/shared-core": "workspace:*"
   }
 }

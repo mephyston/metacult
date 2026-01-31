@@ -209,7 +209,10 @@ export default {
       new URL('../../libs/backend/gamification/src/index.ts', import.meta.url),
     ),
     '@metacult/backend-infrastructure': fileURLToPath(
-      new URL('../../libs/backend/infrastructure/src/index.ts', import.meta.url),
+      new URL(
+        '../../libs/backend/infrastructure/src/index.ts',
+        import.meta.url,
+      ),
     ),
     '@metacult/backend-commerce': fileURLToPath(
       new URL('../../libs/backend/commerce/src/index.ts', import.meta.url),
