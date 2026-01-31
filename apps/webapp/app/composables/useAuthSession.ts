@@ -11,7 +11,7 @@ import { useApiUrl } from './useApiUrl';
 import { db } from '@metacult/shared-local-db';
 import { processOutbox } from '@metacult/shared-sync-manager';
 import type { UserProfile } from '@metacult/shared-types';
-import { api } from '../lib/api';
+import { useApi } from '../lib/api';
 
 export const useAuthSession = () => {
   // État global partagé (SSR-friendly)
@@ -80,9 +80,10 @@ export const useAuthSession = () => {
             ? useRequestHeaders(['cookie'])
             : undefined;
 
-          // Eden Treaty Call (Type-Safe)
+          // Eden Treaty Call (Type-Safe) - Get API client from composable
+          const apiClient = useApi();
           const { data: statsObject, error } =
-            await api.api.gamification.me.get({
+            await apiClient.api.gamification.me.get({
               headers: headers as any,
               fetch: {
                 credentials: 'include',
@@ -128,7 +129,10 @@ export const useAuthSession = () => {
 
           // Store user in local DB
           await db.userProfile.put(mappedUser);
-          localStorage.setItem('metacult_current_user_id', String(mappedUser.id));
+          localStorage.setItem(
+            'metacult_current_user_id',
+            String(mappedUser.id),
+          );
 
           // Trigger Immediate Sync (Guest -> User transition)
           // We don't await this to not block UI
