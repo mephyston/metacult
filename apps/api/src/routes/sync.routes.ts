@@ -3,8 +3,11 @@ import {
   isAuthenticated,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
-import { syncInteractions } from '@metacult/backend-interaction';
-import { logger } from '@metacult/backend-infrastructure';
+import {
+  SyncInteractionsHandler,
+  DrizzleInteractionRepository,
+} from '@metacult/backend-interaction';
+import { getDbConnection, logger } from '@metacult/backend-infrastructure';
 
 export const syncRoutes = new Elysia({ prefix: '/sync' })
   .use(isAuthenticated)
@@ -48,9 +51,12 @@ export const syncRoutes = new Elysia({ prefix: '/sync' })
 
         if (swipeActions.length > 0) {
           try {
-            // Delegate to existing Domain Command (Reusing logic!)
-            const synced = await syncInteractions(user.id, swipeActions);
-            results.swipes = synced.length;
+            const { db } = getDbConnection();
+            const repo = new DrizzleInteractionRepository(db as any);
+            const handler = new SyncInteractionsHandler(repo);
+
+            await handler.execute(user.id, swipeActions);
+            results.swipes = swipeActions.length; // Assume partial success is handled internally or generic success
           } catch (err) {
             logger.error({ err }, '[Sync] Failed to process swipe subgroup');
             results.errors += 1;

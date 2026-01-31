@@ -1,22 +1,16 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { SearchMediaQuery } from './search-media.query';
 import type {
-  GroupedSearchResponseDto,
-  PaginatedSearchResponseDto,
-  SearchResultItemSchema,
-} from '../../../api/http/dtos/media.dtos';
+  GroupedSearchResponse,
+  PaginatedSearchResponse,
+  SearchMediaReadModel,
+} from '../../../domain/read-models/search-media.read-model';
 import type { Static } from 'elysia';
 import type { Redis } from 'ioredis';
-import type {
-  IgdbAdapter,
-  TmdbAdapter,
-  GoogleBooksAdapter,
-} from '../../../infrastructure/adapters/media.adapters';
+import type { IMediaProvider } from '../../ports/media-provider.interface';
 import { MediaType, Media } from '../../../domain/entities/media.entity';
 import { logger } from '@metacult/backend-infrastructure';
 import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
-
-type SearchResultItem = Static<typeof SearchResultItemSchema>;
 
 /**
  * Handler pour la requête de recherche de médias (Query Handler).
@@ -26,9 +20,9 @@ export class SearchMediaHandler {
   constructor(
     private readonly mediaRepository: IMediaRepository,
     private readonly redis: Redis,
-    private readonly igdbAdapter: IgdbAdapter,
-    private readonly tmdbAdapter: TmdbAdapter,
-    private readonly googleBooksAdapter: GoogleBooksAdapter,
+    private readonly igdbAdapter: IMediaProvider,
+    private readonly tmdbAdapter: IMediaProvider,
+    private readonly googleBooksAdapter: IMediaProvider,
   ) {}
 
   /**
@@ -37,7 +31,7 @@ export class SearchMediaHandler {
   async execute(
     query: SearchMediaQuery,
   ): Promise<
-    Result<GroupedSearchResponseDto | PaginatedSearchResponseDto, AppError>
+    Result<GroupedSearchResponse | PaginatedSearchResponse, AppError>
   > {
     try {
       const searchTerm = query.search?.trim();
@@ -201,15 +195,15 @@ export class SearchMediaHandler {
     }
   }
 
-  private emptyResponse(): GroupedSearchResponseDto {
+  private emptyResponse(): GroupedSearchResponse {
     return { games: [], movies: [], shows: [], books: [] };
   }
 
-  private mapLocalToGrouped(localResults: any[]): GroupedSearchResponseDto {
+  private mapLocalToGrouped(localResults: any[]): GroupedSearchResponse {
     const response = this.emptyResponse();
 
     for (const res of localResults) {
-      const item: SearchResultItem = {
+      const item: SearchMediaReadModel = {
         id: res.id,
         title: res.title,
         slug: res.slug,
@@ -239,7 +233,7 @@ export class SearchMediaHandler {
   }
 
   private mergeRemoteResults(
-    targetArray: SearchResultItem[],
+    targetArray: SearchMediaReadModel[],
     remoteItems: any[],
     type: MediaType,
   ) {
@@ -258,7 +252,7 @@ export class SearchMediaHandler {
     }
   }
 
-  private mapEntityToItem(entity: Media): SearchResultItem {
+  private mapEntityToItem(entity: Media): SearchMediaReadModel {
     return {
       id: entity.id,
       title: entity.title,
@@ -271,7 +265,7 @@ export class SearchMediaHandler {
     };
   }
 
-  private mapRemoteToItem(media: any): SearchResultItem {
+  private mapRemoteToItem(media: any): SearchMediaReadModel {
     // media is a Domain Entity (Media/Game/Movie/etc) or similar shape from remote adapter
     const extId = media.externalReference?.id;
     if (!extId) {
@@ -292,7 +286,10 @@ export class SearchMediaHandler {
     };
   }
 
-  private addUnique(target: SearchResultItem[], item: SearchResultItem) {
+  private addUnique(
+    target: SearchMediaReadModel[],
+    item: SearchMediaReadModel,
+  ) {
     if (
       !target.some((t) => t.title.toLowerCase() === item.title.toLowerCase())
     ) {

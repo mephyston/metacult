@@ -104,8 +104,6 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
     platform: raw.platforms?.map((p) => p.name) || [],
     developer: null, // Developer not fetched
     timeToBeat: null, // TimeToBeat not fetched
-    eloScore: 1500,
-    matchCount: 0,
   });
 }
 
@@ -138,8 +136,6 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
     ),
     director: null, // Director
     durationMinutes: raw.runtime || null,
-    eloScore: 1500,
-    matchCount: 0,
   });
 }
 
@@ -173,8 +169,6 @@ export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
     creator: raw.created_by?.[0]?.name || null,
     episodesCount: raw.number_of_episodes || null,
     seasonsCount: raw.number_of_seasons || null,
-    eloScore: 1500,
-    matchCount: 0,
   });
 }
 
@@ -205,8 +199,6 @@ export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
     ),
     author: info.authors?.[0] || 'Unknown',
     pages: info.pageCount || null,
-    eloScore: 1500,
-    matchCount: 0,
   });
 }
 

@@ -1,6 +1,6 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { GetRecentMediaQuery } from './get-recent-media.query';
-import type { RecentMediaItemDto } from '../../../infrastructure/dtos/recent-media.dto';
+import type { RecentMediaReadModel } from '../../../domain/read-models/recent-media.read-model';
 import { logger } from '@metacult/backend-infrastructure';
 
 import type { Redis } from 'ioredis';
@@ -15,7 +15,7 @@ export class GetRecentMediaHandler {
 
   async execute(
     query: GetRecentMediaQuery,
-  ): Promise<Result<RecentMediaItemDto[], AppError>> {
+  ): Promise<Result<RecentMediaReadModel[], AppError>> {
     try {
       const cacheKey = `catalog:recent:limit:${query.limit}`;
 

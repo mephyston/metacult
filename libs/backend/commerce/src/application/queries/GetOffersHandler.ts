@@ -1,13 +1,13 @@
 import { Offer } from '../../domain/Offer';
 import type { OffersProvider } from '../../domain/gateway/OffersProvider';
-import { CheapSharkProvider } from '../../infrastructure/cheapshark/CheapSharkProvider';
+import type { GameOffersProvider } from '../../domain/gateway/GameOffersProvider';
 import { AffiliateLinkService } from '../../domain/service/AffiliateLinkService';
 import type { MediaDetailsProvider } from '../../domain/gateway/MediaDetailsProvider';
 
 export class GetOffersHandler {
   constructor(
     private readonly offersProvider: OffersProvider, // TMDB for standard streaming
-    private readonly cheapSharkProvider: CheapSharkProvider,
+    private readonly gameOffersProvider: GameOffersProvider, // Renamed from cheapSharkProvider
     private readonly affiliateLinkService: AffiliateLinkService,
     private readonly mediaDetailsProvider: MediaDetailsProvider,
   ) {}
@@ -61,7 +61,7 @@ export class GetOffersHandler {
     // 2. Game Offers
     if (isGame && title) {
       // A. CheapShark Best Deal
-      const cheapSharkOffer = await this.cheapSharkProvider.getBestDeal(
+      const cheapSharkOffer = await this.gameOffersProvider.getBestDeal(
         title,
         mediaId,
       );

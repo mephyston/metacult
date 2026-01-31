@@ -1,14 +1,30 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { DrizzleMediaRepository } from './drizzle-media.repository';
 import type { MediaId } from '../../domain/value-objects/media-id.vo';
+import { ProviderSource } from '@metacult/shared-core';
 
 // --- Chain Mocks ---
-const mockExecute = mock(
-  () =>
-    Promise.resolve([
-      { id: '1', title: 'Random Game', type: 'GAME', providerMetadata: {} },
-      { id: '2', title: 'Random Movie', type: 'MOVIE', providerMetadata: {} },
-    ] as any[]), // Cast to any to bypass strict type check for now, or use mapped entity structure
+const mockExecute = mock(() =>
+  Promise.resolve([
+    {
+      id: '1',
+      title: 'Random Game',
+      slug: 'random-game',
+      type: 'GAME',
+      providerMetadata: {},
+      globalRating: 80,
+      releaseDate: new Date(),
+    },
+    {
+      id: '2',
+      title: 'Random Movie',
+      slug: 'random-movie',
+      type: 'MOVIE',
+      providerMetadata: {},
+      globalRating: 80,
+      releaseDate: new Date(),
+    },
+  ] as any[]),
 );
 
 const mockLimit = mock(() => ({
@@ -43,7 +59,6 @@ const mockFromTags = mock(() => ({ innerJoin: mockInnerJoinTags }));
 // ... (other mocks unchanged)
 
 // ...
-
 
 // DB Mock
 const mockDb = {
@@ -141,7 +156,7 @@ describe('DrizzleMediaRepository', () => {
     expect(mockSelect).not.toHaveBeenCalled();
 
     // Invalid externalId (empty)
-    const result2 = await repository.findByProviderId('IGDB', '');
+    const result2 = await repository.findByProviderId(ProviderSource.IGDB, '');
     expect(result2).toBeNull();
   });
 
@@ -151,8 +166,11 @@ describe('DrizzleMediaRepository', () => {
         medias: {
           id: '1',
           title: 'Random Game',
+          slug: 'random-game',
           type: 'GAME',
           providerMetadata: {},
+          globalRating: 80,
+          releaseDate: new Date(),
         },
         games: { id: '1', platform: [], developer: 'Dev', timeToBeat: 10 },
         movies: null,
@@ -161,7 +179,10 @@ describe('DrizzleMediaRepository', () => {
       },
     ]);
 
-    const result = await repository.findByProviderId('igdb', 'valid-id');
+    const result = await repository.findByProviderId(
+      ProviderSource.IGDB,
+      'valid-id',
+    );
 
     expect(mockSelect).toHaveBeenCalled();
     expect(mockFrom).toHaveBeenCalled();

@@ -1,6 +1,9 @@
 import { eq, and, sql, inArray, desc } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { IInteractionRepository } from '../../application/ports/interaction.repository.interface';
+import type {
+  IInteractionRepository,
+  SyncInteractionPayload,
+} from '../../domain/ports/interaction.repository.interface';
 import {
   UserInteraction,
   InteractionAction,
@@ -157,5 +160,54 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,
     });
+  }
+
+  async syncInteractions(
+    userId: UserId,
+    interactions: SyncInteractionPayload[],
+  ): Promise<void> {
+    for (const interaction of interactions) {
+      try {
+        if (interaction.action === 'SKIP') {
+          const existing = await this.db
+            .select()
+            .from(userInteractions)
+            .where(
+              and(
+                eq(userInteractions.userId, userId),
+                eq(userInteractions.mediaId, interaction.mediaId),
+              ),
+            )
+            .limit(1);
+
+          if (existing.length > 0) {
+            continue;
+          }
+        }
+
+        await this.db
+          .insert(userInteractions)
+          .values({
+            userId: userId,
+            mediaId: asMediaId(interaction.mediaId),
+            action: interaction.action as any,
+            sentiment: interaction.sentiment as any,
+          })
+          .onConflictDoUpdate({
+            target: [userInteractions.userId, userInteractions.mediaId],
+            set: {
+              action: interaction.action as any,
+              sentiment: interaction.sentiment as any,
+              updatedAt: new Date(),
+            },
+          });
+      } catch (err: unknown) {
+        const error = err as Error & { code?: string };
+        if (error?.code !== '23503') {
+          // Log error if not foreign key violation
+          console.error('[Sync] Error syncing interaction', err);
+        }
+      }
+    }
   }
 }

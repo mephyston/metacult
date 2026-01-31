@@ -7,7 +7,7 @@ import {
 import { logger, getDbConnection } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
 import { SaveInteractionHandler } from '../../../application/commands/save-interaction.command';
-import { syncInteractions } from '../../../application/commands/sync-interactions.command';
+import { SyncInteractionsHandler } from '../../../application/commands/sync-interactions.command';
 import * as schema from '../../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
@@ -102,10 +102,11 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const results = await syncInteractions(user.id, body);
+        const handler = new SyncInteractionsHandler(interactionRepo);
+        const results = await handler.execute(user.id, body);
         return {
           success: true,
-          synced: results.length,
+          synced: body.length,
           message: API_MESSAGES.INTERACTION.SYNC_SUCCESS,
         };
       } catch (e: any) {

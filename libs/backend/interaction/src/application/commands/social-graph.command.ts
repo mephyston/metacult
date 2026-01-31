@@ -1,33 +1,20 @@
-import { getDbConnection } from '@metacult/backend-infrastructure';
+import type { IInteractionRepository } from '../../domain/ports/interaction.repository.interface';
 import { asUserId } from '@metacult/shared-core';
-import { DrizzleInteractionRepository } from '../../infrastructure/repositories/drizzle-interaction.repository';
-import * as schema from '../../infrastructure/db/interactions.schema';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-// const { db } = getDbConnection(); // Moved inside instructions
-// const interactionRepo = new DrizzleInteractionRepository(db); // Removed global instantiation
+export class SocialGraphHandler {
+  constructor(private readonly interactionRepository: IInteractionRepository) {}
 
-export const followUserCommand = async (
-  followerId: string,
-  followingId: string,
-) => {
-  const { db } = getDbConnection();
-  const interactionRepo = new DrizzleInteractionRepository(
-    db as unknown as NodePgDatabase<typeof schema>,
-  );
-  await interactionRepo.followUser(asUserId(followerId), asUserId(followingId));
-};
+  async follow(followerId: string, followingId: string): Promise<void> {
+    await this.interactionRepository.followUser(
+      asUserId(followerId),
+      asUserId(followingId),
+    );
+  }
 
-export const unfollowUserCommand = async (
-  followerId: string,
-  followingId: string,
-) => {
-  const { db } = getDbConnection();
-  const interactionRepo = new DrizzleInteractionRepository(
-    db as unknown as NodePgDatabase<typeof schema>,
-  );
-  await interactionRepo.unfollowUser(
-    asUserId(followerId),
-    asUserId(followingId),
-  );
-};
+  async unfollow(followerId: string, followingId: string): Promise<void> {
+    await this.interactionRepository.unfollowUser(
+      asUserId(followerId),
+      asUserId(followingId),
+    );
+  }
+}

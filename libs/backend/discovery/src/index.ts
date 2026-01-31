@@ -23,6 +23,7 @@ export * from './application/queries/get-personalized-feed/get-personalized-feed
 export * from './infrastructure/repositories/drizzle-affinity.repository';
 export * from './infrastructure/repositories/drizzle-similarity.repository';
 export * from './infrastructure/repositories/drizzle-catalog.repository';
+export * from './infrastructure/repositories/drizzle-recommendation.repository';
 export * from './infrastructure/db/schema';
 
 // Export Handlers for API Composition Root

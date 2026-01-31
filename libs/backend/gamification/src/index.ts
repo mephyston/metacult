@@ -1,5 +1,6 @@
 // Infrastructure
 export * from './infrastructure/db/gamification.schema';
+export * from './infrastructure/repositories/drizzle-gamification.repository';
 
 // Domain
 export * from './application/services/gamification.service';

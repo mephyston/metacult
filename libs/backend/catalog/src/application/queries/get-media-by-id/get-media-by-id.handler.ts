@@ -1,6 +1,6 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { GetMediaByIdQuery } from './get-media-by-id.query';
-import type { MediaDetailDto } from '../../../infrastructure/dtos/media-detail.dto';
+import type { MediaDetailReadModel } from '../../../domain/read-models/media-detail.read-model';
 import { asMediaId } from '../../../domain/value-objects/media-id.vo';
 import { MediaNotFoundInProviderError } from '../../../domain/errors/catalog.errors';
 import { logger } from '@metacult/backend-infrastructure';
@@ -16,7 +16,7 @@ export class GetMediaByIdHandler {
 
   async execute(
     query: GetMediaByIdQuery,
-  ): Promise<Result<MediaDetailDto, AppError>> {
+  ): Promise<Result<MediaDetailReadModel, AppError>> {
     const cacheKey = `catalog:media:${query.id}`;
 
     // 1. Check Redis Cache
@@ -51,7 +51,7 @@ export class GetMediaByIdHandler {
     }
 
     // 3. Map to DTO
-    const dto: MediaDetailDto = {
+    const dto: MediaDetailReadModel = {
       id: media.id,
       slug: media.slug,
       title: media.title,

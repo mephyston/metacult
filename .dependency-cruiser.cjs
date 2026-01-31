@@ -31,14 +31,14 @@ module.exports = {
         // ╚═══════════════════════════════════════════════════════════════════╝
         {
             name: 'application-cannot-depend-on-infrastructure',
-            severity: 'warn', // TODO: Fix remaining 8 violations, then change to 'error'
+            severity: 'error',
             comment: 'Application layer must not depend on Infrastructure layer (DDD violation)',
             from: { path: 'libs/backend/.*/src/application' },
             to: { path: 'libs/backend/.*/src/infrastructure' },
         },
         {
             name: 'application-cannot-depend-on-api',
-            severity: 'warn', // TODO: Fix remaining 2 violations, then change to 'error'
+            severity: 'error',
             comment: 'Application layer must not depend on API layer (DDD violation)',
             from: { path: 'libs/backend/.*/src/application' },
             to: { path: 'libs/backend/.*/src/api' },
@@ -47,11 +47,16 @@ module.exports = {
         // ╔═══════════════════════════════════════════════════════════════════╗
         // ║ RÈGLE 3: Isolation des Modules Backend                             ║
         // ╚═══════════════════════════════════════════════════════════════════╝
-        // Modules can import other modules via public API (index.ts / @metacult/backend-*).
-        // But they CANNOT import internal paths like /domain/, /application/, /infrastructure/, /api/.
-        // This is enforced by relying on the tsconfig path aliases resolving to index.ts.
-        // The cross-module violations we saw were actually valid public API imports.
-        // Removed: per-module cross-import rules (were triggering false positives on index.ts imports).
+        {
+            name: 'module-isolation',
+            severity: 'error',
+            comment: 'Modules must not rely on other modules internals. Use public API (index.ts).',
+            from: { path: 'libs/backend/([^/]+)/src' },
+            to: {
+                path: 'libs/backend/(?!$1)([^/]+)/src/(?!index\\.ts)',
+                pathNot: 'libs/backend/(?!$1)([^/]+)/src/index\\.ts', // Explicitly allow index.ts (though logically implied by negation above, helps clarity)
+            },
+        },
 
         // ╔═══════════════════════════════════════════════════════════════════╗
         // ║ RÈGLE 4: Frontend ne peut pas importer Backend                     ║
@@ -69,7 +74,7 @@ module.exports = {
         // ╚═══════════════════════════════════════════════════════════════════╝
         {
             name: 'no-circular',
-            severity: 'warn',
+            severity: 'error',
             comment: 'Circular dependencies are not allowed',
             from: {},
             to: { circular: true },
@@ -77,7 +82,7 @@ module.exports = {
     ],
     options: {
         doNotFollow: {
-            path: 'node_modules',
+            path: 'node_modules|dist|\\.output',
         },
         tsPreCompilationDeps: true,
         tsConfig: {

@@ -158,13 +158,13 @@ const mediaSearchAdapter = {
       orderBy: options?.orderBy,
       types: options?.types
         ? (options.types
-          .map((t) => {
-            const upper = t.toUpperCase();
-            return Object.values(MediaType).includes(upper as MediaType)
-              ? (upper as MediaType)
-              : undefined;
-          })
-          .filter(Boolean) as MediaType[])
+            .map((t) => {
+              const upper = t.toUpperCase();
+              return Object.values(MediaType).includes(upper as MediaType)
+                ? (upper as MediaType)
+                : undefined;
+            })
+            .filter(Boolean) as MediaType[])
         : undefined,
     });
 
@@ -249,7 +249,10 @@ const mixedFeedHandler = new GetMixedFeedHandler(
   mediaSearchAdapter,
   adsAdapter,
 );
-const personalizedFeedHandler = new GetPersonalizedFeedHandler(db);
+const recommendationRepo = new DrizzleRecommendationRepository(db as any);
+const personalizedFeedHandler = new GetPersonalizedFeedHandler(
+  recommendationRepo,
+);
 import * as interactionSchema from '@metacult/backend-interaction';
 // ...
 const interactionRepo = new DrizzleInteractionRepository(
@@ -259,6 +262,7 @@ const interactionRepo = new DrizzleInteractionRepository(
 // --- Discovery Catalog Queries Wiring ---
 import {
   DrizzleCatalogRepository,
+  DrizzleRecommendationRepository,
   GetTrendingHandler,
   GetHallOfFameHandler,
   GetControversialHandler,

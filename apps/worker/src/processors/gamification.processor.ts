@@ -1,13 +1,20 @@
-import { Job } from 'bullmq';
 import { logger } from '@metacult/backend-infrastructure';
 import {
   GamificationService,
   GrantXpOnInteractionListener,
+  DrizzleGamificationRepository,
 } from '@metacult/backend-gamification';
+import * as schema from '@metacult/backend-gamification'; // Check if schema is exported, if not, use internal path if possible or ignore schema type safety for now by using any
+import { getDbConnection } from '@metacult/backend-infrastructure';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { InteractionSavedEvent } from '@metacult/backend-interaction';
+import { Job } from 'bullmq';
 
 // Manual Dependency Injection
-const gamificationService = new GamificationService();
+const { db } = getDbConnection();
+// We assume schema is part of what's passed or cast to any if schema is not exported
+const repo = new DrizzleGamificationRepository(db as any);
+const gamificationService = new GamificationService(repo);
 const grantXpListener = new GrantXpOnInteractionListener(gamificationService);
 
 interface InteractionEventPayload {

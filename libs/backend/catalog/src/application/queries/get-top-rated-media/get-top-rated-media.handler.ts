@@ -1,6 +1,6 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { Redis } from 'ioredis';
-import type { MediaReadDto } from '../../../infrastructure/dtos/media-read.dto';
+import type { MediaReadModel } from '../../../domain/read-models/media-read.model';
 import { logger } from '@metacult/backend-infrastructure';
 
 import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
@@ -17,7 +17,7 @@ export class GetTopRatedMediaHandler {
 
   async execute(
     query: GetTopRatedMediaQuery,
-  ): Promise<Result<MediaReadDto[], AppError>> {
+  ): Promise<Result<MediaReadModel[], AppError>> {
     try {
       const cacheKey = `catalog:top-rated:limit:${query.limit}`;
 

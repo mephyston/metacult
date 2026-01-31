@@ -1,11 +1,13 @@
 import { GamificationService } from '../application/services/gamification.service';
 import { getDbConnection, logger } from '@metacult/backend-infrastructure';
+import { DrizzleGamificationRepository } from '../infrastructure/repositories/drizzle-gamification.repository';
 
 async function main() {
   logger.info('--- Verifying Gamification Flow ---');
 
   const { db } = getDbConnection();
-  const service = new GamificationService();
+  const repo = new DrizzleGamificationRepository(db as any);
+  const service = new GamificationService(repo);
   const userId = 'verify-user-' + Date.now(); // Unique ID
 
   logger.info(`1. Creating test user stats for ${userId}`);

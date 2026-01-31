@@ -7,13 +7,17 @@ import { logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES, DUEL_STATUS } from '@metacult/shared-core';
 import { RankingQueue } from '../../../infrastructure/queue/ranking.queue';
 import { DrizzleDuelRepository } from '../../../infrastructure/repositories/drizzle-duel.repository';
-import { GamificationService } from '@metacult/backend-gamification';
+import {
+  GamificationService,
+  DrizzleGamificationRepository,
+} from '@metacult/backend-gamification';
+import { getDbConnection } from '@metacult/backend-infrastructure';
 
 // Initialisation des dépendances (Poor man's injection pour ce module)
 // Idéalement, on passerait par un conteneur ou une factory au niveau de l'app.
 const duelRepository = new DrizzleDuelRepository();
 const rankingQueue = new RankingQueue();
-const gamificationService = new GamificationService();
+// const gamificationService = new GamificationService(); // Moved to handler
 
 /**
  * Contrôleur pour le module Duel.
@@ -83,6 +87,10 @@ export const DuelController = new Elysia({ prefix: '/duel' })
 
       // 2. GAMIFICATION: Award XP
       try {
+        const { db } = getDbConnection();
+        const repo = new DrizzleGamificationRepository(db as any);
+        const gamificationService = new GamificationService(repo);
+
         await gamificationService.addXp(user.id, 50, 'DUEL');
       } catch (e) {
         logger.error({ err: e }, '[Gamification] Failed to award XP for DUEL');

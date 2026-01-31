@@ -9,13 +9,9 @@
           "targets": {
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "libs/backend/infrastructure/**/*.ts"
-                ]
+                "lintFilePatterns": ["libs/backend/infrastructure/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true
@@ -33,11 +29,7 @@
           "$schema": "../../../node_modules/nx/schemas/project-schema.json",
           "projectType": "library",
           "sourceRoot": "libs/backend/infrastructure/src",
-          "tags": [
-            "type:util",
-            "scope:shared",
-            "layer:backend"
-          ],
+          "tags": ["type:util", "scope:shared", "layer:backend"],
           "implicitDependencies": []
         }
       },
@@ -49,13 +41,9 @@
           "targets": {
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "libs/backend/gamification/**/*.ts"
-                ]
+                "lintFilePatterns": ["libs/backend/gamification/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true
@@ -100,18 +88,12 @@
                 "{workspaceRoot}/libs/backend/interaction/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -157,18 +139,12 @@
                 "{workspaceRoot}/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -185,20 +161,14 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             }
           },
           "name": "shared-sync-manager",
-          "tags": [
-            "npm:public",
-            "scope:shared",
-            "type:util"
-          ],
+          "tags": ["npm:public", "scope:shared", "type:util"],
           "metadata": {
             "targetGroups": {},
             "js": {
@@ -222,13 +192,9 @@
           "targets": {
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "libs/backend/discovery/**/*.ts"
-                ]
+                "lintFilePatterns": ["libs/backend/discovery/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true
@@ -246,11 +212,7 @@
           "$schema": "../../../node_modules/nx/schemas/project-schema.json",
           "projectType": "library",
           "sourceRoot": "libs/backend/discovery/src",
-          "tags": [
-            "scope:discovery",
-            "layer:backend",
-            "type:bounded-context"
-          ],
+          "tags": ["scope:discovery", "layer:backend", "type:bounded-context"],
           "implicitDependencies": []
         }
       },
@@ -262,13 +224,9 @@
           "targets": {
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "libs/backend/marketing/**/*.ts"
-                ]
+                "lintFilePatterns": ["libs/backend/marketing/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true
@@ -286,11 +244,7 @@
           "$schema": "../../../node_modules/nx/schemas/project-schema.json",
           "projectType": "library",
           "sourceRoot": "libs/backend/marketing/src",
-          "tags": [
-            "scope:marketing",
-            "layer:backend",
-            "type:bounded-context"
-          ],
+          "tags": ["scope:marketing", "layer:backend", "type:bounded-context"],
           "implicitDependencies": []
         }
       },
@@ -313,18 +267,12 @@
                 "{workspaceRoot}/libs/backend/commerce/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -345,24 +293,15 @@
                 "default",
                 "^default",
                 {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
+                  "externalDependencies": ["vitest"]
                 },
                 {
                   "env": "CI"
                 }
               ],
-              "outputs": [
-                "{workspaceRoot}/coverage/libs/backend/commerce"
-              ],
+              "outputs": ["{workspaceRoot}/coverage/libs/backend/commerce"],
               "metadata": {
-                "technologies": [
-                  "vite",
-                  "vite",
-                  "vitest",
-                  "vitest"
-                ],
+                "technologies": ["vite", "vite", "vitest", "vitest"],
                 "description": "Run Vitest tests",
                 "help": {
                   "command": "bun vitest --help",
@@ -388,17 +327,12 @@
                 "default",
                 "^default",
                 {
-                  "externalDependencies": [
-                    "typescript"
-                  ]
+                  "externalDependencies": ["typescript"]
                 }
               ],
               "metadata": {
                 "description": "Runs type-checking for the project.",
-                "technologies": [
-                  "typescript",
-                  "typescript"
-                ],
+                "technologies": ["typescript", "typescript"],
                 "help": {
                   "command": "bun tsc -p tsconfig.lib.json --help",
                   "example": {
@@ -417,9 +351,7 @@
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -427,9 +359,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "bun nx watch --projects backend-commerce --includeDependentProjects -- bun nx build-deps backend-commerce"
@@ -443,22 +373,15 @@
                 "default",
                 "^default",
                 {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
+                  "externalDependencies": ["vitest"]
                 },
                 {
                   "env": "CI"
                 }
               ],
-              "outputs": [
-                "{workspaceRoot}/coverage/libs/backend/commerce"
-              ],
+              "outputs": ["{workspaceRoot}/coverage/libs/backend/commerce"],
               "metadata": {
-                "technologies": [
-                  "vitest",
-                  "vitest"
-                ],
+                "technologies": ["vitest", "vitest"],
                 "description": "Run Vitest Tests in src/application/queries/GetOffersHandler.spec.ts",
                 "help": {
                   "command": "bun vitest --help",
@@ -484,25 +407,18 @@
                 "default",
                 "^default",
                 {
-                  "externalDependencies": [
-                    "vitest"
-                  ]
+                  "externalDependencies": ["vitest"]
                 },
                 {
                   "env": "CI"
                 }
               ],
-              "outputs": [
-                "{workspaceRoot}/coverage/libs/backend/commerce"
-              ],
+              "outputs": ["{workspaceRoot}/coverage/libs/backend/commerce"],
               "dependsOn": [
                 "test-ci--src/application/queries/GetOffersHandler.spec.ts"
               ],
               "metadata": {
-                "technologies": [
-                  "vitest",
-                  "vitest"
-                ],
+                "technologies": ["vitest", "vitest"],
                 "description": "Run Vitest Tests in CI",
                 "nonAtomizedTarget": "test",
                 "help": {
@@ -567,18 +483,12 @@
                 "{workspaceRoot}/libs/backend/identity/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -598,16 +508,12 @@
           "$schema": "../../../node_modules/nx/schemas/project-schema.json",
           "sourceRoot": "libs/backend/identity/src",
           "projectType": "library",
-          "tags": [
-            "scope:identity",
-            "layer:backend",
-            "type:bounded-context"
-          ],
+          "tags": ["scope:identity", "layer:backend", "type:bounded-context"],
           "implicitDependencies": []
         }
       },
-      "@metacult/shared-local-db": {
-        "name": "@metacult/shared-local-db",
+      "shared-local-db": {
+        "name": "shared-local-db",
         "type": "lib",
         "data": {
           "root": "libs/shared/local-db",
@@ -624,18 +530,12 @@
                 "{workspaceRoot}/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -652,24 +552,18 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             }
           },
-          "name": "@metacult/shared-local-db",
-          "tags": [
-            "npm:public",
-            "scope:shared",
-            "type:util"
-          ],
+          "name": "shared-local-db",
+          "tags": ["npm:public", "scope:shared", "type:util"],
           "metadata": {
             "targetGroups": {},
             "js": {
-              "packageName": "@metacult/shared-local-db",
+              "packageName": "shared-local-db",
               "packageVersion": "0.0.1",
               "packageMain": "./src/index.ts",
               "isInPackageManagerWorkspaces": true
@@ -686,13 +580,9 @@
           "targets": {
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "libs/backend/catalog/**/*.ts"
-                ]
+                "lintFilePatterns": ["libs/backend/catalog/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true
@@ -710,11 +600,7 @@
           "$schema": "../../../node_modules/nx/schemas/project-schema.json",
           "projectType": "library",
           "sourceRoot": "libs/backend/catalog/src",
-          "tags": [
-            "scope:catalog",
-            "layer:backend",
-            "type:bounded-context"
-          ],
+          "tags": ["scope:catalog", "layer:backend", "type:bounded-context"],
           "implicitDependencies": []
         }
       },
@@ -726,13 +612,9 @@
           "targets": {
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "libs/backend/ranking/**/*.ts"
-                ]
+                "lintFilePatterns": ["libs/backend/ranking/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true
@@ -750,11 +632,7 @@
           "$schema": "../../../node_modules/nx/schemas/project-schema.json",
           "sourceRoot": "libs/backend/ranking/src",
           "projectType": "library",
-          "tags": [
-            "scope:ranking",
-            "type:domain",
-            "layer:backend"
-          ],
+          "tags": ["scope:ranking", "type:domain", "layer:backend"],
           "implicitDependencies": []
         }
       },
@@ -776,18 +654,12 @@
                 "{workspaceRoot}/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -804,44 +676,29 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             },
             "build": {
               "executor": "@nx/js:tsc",
-              "outputs": [
-                "{options.outputPath}"
-              ],
+              "outputs": ["{options.outputPath}"],
               "options": {
                 "outputPath": "dist/libs/shared/types",
                 "main": "libs/shared/types/src/index.ts",
                 "tsConfig": "libs/shared/types/tsconfig.lib.json",
-                "assets": [
-                  "libs/shared/types/*.md"
-                ]
+                "assets": ["libs/shared/types/*.md"]
               },
               "configurations": {},
               "parallelism": true,
               "cache": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "inputs": [
-                "default",
-                "^default"
-              ]
+              "dependsOn": ["^build"],
+              "inputs": ["default", "^default"]
             }
           },
           "name": "shared-types",
-          "tags": [
-            "npm:public",
-            "type:util",
-            "scope:shared"
-          ],
+          "tags": ["npm:public", "type:util", "scope:shared"],
           "metadata": {
             "targetGroups": {},
             "js": {
@@ -865,31 +722,23 @@
           "targets": {
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
-                "lintFilePatterns": [
-                  "libs/shared/core/**/*.ts"
-                ]
+                "lintFilePatterns": ["libs/shared/core/**/*.ts"]
               },
               "configurations": {},
               "parallelism": true
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
             },
             "build": {
               "executor": "@nx/js:tsc",
-              "outputs": [
-                "{options.outputPath}"
-              ],
+              "outputs": ["{options.outputPath}"],
               "options": {
                 "outputPath": "dist/libs/shared/core",
                 "main": "libs/shared/core/src/index.ts",
@@ -899,13 +748,8 @@
               "configurations": {},
               "parallelism": true,
               "cache": true,
-              "dependsOn": [
-                "^build"
-              ],
-              "inputs": [
-                "default",
-                "^default"
-              ]
+              "dependsOn": ["^build"],
+              "inputs": ["default", "^default"]
             },
             "test": {
               "executor": "nx:run-commands",
@@ -917,12 +761,7 @@
             }
           },
           "name": "shared-core",
-          "tags": [
-            "npm:public",
-            "scope:shared",
-            "type:util",
-            "type:buildable"
-          ],
+          "tags": ["npm:public", "scope:shared", "type:util", "type:buildable"],
           "metadata": {
             "targetGroups": {},
             "js": {
@@ -960,18 +799,12 @@
                 "{workspaceRoot}/libs/shared/ui/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -992,25 +825,17 @@
                 "command": "vite build"
               },
               "cache": true,
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "inputs": [
                 "default",
                 "^default",
                 {
-                  "externalDependencies": [
-                    "vite"
-                  ]
+                  "externalDependencies": ["vite"]
                 }
               ],
-              "outputs": [
-                "{workspaceRoot}/dist/libs/shared/ui"
-              ],
+              "outputs": ["{workspaceRoot}/dist/libs/shared/ui"],
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Run Vite build",
                 "help": {
                   "command": "bun vite build --help",
@@ -1033,9 +858,7 @@
                 "command": "vite"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Starts Vite dev server",
                 "help": {
                   "command": "bun vite --help",
@@ -1058,9 +881,7 @@
                 "command": "vite"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Starts Vite dev server",
                 "help": {
                   "command": "bun vite --help",
@@ -1077,17 +898,13 @@
             },
             "preview": {
               "continuous": true,
-              "dependsOn": [
-                "build"
-              ],
+              "dependsOn": ["build"],
               "options": {
                 "cwd": "libs/shared/ui",
                 "command": "vite preview"
               },
               "metadata": {
-                "technologies": [
-                  "vite"
-                ],
+                "technologies": ["vite"],
                 "description": "Locally preview Vite production build",
                 "help": {
                   "command": "bun vite preview --help",
@@ -1118,10 +935,7 @@
                 "default",
                 "^default",
                 {
-                  "externalDependencies": [
-                    "vue-tsc",
-                    "typescript"
-                  ]
+                  "externalDependencies": ["vue-tsc", "typescript"]
                 }
               ],
               "options": {
@@ -1130,10 +944,7 @@
               },
               "metadata": {
                 "description": "Runs type-checking for the project.",
-                "technologies": [
-                  "typescript",
-                  "vue"
-                ],
+                "technologies": ["typescript", "vue"],
                 "help": {
                   "command": "bun vue-tsc -p tsconfig.lib.json --help",
                   "example": {
@@ -1148,9 +959,7 @@
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -1158,9 +967,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "bun nx watch --projects ui --includeDependentProjects -- bun nx build-deps ui"
@@ -1170,9 +977,7 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
@@ -1197,12 +1002,7 @@
             }
           },
           "name": "ui",
-          "tags": [
-            "npm:public",
-            "type:ui",
-            "scope:shared",
-            "layer:frontend"
-          ],
+          "tags": ["npm:public", "type:ui", "scope:shared", "layer:frontend"],
           "$schema": "../../../node_modules/nx/schemas/project-schema.json",
           "sourceRoot": "libs/shared/ui/src",
           "implicitDependencies": []
@@ -1226,18 +1026,12 @@
                 "{workspaceRoot}/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -1290,9 +1084,7 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
@@ -1317,19 +1109,10 @@
             }
           },
           "name": "website",
-          "tags": [
-            "npm:public",
-            "type:app",
-            "scope:website",
-            "layer:frontend"
-          ],
+          "tags": ["npm:public", "type:app", "scope:website", "layer:frontend"],
           "metadata": {
             "targetGroups": {
-              "NPM Scripts": [
-                "dev",
-                "preview",
-                "astro"
-              ]
+              "NPM Scripts": ["dev", "preview", "astro"]
             },
             "js": {
               "packageName": "apps-website",
@@ -1351,9 +1134,7 @@
           "targets": {
             "lint": {
               "executor": "@nx/eslint:lint",
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "options": {
                 "lintFilePatterns": [
                   "apps/webapp/app/**/*.{ts,tsx,js,jsx,vue}",
@@ -1388,9 +1169,7 @@
               "parallelism": true
             },
             "serve-static": {
-              "dependsOn": [
-                "build-static"
-              ],
+              "dependsOn": ["build-static"],
               "continuous": true,
               "executor": "@nx/web:file-server",
               "options": {
@@ -1408,16 +1187,12 @@
                 "command": "nuxt build --prerender"
               },
               "cache": true,
-              "dependsOn": [
-                "^build-static"
-              ],
+              "dependsOn": ["^build-static"],
               "inputs": [
                 "default",
                 "^default",
                 {
-                  "externalDependencies": [
-                    "nuxt"
-                  ]
+                  "externalDependencies": ["nuxt"]
                 }
               ],
               "outputs": [
@@ -1429,9 +1204,7 @@
               "parallelism": true
             },
             "build-deps": {
-              "dependsOn": [
-                "^build"
-              ],
+              "dependsOn": ["^build"],
               "configurations": {},
               "options": {},
               "parallelism": true,
@@ -1439,9 +1212,7 @@
             },
             "watch-deps": {
               "continuous": true,
-              "dependsOn": [
-                "build-deps"
-              ],
+              "dependsOn": ["build-deps"],
               "executor": "nx:run-commands",
               "options": {
                 "command": "bun nx watch --projects webapp --includeDependentProjects -- bun nx build-deps webapp"
@@ -1487,20 +1258,10 @@
             }
           },
           "name": "webapp",
-          "tags": [
-            "npm:private",
-            "type:app",
-            "scope:webapp",
-            "layer:frontend"
-          ],
+          "tags": ["npm:private", "type:app", "scope:webapp", "layer:frontend"],
           "metadata": {
             "targetGroups": {
-              "NPM Scripts": [
-                "build",
-                "dev",
-                "preview",
-                "typecheck"
-              ]
+              "NPM Scripts": ["build", "dev", "preview", "typecheck"]
             },
             "js": {
               "packageName": "apps-webapp",
@@ -1532,18 +1293,12 @@
                 "{workspaceRoot}/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -1560,9 +1315,7 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
@@ -1587,12 +1340,7 @@
             }
           },
           "name": "worker",
-          "tags": [
-            "npm:public",
-            "type:app",
-            "scope:worker",
-            "layer:backend"
-          ],
+          "tags": ["npm:public", "type:app", "scope:worker", "layer:backend"],
           "metadata": {
             "targetGroups": {},
             "js": {
@@ -1625,18 +1373,12 @@
                 "{workspaceRoot}/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -1677,9 +1419,7 @@
             },
             "nx-release-publish": {
               "executor": "@nx/js:release-publish",
-              "dependsOn": [
-                "^nx-release-publish"
-              ],
+              "dependsOn": ["^nx-release-publish"],
               "options": {},
               "configurations": {},
               "parallelism": true
@@ -1695,18 +1435,10 @@
             }
           },
           "name": "api",
-          "tags": [
-            "npm:public",
-            "type:app",
-            "scope:api",
-            "layer:backend"
-          ],
+          "tags": ["npm:public", "type:app", "scope:api", "layer:backend"],
           "metadata": {
             "targetGroups": {
-              "NPM Scripts": [
-                "dev",
-                "start"
-              ]
+              "NPM Scripts": ["dev", "start"]
             },
             "js": {
               "packageName": "@metacult/api",
@@ -1738,18 +1470,12 @@
                 "{workspaceRoot}/eslint.config.mjs",
                 "{workspaceRoot}/tools/eslint-rules/**/*",
                 {
-                  "externalDependencies": [
-                    "eslint"
-                  ]
+                  "externalDependencies": ["eslint"]
                 }
               ],
-              "outputs": [
-                "{options.outputFile}"
-              ],
+              "outputs": ["{options.outputFile}"],
               "metadata": {
-                "technologies": [
-                  "eslint"
-                ],
+                "technologies": ["eslint"],
                 "description": "Runs ESLint on project",
                 "help": {
                   "command": "bun eslint --help",
@@ -1826,18 +1552,10 @@
             }
           },
           "name": "e2e",
-          "tags": [
-            "npm:private",
-            "type:app",
-            "scope:e2e",
-            "layer:testing"
-          ],
+          "tags": ["npm:private", "type:app", "scope:e2e", "layer:testing"],
           "metadata": {
             "targetGroups": {
-              "NPM Scripts": [
-                "test:headed",
-                "report"
-              ]
+              "NPM Scripts": ["test:headed", "report"]
             },
             "js": {
               "packageName": "@metacult/e2e",
@@ -1902,7 +1620,7 @@
       "shared-sync-manager": [
         {
           "source": "shared-sync-manager",
-          "target": "@metacult/shared-local-db",
+          "target": "shared-local-db",
           "type": "static"
         },
         {
@@ -1974,9 +1692,9 @@
           "type": "static"
         }
       ],
-      "@metacult/shared-local-db": [
+      "shared-local-db": [
         {
-          "source": "@metacult/shared-local-db",
+          "source": "shared-local-db",
           "target": "shared-types",
           "type": "static"
         }
@@ -2042,7 +1760,7 @@
       "website": [
         {
           "source": "website",
-          "target": "@metacult/shared-local-db",
+          "target": "shared-local-db",
           "type": "static"
         },
         {
@@ -2069,7 +1787,7 @@
         },
         {
           "source": "webapp",
-          "target": "@metacult/shared-local-db",
+          "target": "shared-local-db",
           "type": "static"
         },
         {

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { GetOffersHandler } from './GetOffersHandler';
 import type { OffersProvider } from '../../domain/gateway/OffersProvider';
 import { Offer } from '../../domain/Offer';
-import { CheapSharkProvider } from '../../infrastructure/cheapshark/CheapSharkProvider';
+import type { GameOffersProvider } from '../../domain/gateway/GameOffersProvider';
 import { AffiliateLinkService } from '../../domain/service/AffiliateLinkService';
 
 import type {
@@ -48,10 +48,10 @@ class MockOffersProvider implements OffersProvider {
   }
 }
 
-// Mock CheapShark provider
-const mockCheapSharkProvider = {
+// Mock Game Offers Provider
+const mockGameOffersProvider = {
   getBestDeal: vi.fn(),
-} as unknown as CheapSharkProvider;
+} as unknown as GameOffersProvider;
 
 // Mock Affiliate Service
 const mockAffiliateService = new AffiliateLinkService(
@@ -95,7 +95,7 @@ describe('GetOffersHandler', () => {
     const provider = new MockOffersProvider();
     const handler = new GetOffersHandler(
       provider,
-      mockCheapSharkProvider,
+      mockGameOffersProvider,
       mockAffiliateService,
       mockMediaDetailsProvider,
     );
@@ -107,7 +107,7 @@ describe('GetOffersHandler', () => {
     const provider = new MockOffersProvider();
     const handler = new GetOffersHandler(
       provider,
-      mockCheapSharkProvider,
+      mockGameOffersProvider,
       mockAffiliateService,
       mockMediaDetailsProvider,
     );
@@ -126,8 +126,8 @@ describe('GetOffersHandler', () => {
   it('should return offers for test-game-id (Game) including IG link and CheapShark', async () => {
     const provider = new MockOffersProvider();
 
-    // Setup CheapShark mock
-    vi.spyOn(mockCheapSharkProvider, 'getBestDeal').mockResolvedValue(
+    // Setup GameOffers mock
+    vi.spyOn(mockGameOffersProvider, 'getBestDeal').mockResolvedValue(
       Offer.create({
         id: 'cs-offer',
         mediaId: 'test-game-id',
@@ -144,7 +144,7 @@ describe('GetOffersHandler', () => {
 
     const handler = new GetOffersHandler(
       provider,
-      mockCheapSharkProvider,
+      mockGameOffersProvider,
       mockAffiliateService,
       mockMediaDetailsProvider,
     );
@@ -165,7 +165,7 @@ describe('GetOffersHandler', () => {
     expect(amazonOffer).toBeDefined();
     expect(amazonOffer?.url).toContain('tag=my-amazon-tag');
 
-    expect(mockCheapSharkProvider.getBestDeal).toHaveBeenCalledWith(
+    expect(mockGameOffersProvider.getBestDeal).toHaveBeenCalledWith(
       'Elden Ring',
       'test-game-id',
     );
@@ -175,7 +175,7 @@ describe('GetOffersHandler', () => {
     const provider = new MockOffersProvider();
     const handler = new GetOffersHandler(
       provider,
-      mockCheapSharkProvider,
+      mockGameOffersProvider,
       mockAffiliateService,
       mockMediaDetailsProvider,
     );

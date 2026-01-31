@@ -1,10 +1,8 @@
 import { z } from 'zod';
-import { selectUserSchema } from '../../infrastructure/db/auth.schema';
-
-export const UserPublicProfileSchema = selectUserSchema.pick({
-  id: true,
-  name: true,
-  image: true,
+export const UserPublicProfileSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().nullable(),
+  image: z.string().nullable(),
 });
 
 export type UserPublicProfileDto = z.infer<typeof UserPublicProfileSchema>;

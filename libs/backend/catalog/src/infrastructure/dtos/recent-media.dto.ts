@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { selectMediaSchema, selectTagSchema } from '../db/media.schema';
 
+import type { RecentMediaReadModel } from '../../domain/read-models/recent-media.read-model';
+
 export const RecentMediaItemSchema = selectMediaSchema
   .pick({
     id: true,
@@ -13,4 +15,4 @@ export const RecentMediaItemSchema = selectMediaSchema
     tags: z.array(z.string()),
   });
 
-export type RecentMediaItemDto = z.infer<typeof RecentMediaItemSchema>;
+export type RecentMediaItemDto = RecentMediaReadModel;

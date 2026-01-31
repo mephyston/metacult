@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { selectMediaSchema, selectTagSchema } from '../db/media.schema';
 
+import type { MediaDetailReadModel } from '../../domain/read-models/media-detail.read-model';
+
 export const MediaDetailSchema = selectMediaSchema
   .pick({
     id: true,
@@ -19,4 +21,4 @@ export const MediaDetailSchema = selectMediaSchema
     metadata: z.record(z.string(), z.any()),
   });
 
-export type MediaDetailDto = z.infer<typeof MediaDetailSchema>;
+export type MediaDetailDto = MediaDetailReadModel;

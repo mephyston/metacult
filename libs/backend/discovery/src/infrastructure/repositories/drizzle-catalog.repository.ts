@@ -203,7 +203,6 @@ export class DrizzleCatalogRepository implements CatalogRepository {
       globalRating,
       releaseDate,
       providerMetadata,
-      eloScore,
     } = row.medias;
 
     const externalReference = new ExternalReference('unknown', 'unknown');
@@ -245,8 +244,6 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           platform: (row.games?.platform as string[]) || [],
           developer: row.games?.developer || '',
           timeToBeat: row.games?.timeToBeat || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       case 'MOVIE':
         return new Movie({
@@ -260,8 +257,6 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           externalReference,
           director: row.movies?.director || '',
           durationMinutes: row.movies?.durationMinutes || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       case 'TV':
         return new TV({
@@ -276,8 +271,6 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           creator: row.tv?.creator || '',
           episodesCount: row.tv?.episodesCount || 0,
           seasonsCount: row.tv?.seasonsCount || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       case 'BOOK':
         return new Book({
@@ -291,8 +284,6 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           externalReference,
           author: row.books?.author || '',
           pages: row.books?.pages || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       default:
         throw new Error(`Unknown Type: ${type}`);
