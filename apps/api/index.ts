@@ -322,6 +322,8 @@ initCrons().catch((err) =>
 // ... (existing code)
 
 const app = new Elysia()
+  // CRITICAL: Auth routes FIRST to prevent body consumption by middleware
+  .use(authRoutes)
   .use(errorMiddleware) // ✅ Global error handling FIRST
   .use(helmet()) // 🛡️ Security Headers
   .use(
@@ -395,8 +397,7 @@ const app = new Elysia()
       timestamp: new Date().toISOString(),
     };
   })
-  // Montage des routes
-  .use(authRoutes)
+  // Other routes after middleware
   .group('/api', (app) =>
     app
       .group('/import', (app) => app.use(importRoutes))
