@@ -16,9 +16,15 @@ import { auth } from '../infrastructure/auth/better-auth.service';
 export const createAuthRoutes = () => {
   return (
     new Elysia({ prefix: '/api/auth' })
-      // CRITICAL: Pass handler function directly without destructuring context
-      // Destructuring ({ request }) triggers Elysia's body parsing which causes
-      // "Body already used" error when Better Auth tries to read the body
+      // CRITICAL: Skip Elysia's body parsing using onParse hook
+      // When onParse sets Context.body, Elysia stops further parsing
+      // This leaves the request stream intact for Better Auth to read
+      .onParse(() => {
+        // By returning without setting context.body, we skip parsing
+        // for all routes in this Elysia instance
+        return;
+      })
+      // Handler receives raw request without body consumption
       .all('/*', (ctx) => auth.handler(ctx.request))
       .as('global')
   );
