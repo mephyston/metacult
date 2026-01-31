@@ -16,8 +16,10 @@ import { auth } from '../infrastructure/auth/better-auth.service';
 export const createAuthRoutes = () => {
   return (
     new Elysia({ prefix: '/api/auth' })
-      // Délègue toutes les routes à Better Auth
-      .all('/*', ({ request }) => auth.handler(request))
+      // CRITICAL: Pass handler function directly without destructuring context
+      // Destructuring ({ request }) triggers Elysia's body parsing which causes
+      // "Body already used" error when Better Auth tries to read the body
+      .all('/*', (ctx) => auth.handler(ctx.request))
       .as('global')
   );
 };
