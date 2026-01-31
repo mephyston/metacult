@@ -95,8 +95,7 @@ describe('Drizzle Duel Repository', () => {
     expect(mockLimit).toHaveBeenCalledWith(2);
 
     expect(result).toHaveLength(2);
-    // @ts-expect-error - Mock result typing
-    expect(result[0].id).toBe('1');
+    expect(result![0]!.id).toBe('1');
   });
 
   it('should return empty array if not enough media (no throw)', async () => {
@@ -118,8 +117,7 @@ describe('Drizzle Duel Repository', () => {
 
     expect(mockSelect).toHaveBeenCalled();
     expect(mockWhere).toHaveBeenCalled();
-    // @ts-expect-error - Mock result typing
-    expect(result.id).toBe('123');
+    expect(result!.id).toBe('123');
   });
 
   it('should return undefined if media not found', async () => {
