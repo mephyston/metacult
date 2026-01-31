@@ -12,7 +12,8 @@ import type { App } from '@metacult/api';
 export const createApiClient = () => {
   const config = useRuntimeConfig();
   // Ensure we have a non-empty string URL for treaty
-  const apiUrl: string = config.public.apiUrl || 'http://localhost:3000';
+  const apiUrl: string =
+    (config.public.apiUrl as string) || 'http://localhost:3000';
 
   if (!apiUrl || apiUrl === '') {
     throw new Error(
