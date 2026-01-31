@@ -58,14 +58,6 @@ mock.module('@metacult/backend-infrastructure', () => ({
   },
 }));
 
-mock.module('drizzle-orm', () => ({
-  sql: (strings: any) => strings,
-  eq: () => 'eq',
-  and: () => 'and',
-  or: () => 'or',
-  inArray: () => 'inArray',
-}));
-
 mock.module('@metacult/backend-catalog', () => ({
   mediaSchema: { medias: { id: 'm_id' } },
 }));

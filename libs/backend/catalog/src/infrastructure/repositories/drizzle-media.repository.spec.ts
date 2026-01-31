@@ -100,16 +100,6 @@ mock.module('@metacult/backend-catalog', () => ({
   MediaType: { GAME: 'game', MOVIE: 'movie' },
 }));
 
-/*
-mock.module('drizzle-orm', () => ({
-  sql: (strings: any) => strings,
-  eq: () => 'eq',
-  notInArray: () => 'notInArray',
-  desc: () => 'desc',
-  and: () => 'and',
-}));
-*/
-
 describe('DrizzleMediaRepository', () => {
   let repository: DrizzleMediaRepository;
 
