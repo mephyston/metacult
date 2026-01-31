@@ -39,6 +39,14 @@ jobs:
         with:
           fetch-depth: 0 # Full history for Qodana analysis
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
       - name: Run Qodana Analysis
         uses: JetBrains/qodana-action@v2023.3
         with:
