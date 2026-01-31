@@ -33,6 +33,11 @@ jobs:
   code-quality:
     name: Static Code Analysis (Qodana)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+      actions: read
 
     steps:
       - uses: actions/checkout@v4
@@ -49,6 +54,8 @@ jobs:
 
       - name: Run Qodana Analysis
         uses: JetBrains/qodana-action@v2023.3
+        with:
+          args: --save-report
 
       - name: Upload Qodana Report
         if: always()
