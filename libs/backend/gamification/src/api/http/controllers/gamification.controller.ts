@@ -25,6 +25,5 @@ export const GamificationController = new Elysia({ prefix: '/gamification' })
     );
     const service = new GamificationService(repo);
 
-    const stats = await service.getUserStats(user.id);
-    return stats;
+    return await service.getUserStats(user.id);
   });
