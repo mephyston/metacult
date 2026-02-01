@@ -1,7 +1,6 @@
 import { describe, expect, it, mock } from 'bun:test';
 import {
   UpdateAffinityHandler,
-  type UpdateAffinityCommand,
   type SentimentUpdateCommand,
   type DuelUpdateCommand,
   type AffinityRepository,

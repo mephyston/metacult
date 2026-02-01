@@ -1,8 +1,6 @@
 import { describe, expect, it, mock } from 'bun:test';
 import {
   ComputeNeighborsService,
-  SimilarityCalculator,
-  DrizzleSimilarityRepository,
   type AffinityRepository,
   type SimilarityRepository,
 } from '../../index';
