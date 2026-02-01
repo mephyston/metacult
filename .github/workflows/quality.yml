@@ -54,8 +54,6 @@ jobs:
 
       - name: Run Qodana Analysis
         uses: JetBrains/qodana-action@v2023.3
-        with:
-          args: --save-report --report-dir ${{ runner.temp }}/qodana/results/report
 
       - name: Upload Qodana Report
         if: always()
