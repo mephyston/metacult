@@ -3,7 +3,6 @@ import { Header, Footer, Search, TabBar } from '@metacult/shared-ui';
 import { useAuthSession } from './composables/useAuthSession';
 import { useGuestSync } from './composables/useGuestSync';
 import { useWebsiteUrl, useApiUrl } from './composables/useApiUrl';
-import pkg from '../package.json';
 
 // @ts-ignore - Nuxt i18n auto-import
 const { t } = useI18n();
