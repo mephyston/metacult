@@ -17,8 +17,12 @@ coverage
 
 # logs
 logs
+log/
 _.log
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# project structure dump
+projectStructure/
 
 # dotenv environment variable files
 .env
