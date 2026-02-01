@@ -48,3 +48,13 @@ exclude:
       - '**/*.spec.ts'
   # Disable redundant inspections - ESLint is run separately in CI
   - name: Eslint
+
+  # Architectural Decisions (Circular Deps Prevention)
+  - name: ES6PreferShortImport
+
+  # Logic Patterns
+  - name: ExceptionCaughtLocallyJS
+  - name: TypeScriptDuplicateUnionOrIntersectionType
+  - name: JSUnusedLocalSymbols
+    paths:
+      - '**/*.vue' # Vue macros often cause this
