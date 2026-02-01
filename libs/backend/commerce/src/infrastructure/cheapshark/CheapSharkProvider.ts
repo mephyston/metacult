@@ -1,6 +1,5 @@
 import { fetchWithRetry } from '@metacult/shared-core';
 import { Offer } from '../../domain/Offer';
-import type { GameOffersProvider } from '../../domain/gateway/GameOffersProvider';
 
 interface CheapSharkGame {
   gameID: string;

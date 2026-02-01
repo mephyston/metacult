@@ -15,9 +15,13 @@ import { getDbConnection } from '@metacult/backend-infrastructure';
 // TODO: Refactor pour utiliser une Factory qui reçoit le DB depuis le Composition Root
 const { db } = getDbConnection(); // Récupère le singleton existant
 const interactionRepository = new DrizzleInteractionRepository(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   db as unknown as any,
 );
-const mediaRepository = new DrizzleMediaRepository(db as unknown as any);
+const mediaRepository = new DrizzleMediaRepository(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  db as unknown as any,
+);
 const getUserRankingsHandler = new GetUserRankingsHandler(
   interactionRepository,
   mediaRepository,

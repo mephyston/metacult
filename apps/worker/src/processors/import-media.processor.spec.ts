@@ -32,7 +32,7 @@ describe('Import Media Processor', () => {
   }));
 
   // Mock Handler
-  const mockExecute = mock((command) => Promise.resolve());
+  const mockExecute = mock(() => Promise.resolve());
   const mockHandler = {
     execute: mockExecute,
   } as unknown as ImportMediaHandler;

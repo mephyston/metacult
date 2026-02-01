@@ -8,8 +8,8 @@ import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
 
 // Types (simplified for this exercise)
 export type MixedFeedItem =
-  | { type: 'MEDIA'; data: any }
-  | { type: 'SPONSORED'; data: any };
+  | { type: 'MEDIA'; data: unknown }
+  | { type: 'SPONSORED'; data: unknown };
 
 /**
  * Cas d'Utilisation (Use Case) : Générer un flux mixte (Contenu + Pubs).
@@ -115,7 +115,9 @@ export class GetMixedFeedHandler {
       while (mediaIndex < mediaItems.length) {
         // Take chunk of 5 media
         const chunk = mediaItems.slice(mediaIndex, mediaIndex + 5);
-        chunk.forEach((m: any) => mixedFeed.push({ type: 'MEDIA', data: m }));
+        chunk.forEach((m: unknown) =>
+          mixedFeed.push({ type: 'MEDIA', data: m }),
+        );
         mediaIndex += 5;
 
         // Insert 1 Ad if available

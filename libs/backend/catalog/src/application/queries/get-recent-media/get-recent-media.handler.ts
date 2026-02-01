@@ -31,14 +31,18 @@ export class GetRecentMediaHandler {
       // 2. Fetch from DB
       const views = await this.mediaRepository.findMostRecent(query.limit);
 
-      const results = views.map((view) => ({
-        id: view.id,
-        title: view.title,
-        releaseYear: view.releaseYear,
-        type: view.type as any,
-        posterUrl: view.coverUrl || null,
-        tags: (view as any).tags || [],
-      }));
+      const results = views.map((view) => {
+        const viewWithTags = view as unknown as { tags?: string[] };
+        return {
+          id: view.id,
+          title: view.title,
+          releaseYear: view.releaseYear,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          type: view.type as any,
+          posterUrl: view.coverUrl || null,
+          tags: viewWithTags.tags || [],
+        };
+      });
 
       // 3. Set Cache (TTL 300s / 5 min)
       await this.redis.set(cacheKey, JSON.stringify(results), 'EX', 300);

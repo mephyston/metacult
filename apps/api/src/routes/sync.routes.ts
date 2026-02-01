@@ -14,6 +14,7 @@ export const syncRoutes = new Elysia({ prefix: '/sync' })
   .post(
     '/',
     async (ctx) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { body, set } = ctx as any; // Elysia types can be tricky with complex nested validation
 
       // Resolve user
@@ -28,7 +29,7 @@ export const syncRoutes = new Elysia({ prefix: '/sync' })
       try {
         const outboxItems = body as Array<{
           type: string;
-          payload: any;
+          payload: unknown;
           timestamp: number;
         }>;
 
@@ -43,15 +44,27 @@ export const syncRoutes = new Elysia({ prefix: '/sync' })
         // Outbox Payload: { mediaId, action, sentiment }
         const swipeActions = outboxItems
           .filter((item) => item.type === 'SWIPE')
-          .map((item) => ({
-            mediaId: item.payload.mediaId,
-            action: item.payload.action,
-            sentiment: item.payload.sentiment,
-          }));
+          .map((item) => {
+            const payload = item.payload as Record<string, unknown>;
+            return {
+              mediaId: payload.mediaId as string,
+              action: payload.action as
+                | 'LIKE'
+                | 'DISLIKE'
+                | 'WISHLIST'
+                | 'SKIP',
+              sentiment: payload.sentiment as
+                | 'BANGER'
+                | 'GOOD'
+                | 'OKAY'
+                | undefined,
+            };
+          });
 
         if (swipeActions.length > 0) {
           try {
             const { db } = getDbConnection();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const repo = new DrizzleInteractionRepository(db as any);
             const handler = new SyncInteractionsHandler(repo);
 
@@ -72,13 +85,14 @@ export const syncRoutes = new Elysia({ prefix: '/sync' })
           results,
           message: 'Sync processed successfully',
         };
-      } catch (e: any) {
-        logger.error({ err: e }, '[Sync] Fatal error processing batch');
+      } catch (e: unknown) {
+        const err = e as Error;
+        logger.error({ err }, '[Sync] Fatal error processing batch');
         set.status = 500;
         return {
           success: false,
           message: 'Internal Server Error during sync',
-          error: e.message,
+          error: err.message,
         };
       }
     },

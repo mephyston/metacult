@@ -1,12 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GamificationService } from './gamification.service';
+import { asUserId } from '@metacult/shared-core';
 
 // Mock chains
-const mockRepo = {
-  updateXp: vi.fn(() => Promise.resolve()),
-  getLevel: vi.fn(() => Promise.resolve({ level: 1, xpToNext: 100 })),
-  getUserXp: vi.fn(() => Promise.resolve({ currentXp: 50, totalXp: 50 })),
-} as any;
+// Mock chains moved to inside tests if needed or removed if unused top-level
 const mockSelectChain = {
   from: vi.fn().mockReturnThis(),
   where: vi.fn(),
@@ -89,7 +86,7 @@ describe('GamificationService', () => {
       mockRepo.getUserStats.mockResolvedValue(mockEntity);
       mockRepo.saveUserStats.mockResolvedValue(mockEntity);
 
-      const result = await service.addXp('user1', 50, 'test');
+      await service.addXp(asUserId('user1'), 50);
 
       expect(mockRepo.getUserStats).toHaveBeenCalledWith('user1');
       expect(mockEntity.addXp).toHaveBeenCalledWith(50);
@@ -106,7 +103,7 @@ describe('GamificationService', () => {
       mockRepo.getUserStats.mockResolvedValue(mockEntity);
       mockRepo.saveUserStats.mockResolvedValue(mockEntity);
 
-      await service.addXp('user1', 150, 'test');
+      await service.addXp(asUserId('user1'), 150);
 
       expect(mockRepo.getUserStats).toHaveBeenCalledWith('user1');
       expect(mockEntity.addXp).toHaveBeenCalledWith(150);
@@ -124,7 +121,7 @@ describe('GamificationService', () => {
       mockRepo.getUserStats.mockResolvedValue(mockEntity);
       mockRepo.saveUserStats.mockResolvedValue(mockEntity);
 
-      await service.addXp('user1', 10, 'test');
+      await service.addXp(asUserId('user1'), 10);
 
       expect(mockRepo.getUserStats).toHaveBeenCalled();
       expect(mockRepo.saveUserStats).toHaveBeenCalled();
@@ -139,7 +136,7 @@ describe('GamificationService', () => {
       mockRepo.getUserStats.mockResolvedValue(mockEntity);
       mockRepo.saveUserStats.mockResolvedValue(mockEntity);
 
-      await service.addXp('user1', 50, 'test');
+      await service.addXp(asUserId('user1'), 50);
 
       expect(mockEntity.addXp).toHaveBeenCalledWith(50);
     });

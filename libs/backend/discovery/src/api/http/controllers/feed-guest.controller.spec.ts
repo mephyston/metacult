@@ -24,7 +24,7 @@ const mockInteractionRepository = {
 // Standardized mock for @metacult/backend-identity - GUEST VERSION (No User)
 mock.module('@metacult/backend-identity', () => ({
   isAuthenticated: (app: any) => app, // Passthrough - no user injection for guest
-  resolveUserOrThrow: async (ctx: any) => {
+  resolveUserOrThrow: async () => {
     throw new Error('Unauthorized'); // Guest should fail auth
   },
   auth: {

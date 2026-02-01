@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'bun:test';
-import { Elysia } from 'elysia';
 import type { AuthenticatedContext } from './auth.middleware';
 
 /**

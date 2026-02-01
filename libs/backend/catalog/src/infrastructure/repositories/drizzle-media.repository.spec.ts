@@ -24,17 +24,17 @@ const mockExecute = mock(() =>
       globalRating: 80,
       releaseDate: new Date(),
     },
-  ] as any[]),
+  ] as unknown[]),
 );
 
 const mockLimit = mock(() => ({
   execute: mockExecute,
-  then: (resolve: any) => resolve(mockExecute()),
+  then: (resolve: (value: unknown) => void) => resolve(mockExecute()),
 }));
 const mockWhere = mock(() => ({
   limit: mockLimit,
   execute: mockExecute,
-  then: (resolve: any) => resolve(mockExecute()),
+  then: (resolve: (value: unknown) => void) => resolve(mockExecute()),
 }));
 const mockLeftJoin = mock(() => ({ leftJoin: mockLeftJoin, where: mockWhere })); // Recursive chain for joins
 const mockOrderBy = mock(() => ({
@@ -44,12 +44,11 @@ const mockOrderBy = mock(() => ({
 }));
 const mockFrom = mock(() => ({ orderBy: mockOrderBy, leftJoin: mockLeftJoin }));
 // mockSelect acts as the entry point, it returns the chain.
-const mockSelect = mock((_?: any) => ({ from: mockFrom }));
+const mockSelect = mock(() => ({ from: mockFrom }));
 
 // Tags Subquery Mocks
-const mockExecuteTags = mock(() =>
-  Promise.resolve([{ mediaId: '1', tagSlug: 'fps', tagLabel: 'FPS' }]),
-);
+// Tags Subquery Mocks
+// mockExecuteTags removed as unused
 const mockWhereTags = mock(() =>
   Promise.resolve([{ mediaId: '1', tagSlug: 'fps', tagLabel: 'FPS' }]),
 ); // execute is implied if awaitable? Drizzle awaits promise-like.
@@ -62,10 +61,11 @@ const mockFromTags = mock(() => ({ innerJoin: mockInnerJoinTags }));
 
 // DB Mock
 const mockDb = {
-  select: mock((fields: any) => {
+  select: mock((fields: unknown) => {
     // Simple heuristic to distinguish main query vs tags query
-    if (fields && fields.mediaId) return { from: mockFromTags }; // Tags query
-    return mockSelect(fields); // Delegates to the expected mock for the main query test (or checks calls)
+    if (fields && (fields as { mediaId?: unknown }).mediaId)
+      return { from: mockFromTags }; // Tags query
+    return mockSelect(); // Delegates to the expected mock for the main query test (or checks calls)
   }),
   transaction: mock((cb) => cb(mockDb)),
 } as any;
@@ -114,12 +114,11 @@ describe('DrizzleMediaRepository', () => {
     mockWhere.mockClear();
     mockLimit.mockClear();
     mockExecute.mockClear();
-    mockOrderBy.mockClear();
   });
 
   it('findRandom should construct query with exclusions and limit', async () => {
     const filters = {
-      excludedIds: ['exclude-1'] as any as MediaId[],
+      excludedIds: ['exclude-1'] as unknown as MediaId[],
       limit: 5,
       orderBy: 'random' as const,
     };
@@ -169,10 +168,7 @@ describe('DrizzleMediaRepository', () => {
       },
     ]);
 
-    const result = await repository.findByProviderId(
-      ProviderSource.IGDB,
-      'valid-id',
-    );
+    await repository.findByProviderId(ProviderSource.IGDB, 'valid-id');
 
     expect(mockSelect).toHaveBeenCalled();
     expect(mockFrom).toHaveBeenCalled();

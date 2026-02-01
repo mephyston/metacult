@@ -175,6 +175,7 @@ const mediaSearchAdapter = {
 
     const searchResponse = result.getValue();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let all: any[] = [];
 
     // Type Guard pour déterminer si c'est Grouped ou Paginated
@@ -195,6 +196,7 @@ const mediaSearchAdapter = {
     // In production, use a DataLoader or BatchQuery.
     const itemsWithOffers = await Promise.all(
       all.map(async (item) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let offers: any[] = [];
         try {
           // We reuse the Commerce Handler directly via Controller
@@ -250,6 +252,7 @@ const mixedFeedHandler = new GetMixedFeedHandler(
   mediaSearchAdapter,
   adsAdapter,
 );
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const recommendationRepo = new DrizzleRecommendationRepository(db as any);
 const personalizedFeedHandler = new GetPersonalizedFeedHandler(
   recommendationRepo,
@@ -272,6 +275,7 @@ import {
   GetTopRatedByYearHandler,
 } from '@metacult/backend-discovery';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const discoveryCatalogRepo = new DrizzleCatalogRepository(db as any);
 const getTrendingHandler = new GetTrendingHandler(discoveryCatalogRepo);
 const getHallOfFameHandler = new GetHallOfFameHandler(discoveryCatalogRepo);

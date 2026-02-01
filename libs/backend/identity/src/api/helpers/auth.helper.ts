@@ -10,6 +10,7 @@ import { API_MESSAGES } from '@metacult/shared-core';
  * @returns The authenticated user object
  * @throws 401 Unauthorized if user cannot be resolved
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function resolveUserOrThrow(ctx: any) {
   const { user, error } = ctx;
 

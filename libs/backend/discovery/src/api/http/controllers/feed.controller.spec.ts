@@ -45,7 +45,7 @@ mock.module('@metacult/backend-identity', () => ({
     app.derive(() => ({
       user: { id: 'test-user-id' },
     })),
-  resolveUserOrThrow: async (ctx: any) => ({ id: 'test-user-id' }),
+  resolveUserOrThrow: async () => ({ id: 'test-user-id' }),
   auth: {
     api: {
       getSession: mock(() =>

@@ -1,6 +1,8 @@
 import { Elysia, t } from 'elysia';
+import { mediaSchema } from '@metacult/backend-catalog';
 import { getDbConnection, logger } from '@metacult/backend-infrastructure';
 import { DrizzleCatalogRepository } from '../../../infrastructure/repositories/drizzle-catalog.repository';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 // const { db } = getDbConnection(); // Moved inside handlers
 
@@ -9,7 +11,9 @@ export const mediaController = new Elysia({ prefix: '/media' }).post(
   async ({ body, set }) => {
     try {
       const { db } = getDbConnection();
-      const catalogRepo = new DrizzleCatalogRepository(db as any);
+      const catalogRepo = new DrizzleCatalogRepository(
+        db as unknown as NodePgDatabase<typeof mediaSchema>,
+      );
       const medias = await catalogRepo.findByIds(body.ids);
       const mappedMedias = medias.map((m) => ({
         id: m.id,
@@ -24,13 +28,14 @@ export const mediaController = new Elysia({ prefix: '/media' }).post(
         success: true,
         data: mappedMedias,
       };
-    } catch (e: any) {
-      logger.error({ err: e }, '[MediaController] Error fetching batch media');
+    } catch (e: unknown) {
+      const err = e as Error;
+      logger.error({ err }, '[MediaController] Error fetching batch media');
       set.status = 500;
       return {
         success: false,
         message: 'Failed to fetch media batch',
-        error: e.message,
+        error: err.message,
       };
     }
   },

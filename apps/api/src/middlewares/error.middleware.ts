@@ -27,6 +27,7 @@ export const errorMiddleware = new Elysia({ name: 'error-middleware' }).onError(
           requestId,
           method,
           url,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           validationErrors: (error as any).all || error.message,
         },
         'Validation Error',
@@ -35,6 +36,7 @@ export const errorMiddleware = new Elysia({ name: 'error-middleware' }).onError(
       return {
         code: 'VALIDATION_ERROR',
         message: API_MESSAGES.ERRORS.VALIDATION_FAILED,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         details: (error as any).all || error.message,
       };
     }

@@ -1,6 +1,5 @@
 import {
   pgTable,
-  uuid,
   real,
   timestamp,
   primaryKey,

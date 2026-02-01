@@ -97,7 +97,7 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
           db as unknown as NodePgDatabase<typeof schema>,
         );
         const handler = new SyncInteractionsHandler(interactionRepo);
-        const results = await handler.execute(user.id, body);
+        await handler.execute(user.id, body);
         return {
           success: true,
           synced: body.length,
@@ -159,16 +159,17 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
           success: true,
           data: interactions,
         };
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const err = e as Error;
         logger.error(
-          { err: e },
+          { err },
           '[InteractionController] Error fetching user interactions',
         );
         set.status = 500;
         return {
           success: false,
           message: 'Failed to fetch interactions',
-          error: e.message,
+          error: err.message,
         };
       }
     },

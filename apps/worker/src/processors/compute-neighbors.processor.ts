@@ -9,8 +9,10 @@ import {
 // Manual Dependency Injection Setup
 // We initialize this once when the module/worker loads
 const { db } = getDbConnection();
-const affinityRepo = new DrizzleAffinityRepository(db as any); // Cast as any because infrastructure schema might differ slightly but compatible at runtime
-const similarityRepo = new DrizzleSimilarityRepository(db as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const affinityRepo = new DrizzleAffinityRepository(db as unknown as any); // Cast as any because infrastructure schema might differ slightly but compatible at runtime
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const similarityRepo = new DrizzleSimilarityRepository(db as unknown as any);
 const computeNeighborsService = new ComputeNeighborsService(
   affinityRepo,
   similarityRepo,

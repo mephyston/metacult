@@ -35,7 +35,7 @@ export class TmdbProvider {
       );
 
       if (!response.ok) throw new Error(`TMDB error: ${response.statusText}`);
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as { results: TmdbMovieRaw[] };
       return data.results || [];
     } catch (error) {
       logger.error({ err: error }, '[TMDB] Search error');
@@ -100,9 +100,11 @@ export class TmdbProvider {
         if (result.status === 'fulfilled') {
           const response = result.value;
           if (response.ok) {
-            const data = (await response.json()) as any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data = (await response.json()) as { results: any[] };
             if (data.results) {
               const type = i === 0 ? 'movie' : 'tv';
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const items = data.results.map((item: any) => ({
                 ...item,
                 media_type: type,

@@ -1,10 +1,7 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { SearchMediaHandler } from './search-media.handler';
 import { MediaType } from '../../../domain/entities/media.entity';
-import type { SearchMediaQuery } from './search-media.query';
-import type { SearchMediaReadModel } from '../../../domain/read-models/search-media.read-model';
-
-type SearchResultItem = SearchMediaReadModel;
+import { SearchMediaQuery } from './search-media.query';
 
 describe('SearchMediaHandler', () => {
   let handler: SearchMediaHandler;
@@ -69,8 +66,8 @@ describe('SearchMediaHandler', () => {
         title: 'Remote Game',
         slug: 'remote-game',
         type: MediaType.GAME,
-        releaseYear: { value: 2021 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 2021 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-1' },
       },
     ]);

@@ -89,7 +89,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     return ids
       .map((id) => rowMap.get(id))
       .filter((r) => !!r)
-      .map((row) => this.mapRowToEntity(row!));
+      .map((row) => this.mapRowToEntity(row));
   }
 
   async findHallOfFame(
@@ -183,8 +183,8 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     const rowMap = new Map(rows.map((r) => [r.medias.id, r]));
     return ids
       .map((id) => rowMap.get(id))
-      .filter((r) => !!r)
-      .map((row) => this.mapRowToEntity(row!));
+      .filter((r): r is NonNullable<typeof r> => !!r)
+      .map((row) => this.mapRowToEntity(row));
   }
 
   private mapRowToEntity(row: {
@@ -209,11 +209,14 @@ export class DrizzleCatalogRepository implements CatalogRepository {
 
     let coverUrlStr: string | null = null;
     if (providerMetadata) {
-      const meta = providerMetadata as Record<string, any>;
-      if (meta['coverUrl']) {
+      const meta = providerMetadata as Record<string, unknown>;
+      if (meta['coverUrl'] && typeof meta['coverUrl'] === 'string') {
         coverUrlStr = meta['coverUrl'];
-      } else if (meta['poster_path']) {
-        const path = (meta['poster_path'] as string).startsWith('/')
+      } else if (
+        meta['poster_path'] &&
+        typeof meta['poster_path'] === 'string'
+      ) {
+        const path = meta['poster_path'].startsWith('/')
           ? meta['poster_path']
           : `/${meta['poster_path']}`;
         coverUrlStr = `https://image.tmdb.org/t/p/original${path}`;

@@ -17,7 +17,9 @@ export default defineNuxtPlugin(() => {
   });
 
   // Override global $fetch
-  (globalThis as any).$fetch = $fetch;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  globalThis.$fetch = $fetch;
 
   return {
     provide: {

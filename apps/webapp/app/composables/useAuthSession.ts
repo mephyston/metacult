@@ -51,7 +51,7 @@ export const useAuthSession = () => {
           logger.info('[useAuthSession] Loaded optimistic session from Dexie');
           isLoading.value = false; // UI is ready
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         logger.warn('[useAuthSession] Failed to load from Dexie', e);
       }
     }
@@ -85,7 +85,7 @@ export const useAuthSession = () => {
           const apiClient = useApi();
           const { data: statsObject, error } =
             await apiClient.api.gamification.me.get({
-              headers: headers as any,
+              headers: headers as HeadersInit,
               fetch: {
                 credentials: 'include',
               },
@@ -102,7 +102,7 @@ export const useAuthSession = () => {
             mappedUser.xp = stats.xp;
             mappedUser.nextLevelXp = stats.nextLevelXp;
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           logger.warn(
             '[useAuthSession] Failed to fetch gamification stats',
             err,

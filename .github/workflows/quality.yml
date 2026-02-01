@@ -49,7 +49,7 @@ jobs:
         run: bun run audit:arch
 
       - name: Run Qodana Analysis
-        uses: JetBrains/qodana-action@v2023.3
+        uses: JetBrains/qodana-action@v2024.3.4
         with:
           args: --linter,jetbrains/qodana-js:2024.3-eap
           pr-mode: false

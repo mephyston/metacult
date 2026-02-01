@@ -102,7 +102,7 @@ describe('Search Integration (API -> Handler)', () => {
         title: 'Remote Game',
         slug: 'remote-game',
         type: MediaType.GAME,
-        releaseYear: { value: 2024 },
+        releaseYear: { getValue: () => 2024 },
         coverUrl: null,
         externalReference: { id: 'ext-1' },
       },

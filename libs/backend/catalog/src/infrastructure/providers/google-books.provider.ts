@@ -35,7 +35,7 @@ export class GoogleBooksProvider {
 
       if (!response.ok)
         throw new Error(`GoogleBooks error: ${response.statusText}`);
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as { items: GoogleBookRaw[] };
       return data.items || [];
     } catch (error) {
       logger.error({ err: error }, '[GoogleBooks] Search error');
@@ -97,7 +97,7 @@ export class GoogleBooksProvider {
         return [];
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as { items: GoogleBookRaw[] };
       return data.items || [];
     } catch (error) {
       logger.error({ err: error }, '[GoogleBooks] Trending error');

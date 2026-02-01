@@ -74,7 +74,8 @@ export class DrizzleDuelRepository implements DuelRepository {
       return undefined;
     }
 
-    const m = rows[0]!;
+    const m = rows[0];
+    if (!m) return undefined;
     return {
       ...m,
       providerMetadata: m.providerMetadata as Record<string, unknown> | null,

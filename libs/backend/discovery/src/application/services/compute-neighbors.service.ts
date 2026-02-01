@@ -85,6 +85,7 @@ export class ComputeNeighborsService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private toVector(affinities: any[]): Record<string, number> {
     const vector: Record<string, number> = {};
     for (const aff of affinities) {

@@ -259,7 +259,7 @@ export class SearchMediaHandler {
     };
   }
 
-  private mapRemoteToItem(media: any): SearchMediaReadModel {
+  private mapRemoteToItem(media: Media): SearchMediaReadModel {
     // media is a Domain Entity (Media/Game/Movie/etc) or similar shape from remote adapter
     const extId = media.externalReference?.id;
     if (!extId) {
@@ -273,8 +273,8 @@ export class SearchMediaHandler {
       externalId: extId || null, // Real Provider ID
       title: media.title,
       slug: media.slug, // Entity has slug
-      year: media.releaseYear ? media.releaseYear.value : null,
-      poster: media.coverUrl ? media.coverUrl.value : null,
+      year: media.releaseYear ? media.releaseYear.getValue() : null,
+      poster: media.coverUrl ? media.coverUrl.getValue() : null,
       type: media.type,
       isImported: false,
     };

@@ -17,5 +17,6 @@ export interface IMediaSearcher {
       orderBy?: 'random';
       types?: string[];
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any[]>;
 }

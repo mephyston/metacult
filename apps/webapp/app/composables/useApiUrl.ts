@@ -25,5 +25,6 @@ export const useApiUrl = () => {
 
 export const useWebsiteUrl = (): string => {
   const config = useRuntimeConfig();
-  return (config.public as any).websiteUrl || 'http://localhost:4444';
+  const publicConfig = config.public as Record<string, unknown>;
+  return (publicConfig.websiteUrl as string) || 'http://localhost:4444';
 };

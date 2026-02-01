@@ -14,7 +14,7 @@ import { MediaController } from '../../api/http/controllers/media.controller';
 import { SearchMediaHandler } from '../../application/queries/search-media/search-media.handler';
 import { GetRecentMediaHandler } from '../../application/queries/get-recent-media/get-recent-media.handler';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from '../db/media.schema';
+import * as mediaSchema from '../db/media.schema';
 import type { Redis } from 'ioredis';
 
 // ✅ Configuration injectée (pas d'accès direct à process.env)
@@ -44,11 +44,13 @@ export class CatalogModuleFactory {
    * @returns {ImportMediaHandler} Handler prêt à l'emploi.
    */
   static createImportMediaHandler(
-    db: NodePgDatabase<any>,
+    db: NodePgDatabase<Record<string, unknown>>,
     config: CatalogModuleConfig,
   ): ImportMediaHandler {
     // 1. Infrastructure (Persistance)
-    const repository = new DrizzleMediaRepository(db);
+    const repository = new DrizzleMediaRepository(
+      db as unknown as NodePgDatabase<typeof mediaSchema>,
+    );
 
     // 2. Infrastructure (Adapters Externes)
     // Injection des clés API depuis la configuration
@@ -79,17 +81,19 @@ export class CatalogModuleFactory {
   /**
    * Crée le Handler de Recherche.
    *
-   * @param {any} db - instance Drizzle.
+   * @param {NodePgDatabase<Record<string, unknown>>} db - instance Drizzle.
    * @param {CatalogModuleConfig} config - Config.
-   * @param {any} redis - Redis client.
+   * @param {Redis} redis - Redis client.
    * @returns {SearchMediaHandler}
    */
   static createSearchMediaHandler(
-    db: NodePgDatabase<any>,
+    db: NodePgDatabase<Record<string, unknown>>,
     config: CatalogModuleConfig,
     redis: Redis,
   ): SearchMediaHandler {
-    const repository = new DrizzleMediaRepository(db);
+    const repository = new DrizzleMediaRepository(
+      db as unknown as NodePgDatabase<typeof mediaSchema>,
+    );
 
     // Re-creating adapters here (stateless).
     // In a real DI container this would be singleton.
@@ -119,39 +123,45 @@ export class CatalogModuleFactory {
    * Crée le Contrôleur HTTP (pour Elysia).
    * Assemble tous les Handlers.
    *
-   * @param {any} db - instance Drizzle.
+   * @param {NodePgDatabase<Record<string, unknown>>} db - instance Drizzle.
    * @param {CatalogModuleConfig} config - Config.
-   * @param {any} redis - Redis Client.
+   * @param {Redis} redis - Redis Client.
    * @returns {MediaController}
    */
   /**
    * Crée le Handler de Médias Récents.
    *
-   * @param {any} db - instance Drizzle.
-   * @param {any} redis - Redis Client.
+   * @param {NodePgDatabase<Record<string, unknown>>} db - instance Drizzle.
+   * @param {Redis} redis - Redis Client.
    * @returns {GetRecentMediaHandler}
    */
   static createGetRecentMediaHandler(
-    db: NodePgDatabase<any>,
+    db: NodePgDatabase<Record<string, unknown>>,
     redis: Redis,
   ): GetRecentMediaHandler {
-    const repository = new DrizzleMediaRepository(db);
+    const repository = new DrizzleMediaRepository(
+      db as unknown as NodePgDatabase<typeof mediaSchema>,
+    );
     return new GetRecentMediaHandler(repository, redis);
   }
 
   static createGetMediaByIdHandler(
-    db: NodePgDatabase<any>,
+    db: NodePgDatabase<Record<string, unknown>>,
     redis: Redis,
   ): GetMediaByIdHandler {
-    const repository = new DrizzleMediaRepository(db);
+    const repository = new DrizzleMediaRepository(
+      db as unknown as NodePgDatabase<typeof mediaSchema>,
+    );
     return new GetMediaByIdHandler(repository, redis);
   }
 
   static createGetTopRatedMediaHandler(
-    db: NodePgDatabase<any>,
+    db: NodePgDatabase<Record<string, unknown>>,
     redis: Redis,
   ): GetTopRatedMediaHandler {
-    const repository = new DrizzleMediaRepository(db);
+    const repository = new DrizzleMediaRepository(
+      db as unknown as NodePgDatabase<typeof mediaSchema>,
+    );
     return new GetTopRatedMediaHandler(repository, redis);
   }
 
@@ -159,13 +169,13 @@ export class CatalogModuleFactory {
    * Crée le Contrôleur HTTP (pour Elysia).
    * Assemble tous les Handlers.
    *
-   * @param {any} db - instance Drizzle.
+   * @param {NodePgDatabase<Record<string, unknown>>} db - instance Drizzle.
    * @param {CatalogModuleConfig} config - Config.
-   * @param {any} redis - Redis Client.
+   * @param {Redis} redis - Redis Client.
    * @returns {MediaController}
    */
   static createController(
-    db: NodePgDatabase<any>,
+    db: NodePgDatabase<Record<string, unknown>>,
     config: CatalogModuleConfig,
     redis: Redis,
   ): MediaController {

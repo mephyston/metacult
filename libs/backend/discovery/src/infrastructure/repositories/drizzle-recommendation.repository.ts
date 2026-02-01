@@ -18,7 +18,7 @@ const { medias } = mediaSchema; // Assuming we can use catalog schema in Discove
 export class DrizzleRecommendationRepository
   implements IRecommendationRepository
 {
-  constructor(private readonly db: NodePgDatabase<any>) {}
+  constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
 
   async getPersonalizedRecommendations(
     userId: string,

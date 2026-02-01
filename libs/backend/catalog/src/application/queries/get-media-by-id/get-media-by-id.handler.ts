@@ -1,6 +1,7 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { GetMediaByIdQuery } from './get-media-by-id.query';
 import type { MediaDetailReadModel } from '../../../domain/read-models/media-detail.read-model';
+import { MediaType } from '../../../domain/entities/media.entity';
 import { asMediaId } from '../../../domain/value-objects/media-id.vo';
 import { MediaNotFoundInProviderError } from '../../../domain/errors/catalog.errors';
 import { logger } from '@metacult/backend-infrastructure';
@@ -51,20 +52,35 @@ export class GetMediaByIdHandler {
     }
 
     // 3. Map to DTO
+    // 3. Map to DTO
+    const mediaWithStats = media as unknown as {
+      id: string;
+      slug: string;
+      title: string;
+      type: string;
+      releaseYear?: { getValue: () => number };
+      coverUrl?: { getValue: () => string };
+      rating?: { getValue: () => number };
+      description: string;
+      eloScore?: number;
+      matchCount?: number;
+      props?: Record<string, unknown>;
+    };
+
     const dto: MediaDetailReadModel = {
-      id: media.id,
-      slug: media.slug,
-      title: media.title,
-      type: media.type as any,
-      releaseYear: media.releaseYear?.getValue() || null,
-      posterUrl: media.coverUrl?.getValue() || null,
-      rating: media.rating?.getValue() || null,
-      eloScore: (media as any).eloScore || 1000,
-      matchCount: (media as any).matchCount || 0,
-      description: media.description,
+      id: mediaWithStats.id,
+      slug: mediaWithStats.slug,
+      title: mediaWithStats.title,
+      type: mediaWithStats.type as MediaType,
+      releaseYear: mediaWithStats.releaseYear?.getValue() || null,
+      posterUrl: mediaWithStats.coverUrl?.getValue() || null,
+      rating: mediaWithStats.rating?.getValue() || null,
+      eloScore: mediaWithStats.eloScore || 1000,
+      matchCount: mediaWithStats.matchCount || 0,
+      description: mediaWithStats.description,
       tags: [],
       metadata: {
-        ...(media as any).props,
+        ...(mediaWithStats.props || {}),
       },
     };
 

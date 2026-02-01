@@ -42,12 +42,12 @@ export const userController = new Elysia({ prefix: '/users' })
           .where(eq(userModel.id, userId))
           .limit(1);
 
-        if (result.length === 0) {
+        if (result.length === 0 || !result[0]) {
           set.status = 404;
           return { success: false, message: 'User not found' };
         }
 
-        const profile: UserPublicProfileDto = result[0]!;
+        const profile: UserPublicProfileDto = result[0];
 
         return {
           success: true,

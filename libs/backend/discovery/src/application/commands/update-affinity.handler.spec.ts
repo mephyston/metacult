@@ -1,4 +1,4 @@
-import { describe, expect, it, mock, spyOn } from 'bun:test';
+import { describe, expect, it, mock } from 'bun:test';
 import { UpdateAffinityHandler } from './update-affinity.handler';
 import type { AffinityRepository } from '../../domain/ports/affinity.repository.interface';
 import type {

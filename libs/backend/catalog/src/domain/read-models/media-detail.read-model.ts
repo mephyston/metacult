@@ -12,5 +12,5 @@ export interface MediaDetailReadModel {
   rating: number | null;
   description: string | null;
   tags: { id: string; label: string; slug: string }[];
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }

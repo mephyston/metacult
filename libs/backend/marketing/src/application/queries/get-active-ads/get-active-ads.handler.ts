@@ -1,5 +1,4 @@
 import type { AdsGateway } from '../../ports/ads.gateway.interface';
-import type { GetActiveAdsQuery } from './get-active-ads.query';
 import type { Ad } from '../../../domain/ad.entity';
 
 import { Result, AppError, InfrastructureError } from '@metacult/shared-core';

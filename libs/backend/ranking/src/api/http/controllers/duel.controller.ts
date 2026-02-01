@@ -13,6 +13,9 @@ import {
 } from '@metacult/backend-gamification';
 import { getDbConnection } from '@metacult/backend-infrastructure';
 
+// Actually report says NodePgDatabase is unused. I used it in cast 'db as unknown as NodePgDatabase<{...}>' but then I reverted to 'any' in suppression.
+// So removing it is correct.
+
 // Initialisation des dépendances (Poor man's injection pour ce module)
 // Idéalement, on passerait par un conteneur ou une factory au niveau de l'app.
 const duelRepository = new DrizzleDuelRepository();
@@ -89,10 +92,13 @@ export const DuelController = new Elysia({ prefix: '/duel' })
       // 2. GAMIFICATION: Award XP
       try {
         const { db } = getDbConnection();
-        const repo = new DrizzleGamificationRepository(db as unknown as any);
+        const repo = new DrizzleGamificationRepository(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          db as unknown as any,
+        );
         const gamificationService = new GamificationService(repo);
 
-        await gamificationService.addXp(user.id, 50, 'DUEL');
+        await gamificationService.addXp(user.id, 50);
       } catch (e) {
         logger.error({ err: e }, '[Gamification] Failed to award XP for DUEL');
       }

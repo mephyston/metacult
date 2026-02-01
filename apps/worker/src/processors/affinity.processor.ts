@@ -11,8 +11,10 @@ import { getDbConnection } from '@metacult/backend-infrastructure';
 
 // Manual Dependency Injection / Composition Root
 const { db } = getDbConnection({ userMediaAffinity, ...mediaSchema }); // Ensure media schema is loaded
-const repository = new DrizzleAffinityRepository(db as any);
-const handler = new UpdateAffinityHandler(repository, db as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const repository = new DrizzleAffinityRepository(db as unknown as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const handler = new UpdateAffinityHandler(repository, db as unknown as any);
 
 // Export dependencies for testing or transparency
 export const affinityProcessorDeps = {

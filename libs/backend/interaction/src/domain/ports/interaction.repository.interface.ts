@@ -1,5 +1,4 @@
-import type { UserInteraction } from '../entities/user-interaction.entity';
-import type { UserId, MediaId } from '@metacult/shared-core';
+import type { UserId } from '@metacult/shared-core';
 
 export interface SyncInteractionPayload {
   mediaId: string; // Payload from API usually is string

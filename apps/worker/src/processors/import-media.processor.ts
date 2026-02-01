@@ -93,7 +93,8 @@ export const processImportMedia = async (
             );
             for (const item of tmdbResults) {
               const mediaType =
-                (item as any).media_type === 'movie'
+                (item as unknown as { media_type: string }).media_type ===
+                'movie'
                   ? MediaType.MOVIE
                   : MediaType.TV;
               await importQueue.add('import-trending-item', {
@@ -102,8 +103,9 @@ export const processImportMedia = async (
                 requestId: currentRequestId,
               });
             }
-          } catch (e: any) {
-            logger.error({ err: e }, '[Worker] TMDB Fetch Failed');
+          } catch (e: unknown) {
+            const err = e as Error;
+            logger.error({ err }, '[Worker] TMDB Fetch Failed');
           }
         } else {
           logger.warn('[Worker] TMDB API Key missing - skipping');
@@ -125,8 +127,9 @@ export const processImportMedia = async (
                 requestId: currentRequestId,
               });
             }
-          } catch (e: any) {
-            logger.error({ err: e }, '❌ [Worker] IGDB Fetch Failed');
+          } catch (e: unknown) {
+            const err = e as Error;
+            logger.error({ err }, '❌ [Worker] IGDB Fetch Failed');
           }
         } else {
           logger.warn('⚠️ [Worker] IGDB Credentials missing, skipping.');
@@ -148,15 +151,16 @@ export const processImportMedia = async (
                 requestId: currentRequestId,
               });
             }
-          } catch (e: any) {
-            logger.error({ err: e }, '❌ [Worker] Books Fetch Failed');
+          } catch (e: unknown) {
+            const err = e as Error;
+            logger.error({ err }, '❌ [Worker] Books Fetch Failed');
           }
         } else {
           logger.warn('⚠️ [Worker] Google Books API Key missing, skipping.');
         }
 
         logger.info('✅ [Worker] Daily Global Sync completed successfully.');
-      } catch (err: any) {
+      } catch (err: unknown) {
         logger.error(
           { err },
           '💥 [Worker] Critical Error in Daily Global Sync',
@@ -217,7 +221,7 @@ export const processImportMedia = async (
       await handler.execute(command);
 
       logger.info({ jobId: job.id }, '[Worker] Job completed successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof MediaAlreadyExistsError) {
         logger.warn(
           { jobId: job.id, message: error.message },
@@ -225,6 +229,8 @@ export const processImportMedia = async (
         );
         return;
       }
+
+      const err = error as Error;
 
       if (
         error instanceof InvalidProviderDataError ||
@@ -238,10 +244,7 @@ export const processImportMedia = async (
         return; // Do NOT rethrow -> Marks job as Completed (but effectively skipped/failed) to prevent Retries
       }
 
-      logger.error(
-        { jobId: job.id, err: error },
-        '[Worker] Failed to process job',
-      );
+      logger.error({ jobId: job.id, err }, '[Worker] Failed to process job');
       throw error;
     }
   });

@@ -53,7 +53,7 @@ export class FeedController {
   ): 'GAME' | 'MOVIE' | 'BOOK' | 'SHOW' | undefined {
     if (!type) return undefined;
     if (type === MediaType.TV) return 'SHOW';
-    return type.toUpperCase() as any;
+    return type.toUpperCase() as 'GAME' | 'MOVIE' | 'BOOK' | 'SHOW';
   }
 
   /**
