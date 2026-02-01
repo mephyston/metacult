@@ -94,13 +94,13 @@ const fetchItems = async () => {
     console.error('Failed to fetch items:', e);
   } finally {
     isLoading.value = false;
+  }
 
-    // Double check: if we are done loading and have no items, redirect
-    if (items.value.length === 0) {
-      console.warn('Final check: No items. Redirecting to dashboard.');
-      await router.push('/');
-      return;
-    }
+  // Double check: if we are done loading and have no items, redirect
+  if (items.value.length === 0) {
+    console.warn('Final check: No items. Redirecting to dashboard.');
+    await router.push('/');
+    return;
   }
 };
 

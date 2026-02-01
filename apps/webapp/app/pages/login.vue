@@ -48,7 +48,7 @@ const handleSubmit = async () => {
     await flushSync();
 
     // Navigation SPA (pas de reload)
-    router.push('/');
+    await router.push('/');
   } catch (err: any) {
     error.value = err?.message || 'Erreur lors de la connexion';
   } finally {

@@ -69,7 +69,7 @@ const { data: trendingHighlights } = useAsyncData(
 
 // Gérer le logout depuis le Header
 const handleLogout = async () => {
-  clearSession();
+  await clearSession();
 
   // Force clean state by redirecting to Marketing Home
   // This is better for UX (Start Over)

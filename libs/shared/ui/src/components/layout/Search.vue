@@ -21,7 +21,7 @@ import {
   CommandSeparator,
 } from '../ui/command';
 import { Button } from '../ui/button';
-import { getApiUrl, getWebappUrl, getWebsiteUrl } from '../../lib/utils';
+import { getApiUrl, getWebsiteUrl } from '../../lib/utils';
 import { logger } from '../../lib/logger';
 
 // Types (simplified version of DTO)

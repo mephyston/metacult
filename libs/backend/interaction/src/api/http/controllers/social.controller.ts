@@ -9,7 +9,6 @@ import { getDbConnection } from '@metacult/backend-infrastructure';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
 import * as schema from '../../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { API_MESSAGES } from '@metacult/shared-core';
 import { asUserId } from '@metacult/shared-core';
 
 // const { db } = getDbConnection(); // Moved inside handlers

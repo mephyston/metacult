@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ArrowLeft, ArrowUp } from 'lucide-vue-next'
-import { useCarousel } from './useCarousel'
-import { cn } from '../../../lib/utils'
-import { Button } from '../button'
+import { ArrowLeft } from 'lucide-vue-next';
+import { useCarousel } from './useCarousel';
+import { cn } from '../../../lib/utils';
+import { Button } from '../button';
 
-const props = defineProps<{ class?: string }>()
+const props = defineProps<{ class?: string }>();
 
-const { orientation, canScrollPrev, scrollPrev } = useCarousel()
+const { orientation, canScrollPrev, scrollPrev } = useCarousel();
 </script>
 
 <template>

@@ -36,7 +36,13 @@ exclude:
       - .output
       - coverage
       - .nuxt
+      - apps/webapp/.nuxt
       - '**/.astro'
+      - '**/out-tsc'
+      - '**/*.d.ts'
+      - '**/playwright-report'
+      - '**/test-results'
+      - '**/vite.config.*.timestamp*'
   - name: Test files
     paths:
       - '**/*.spec.ts'

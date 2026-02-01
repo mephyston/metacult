@@ -46,13 +46,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
   }
 
   async findById(id: MediaId): Promise<Media | null> {
-    const rows = await this.db
-      .select()
-      .from(schema.medias)
-      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
-      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
-      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
-      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
+    const rows = await this.createBaseQuery()
       .where(eq(schema.medias.id, id))
       .limit(1);
 
@@ -70,26 +64,15 @@ export class DrizzleMediaRepository implements IMediaRepository {
     // But mapRowToEntity EXPECTS the joins (lines 806+).
     // So we MUST join.
 
-    const rows = await this.db
-      .select()
-      .from(schema.medias)
-      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
-      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
-      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
-      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
-      .where(inArray(schema.medias.id, ids));
+    const rows = await this.createBaseQuery().where(
+      inArray(schema.medias.id, ids),
+    );
 
     return rows.map((row) => MediaMapper.toDomain(row));
   }
 
   async findBySlug(slug: string): Promise<Media | null> {
-    const rows = await this.db
-      .select()
-      .from(schema.medias)
-      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
-      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
-      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
-      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
+    const rows = await this.createBaseQuery()
       .where(eq(schema.medias.slug, slug))
       .limit(1);
 
@@ -100,13 +83,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
   async search(filters: MediaSearchFilters): Promise<Media[]> {
     // 1. Première requête : Récupérer les médias (sans les JOINs de tags inutiles si pas de filtre tag)
-    const query = this.db
-      .select()
-      .from(schema.medias)
-      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
-      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
-      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
-      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id));
+    const query = this.createBaseQuery();
 
     const conditions = [];
 
@@ -238,13 +215,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const offset = (page - 1) * limit;
 
     // Base query for items
-    const query = this.db
-      .select()
-      .from(schema.medias)
-      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
-      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
-      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
-      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id));
+    const query = this.createBaseQuery();
 
     const conditions = [];
 
@@ -761,6 +732,16 @@ export class DrizzleMediaRepository implements IMediaRepository {
     });
   }
   // --- Private Helpers ---
+
+  private createBaseQuery() {
+    return this.db
+      .select()
+      .from(schema.medias)
+      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
+      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
+      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
+      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id));
+  }
 
   private async fetchTags(mediaIds: string[]): Promise<Map<string, string[]>> {
     if (mediaIds.length === 0) return new Map();

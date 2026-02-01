@@ -54,7 +54,7 @@ const handleSubmit = async () => {
     await refreshSession();
 
     // Navigation SPA (pas de reload)
-    router.push('/');
+    await router.push('/');
   } catch (err: any) {
     logger.error('[Register] Error:', err);
     error.value = err?.message || t('auth.register.errors.generic');
