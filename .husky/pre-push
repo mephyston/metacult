@@ -1,48 +1,13 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "🛡️  Starting Quality Gate Audit..."
+echo "🛡️  Security & Quality Check (Pre-push)..."
 
-# 1. Run Tests with Coverage
-echo "📦 Running Tests with Coverage..."
-if ! bun run test:coverage; then
-  echo "❌ Tests or Coverage failed. Push aborted."
+if ! bun run audit:push; then
+  echo ""
+  echo "❌ Qualité insuffisante, push annulé."
+  echo "💡 Lance 'bun run qodana:local' pour voir les détails ou corrige les erreurs ci-dessus."
   exit 1
 fi
 
-# 2. Prepare Coverage for Qodana
-echo "📊 Preparing coverage report..."
-mkdir -p .qodana/code-coverage
-cp coverage/lcov.info .qodana/code-coverage/
-
-# 3. Run Qodana Analysis
-echo "🕵️  Running Qodana Analysis..."
-
-# Function to run Qodana via Docker
-run_qodana_docker() {
-  echo "🐳 Qodana CLI not found. Falling back to Docker..."
-  docker run --rm \
-    -v "$(pwd)":/data/project \
-    -e QODANA_TOKEN=$QODANA_TOKEN \
-    jetbrains/qodana-js:2024.3-eap \
-    scan --results-dir ./qodana-results
-}
-
-if command -v qodana &> /dev/null; then
-  # Use native CLI if available
-  if ! qodana scan --results-dir ./qodana-results; then
-      echo "❌ Qodana found issues (CLI). Push aborted."
-      exit 1
-  fi
-elif command -v docker &> /dev/null; then
-  # Use Docker if CLI is missing
-  if ! run_qodana_docker; then
-      echo "❌ Qodana found issues (Docker). Push aborted."
-      exit 1
-  fi
-else
-  echo "⚠️  Qodana CLI and Docker not found. Skipping Qodana analysis."
-  echo "ℹ️  To enable quality checks, install Qodana CLI: brew install jetbrains/utils/qodana"
-fi
-
-echo "✅ Quality Gate Passed. Pushing..."
+echo "✅ Quality Check Passed!"

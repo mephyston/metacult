@@ -20,31 +20,21 @@ include:
 
 # Exclude patterns - skip these files/directories
 exclude:
-  - name: Build artifacts
+  - name: Build and deps
     paths:
-      - '**/dist'
-      - '**/.nx'
-      - '**/node_modules'
-      - '**/.nuxt'
-      - '**/.output'
-      - '**/build'
+      - node_modules
+      - .nx
+      - dist
+      - .output
+      - coverage
   - name: Test files
     paths:
       - '**/*.spec.ts'
-      - '**/*.test.ts'
-      - '**/*.spec.js'
-      - '**/*.test.js'
-      - '**/test/**'
-      - '**/__tests__/**'
-  - name: Config files
-    paths:
-      - '**/*.config.ts'
-      - '**/*.config.js'
 
 # Fail threshold - report will fail if number of problems exceeds this
 # Set to 100 to accept current technical debt (baseline)
 failThreshold: 100
 
-# Profile - use recommended set of inspections
+# Profile - use recommended set of inspections (default for CI)
 profile:
   name: qodana.recommended

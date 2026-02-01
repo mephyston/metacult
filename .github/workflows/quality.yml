@@ -44,7 +44,7 @@ jobs:
       - name: Run Qodana Analysis
         uses: JetBrains/qodana-action@v2023.3
         with:
-          args: --linter,jetbrains/qodana-js,--lcov,coverage/lcov.info
+          args: --linter,jetbrains/qodana-js
           pr-mode: false
 
       - name: Upload Qodana Report
