@@ -83,5 +83,8 @@ async function runSafeMigrations() {
 }
 
 if (import.meta.main) {
-  runSafeMigrations();
+  runSafeMigrations().catch((err) => {
+    logger.error({ err }, 'Fatal migration error');
+    process.exit(1);
+  });
 }

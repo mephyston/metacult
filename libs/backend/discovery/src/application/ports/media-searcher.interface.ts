@@ -7,6 +7,7 @@
 export interface IMediaSearcher {
   /**
    * @param {string} query - Terme de recherche.
+   * @param {object} [options] - Options de filtrage et pagination.
    * @returns {Promise<any[]>} Liste de médias (typage faible 'any' temporaire, à remplacer par un DTO).
    */
   search(

@@ -9,8 +9,9 @@ dist
 # code coverage
 coverage
 *.lcov
-qodana-results/
+.qodana-results/
 .qodana-cache/
+.qodana-report/
 .qodana/
 
 # logs

@@ -188,7 +188,7 @@ const mediaSearchAdapter = {
 
     // Populate offers (N+1 but limited by page size, e.g., 5 items)
     // In production, use a DataLoader or BatchQuery.
-    const itemsWithOffers = await Promise.all(
+    return Promise.all(
       all.map(async (item) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let offers: any[] = [];
@@ -225,8 +225,6 @@ const mediaSearchAdapter = {
         return mappedItem;
       }),
     );
-
-    return itemsWithOffers;
   },
 };
 

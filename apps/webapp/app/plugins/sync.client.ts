@@ -32,7 +32,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   // 2. On Online Event
   window.addEventListener('online', () => {
     logger.info('[SyncPlugin] Back online, triggering sync...');
-    runSync();
+    void runSync();
   });
 
   // Cleanup

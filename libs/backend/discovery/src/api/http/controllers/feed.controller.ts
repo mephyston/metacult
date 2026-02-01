@@ -93,7 +93,7 @@ export class FeedController {
               '[FeedController] GET /feed',
             );
 
-            let excludedMediaIds = [...excludedIdsParam];
+            let excludedMediaIds = excludedIdsParam;
 
             let limit = query.limit;
             if (!limit) {

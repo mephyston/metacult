@@ -7,6 +7,11 @@
 export class GetMixedFeedQuery {
   /**
    * @param {string} search - Terme de recherche ou contexte pour générer le flux.
+   * @param {string} [userId] - Identifiant de l'utilisateur pour personnaliser le flux.
+   * @param {string[]} [excludedMediaIds] - Liste d'IDs de médias à exclure (déjà vus).
+   * @param {string[]} [types] - Types de médias à inclure (movie, tv, game, book).
+   * @param {number} [limit=10] - Nombre maximum d'éléments à retourner.
+   * @param {boolean} [isOnboarding=false] - Indique si le flux est pour l'onboarding.
    */
   constructor(
     public readonly search: string,

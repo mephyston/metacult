@@ -72,8 +72,7 @@ const handleLogout = async () => {
 
   // Force clean state by redirecting to Marketing Home
   // This is better for UX (Start Over)
-  const websiteUrl = useWebsiteUrl();
-  window.location.href = websiteUrl;
+  window.location.href = useWebsiteUrl();
 };
 
 const config = useRuntimeConfig();

@@ -5,8 +5,10 @@ export default defineNuxtPlugin(() => {
     ? useRequestHeaders(['x-request-id'])['x-request-id'] || crypto.randomUUID()
     : window.crypto.randomUUID();
 
-  // Intercept globall $fetch
-  const $fetch = ofetch.create({
+  // Override global $fetch
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  globalThis.$fetch = ofetch.create({
     onRequest({ options }) {
       options.headers = options.headers || {};
       if (typeof options.headers === 'object' && options.headers !== null) {
@@ -15,11 +17,6 @@ export default defineNuxtPlugin(() => {
       }
     },
   });
-
-  // Override global $fetch
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  globalThis.$fetch = $fetch;
 
   return {
     provide: {

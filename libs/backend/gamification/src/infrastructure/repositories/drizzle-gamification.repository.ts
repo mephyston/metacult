@@ -9,13 +9,11 @@ export class DrizzleGamificationRepository implements IGamificationRepository {
   constructor(private readonly db: NodePgDatabase<typeof schema>) {}
 
   async getUserStats(userId: string): Promise<UserStats> {
-    const existing = await this.db
+    let rawStats = await this.db
       .select()
       .from(userStats)
       .where(eq(userStats.userId, userId))
       .then((rows) => rows[0]);
-
-    let rawStats = existing;
 
     if (!rawStats) {
       const [newStats] = await this.db

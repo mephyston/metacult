@@ -6,6 +6,7 @@ import {
   DialogOverlay,
   DialogPortal,
   useForwardPropsEmits,
+  DialogClose,
 } from 'radix-vue';
 import { X } from 'lucide-vue-next';
 import { type HTMLAttributes, computed } from 'vue';
