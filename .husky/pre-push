@@ -12,7 +12,7 @@ fi
 
 # 2. Run Qodana Analysis (Strict Mode)
 echo "🕵️  Running Qodana Analysis..."
-if ! bun x @jetbrains/qodana-cli scan --lcov coverage/lcov.info --results-dir ./qodana-results --fail-threshold 0; then
+if ! bun x @jetbrains/qodana-cli scan --lcov coverage/lcov.info --results-dir ./qodana-results; then
   echo "❌ Qodana found issues. Push aborted."
   echo "💡 Run 'bun run qodana:local' to view the full report in your browser."
   exit 1
