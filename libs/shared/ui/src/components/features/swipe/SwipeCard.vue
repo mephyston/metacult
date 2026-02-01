@@ -453,7 +453,7 @@ defineExpose({
           :alt="item.title"
           class="absolute inset-0 w-full h-full object-cover pointer-events-none"
           draggable="false"
-        />
+        >
 
         <!-- GRADIENT OVERLAY (Cinematic Fade) -->
         <div
@@ -613,7 +613,9 @@ defineExpose({
               >
                 Release Date
               </h4>
-              <p class="text-sm text-white">2024</p>
+              <p class="text-sm text-white">
+                2024
+              </p>
             </div>
             <div>
               <h4
@@ -621,7 +623,9 @@ defineExpose({
               >
                 Genre
               </h4>
-              <p class="text-sm text-white">Sci-Fi</p>
+              <p class="text-sm text-white">
+                Sci-Fi
+              </p>
             </div>
           </div>
 
