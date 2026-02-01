@@ -19,7 +19,6 @@ export * from './components/ui/slider';
 
 // Export Layout components
 export * from './components/layout';
-export { default as Search } from './components/layout/Search.vue';
 
 // Export Feature components
 export { default as ReviewDeck } from './components/features/review/ReviewDeck.vue';

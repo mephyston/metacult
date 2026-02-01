@@ -18,7 +18,7 @@ import { from } from 'rxjs'; // Fix Dexie interop
 const mediaItems = useObservable<MediaItem[], MediaItem[]>(
   from(
     liveQuery<MediaItem[]>(async () => {
-      return await db.dailyStack.toArray();
+      return db.dailyStack.toArray();
     }),
   ),
   { initialValue: [] },
@@ -96,11 +96,11 @@ const onUndo = async (payload: any) => {
   // Find pending outbox item for this media and type 'SWIPE'
   const outboxItem = await db.outbox
     .where({ type: 'SWIPE' })
-    .filter((item) => item.payload.mediaId === payload.mediaId)
+    .filter((item: any) => item.payload.mediaId === payload.mediaId)
     .last();
 
   if (outboxItem && outboxItem.status === 'pending') {
-    await db.outbox.delete(outboxItem.id!);
+    await db.outbox.delete(outboxItem.id as number);
     console.log('[OfflineDeck] Undo: Removed pending swipe from outbox');
   } else {
     // Already synced? We might need to send a 'UNDO_SWIPE' action.

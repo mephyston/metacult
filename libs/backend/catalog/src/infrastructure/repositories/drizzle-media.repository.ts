@@ -7,6 +7,7 @@ import {
   notInArray,
   inArray,
   gte,
+  type SQL,
 } from 'drizzle-orm';
 import { z } from 'zod';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -85,49 +86,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     // 1. Première requête : Récupérer les médias (sans les JOINs de tags inutiles si pas de filtre tag)
     const query = this.createBaseQuery();
 
-    const conditions = [];
-
-    if (filters.type) {
-      conditions.push(
-        eq(
-          schema.medias.type,
-          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
-        ),
-      );
-    }
-
-    if (filters.types && filters.types.length > 0) {
-      conditions.push(
-        inArray(
-          schema.medias.type,
-          filters.types.map((t) => t.toUpperCase()) as (
-            | 'GAME'
-            | 'MOVIE'
-            | 'TV'
-            | 'BOOK'
-          )[],
-        ),
-      );
-    }
-
-    if (filters.search) {
-      conditions.push(ilike(schema.medias.title, `%${filters.search}%`));
-    }
-
-    // Si on filtre par tag, on doit faire le JOIN ici pour filtrer
-    if (filters.tag) {
-      // Note: Cela peut créer des duplicatas si un média a le tag plusieurs fois (peu probable pour un slug unique)
-      // Mais surtout, on ne sélecte PAS la table tags pour éviter le payload lourd, on l'utilise juste pour le filtre.
-      query
-        .innerJoin(
-          schema.mediasToTags,
-          eq(schema.medias.id, schema.mediasToTags.mediaId),
-        )
-        .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id));
-
-      conditions.push(eq(schema.tags.slug, filters.tag));
-    }
-
+    const conditions = this.applyFilters(filters);
     if (conditions.length > 0) {
       query.where(and(...conditions));
     }
@@ -217,51 +176,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     // Base query for items
     const query = this.createBaseQuery();
 
-    const conditions = [];
-
-    if (filters.type) {
-      conditions.push(
-        eq(
-          schema.medias.type,
-          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
-        ),
-      );
-    }
-
-    if (filters.types && filters.types.length > 0) {
-      conditions.push(
-        inArray(
-          schema.medias.type,
-          filters.types.map((t) => t.toUpperCase()) as (
-            | 'GAME'
-            | 'MOVIE'
-            | 'TV'
-            | 'BOOK'
-          )[],
-        ),
-      );
-    }
-
-    if (filters.search) {
-      conditions.push(ilike(schema.medias.title, `%${filters.search}%`));
-    }
-
-    if (filters.releaseYear) {
-      const start = new Date(filters.releaseYear, 0, 1);
-      const end = new Date(filters.releaseYear, 11, 31);
-      conditions.push(
-        and(
-          gte(schema.medias.releaseDate, start),
-          sql`${schema.medias.releaseDate} <= ${end}`,
-        ),
-      );
-      // OR extract year from date: sql`EXTRACT(YEAR FROM ${schema.medias.releaseDate}) = ${filters.releaseYear}`
-      // Using range is index-friendly.
-    }
-
-    if (filters.minElo !== undefined) {
-      conditions.push(gte(schema.medias.eloScore, filters.minElo));
-    }
+    const conditions = this.applyFilters(filters);
 
     if (filters.tags && filters.tags.length > 0) {
       // Filter Logic: Media MUST have ONE OF the tags (OR) or ALL (AND)?
@@ -582,15 +497,10 @@ export class DrizzleMediaRepository implements IMediaRepository {
       ),
     );
 
-    const rows = await this.db
-      .select()
-      .from(schema.medias)
-      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
-      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
-      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
-      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
+    const rows = await this.createBaseQuery()
       .where(condition)
-      .limit(1);
+      .limit(1)
+      .execute();
 
     if (rows.length === 0 || !rows[0]) return null;
 
@@ -732,6 +642,55 @@ export class DrizzleMediaRepository implements IMediaRepository {
     });
   }
   // --- Private Helpers ---
+
+  private applyFilters(filters: MediaSearchFilters): SQL[] {
+    const conditions: SQL[] = [];
+
+    if (filters.type) {
+      conditions.push(
+        eq(
+          schema.medias.type,
+          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
+        ),
+      );
+    }
+
+    if (filters.types && filters.types.length > 0) {
+      conditions.push(
+        inArray(
+          schema.medias.type,
+          filters.types.map((t) => t.toUpperCase()) as (
+            | 'GAME'
+            | 'MOVIE'
+            | 'TV'
+            | 'BOOK'
+          )[],
+        ),
+      );
+    }
+
+    if (filters.search) {
+      conditions.push(ilike(schema.medias.title, `%${filters.search}%`));
+    }
+
+    if (filters.releaseYear) {
+      const start = new Date(filters.releaseYear, 0, 1);
+      const end = new Date(filters.releaseYear, 11, 31);
+      // Use cast to SQL to satisfy strict Drizzle types if needed
+      conditions.push(
+        and(
+          gte(schema.medias.releaseDate, start) as SQL,
+          sql`${schema.medias.releaseDate} <= ${end}`,
+        ) as SQL,
+      );
+    }
+
+    if (filters.minElo !== undefined) {
+      conditions.push(gte(schema.medias.eloScore, filters.minElo) as SQL);
+    }
+
+    return conditions;
+  }
 
   private createBaseQuery() {
     return this.db

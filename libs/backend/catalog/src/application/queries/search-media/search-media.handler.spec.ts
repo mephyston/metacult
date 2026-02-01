@@ -1,6 +1,6 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { SearchMediaHandler } from './search-media.handler';
-import { MediaType } from '../../../domain/entities/media.entity';
+import { MediaType } from '../../../index';
 import { SearchMediaQuery } from './search-media.query';
 
 describe('SearchMediaHandler', () => {

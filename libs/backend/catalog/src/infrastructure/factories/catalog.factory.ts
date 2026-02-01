@@ -47,29 +47,10 @@ export class CatalogModuleFactory {
     db: NodePgDatabase<Record<string, unknown>>,
     config: CatalogModuleConfig,
   ): ImportMediaHandler {
-    // 1. Infrastructure (Persistance)
-    const repository = new DrizzleMediaRepository(
-      db as unknown as NodePgDatabase<typeof mediaSchema>,
-    );
+    const repository = this.createRepository(db);
+    const { igdbAdapter, tmdbAdapter, googleBooksAdapter } =
+      this.createAdapters(config);
 
-    // 2. Infrastructure (Adapters Externes)
-    // Injection des clés API depuis la configuration
-    const igdbProvider = new IgdbProvider(
-      config.igdb.clientId,
-      config.igdb.clientSecret,
-    );
-    const tmdbProvider = new TmdbProvider(config.tmdb.apiKey);
-    const googleBooksProvider = new GoogleBooksProvider(
-      config.googleBooks.apiKey,
-    );
-
-    // Pattern Adapter: On encapsule les providers pour respecter l'interface du Domaine
-    const igdbAdapter = new IgdbAdapter(igdbProvider);
-    const tmdbAdapter = new TmdbAdapter(tmdbProvider);
-    const googleBooksAdapter = new GoogleBooksAdapter(googleBooksProvider);
-
-    // 3. Application (Handler)
-    // Injection de toutes les dépendances nécessaires
     return new ImportMediaHandler(
       repository,
       igdbAdapter,
@@ -91,12 +72,28 @@ export class CatalogModuleFactory {
     config: CatalogModuleConfig,
     redis: Redis,
   ): SearchMediaHandler {
-    const repository = new DrizzleMediaRepository(
+    const repository = this.createRepository(db);
+    const { igdbAdapter, tmdbAdapter, googleBooksAdapter } =
+      this.createAdapters(config);
+
+    return new SearchMediaHandler(
+      repository,
+      redis,
+      igdbAdapter,
+      tmdbAdapter,
+      googleBooksAdapter,
+    );
+  }
+
+  // --- Private Helpers ---
+
+  private static createRepository(db: NodePgDatabase<Record<string, unknown>>) {
+    return new DrizzleMediaRepository(
       db as unknown as NodePgDatabase<typeof mediaSchema>,
     );
+  }
 
-    // Re-creating adapters here (stateless).
-    // In a real DI container this would be singleton.
+  private static createAdapters(config: CatalogModuleConfig) {
     const igdbProvider = new IgdbProvider(
       config.igdb.clientId,
       config.igdb.clientSecret,
@@ -106,17 +103,11 @@ export class CatalogModuleFactory {
       config.googleBooks.apiKey,
     );
 
-    const igdbAdapter = new IgdbAdapter(igdbProvider);
-    const tmdbAdapter = new TmdbAdapter(tmdbProvider);
-    const googleBooksAdapter = new GoogleBooksAdapter(googleBooksProvider);
-
-    return new SearchMediaHandler(
-      repository,
-      redis,
-      igdbAdapter,
-      tmdbAdapter,
-      googleBooksAdapter,
-    );
+    return {
+      igdbAdapter: new IgdbAdapter(igdbProvider),
+      tmdbAdapter: new TmdbAdapter(tmdbProvider),
+      googleBooksAdapter: new GoogleBooksAdapter(googleBooksProvider),
+    };
   }
 
   /**

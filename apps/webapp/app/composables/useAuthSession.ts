@@ -176,7 +176,7 @@ export const useAuthSession = () => {
     if (!import.meta.client) return null;
     const id = localStorage.getItem('metacult_current_user_id');
     if (!id) return null;
-    return await db.userProfile.get(id);
+    return db.userProfile.get(id);
   };
 
   // Override refresh logic with the localStorage glue

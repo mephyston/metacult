@@ -176,21 +176,15 @@ const mediaSearchAdapter = {
     const searchResponse = result.getValue();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let all: any[] = [];
-
-    // Type Guard pour déterminer si c'est Grouped ou Paginated
-    if ('items' in searchResponse) {
-      // Mode Paginated (Mode B ou Empty Search)
-      all = searchResponse.items;
-    } else {
-      // Mode Grouped (Mode A)
-      all = [
-        ...searchResponse.games,
-        ...searchResponse.movies,
-        ...searchResponse.shows,
-        ...searchResponse.books,
-      ];
-    }
+    const all: any[] =
+      'items' in searchResponse
+        ? searchResponse.items
+        : [
+            ...searchResponse.games,
+            ...searchResponse.movies,
+            ...searchResponse.shows,
+            ...searchResponse.books,
+          ];
 
     // Populate offers (N+1 but limited by page size, e.g., 5 items)
     // In production, use a DataLoader or BatchQuery.
