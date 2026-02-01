@@ -18,7 +18,15 @@ include:
     paths:
       - libs
 
-# Exclude patterns - skip these files/directories
+# Fail threshold - report will fail if number of problems exceeds this
+# Set to 0 to be strict. We exclude ESLint validation here as it is handled natively.
+failThreshold: 0
+
+# Profile - use recommended set of inspections (default for CI)
+profile:
+  name: qodana.recommended
+
+# Exclude redundant or conflicting inspections
 exclude:
   - name: Build and deps
     paths:
@@ -27,14 +35,12 @@ exclude:
       - dist
       - .output
       - coverage
+      - .nuxt
+      - '**/.astro'
   - name: Test files
     paths:
       - '**/*.spec.ts'
-
-# Fail threshold - report will fail if number of problems exceeds this
-# Set to 100 to accept current technical debt (baseline)
-failThreshold: 100
-
-# Profile - use recommended set of inspections (default for CI)
-profile:
-  name: qodana.recommended
+  # Rely on native 'bun run lint:all' for ESLint rules to avoid noise/conflicts
+  - name: ESLint
+    inspections:
+      - ESLint
