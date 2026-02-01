@@ -208,13 +208,14 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
           success: true,
           data: feed,
         };
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const error = e as Error;
         logger.error({ err: e }, '[InteractionController] Error fetching feed');
         set.status = 500;
         return {
           success: false,
           message: 'Failed to fetch feed',
-          error: e.message,
+          error: error.message,
         };
       }
     },

@@ -79,7 +79,7 @@ export const initAuth = () => {
       : // Return a proxy/mock that throws if accessed? Or just a dummy object?
         // Since usage is only in API which has secrets, this branch is only hit by Worker which DOES NOT use it.
         // Returning a dummy strictly to satisfy export type.
-        ({} as unknown as any);
+        ({} as unknown as never);
 
   return auth;
 };

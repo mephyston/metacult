@@ -3,8 +3,8 @@ import { Elysia, t } from 'elysia';
 
 // MOCK the Controller to avoid DB connection in validation tests
 const mockController = {
-  search: mock((...___args: unknown[]) => Promise.resolve([])),
-  import: mock((...___args: unknown[]) => Promise.resolve()),
+  search: mock((..._args: unknown[]) => Promise.resolve([])), // eslint-disable-line @typescript-eslint/no-unused-vars
+  import: mock((..._args: unknown[]) => Promise.resolve()), // eslint-disable-line @typescript-eslint/no-unused-vars
 };
 
 // Re-define routes here with the mock, OR mock the module.

@@ -27,7 +27,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   };
 
   // 1. Periodic Sync (every 10s)
-  const _interval = setInterval(runSync, 10000);
+  setInterval(runSync, 10000);
 
   // 2. On Online Event
   window.addEventListener('online', () => {
