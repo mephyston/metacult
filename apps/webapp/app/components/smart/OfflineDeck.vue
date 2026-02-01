@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 
@@ -131,6 +131,7 @@ const fetchAndCacheFeed = async () => {
       credentials: 'include',
     });
 
+    // noinspection ExceptionCaughtLocallyJS
     if (!response.ok) throw new Error('Failed to fetch feed');
 
     const data = await response.json();
@@ -169,8 +170,9 @@ const fetchAndCacheFeed = async () => {
         img.src = item.posterUrl;
       }
     });
-  } catch (e) {
-    console.error('[OfflineDeck] Error fetching feed', e);
+  } catch (err) {
+    // noinspection ExceptionCaughtLocallyJS
+    console.error('[OfflineDeck] Failed to load offline feed', err);
   }
 };
 

@@ -52,6 +52,7 @@ const fetchTrends = async () => {
 
     logger.debug('[Dashboard] Response status:', response.status);
 
+    // noinspection ExceptionCaughtLocallyJS
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }

@@ -59,6 +59,7 @@ const envSchema = z.object({
   MIGRATIONS_FOLDER: z.string().optional(),
 });
 
+// noinspection JSDeprecatedSymbols
 export type EnvType = z.infer<typeof envSchema>;
 
 export class ConfigurationService {

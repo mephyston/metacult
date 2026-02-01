@@ -58,7 +58,9 @@ defineProps<{
                 class="dark:stroke-black"
               />
             </svg>
-            <span class="text-xl font-semibold tracking-tight text-foreground">Metacult</span>
+            <span class="text-xl font-semibold tracking-tight text-foreground"
+              >Metacult</span
+            >
           </div>
         </div>
       </a>
@@ -67,26 +69,15 @@ defineProps<{
       <nav
         class="flex flex-wrap items-center justify-center gap-5 whitespace-nowrap text-sm font-medium text-muted-foreground md:justify-start"
       >
-        <a
-          href="#"
-          class="transition-colors hover:text-foreground"
-        >A propos</a>
-        <a
-          href="/legal/credits"
-          class="transition-colors hover:text-foreground"
-        >Mentions légales</a>
-        <a
-          href="#"
-          class="transition-colors hover:text-foreground"
-        >Politique de confidentialité</a>
-        <a
-          href="#"
-          class="transition-colors hover:text-foreground"
-        >CGU</a>
-        <a
-          href="#"
-          class="transition-colors hover:text-foreground"
-        >Contact</a>
+        <a href="#" class="transition-colors hover:text-foreground">A propos</a>
+        <a href="/legal/credits" class="transition-colors hover:text-foreground"
+          >Mentions légales</a
+        >
+        <a href="#" class="transition-colors hover:text-foreground"
+          >Politique de confidentialité</a
+        >
+        <a href="#" class="transition-colors hover:text-foreground">CGU</a>
+        <a href="#" class="transition-colors hover:text-foreground">Contact</a>
       </nav>
 
       <!-- Social Icons -->
@@ -96,6 +87,7 @@ defineProps<{
           class="text-muted-foreground transition-colors hover:text-foreground"
           aria-label="Facebook"
         >
+          <!-- noinspection JSDeprecatedSymbols -->
           <Facebook class="size-5" />
         </a>
         <a
@@ -135,21 +127,14 @@ defineProps<{
         class="text-balance text-center text-sm font-medium text-muted-foreground"
       >
         &copy; {{ currentYear }}
-        <a
-          href="#"
-          class="hover:underline"
-        >Metacult</a>, Made with ❤️ for
+        <a href="#" class="hover:underline">Metacult</a>, Made with ❤️ for
         better culture.
-        <span
-          v-if="version"
-          class="ml-2 text-xs text-muted-foreground"
-        >{{
+        <span v-if="version" class="ml-2 text-xs text-muted-foreground">{{
           version
         }}</span>
-        <span
-          v-if="commit"
-          class="ml-1 text-xs text-muted-foreground"
-        >({{ commit?.substring(0, 7) }})</span>
+        <span v-if="commit" class="ml-1 text-xs text-muted-foreground"
+          >({{ commit?.substring(0, 7) }})</span
+        >
       </p>
     </div>
   </footer>

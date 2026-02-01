@@ -73,6 +73,7 @@ export async function fetchWithRetry(
       }
 
       // If 5xx, throw to trigger retry logic
+      // noinspection ExceptionCaughtLocallyJS
       throw new Error(`Server Error: ${res.status} ${res.statusText}`);
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
