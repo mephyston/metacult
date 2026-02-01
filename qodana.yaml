@@ -48,4 +48,3 @@ exclude:
       - '**/*.spec.ts'
   # Disable redundant inspections - ESLint is run separately in CI
   - name: ESLint
-    id: Eslint
