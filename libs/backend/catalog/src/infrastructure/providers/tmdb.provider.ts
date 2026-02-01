@@ -38,6 +38,7 @@ export class TmdbProvider {
       const data = (await response.json()) as { results: TmdbMovieRaw[] };
       return data.results || [];
     } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error }, '[TMDB] Search error');
       return [];
     }
@@ -69,6 +70,7 @@ export class TmdbProvider {
       if (!response.ok) return null; // Not found or error
       return (await response.json()) as TmdbMovieRaw | TmdbTvRaw;
     } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error, id, type }, '[TMDB] Get details error');
       return null;
     }
@@ -123,6 +125,7 @@ export class TmdbProvider {
 
       return medias;
     } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error }, '[TMDB] Trending error');
       return [];
     }

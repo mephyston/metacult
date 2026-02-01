@@ -52,9 +52,7 @@ exclude:
   # Architectural Decisions (Circular Deps Prevention)
   - name: ES6PreferShortImport
 
-  # Logic Patterns
-  - name: ExceptionCaughtLocallyJS
+  # Generated Files
   - name: TypeScriptDuplicateUnionOrIntersectionType
-  - name: JSUnusedLocalSymbols
     paths:
-      - '**/*.vue' # Vue macros often cause this
+      - '**/*.d.ts'
