@@ -443,7 +443,7 @@ defineExpose({
         >
           <div
             class="absolute inset-0 bg-gradient-to-tr from-transparent via-amber-200/20 to-transparent translate-x-[-100%] animate-shimmer"
-          ></div>
+          />
         </div>
 
         <!-- FULL BLEED IMAGE -->
@@ -505,16 +505,16 @@ defineExpose({
           <MediaOffers
             v-if="item.offers"
             :offers="item.offers"
-            :mediaTitle="item.title"
+            :media-title="item.title"
             variant="card"
           />
 
           <!-- INFO BUTTON (Flip Trigger) -->
           <button
-            @touchstart.stop.prevent="toggleFlip"
-            @click.stop.prevent="toggleFlip"
             class="w-10 h-10 shrink-0 aspect-square rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors shadow-lg"
             aria-label="More Info"
+            @touchstart.stop.prevent="toggleFlip"
+            @click.stop.prevent="toggleFlip"
           >
             <Info class="w-5 h-5" />
           </button>
@@ -522,10 +522,10 @@ defineExpose({
           <!-- GOLD CTA -->
           <button
             v-if="isGold && affiliateUrl"
-            @touchstart.stop.prevent="openAffiliate"
-            @click.stop.prevent="openAffiliate"
             title="Voir l'offre exclusive"
             class="w-10 h-10 shrink-0 aspect-square rounded-full bg-amber-500 text-black font-bold hover:bg-amber-400 transition-colors shadow-lg shadow-amber-900/20 flex items-center justify-center"
+            @touchstart.stop.prevent="openAffiliate"
+            @click.stop.prevent="openAffiliate"
           >
             <ExternalLink class="w-5 h-5" />
           </button>
@@ -573,8 +573,8 @@ defineExpose({
 
       <!-- BACK FACE (Info) -->
       <div
-        @click="handleBackClick"
         class="absolute inset-0 w-full h-full bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl backface-hidden rotate-y-180 p-8 flex flex-col border border-zinc-800"
+        @click="handleBackClick"
       >
         <!-- Header (Back) -->
         <div class="flex justify-between items-start mb-6">
@@ -582,9 +582,9 @@ defineExpose({
             {{ item.title }}
           </h3>
           <button
+            class="p-2 -mr-2 text-zinc-400 hover:text-white"
             @touchstart.stop.prevent="toggleFlip"
             @click.stop.prevent="toggleFlip"
-            class="p-2 -mr-2 text-zinc-400 hover:text-white"
           >
             <X class="w-6 h-6" />
           </button>
@@ -632,8 +632,8 @@ defineExpose({
                 Partenaire
               </p>
               <button
-                @click.stop="openAffiliate"
                 class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg text-sm uppercase tracking-wider transition-colors"
+                @click.stop="openAffiliate"
               >
                 Voir l'offre exclusive
               </button>

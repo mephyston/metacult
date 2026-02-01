@@ -3,8 +3,8 @@ import { Elysia, t } from 'elysia';
 
 // MOCK the Controller to avoid DB connection in validation tests
 const mockController = {
-  search: mock((..._args: unknown[]) => Promise.resolve([])),
-  import: mock((..._args: unknown[]) => Promise.resolve()),
+  search: mock((...__args: unknown[]) => Promise.resolve([])),
+  import: mock((...__args: unknown[]) => Promise.resolve()),
 };
 
 // Re-define routes here with the mock, OR mock the module.

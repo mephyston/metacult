@@ -104,7 +104,7 @@ const displayCtaText = computed(() =>
       />
       <div
         class="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"
-      ></div>
+      />
     </div>
 
     <div
@@ -316,17 +316,19 @@ const displayCtaText = computed(() =>
                         variant="outline"
                         class="text-xs font-medium text-muted-foreground border-border"
                       >
-                        Post-apocalypse</Badge
-                      >
-                      <Badge
-                        variant="outline"
-                        class="text-xs font-medium text-muted-foreground border-border"
-                        >Aventure
+                        Post-apocalypse
                       </Badge>
                       <Badge
                         variant="outline"
                         class="text-xs font-medium text-muted-foreground border-border"
-                        >Drame
+                      >
+                        Aventure
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        class="text-xs font-medium text-muted-foreground border-border"
+                      >
+                        Drame
                       </Badge>
                     </template>
                   </div>

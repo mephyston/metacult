@@ -119,11 +119,11 @@ const getProviderInitials = (provider: string) => {
         v-if="primaryOffer"
         :href="primaryOffer.url"
         target="_blank"
+        title="Voir l'offre / Acheter"
+        class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95 group hover:bg-white/20 shadow-lg"
         @click.stop
         @touchstart.stop
         @mousedown.stop
-        title="Voir l'offre / Acheter"
-        class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all active:scale-95 group hover:bg-white/20 shadow-lg"
       >
         <ShoppingCart
           class="w-5 h-5 text-white"

@@ -10,7 +10,7 @@ import {
   InvalidProviderDataError,
   MediaAlreadyExistsError,
 } from '../../../domain/errors/catalog.errors';
-import { Result, ProviderSource, type AppError } from '@metacult/shared-core';
+import { Result, ProviderSource } from '@metacult/shared-core';
 import { logger } from '@metacult/backend-infrastructure';
 
 interface ImportResult {

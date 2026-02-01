@@ -44,8 +44,8 @@ const toggleGold = () => {
 
     <div class="mt-8 flex gap-4 shrink-0 z-50">
       <button
-        @click="toggleGold"
         class="px-4 py-2 bg-zinc-800 text-white rounded-lg flex items-center gap-2 hover:bg-zinc-700 transition shadow-lg border border-zinc-700"
+        @click="toggleGold"
       >
         <RefreshCw class="w-4 h-4" /> Toggle Gold Mode:
         {{ isGold ? 'ON' : 'OFF' }}

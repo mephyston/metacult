@@ -207,9 +207,9 @@ const handleLogout = async () => {
               <NavigationMenuList>
                 <!-- Films Menu -->
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger class="uppercase"
-                    >Films</NavigationMenuTrigger
-                  >
+                  <NavigationMenuTrigger class="uppercase">
+                    Films
+                  </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div class="grid gap-3 p-6 w-[500px] grid-cols-[250px_1fr]">
                       <!-- Featured Trending -->
@@ -252,17 +252,17 @@ const handleLogout = async () => {
                       <!-- Links -->
                       <ul class="flex flex-col gap-2">
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/catalog/movie/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >📅 Bientôt</a
-                            ></NavigationMenuLink
-                          >
+                            >
+                          </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl(`/catalog/movie/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🏆 Le Top {{ currentCatalogYear }}</a
@@ -270,8 +270,8 @@ const handleLogout = async () => {
                           </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="
                                 getPublicUrl('/catalog/movie/hall-of-fame')
                               "
@@ -281,8 +281,8 @@ const handleLogout = async () => {
                           </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/search?type=movie')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🔍 Recherche avancée</a
@@ -296,9 +296,9 @@ const handleLogout = async () => {
 
                 <!-- Séries Menu -->
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger class="uppercase"
-                    >Séries</NavigationMenuTrigger
-                  >
+                  <NavigationMenuTrigger class="uppercase">
+                    Séries
+                  </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div class="grid gap-3 p-6 w-[500px] grid-cols-[250px_1fr]">
                       <NavigationMenuLink as-child>
@@ -337,17 +337,17 @@ const handleLogout = async () => {
                       </NavigationMenuLink>
                       <ul class="flex flex-col gap-2">
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/catalog/tv/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >📅 Bientôt</a
-                            ></NavigationMenuLink
-                          >
+                            >
+                          </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl(`/catalog/tv/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🏆 Le Top {{ currentCatalogYear }}</a
@@ -355,17 +355,17 @@ const handleLogout = async () => {
                           </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/catalog/tv/hall-of-fame')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >⭐ Hall of Fame</a
-                            ></NavigationMenuLink
-                          >
+                            >
+                          </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/search?type=tv')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🔍 Recherche avancée</a
@@ -379,9 +379,9 @@ const handleLogout = async () => {
 
                 <!-- Jeux Menu -->
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger class="uppercase"
-                    >Jeux</NavigationMenuTrigger
-                  >
+                  <NavigationMenuTrigger class="uppercase">
+                    Jeux
+                  </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div class="grid gap-3 p-6 w-[500px] grid-cols-[250px_1fr]">
                       <NavigationMenuLink as-child>
@@ -422,17 +422,17 @@ const handleLogout = async () => {
                       </NavigationMenuLink>
                       <ul class="flex flex-col gap-2">
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/catalog/game/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >📅 Bientôt</a
-                            ></NavigationMenuLink
-                          >
+                            >
+                          </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl(`/catalog/game/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🏆 Le Top {{ currentCatalogYear }}</a
@@ -440,17 +440,17 @@ const handleLogout = async () => {
                           </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/catalog/game/hall-of-fame')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >⭐ Hall of Fame</a
-                            ></NavigationMenuLink
-                          >
+                            >
+                          </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/search?type=game')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🔍 Recherche avancée</a
@@ -464,9 +464,9 @@ const handleLogout = async () => {
 
                 <!-- Livres Menu -->
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger class="uppercase"
-                    >Livres</NavigationMenuTrigger
-                  >
+                  <NavigationMenuTrigger class="uppercase">
+                    Livres
+                  </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div class="grid gap-3 p-6 w-[500px] grid-cols-[250px_1fr]">
                       <NavigationMenuLink as-child>
@@ -507,17 +507,17 @@ const handleLogout = async () => {
                       </NavigationMenuLink>
                       <ul class="flex flex-col gap-2">
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/catalog/book/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >📅 Bientôt</a
-                            ></NavigationMenuLink
-                          >
+                            >
+                          </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl(`/catalog/book/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🏆 Le Top {{ currentCatalogYear }}</a
@@ -525,17 +525,17 @@ const handleLogout = async () => {
                           </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/catalog/book/hall-of-fame')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >⭐ Hall of Fame</a
-                            ></NavigationMenuLink
-                          >
+                            >
+                          </NavigationMenuLink>
                         </li>
                         <li>
-                          <NavigationMenuLink as-child
-                            ><a
+                          <NavigationMenuLink as-child>
+                            <a
                               :href="getPublicUrl('/search?type=book')"
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >🔍 Recherche avancée</a
@@ -659,7 +659,7 @@ const handleLogout = async () => {
                   :style="{
                     width: `${Math.min(((currentXp as number) / (nextLevelXp as number)) * 100, 100)}%`,
                   }"
-                ></div>
+                />
               </div>
             </div>
           </div>

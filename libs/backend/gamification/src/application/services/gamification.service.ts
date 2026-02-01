@@ -15,7 +15,7 @@ export class GamificationService {
     entity.addXp(amount);
 
     // 3. Persist
-    const updated = await this.repository.saveUserStats(entity);
+    await this.repository.saveUserStats(entity);
   }
 
   async getUserStats(userId: string) {

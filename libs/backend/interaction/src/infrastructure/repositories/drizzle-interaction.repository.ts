@@ -17,7 +17,6 @@ import {
   type MediaId,
   asMediaId,
   asInteractionId,
-  asFollowId,
 } from '@metacult/shared-core';
 
 export class DrizzleInteractionRepository implements IInteractionRepository {
