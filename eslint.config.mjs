@@ -35,6 +35,10 @@ export default [
       '**/test-results/**',
       '**/node_modules',
       '**/vitest.config.*.timestamp*',
+      'apps/webapp/.nuxt/**',
+      'apps/webapp/.output/**',
+      'apps/webapp/dist/**',
+      'apps/webapp/node_modules/**'
     ],
   },
   {

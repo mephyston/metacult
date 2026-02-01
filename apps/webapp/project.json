@@ -14,7 +14,9 @@
           "apps/webapp/app/**/*.{ts,tsx,js,jsx,vue}",
           "apps/webapp/server/**/*.{ts,tsx,js,jsx,vue}",
           "apps/webapp/*.{ts,tsx,js,jsx,vue}",
-          "!apps/webapp/.nuxt/**"
+          "!apps/webapp/.nuxt/**",
+          "!apps/webapp/.output/**",
+          "!apps/webapp/node_modules/**"
         ]
       }
     }
