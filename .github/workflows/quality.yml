@@ -59,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: qodana-report
-          path: ${{ runner.temp }}/qodana/report
+          path: ${{ runner.temp }}/qodana/results
