@@ -60,11 +60,6 @@ exclude:
   # Imports not detected by static analysis (e.g. auto-imports or deep usage)
   - name: UnusedImport
 
-  # Exclude Noise / Notices
-  - name: TodoComment
-  - name: FixmeComment
-  - name: StringLiteralTypo
-
   # Generated Files
   - name: TypeScriptDuplicateUnionOrIntersectionType
     paths:
