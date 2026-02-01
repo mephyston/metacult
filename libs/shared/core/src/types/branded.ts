@@ -14,6 +14,6 @@ export type Brand<K, T> = K & { readonly __brand: T };
  *
  * @param value The primitive value (e.g. string)
  */
-export function asBrand<T extends Brand<any, any>>(value: any): T {
+export function asBrand<T extends Brand<unknown, unknown>>(value: unknown): T {
   return value as T;
 }

@@ -51,7 +51,8 @@ describe('SearchMediaHandler', () => {
     mockRepo.searchViews.mockResolvedValue(localResults);
 
     const query: SearchMediaQuery = { search: 'test' };
-    const response = (await handler.execute(query)).getValue() as any;
+    const result = await handler.execute(query);
+    const response = result.getValue() as { games: { isImported: boolean }[] };
 
     expect(mockRepo.searchViews).toHaveBeenCalled();
     expect(mockIgdb.search).not.toHaveBeenCalled(); // Should NOT call remote
@@ -75,7 +76,10 @@ describe('SearchMediaHandler', () => {
     ]);
 
     const query: SearchMediaQuery = { search: 'remote' };
-    const response = (await handler.execute(query)).getValue() as any;
+    const result = await handler.execute(query);
+    const response = result.getValue() as {
+      games: { title: string; isImported: boolean }[];
+    };
 
     expect(mockIgdb.search).toHaveBeenCalled();
     expect(response.games).toHaveLength(1);
@@ -133,7 +137,10 @@ describe('SearchMediaHandler', () => {
     ]);
 
     const query: SearchMediaQuery = { search: 'mario' };
-    const response = (await handler.execute(query)).getValue() as any;
+    const result = await handler.execute(query);
+    const response = result.getValue() as {
+      games: { title: string; isImported: boolean }[];
+    };
 
     const games = response.games;
     expect(games).toHaveLength(2); // Mario (Local) + Zelda (Remote)
@@ -186,7 +193,7 @@ describe('SearchMediaHandler', () => {
       }),
     );
 
-    const callArgs = mockRepo.searchViews.mock.calls[0][0];
+    const callArgs = mockRepo.searchViews.mock.calls[0][0] as any;
     expect(callArgs.excludedIds).toBeUndefined();
   });
 
@@ -202,7 +209,7 @@ describe('SearchMediaHandler', () => {
           releaseYear = { getValue: () => 2022 };
           coverUrl = { getValue: () => 'http://img' };
           externalReference = { id: 'ext-adv' };
-        } as any)(),
+        } as unknown as any)(),
       ],
       total: 50,
     };
@@ -216,7 +223,13 @@ describe('SearchMediaHandler', () => {
       page: 1,
       limit: 10,
     };
-    const response: any = (await handler.execute(query)).getValue();
+    const result = await handler.execute(query);
+    const response = result.getValue() as {
+      items: any[];
+      total: number;
+      page: number;
+      totalPages: number;
+    };
 
     // Verify Mode B logic
     expect(mockRepo.searchAdvanced).toHaveBeenCalledWith(

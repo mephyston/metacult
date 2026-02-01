@@ -2,11 +2,12 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { DEFAULT_DEV_URLS } from '@metacult/shared-core';
 
 // --- Exposed Mocks ---
+// --- Exposed Mocks ---
 export const mockLimit = mock(() =>
   Promise.resolve([
     { medias: { id: '1' }, user_interactions: {} },
     { medias: { id: '2' }, user_interactions: {} },
-  ] as any[]),
+  ] as unknown[]),
 );
 export const mockOrderBy = mock(() => ({ limit: mockLimit }));
 // where() can filter, and it can be followed by limit directly OR orderBy
@@ -29,7 +30,9 @@ export const mockUpdateSet = mock(() => ({
 export const mockTx = {
   update: mock(() => ({ set: mockUpdateSet })),
 };
-export const mockTransaction = mock(async (cb: any) => cb(mockTx));
+export const mockTransaction = mock(
+  async (cb: (tx: typeof mockTx) => Promise<unknown>) => cb(mockTx),
+);
 
 mock.module('@metacult/backend-infrastructure', () => ({
   getDbConnection: () => ({

@@ -44,16 +44,16 @@ const mockGetRandomPairForUser = mock(() =>
   Promise.resolve([
     { id: '1', title: 'A' },
     { id: '2', title: 'B' },
-  ]),
+  ] as { id: string; title: string }[]),
 );
 const mockAddDuelResult = mock(() => Promise.resolve());
 
 spyOn(
   DrizzleDuelRepository.prototype,
   'getRandomPairForUser',
-).mockImplementation(mockGetRandomPairForUser as any);
+).mockImplementation(mockGetRandomPairForUser as unknown as any); // Casting as any here because spying on prototype methods with incompatible signatures is hard in Bun test, keeping it minimal but explicit about unknown
 spyOn(RankingQueue.prototype, 'addDuelResult').mockImplementation(
-  mockAddDuelResult as any,
+  mockAddDuelResult as unknown as any,
 );
 
 import { DuelController } from './duel.controller';

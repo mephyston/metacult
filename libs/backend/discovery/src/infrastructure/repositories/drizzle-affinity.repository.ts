@@ -118,6 +118,8 @@ export class DrizzleAffinityRepository implements AffinityRepository {
     `;
 
     const result = await this.db.execute(candidatesQuery);
-    return result.rows.map((r: any) => r.neighbor_id as string);
+    return result.rows.map(
+      (r: unknown) => (r as { neighbor_id: string }).neighbor_id,
+    );
   }
 }

@@ -6,7 +6,7 @@ export class GamificationService {
   /**
    * Adds XP to a user and updates their level.
    */
-  async addXp(userId: string, amount: number, source: string) {
+  async addXp(userId: string, amount: number, _source: string) {
     // 1. Get or create stats via Repo
     const entity = await this.repository.getUserStats(userId);
 

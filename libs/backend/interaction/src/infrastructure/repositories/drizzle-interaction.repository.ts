@@ -190,14 +190,14 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
           .values({
             userId: userId,
             mediaId: asMediaId(interaction.mediaId),
-            action: interaction.action as any,
-            sentiment: interaction.sentiment as any,
+            action: interaction.action as InteractionAction,
+            sentiment: interaction.sentiment as InteractionSentiment | null,
           })
           .onConflictDoUpdate({
             target: [userInteractions.userId, userInteractions.mediaId],
             set: {
-              action: interaction.action as any,
-              sentiment: interaction.sentiment as any,
+              action: interaction.action as InteractionAction,
+              sentiment: interaction.sentiment as InteractionSentiment | null,
               updatedAt: new Date(),
             },
           });

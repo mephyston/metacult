@@ -20,7 +20,7 @@ export const socialController = new Elysia({ prefix: '/social' })
   .post(
     '/follow',
     async (ctx) => {
-      const { body, set } = ctx as unknown as { body: FollowUserDto; set: any };
+      const { body, set } = ctx;
       try {
         const user = await resolveUserOrThrow(ctx);
         const targetUserId = body.targetUserId;
@@ -41,13 +41,14 @@ export const socialController = new Elysia({ prefix: '/social' })
           success: true,
           message: 'User followed',
         };
-      } catch (e: any) {
-        logger.error({ err: e }, '[SocialController] Error following user');
+      } catch (e: unknown) {
+        const err = e as Error;
+        logger.error({ err }, '[SocialController] Error following user');
         set.status = 500;
         return {
           success: false,
           message: 'Failed to follow user',
-          error: e.message,
+          error: err.message,
         };
       }
     },
@@ -65,7 +66,7 @@ export const socialController = new Elysia({ prefix: '/social' })
   .delete(
     '/follow',
     async (ctx) => {
-      const { body, set } = ctx as unknown as { body: FollowUserDto; set: any };
+      const { body, set } = ctx;
       try {
         const user = await resolveUserOrThrow(ctx);
         const targetUserId = body.targetUserId;
@@ -81,13 +82,14 @@ export const socialController = new Elysia({ prefix: '/social' })
           success: true,
           message: 'User unfollowed',
         };
-      } catch (e: any) {
-        logger.error({ err: e }, '[SocialController] Error unfollowing user');
+      } catch (e: unknown) {
+        const err = e as Error;
+        logger.error({ err }, '[SocialController] Error unfollowing user');
         set.status = 500;
         return {
           success: false,
           message: 'Failed to unfollow user',
-          error: e.message,
+          error: err.message,
         };
       }
     },
@@ -116,13 +118,14 @@ export const socialController = new Elysia({ prefix: '/social' })
           success: true,
           data: following,
         };
-      } catch (e: any) {
-        logger.error({ err: e }, '[SocialController] Error fetching following');
+      } catch (e: unknown) {
+        const err = e as Error;
+        logger.error({ err }, '[SocialController] Error fetching following');
         ctx.set.status = 500;
         return {
           success: false,
           message: 'Failed to fetch following',
-          error: e.message,
+          error: err.message,
         };
       }
     },
@@ -148,13 +151,14 @@ export const socialController = new Elysia({ prefix: '/social' })
           success: true,
           data: followers,
         };
-      } catch (e: any) {
-        logger.error({ err: e }, '[SocialController] Error fetching followers');
+      } catch (e: unknown) {
+        const err = e as Error;
+        logger.error({ err }, '[SocialController] Error fetching followers');
         ctx.set.status = 500;
         return {
           success: false,
           message: 'Failed to fetch followers',
-          error: e.message,
+          error: err.message,
         };
       }
     },

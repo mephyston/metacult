@@ -31,12 +31,12 @@ export const DuelController = new Elysia({ prefix: '/duel' })
   .get(
     '/',
     async (context) => {
-      const { request, set } = context;
+      const { set } = context;
 
       try {
         // Tentative de résolution de l'utilisateur via le helper unifié
         // Cela lancera une erreur 401 si l'utilisateur n'est pas dans le contexte
-        const user = await resolveUserOrThrow(context as any);
+        const user = await resolveUserOrThrow(context);
         const userId = user.id;
 
         const pair = await duelRepository.getRandomPairForUser(userId);
@@ -52,7 +52,8 @@ export const DuelController = new Elysia({ prefix: '/duel' })
         }
 
         return pair;
-      } catch (err: any) {
+      } catch (e: unknown) {
+        const err = e as Error & { status?: number };
         logger.error({ err }, '[DuelController] Error');
         // Si c'est une erreur d'auth lancée par resolveUserOrThrow
         if (
@@ -88,7 +89,7 @@ export const DuelController = new Elysia({ prefix: '/duel' })
       // 2. GAMIFICATION: Award XP
       try {
         const { db } = getDbConnection();
-        const repo = new DrizzleGamificationRepository(db as any);
+        const repo = new DrizzleGamificationRepository(db as unknown as any);
         const gamificationService = new GamificationService(repo);
 
         await gamificationService.addXp(user.id, 50, 'DUEL');

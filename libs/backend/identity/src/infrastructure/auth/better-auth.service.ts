@@ -26,7 +26,7 @@ const cookiePrefix = configService.authCookiePrefix || 'metacult';
  *
  * @see https://better-auth.com/docs
  */
-export let auth: any;
+export let auth: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export const initAuth = () => {
   if (auth) return auth;
@@ -79,7 +79,7 @@ export const initAuth = () => {
       : // Return a proxy/mock that throws if accessed? Or just a dummy object?
         // Since usage is only in API which has secrets, this branch is only hit by Worker which DOES NOT use it.
         // Returning a dummy strictly to satisfy export type.
-        ({} as any);
+        ({} as unknown as any);
 
   return auth;
 };

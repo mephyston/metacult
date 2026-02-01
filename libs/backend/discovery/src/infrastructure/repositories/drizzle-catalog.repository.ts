@@ -13,7 +13,6 @@ import {
   ReleaseYear,
 } from '@metacult/backend-catalog';
 import { asMediaId } from '@metacult/shared-core';
-import type { MediaId } from '@metacult/shared-core';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { userInteractions } from '@metacult/backend-interaction';
@@ -210,16 +209,16 @@ export class DrizzleCatalogRepository implements CatalogRepository {
 
     let coverUrlStr: string | null = null;
     if (providerMetadata) {
-      const meta = providerMetadata as any;
-      if (meta.coverUrl) {
-        coverUrlStr = meta.coverUrl;
-      } else if (meta.poster_path) {
-        const path = meta.poster_path.startsWith('/')
-          ? meta.poster_path
-          : `/${meta.poster_path}`;
+      const meta = providerMetadata as Record<string, any>;
+      if (meta['coverUrl']) {
+        coverUrlStr = meta['coverUrl'];
+      } else if (meta['poster_path']) {
+        const path = (meta['poster_path'] as string).startsWith('/')
+          ? meta['poster_path']
+          : `/${meta['poster_path']}`;
         coverUrlStr = `https://image.tmdb.org/t/p/original${path}`;
-      } else if (meta.image_id) {
-        coverUrlStr = `https://images.igdb.com/igdb/image/upload/t_1080p/${meta.image_id}.jpg`;
+      } else if (meta['image_id']) {
+        coverUrlStr = `https://images.igdb.com/igdb/image/upload/t_1080p/${meta['image_id']}.jpg`;
       }
     }
 

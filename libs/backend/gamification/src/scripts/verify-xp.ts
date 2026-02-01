@@ -6,7 +6,7 @@ async function main() {
   logger.info('--- Verifying Gamification Flow ---');
 
   const { db } = getDbConnection();
-  const repo = new DrizzleGamificationRepository(db as any);
+  const repo = new DrizzleGamificationRepository(db as unknown as any);
   const service = new GamificationService(repo);
   const userId = 'verify-user-' + Date.now(); // Unique ID
 

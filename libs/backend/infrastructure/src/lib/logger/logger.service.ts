@@ -47,72 +47,72 @@ class LoggerService {
    * Create a child logger with context
    * Useful for adding module/service context to logs
    */
-  public child(context: Record<string, any>): pino.Logger {
+  public child(context: Record<string, unknown>): pino.Logger {
     return this.logger.child(context);
   }
 
   /**
    * Info level - General informational messages
    */
-  public info(obj: any, msg?: string): void;
+  public info(obj: unknown, msg?: string): void;
   public info(msg: string): void;
-  public info(objOrMsg: any, msg?: string): void {
+  public info(objOrMsg: unknown, msg?: string): void {
     if (typeof objOrMsg === 'string') {
       this.logger.info(objOrMsg);
     } else {
-      this.logger.info(objOrMsg, msg);
+      this.logger.info(objOrMsg as object, msg);
     }
   }
 
   /**
    * Error level - Error messages (exceptions, failures)
    */
-  public error(obj: any, msg?: string): void;
+  public error(obj: unknown, msg?: string): void;
   public error(msg: string): void;
-  public error(objOrMsg: any, msg?: string): void {
+  public error(objOrMsg: unknown, msg?: string): void {
     if (typeof objOrMsg === 'string') {
       this.logger.error(objOrMsg);
     } else {
-      this.logger.error(objOrMsg, msg);
+      this.logger.error(objOrMsg as object, msg);
     }
   }
 
   /**
    * Warn level - Warning messages (deprecated features, potential issues)
    */
-  public warn(obj: any, msg?: string): void;
+  public warn(obj: unknown, msg?: string): void;
   public warn(msg: string): void;
-  public warn(objOrMsg: any, msg?: string): void {
+  public warn(objOrMsg: unknown, msg?: string): void {
     if (typeof objOrMsg === 'string') {
       this.logger.warn(objOrMsg);
     } else {
-      this.logger.warn(objOrMsg, msg);
+      this.logger.warn(objOrMsg as object, msg);
     }
   }
 
   /**
    * Debug level - Detailed debugging information
    */
-  public debug(obj: any, msg?: string): void;
+  public debug(obj: unknown, msg?: string): void;
   public debug(msg: string): void;
-  public debug(objOrMsg: any, msg?: string): void {
+  public debug(objOrMsg: unknown, msg?: string): void {
     if (typeof objOrMsg === 'string') {
       this.logger.debug(objOrMsg);
     } else {
-      this.logger.debug(objOrMsg, msg);
+      this.logger.debug(objOrMsg as object, msg);
     }
   }
 
   /**
    * Fatal level - Application crash/termination events
    */
-  public fatal(obj: any, msg?: string): void;
+  public fatal(obj: unknown, msg?: string): void;
   public fatal(msg: string): void;
-  public fatal(objOrMsg: any, msg?: string): void {
+  public fatal(objOrMsg: unknown, msg?: string): void {
     if (typeof objOrMsg === 'string') {
       this.logger.fatal(objOrMsg);
     } else {
-      this.logger.fatal(objOrMsg, msg);
+      this.logger.fatal(objOrMsg as object, msg);
     }
   }
 }

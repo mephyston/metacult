@@ -53,13 +53,14 @@ export const userController = new Elysia({ prefix: '/users' })
           success: true,
           data: profile,
         };
-      } catch (e: any) {
-        logger.error({ err: e }, '[UserController] Error fetching user');
+      } catch (e: unknown) {
+        const err = e as Error;
+        logger.error({ err }, '[UserController] Error fetching user');
         set.status = 500;
         return {
           success: false,
           message: 'Failed to fetch user',
-          error: e.message,
+          error: err.message,
         };
       }
     },
@@ -78,18 +79,10 @@ export const userController = new Elysia({ prefix: '/users' })
     '/:id',
     async (context) => {
       const { params, body, set } = context;
-      // Explicit cast to bypass middleware type inference limits
-      const user = (context as any).user;
+      // Use proper type assertion or middleware inference
+      const user = (context as unknown as { user: { id: string } }).user;
 
       try {
-        console.log('[DEBUG] PATCH /users/:id', {
-          params,
-          body,
-          user: (user as any)?.id,
-          headers: (context as any).headers,
-          contextKeys: Object.keys(context),
-        });
-
         const userId = params.id;
 
         // Security check: Only allow users to update their own profile
@@ -111,8 +104,6 @@ export const userController = new Elysia({ prefix: '/users' })
           updateData.preferences = body.preferences;
         }
 
-        console.log('[DEBUG] updateData', updateData);
-
         const result = await db
           .update(userModel)
           .set(updateData)
@@ -128,13 +119,14 @@ export const userController = new Elysia({ prefix: '/users' })
           success: true,
           data: result[0],
         };
-      } catch (e: any) {
-        logger.error({ err: e }, '[UserController] Error updating user');
+      } catch (e: unknown) {
+        const err = e as Error;
+        logger.error({ err }, '[UserController] Error updating user');
         set.status = 500;
         return {
           success: false,
           message: 'Failed to update user',
-          error: e.message,
+          error: err.message,
         };
       }
     },

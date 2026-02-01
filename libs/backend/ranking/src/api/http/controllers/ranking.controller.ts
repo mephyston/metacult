@@ -12,13 +12,12 @@ import { getDbConnection } from '@metacult/backend-infrastructure';
 
 // Note: Ces repositories partagent la même instance DB que l'app principale
 // On réutilise le singleton DB déjà initialisé dans apps/api/index.ts
-// Pour une vraie DI, passer les repositories en paramètre via une factory
-
-// Initialisation temporaire des dépendances
 // TODO: Refactor pour utiliser une Factory qui reçoit le DB depuis le Composition Root
 const { db } = getDbConnection(); // Récupère le singleton existant
-const interactionRepository = new DrizzleInteractionRepository(db as any);
-const mediaRepository = new DrizzleMediaRepository(db as any);
+const interactionRepository = new DrizzleInteractionRepository(
+  db as unknown as any,
+);
+const mediaRepository = new DrizzleMediaRepository(db as unknown as any);
 const getUserRankingsHandler = new GetUserRankingsHandler(
   interactionRepository,
   mediaRepository,
@@ -73,7 +72,8 @@ export const RankingController = new Elysia({ prefix: '/ranking' })
             limit,
           },
         };
-      } catch (err: any) {
+      } catch (e: unknown) {
+        const err = e as Error & { status?: number };
         logger.error({ err }, '[RankingController] Error');
 
         // Gestion des erreurs d'authentification

@@ -30,7 +30,7 @@ export class CacheService {
    */
   async set(
     key: string,
-    value: any,
+    value: unknown,
     ttlSeconds: number = this.defaultTtl,
   ): Promise<void> {
     try {

@@ -113,7 +113,7 @@
     "test": "bun test --preload ./test/setup.ts --ignore='apps/e2e/**'",
     "test:e2e": "cd apps/e2e && bunx playwright test --reporter=list",
     "test:e2e:ui": "cd apps/e2e && bunx playwright test --ui",
-    "lint:all": "nx run-many -t lint -p shared-core backend-catalog backend-discovery backend-infrastructure backend-marketing backend-ranking worker api",
+    "lint:all": "nx run-many -t lint --parallel=3 --max-warnings=150 -p shared-core backend-catalog backend-discovery backend-infrastructure backend-marketing backend-ranking worker api",
     "test:all": "bun test --preload ./test/setup.ts --ignore='apps/e2e/**'",
     "test:coverage": "bun test --coverage --coverage-reporter=lcov --preload ./test/setup.ts --ignore='apps/e2e/**'",
     "quality": "bun run lint:all && bun run test:all",

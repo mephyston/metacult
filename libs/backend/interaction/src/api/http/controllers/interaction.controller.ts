@@ -1,7 +1,6 @@
 import { Elysia, t } from 'elysia';
 import {
   isAuthenticated,
-  auth,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
 import { logger, getDbConnection } from '@metacult/backend-infrastructure';
@@ -11,10 +10,7 @@ import { SyncInteractionsHandler } from '../../../application/commands/sync-inte
 import * as schema from '../../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
-import type {
-  SaveInteractionDto,
-  InteractionResponseDto,
-} from '../../../application/dtos/interaction.dto';
+// import { asUserId } from '@metacult/shared-core'; // Keeping if used later, but cleaned DTOs
 import { asUserId } from '@metacult/shared-core';
 
 // ..
@@ -27,10 +23,7 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
   .post(
     '/',
     async (ctx) => {
-      const { body, set } = ctx as unknown as {
-        body: SaveInteractionDto;
-        set: any;
-      };
+      const { body, set } = ctx;
       try {
         // Use helper to resolve user or throw 401
         const user = await resolveUserOrThrow(ctx);
@@ -54,16 +47,17 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
           data: interaction,
           message: API_MESSAGES.INTERACTION.VOTE_RECORDED,
         };
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const err = e as Error;
         logger.error(
-          { err: e },
+          { err },
           '[InteractionController] Error saving interaction',
         );
         set.status = 500;
         return {
           success: false,
           message: API_MESSAGES.INTERACTION.SAVE_FAILED,
-          error: e.message,
+          error: err.message,
         };
       }
     },
@@ -92,7 +86,7 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
   .post(
     '/sync',
     async (ctx) => {
-      const { body, set } = ctx as any;
+      const { body, set } = ctx;
 
       // Use helper to resolve user or throw 401
       const user = await resolveUserOrThrow(ctx);
@@ -109,16 +103,17 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
           synced: body.length,
           message: API_MESSAGES.INTERACTION.SYNC_SUCCESS,
         };
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const err = e as Error;
         logger.error(
-          { err: e },
+          { err },
           '[InteractionController] Error syncing interactions',
         );
         set.status = 500;
         return {
           success: false,
           message: API_MESSAGES.INTERACTION.SYNC_FAILED,
-          error: e.message,
+          error: err.message,
         };
       }
     },

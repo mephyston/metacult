@@ -78,7 +78,7 @@ export async function fetchWithRetry(
       const err = error instanceof Error ? error : new Error(String(error));
       const isAbort =
         err.name === 'AbortError' || err.message.includes('Aborted');
-      const isTimeout = err.message.includes('timeout');
+      // const isTimeout = err.message.includes('timeout');
 
       // If it's a real user abort, DO NOT RETRY.
       if (externalSignal?.aborted && isAbort) {

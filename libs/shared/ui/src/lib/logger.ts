@@ -6,25 +6,25 @@
 const isDev = import.meta.env?.DEV || import.meta.env?.MODE === 'development';
 
 export const logger = {
-  info: (...args: any[]) => {
+  info: (...args: unknown[]) => {
     console.info('[UI]', ...args);
   },
-  
-  warn: (...args: any[]) => {
+
+  warn: (...args: unknown[]) => {
     console.warn('[UI]', ...args);
   },
-  
-  error: (...args: any[]) => {
+
+  error: (...args: unknown[]) => {
     console.error('[UI]', ...args);
   },
-  
-  debug: (...args: any[]) => {
+
+  debug: (...args: unknown[]) => {
     if (isDev) {
       console.log('[UI Debug]', ...args);
     }
   },
-  
-  log: (...args: any[]) => {
+
+  log: (...args: unknown[]) => {
     console.log('[UI]', ...args);
   },
 };

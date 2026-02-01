@@ -1,4 +1,4 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { DefaultLogger, type LogWriter } from 'drizzle-orm/logger';
 import { requestContext } from '../context/request-context';
@@ -19,7 +19,8 @@ class TracingLogWriter implements LogWriter {
 }
 
 let pool: Pool;
-let db: ReturnType<typeof drizzle>;
+
+let db: unknown;
 
 import { configService } from '../config/configuration.service';
 
@@ -67,7 +68,7 @@ export function getDbConnection<T extends Record<string, unknown>>(
     db = drizzle(pool, {
       schema: customSchema,
       logger: enableLogger ? new TracingLogger() : undefined,
-    }) as any;
+    });
   }
-  return { pool, db };
+  return { pool, db: db as NodePgDatabase<T> };
 }
