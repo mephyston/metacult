@@ -58,9 +58,16 @@ const setTheme = (theme: string) => {
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
-    <DropdownMenu :open="isOpen" :modal="false">
+    <DropdownMenu
+      :open="isOpen"
+      :modal="false"
+    >
       <DropdownMenuTrigger as-child>
-        <Button variant="ghost" size="icon" @click="toggleDark()">
+        <Button
+          variant="ghost"
+          size="icon"
+          @click="toggleDark()"
+        >
           <!-- Sun Icon: Visible in Light Mode. Ensure contrast if needed. -->
           <Sun
             class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-foreground dark:text-foreground"

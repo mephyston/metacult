@@ -96,12 +96,15 @@ const displayCtaText = computed(() =>
     class="relative w-full overflow-hidden bg-background py-12 sm:py-16 lg:py-24 text-foreground"
   >
     <!-- Background Image with Overlay for Trend Mode -->
-    <div v-if="featureItem" class="absolute inset-0 z-0">
+    <div
+      v-if="featureItem"
+      class="absolute inset-0 z-0"
+    >
       <img
         :src="displayImage"
         class="w-full h-full object-cover opacity-20 blur-sm scale-110"
         alt="Hero Background"
-      />
+      >
       <div
         class="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"
       />
@@ -155,7 +158,10 @@ const displayCtaText = computed(() =>
         </div>
 
         <!-- Trends Static List (Replacemenet for Marquee) -->
-        <div v-if="bottomListItems.length > 0" class="mt-8">
+        <div
+          v-if="bottomListItems.length > 0"
+          class="mt-8"
+        >
           <h3
             class="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wider"
           >
@@ -171,13 +177,13 @@ const displayCtaText = computed(() =>
                 <img
                   :src="
                     media.coverUrl ||
-                    media.posterUrl ||
-                    'https://images.unsplash.com/photo-1594322436404-5a0526db4d13?w=300&h=450&fit=crop'
+                      media.posterUrl ||
+                      'https://images.unsplash.com/photo-1594322436404-5a0526db4d13?w=300&h=450&fit=crop'
                   "
                   class="object-cover w-full h-full"
                   :alt="media.title"
                   loading="lazy"
-                />
+                >
                 <div class="absolute top-1 left-1">
                   <Badge
                     variant="secondary"
@@ -187,7 +193,10 @@ const displayCtaText = computed(() =>
                   </Badge>
                 </div>
                 <!-- ELO Badge -->
-                <div v-if="media.eloScore" class="absolute bottom-1 right-1">
+                <div
+                  v-if="media.eloScore"
+                  class="absolute bottom-1 right-1"
+                >
                   <Badge
                     variant="default"
                     class="text-[9px] px-1 py-0 h-4 bg-primary/90"
@@ -264,12 +273,12 @@ const displayCtaText = computed(() =>
                 <img
                   :src="
                     displayImage ||
-                    'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=1000&auto=format&fit=crop'
+                      'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=1000&auto=format&fit=crop'
                   "
                   :sizes="imageSizes"
                   class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
                   alt="Review Media"
-                />
+                >
 
                 <!-- Media Type Tag -->
                 <div class="absolute top-4 left-4">
@@ -291,11 +300,12 @@ const displayCtaText = computed(() =>
                       <template v-if="featureItem">
                         {{ featureItem.title }}
                       </template>
-                      <template v-else> The Last of Us Part II </template>
+                      <template v-else>
+                        The Last of Us Part II
+                      </template>
                       <span
                         class="text-muted-foreground font-normal ml-1 text-base relative"
-                        >({{ featureItem?.releaseYear || '2020' }})</span
-                      >
+                      >({{ featureItem?.releaseYear || '2020' }})</span>
                     </h3>
                   </div>
 

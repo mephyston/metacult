@@ -38,15 +38,17 @@ function vote(direction: 'left' | 'right') {
   >
     <Card class="h-full flex flex-col shadow-2xl">
       <div class="relative flex-1 overflow-hidden">
-        <img :src="image" class="absolute inset-0 w-full h-full object-cover" />
+        <img
+          :src="image"
+          class="absolute inset-0 w-full h-full object-cover"
+        >
         <div
           class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white"
         >
           <span
             v-if="category"
             class="inline-block px-2 py-1 mb-2 text-xs font-bold uppercase tracking-wider bg-primary rounded"
-            >{{ category }}</span
-          >
+          >{{ category }}</span>
           <h2 class="text-3xl font-bold leading-tight">
             {{ title }}
           </h2>

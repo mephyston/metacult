@@ -112,9 +112,15 @@ const getProviderInitials = (provider: string) => {
 </script>
 
 <template>
-  <div v-if="hasOffers" class="w-full flex justify-center">
+  <div
+    v-if="hasOffers"
+    class="w-full flex justify-center"
+  >
     <!-- === CARD VARIANT (Compact / Swipe) === -->
-    <div v-if="variant === 'card'" class="pointer-events-auto">
+    <div
+      v-if="variant === 'card'"
+      class="pointer-events-auto"
+    >
       <a
         v-if="primaryOffer"
         :href="primaryOffer.url"
@@ -137,16 +143,28 @@ const getProviderInitials = (provider: string) => {
     </div>
 
     <!-- === DETAIL VARIANT (Full Page) === -->
-    <div v-else class="w-full flex flex-col gap-6">
+    <div
+      v-else
+      class="w-full flex flex-col gap-6"
+    >
       <!-- Section Header -->
       <h3 class="text-lg font-semibold flex items-center gap-2">
-        <Gamepad2 v-if="cheapSharkOffer || primaryOffer" class="w-5 h-5" />
-        <Tv v-else class="w-5 h-5" />
+        <Gamepad2
+          v-if="cheapSharkOffer || primaryOffer"
+          class="w-5 h-5"
+        />
+        <Tv
+          v-else
+          class="w-5 h-5"
+        />
         Où regarder / Acheter
       </h3>
 
       <!-- 1. Streaming Grid (Movies/Shows) -->
-      <div v-if="streamingOffers.length > 0" class="flex flex-wrap gap-3">
+      <div
+        v-if="streamingOffers.length > 0"
+        class="flex flex-wrap gap-3"
+      >
         <a
           v-for="offer in streamingOffers"
           :key="offer.id || offer.provider"

@@ -194,15 +194,20 @@ const handleLogout = async () => {
         <!-- Navbar Left: Logo & Nav -->
         <div class="navbar-left flex items-center h-full gap-8">
           <!-- Logo -->
-          <a href="/" class="logo flex items-center h-full">
+          <a
+            href="/"
+            class="logo flex items-center h-full"
+          >
             <span
               class="text-2xl font-display font-bold text-foreground uppercase tracking-wider"
-              >Metacult</span
-            >
+            >Metacult</span>
           </a>
 
           <!-- Navigation (Website Only) -->
-          <div v-if="context === 'website'" class="hidden md:flex">
+          <div
+            v-if="context === 'website'"
+            class="hidden md:flex"
+          >
             <NavigationMenu>
               <NavigationMenuList>
                 <!-- Films Menu -->
@@ -229,7 +234,7 @@ const handleLogout = async () => {
                             :src="getCoverUrl(trendingHighlights?.movie)"
                             :alt="trendingHighlights?.movie?.title"
                             class="absolute inset-0 w-full h-full object-cover opacity-30"
-                          />
+                          >
                           <div class="relative z-10">
                             <div
                               class="mb-1 text-xs font-medium text-primary uppercase"
@@ -256,8 +261,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/catalog/movie/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >📅 Bientôt</a
-                            >
+                            >📅 Bientôt</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -265,8 +269,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl(`/catalog/movie/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >🏆 Le Top {{ currentCatalogYear }}</a
-                            >
+                            >🏆 Le Top {{ currentCatalogYear }}</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -276,8 +279,7 @@ const handleLogout = async () => {
                                 getPublicUrl('/catalog/movie/hall-of-fame')
                               "
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >⭐ Hall of Fame</a
-                            >
+                            >⭐ Hall of Fame</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -285,8 +287,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/search?type=movie')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >🔍 Recherche avancée</a
-                            >
+                            >🔍 Recherche avancée</a>
                           </NavigationMenuLink>
                         </li>
                       </ul>
@@ -317,7 +318,7 @@ const handleLogout = async () => {
                             :src="getCoverUrl(trendingHighlights?.tv)"
                             :alt="trendingHighlights?.tv?.title"
                             class="absolute inset-0 w-full h-full object-cover opacity-30"
-                          />
+                          >
                           <div class="relative z-10">
                             <div
                               class="mb-1 text-xs font-medium text-primary uppercase"
@@ -341,8 +342,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/catalog/tv/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >📅 Bientôt</a
-                            >
+                            >📅 Bientôt</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -350,8 +350,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl(`/catalog/tv/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >🏆 Le Top {{ currentCatalogYear }}</a
-                            >
+                            >🏆 Le Top {{ currentCatalogYear }}</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -359,8 +358,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/catalog/tv/hall-of-fame')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >⭐ Hall of Fame</a
-                            >
+                            >⭐ Hall of Fame</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -368,8 +366,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/search?type=tv')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >🔍 Recherche avancée</a
-                            >
+                            >🔍 Recherche avancée</a>
                           </NavigationMenuLink>
                         </li>
                       </ul>
@@ -400,7 +397,7 @@ const handleLogout = async () => {
                             :src="getCoverUrl(trendingHighlights?.game)"
                             :alt="trendingHighlights?.game?.title"
                             class="absolute inset-0 w-full h-full object-cover opacity-30"
-                          />
+                          >
                           <div class="relative z-10">
                             <div
                               class="mb-1 text-xs font-medium text-primary uppercase"
@@ -426,8 +423,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/catalog/game/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >📅 Bientôt</a
-                            >
+                            >📅 Bientôt</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -435,8 +431,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl(`/catalog/game/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >🏆 Le Top {{ currentCatalogYear }}</a
-                            >
+                            >🏆 Le Top {{ currentCatalogYear }}</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -444,8 +439,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/catalog/game/hall-of-fame')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >⭐ Hall of Fame</a
-                            >
+                            >⭐ Hall of Fame</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -453,8 +447,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/search?type=game')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >🔍 Recherche avancée</a
-                            >
+                            >🔍 Recherche avancée</a>
                           </NavigationMenuLink>
                         </li>
                       </ul>
@@ -485,7 +478,7 @@ const handleLogout = async () => {
                             :src="getCoverUrl(trendingHighlights?.book)"
                             :alt="trendingHighlights?.book?.title"
                             class="absolute inset-0 w-full h-full object-cover opacity-30"
-                          />
+                          >
                           <div class="relative z-10">
                             <div
                               class="mb-1 text-xs font-medium text-primary uppercase"
@@ -511,8 +504,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/catalog/book/upcoming')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >📅 Bientôt</a
-                            >
+                            >📅 Bientôt</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -520,8 +512,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl(`/catalog/book/best-of`)"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >🏆 Le Top {{ currentCatalogYear }}</a
-                            >
+                            >🏆 Le Top {{ currentCatalogYear }}</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -529,8 +520,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/catalog/book/hall-of-fame')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >⭐ Hall of Fame</a
-                            >
+                            >⭐ Hall of Fame</a>
                           </NavigationMenuLink>
                         </li>
                         <li>
@@ -538,8 +528,7 @@ const handleLogout = async () => {
                             <a
                               :href="getPublicUrl('/search?type=book')"
                               class="block p-2 rounded hover:bg-accent text-sm"
-                              >🔍 Recherche avancée</a
-                            >
+                            >🔍 Recherche avancée</a>
                           </NavigationMenuLink>
                         </li>
                       </ul>
@@ -562,7 +551,10 @@ const handleLogout = async () => {
           <slot name="actions" />
 
           <!-- AUTHENTICATED USER -->
-          <div v-if="isMounted && currentUser" class="flex items-center gap-2">
+          <div
+            v-if="isMounted && currentUser"
+            class="flex items-center gap-2"
+          >
             <!-- WEBSITE CONTEXT: Show 'Open App' Button -->
             <Button
               v-if="context === 'website'"
@@ -597,11 +589,17 @@ const handleLogout = async () => {
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" class="w-56">
+              <DropdownMenuContent
+                align="end"
+                class="w-56"
+              >
                 <!-- User Info -->
                 <div class="flex items-center justify-start gap-2 p-2">
                   <div class="flex flex-col space-y-1 leading-none">
-                    <p v-if="currentUser.username" class="font-medium">
+                    <p
+                      v-if="currentUser.username"
+                      class="font-medium"
+                    >
                       {{ currentUser.username }}
                     </p>
                     <p
@@ -612,10 +610,16 @@ const handleLogout = async () => {
                     </p>
                   </div>
                 </div>
-                <hr class="my-1 border-border" />
+                <hr class="my-1 border-border">
 
-                <DropdownMenuItem v-if="context === 'website'" as-child>
-                  <a :href="appUrl" class="cursor-pointer w-full font-medium">{{
+                <DropdownMenuItem
+                  v-if="context === 'website'"
+                  as-child
+                >
+                  <a
+                    :href="appUrl"
+                    class="cursor-pointer w-full font-medium"
+                  >{{
                     labels.openApp
                   }}</a>
                 </DropdownMenuItem>
@@ -624,14 +628,14 @@ const handleLogout = async () => {
                   <a
                     href="/profile"
                     class="cursor-pointer w-full font-medium"
-                    >{{ labels.profile || 'Profile' }}</a
-                  >
+                  >{{ labels.profile || 'Profile' }}</a>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem as-child>
-                  <a href="/feed" class="cursor-pointer w-full font-medium"
-                    >Activity Feed</a
-                  >
+                  <a
+                    href="/feed"
+                    class="cursor-pointer w-full font-medium"
+                  >Activity Feed</a>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
@@ -728,30 +732,41 @@ const handleLogout = async () => {
     >
       <nav class="flex flex-col p-4 gap-4">
         <!-- Replicate Website links for Mobile -->
-        <div v-if="context === 'website'" class="flex flex-col gap-2">
+        <div
+          v-if="context === 'website'"
+          class="flex flex-col gap-2"
+        >
           <h4 class="font-bold text-muted-foreground uppercase text-xs">
             Explorer
           </h4>
-          <a href="/trends" class="text-foreground py-2">🔥 Tendances</a>
-          <a href="/catalog?type=game" class="text-foreground py-2"
-            >🎮 Jeux Vidéo</a
-          >
-          <a href="/catalog?type=movie" class="text-foreground py-2"
-            >🎬 Films & Séries</a
-          >
-          <a href="/catalog?type=book" class="text-foreground py-2"
-            >📚 Livres & BD</a
-          >
+          <a
+            href="/trends"
+            class="text-foreground py-2"
+          >🔥 Tendances</a>
+          <a
+            href="/catalog?type=game"
+            class="text-foreground py-2"
+          >🎮 Jeux Vidéo</a>
+          <a
+            href="/catalog?type=movie"
+            class="text-foreground py-2"
+          >🎬 Films & Séries</a>
+          <a
+            href="/catalog?type=book"
+            class="text-foreground py-2"
+          >📚 Livres & BD</a>
 
           <h4 class="font-bold text-muted-foreground uppercase text-xs mt-4">
             Classements
           </h4>
-          <a href="/rankings/hall-of-fame" class="text-foreground py-2"
-            >🏆 Hall of Fame</a
-          >
-          <a href="/rankings/hidden-gems" class="text-foreground py-2"
-            >💎 Pépites Cachées</a
-          >
+          <a
+            href="/rankings/hall-of-fame"
+            class="text-foreground py-2"
+          >🏆 Hall of Fame</a>
+          <a
+            href="/rankings/hidden-gems"
+            class="text-foreground py-2"
+          >💎 Pépites Cachées</a>
         </div>
 
         <slot name="mobile-nav" />

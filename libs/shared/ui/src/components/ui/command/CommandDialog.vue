@@ -24,7 +24,9 @@ const forwarded = useForwardPropsEmits(props, emits);
 <template>
   <Dialog v-bind="forwarded">
     <DialogContent class="overflow-hidden p-0 shadow-lg sm:rounded-xl">
-      <DialogTitle class="sr-only"> Command Menu </DialogTitle>
+      <DialogTitle class="sr-only">
+        Command Menu
+      </DialogTitle>
       <DialogDescription class="sr-only">
         Search for games, movies, shows, and books.
       </DialogDescription>

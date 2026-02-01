@@ -37,7 +37,10 @@ const value = computed({
 </script>
 
 <template>
-  <SelectRoot v-model="value" :disabled="disabled">
+  <SelectRoot
+    v-model="value"
+    :disabled="disabled"
+  >
     <SelectTrigger
       :class="
         cn(

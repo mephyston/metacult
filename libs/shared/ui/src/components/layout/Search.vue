@@ -228,12 +228,18 @@ function navigateToMedia(type: string, idOrSlug: string) {
         >
           Aucun résultat trouvé.
         </CommandEmpty>
-        <CommandEmpty v-if="isLoading" class="py-6 flex justify-center">
+        <CommandEmpty
+          v-if="isLoading"
+          class="py-6 flex justify-center"
+        >
           <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
         </CommandEmpty>
 
         <!-- Games -->
-        <CommandGroup v-if="results.games.length > 0" heading="Jeux Vidéo">
+        <CommandGroup
+          v-if="results.games.length > 0"
+          heading="Jeux Vidéo"
+        >
           <CommandItem
             v-for="item in results.games"
             :key="item.id"
@@ -243,9 +249,10 @@ function navigateToMedia(type: string, idOrSlug: string) {
           >
             <Gamepad2 class="mr-2 h-4 w-4" />
             <span>{{ item.title }}</span>
-            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs"
-              >({{ item.year }})</span
-            >
+            <span
+              v-if="item.year"
+              class="ml-2 text-muted-foreground text-xs"
+            >({{ item.year }})</span>
             <div class="ml-auto flex items-center">
               <Loader2
                 v-if="importingId === item.id"
@@ -264,7 +271,10 @@ function navigateToMedia(type: string, idOrSlug: string) {
         </CommandGroup>
 
         <!-- Movies -->
-        <CommandGroup v-if="results.movies.length > 0" heading="Films">
+        <CommandGroup
+          v-if="results.movies.length > 0"
+          heading="Films"
+        >
           <CommandItem
             v-for="item in results.movies"
             :key="item.id"
@@ -274,9 +284,10 @@ function navigateToMedia(type: string, idOrSlug: string) {
           >
             <Film class="mr-2 h-4 w-4" />
             <span>{{ item.title }}</span>
-            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs"
-              >({{ item.year }})</span
-            >
+            <span
+              v-if="item.year"
+              class="ml-2 text-muted-foreground text-xs"
+            >({{ item.year }})</span>
             <div class="ml-auto flex items-center">
               <Loader2
                 v-if="importingId === item.id"
@@ -295,7 +306,10 @@ function navigateToMedia(type: string, idOrSlug: string) {
         </CommandGroup>
 
         <!-- Shows -->
-        <CommandGroup v-if="results.shows.length > 0" heading="Séries TV">
+        <CommandGroup
+          v-if="results.shows.length > 0"
+          heading="Séries TV"
+        >
           <CommandItem
             v-for="item in results.shows"
             :key="item.id"
@@ -305,9 +319,10 @@ function navigateToMedia(type: string, idOrSlug: string) {
           >
             <Tv class="mr-2 h-4 w-4" />
             <span>{{ item.title }}</span>
-            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs"
-              >({{ item.year }})</span
-            >
+            <span
+              v-if="item.year"
+              class="ml-2 text-muted-foreground text-xs"
+            >({{ item.year }})</span>
             <div class="ml-auto flex items-center">
               <Loader2
                 v-if="importingId === item.id"
@@ -326,7 +341,10 @@ function navigateToMedia(type: string, idOrSlug: string) {
         </CommandGroup>
 
         <!-- Books -->
-        <CommandGroup v-if="results.books.length > 0" heading="Livres">
+        <CommandGroup
+          v-if="results.books.length > 0"
+          heading="Livres"
+        >
           <CommandItem
             v-for="item in results.books"
             :key="item.id"
@@ -336,9 +354,10 @@ function navigateToMedia(type: string, idOrSlug: string) {
           >
             <BookOpen class="mr-2 h-4 w-4" />
             <span>{{ item.title }}</span>
-            <span v-if="item.year" class="ml-2 text-muted-foreground text-xs"
-              >({{ item.year }})</span
-            >
+            <span
+              v-if="item.year"
+              class="ml-2 text-muted-foreground text-xs"
+            >({{ item.year }})</span>
             <div class="ml-auto flex items-center">
               <Loader2
                 v-if="importingId === item.id"
