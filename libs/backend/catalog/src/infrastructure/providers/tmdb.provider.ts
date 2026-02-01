@@ -7,8 +7,8 @@ import type { TmdbMovieRaw, TmdbTvRaw } from '../types/raw-responses';
  * Gère les requêtes HTTP et l'authentification.
  */
 export class TmdbProvider {
-  private apiKey: string;
-  private apiUrl = 'https://api.themoviedb.org/3';
+  private readonly apiKey: string;
+  private readonly apiUrl = 'https://api.themoviedb.org/3';
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -47,6 +47,7 @@ export class TmdbProvider {
    * Récupère les détails d'un média (film/tv) par ID.
    *
    * @param {string} id - ID TMDB.
+   * @param {'movie' | 'tv'} [type] - Type de média.
    * @param {AbortSignal} [signal] - Token d'annulation.
    */
   async getMedia(

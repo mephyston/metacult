@@ -1,7 +1,11 @@
 import { describe, expect, it, mock } from 'bun:test';
-import { ComputeNeighborsService } from './compute-neighbors.service';
-import type { AffinityRepository } from '../../domain/ports/affinity.repository.interface';
-import type { SimilarityRepository } from '../../domain/ports/similarity.repository.interface';
+import {
+  ComputeNeighborsService,
+  SimilarityCalculator,
+  DrizzleSimilarityRepository,
+  type AffinityRepository,
+  type SimilarityRepository,
+} from '../../index';
 import { Affinity } from '../../domain/entities/affinity.entity';
 
 describe('ComputeNeighborsService', () => {

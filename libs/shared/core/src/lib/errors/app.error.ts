@@ -7,7 +7,7 @@ export abstract class AppError extends Error {
   public readonly statusCode: number;
   public readonly details?: unknown;
 
-  constructor(
+  protected constructor(
     message: string,
     code: string,
     statusCode: number,

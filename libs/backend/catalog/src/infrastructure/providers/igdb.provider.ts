@@ -15,10 +15,10 @@ interface TwitchTokenResponse {
  * @class IgdbProvider
  */
 export class IgdbProvider {
-  private clientId: string;
-  private clientSecret: string;
-  private authUrl = 'https://id.twitch.tv/oauth2/token';
-  private apiUrl = 'https://api.igdb.com/v4';
+  private readonly clientId: string;
+  private readonly clientSecret: string;
+  private readonly authUrl = 'https://id.twitch.tv/oauth2/token';
+  private readonly apiUrl = 'https://api.igdb.com/v4';
 
   constructor(clientId: string, clientSecret: string) {
     this.clientId = clientId;

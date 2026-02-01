@@ -49,7 +49,7 @@ export abstract class Media {
   public readonly releaseYear: ReleaseYear | null;
   public readonly externalReference: ExternalReference;
 
-  constructor(props: MediaProps) {
+  protected constructor(props: MediaProps) {
     this.id = props.id;
     this.title = props.title;
     this.slug = props.slug;

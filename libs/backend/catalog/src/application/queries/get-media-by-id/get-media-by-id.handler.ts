@@ -1,9 +1,11 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { GetMediaByIdQuery } from './get-media-by-id.query';
 import type { MediaDetailReadModel } from '../../../domain/read-models/media-detail.read-model';
-import { MediaType } from '../../../domain/entities/media.entity';
-import { asMediaId } from '../../../domain/value-objects/media-id.vo';
-import { MediaNotFoundInProviderError } from '../../../domain/errors/catalog.errors';
+import {
+  MediaType,
+  asMediaId,
+  MediaNotFoundInProviderError,
+} from '../../../index';
 import { logger } from '@metacult/backend-infrastructure';
 import { Result } from '@metacult/shared-core';
 

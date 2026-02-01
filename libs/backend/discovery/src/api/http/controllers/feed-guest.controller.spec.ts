@@ -1,7 +1,11 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { Elysia } from 'elysia';
 import { FeedController } from './feed.controller';
-import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
+import {
+  GetMixedFeedQuery,
+  GetTopRatedByYearHandler,
+  GetTopRatedByYearQuery,
+} from '../../../index';
 import { Result } from '@metacult/shared-core';
 
 // --- Mocks ---

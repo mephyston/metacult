@@ -6,8 +6,8 @@ import type { GoogleBookRaw } from '../types/raw-responses';
  * Provider Infrastructure pour l'API Google Books.
  */
 export class GoogleBooksProvider {
-  private apiKey: string;
-  private apiUrl = 'https://www.googleapis.com/books/v1/volumes';
+  private readonly apiKey: string;
+  private readonly apiUrl = 'https://www.googleapis.com/books/v1/volumes';
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
