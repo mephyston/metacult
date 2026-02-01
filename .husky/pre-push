@@ -10,7 +10,12 @@ if ! bun run test:coverage; then
   exit 1
 fi
 
-# 2. Run Qodana Analysis
+# 2. Prepare Coverage for Qodana
+echo "📊 Preparing coverage report..."
+mkdir -p .qodana/code-coverage
+cp coverage/lcov.info .qodana/code-coverage/
+
+# 3. Run Qodana Analysis
 echo "🕵️  Running Qodana Analysis..."
 
 # Function to run Qodana via Docker

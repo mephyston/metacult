@@ -3,12 +3,6 @@
 #               Qodana analysis is configured by qodana.yaml file               #
 #             https://www.jetbrains.com/help/qodana/qodana-yaml.html            #
 #-------------------------------------------------------------------------------#
-version: '1.0'
-
-# Coverage configuration
-coverage:
-  lcov: coverage/lcov.info
-
 # Linter image for JavaScript/TypeScript projects
 linter: jetbrains/qodana-js:2024.3-eap
 
