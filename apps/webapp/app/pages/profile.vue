@@ -57,7 +57,6 @@ const currentItems = computed(() => {
 });
 
 const removeFromList = async (item: MediaItem) => {
-  const actionTarget = activeTab.value === 'wishlist' ? 'WISHLIST' : 'LIKE';
   await db.interactions.delete(item.id);
 };
 
