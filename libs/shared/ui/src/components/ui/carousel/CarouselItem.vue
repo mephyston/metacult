@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useCarousel } from './useCarousel'
-import { cn } from '../../../lib/utils'
+import { useCarousel } from './useCarousel';
+import { cn } from '../../../lib/utils';
 
-const props = defineProps<{ class?: string }>()
+const props = defineProps<{ class?: string }>();
 
-const { orientation } = useCarousel()
+const { orientation } = useCarousel();
 </script>
 
 <template>
