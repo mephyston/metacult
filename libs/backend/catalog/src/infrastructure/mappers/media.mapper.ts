@@ -4,12 +4,12 @@ import {
   TV,
   Book,
   Media,
-  Rating,
-  CoverUrl,
-  ReleaseYear,
-  ExternalReference,
-  asMediaId,
-} from '../../index';
+} from '../../domain/entities/media.entity';
+import { Rating } from '../../domain/value-objects/rating.vo';
+import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
+import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
+import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
+import { asMediaId } from '../../domain/value-objects/media-id.vo';
 import * as schema from '../db/media.schema';
 import { ProviderMetadataMapper } from './provider-metadata.mapper';
 
