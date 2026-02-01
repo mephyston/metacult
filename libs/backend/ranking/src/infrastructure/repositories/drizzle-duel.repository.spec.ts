@@ -110,8 +110,7 @@ describe('Drizzle Duel Repository', () => {
   // --- New Tests for Refactoring ---
 
   it('should find media by ID', async () => {
-    // findById uses simple select, so returns flat objects, not joined structure
-    mockLimit.mockResolvedValueOnce([{ id: '123' }]);
+    mockLimit.mockResolvedValueOnce([{ id: '123', providerMetadata: null }]);
 
     const result = await repository.findById('123');
 

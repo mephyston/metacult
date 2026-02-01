@@ -35,23 +35,33 @@ export class DrizzleDuelRepository implements DuelRepository {
       .limit(2);
 
     if (rows.length < 2) {
-      return rows.map((row: any) => ({
+      return rows.map((row) => ({
         ...row.medias,
-        coverUrl:
-          row.medias.providerMetadata?.coverUrl ||
-          row.medias.providerMetadata?.posterUrl ||
-          null,
-      })) as unknown as RankedMedia[];
+        providerMetadata: row.medias.providerMetadata as Record<
+          string,
+          unknown
+        > | null,
+        coverUrl: this.extractCoverUrl(row.medias.providerMetadata),
+      })) as RankedMedia[];
     }
 
-    const rawMedias = rows.map((row: any) => row.medias);
+    const rawMedias = rows.map((row) => row.medias);
 
-    return rawMedias.map((m: any) => ({
+    return rawMedias.map((m) => ({
       ...m,
-      coverUrl:
-        m.providerMetadata?.coverUrl || m.providerMetadata?.posterUrl || null,
-    })) as unknown as RankedMedia[];
+      providerMetadata: m.providerMetadata as Record<string, unknown> | null,
+      coverUrl: this.extractCoverUrl(m.providerMetadata),
+    })) as RankedMedia[];
   }
+
+  private extractCoverUrl(metadata: unknown): string | null {
+    if (!metadata || typeof metadata !== 'object') return null;
+    const meta = metadata as Record<string, unknown>;
+    if (typeof meta.coverUrl === 'string') return meta.coverUrl;
+    if (typeof meta.posterUrl === 'string') return meta.posterUrl;
+    return null;
+  }
+
   async findById(id: string): Promise<RankedMedia | undefined> {
     const { db } = getDbConnection();
     const rows = await db
@@ -60,19 +70,16 @@ export class DrizzleDuelRepository implements DuelRepository {
       .where(eq(mediaSchema.medias.id, id))
       .limit(1);
 
-    if (rows.length === 0) {
+    if (!rows.length) {
       return undefined;
     }
 
-    // Cast pour correspondre au type RankedMedia
-    const m = rows[0];
+    const m = rows[0]!;
     return {
       ...m,
-      coverUrl:
-        (m as any).providerMetadata?.coverUrl ||
-        (m as any).providerMetadata?.posterUrl ||
-        null,
-    } as unknown as RankedMedia;
+      providerMetadata: m.providerMetadata as Record<string, unknown> | null,
+      coverUrl: this.extractCoverUrl(m.providerMetadata),
+    } as RankedMedia;
   }
 
   async updateEloScores(

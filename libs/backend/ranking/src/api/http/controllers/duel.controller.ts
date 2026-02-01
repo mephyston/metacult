@@ -77,10 +77,10 @@ export const DuelController = new Elysia({ prefix: '/duel' })
   .post(
     '/vote',
     async (context) => {
-      const { body } = context as any; // Elysia context typing workaround
+      const { body } = context;
       const { winnerId, loserId } = body;
 
-      const user = await resolveUserOrThrow(context as any);
+      const user = await resolveUserOrThrow(context);
 
       // 1. Dispatch job update classement
       await rankingQueue.addDuelResult(winnerId, loserId);

@@ -39,7 +39,7 @@ export const RankingController = new Elysia({ prefix: '/ranking' })
 
       try {
         // Résolution de l'utilisateur authentifié
-        const user = await resolveUserOrThrow(context as any);
+        const user = await resolveUserOrThrow(context);
         const userId = user.id;
 
         // Récupération de la limite depuis les query params (default: 10)

@@ -452,6 +452,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
           description: null,
           coverUrl: coverUrl,
           isImported: true,
+          tags: [],
         });
       }
     }
@@ -468,53 +469,9 @@ export class DrizzleMediaRepository implements IMediaRepository {
     if (rows.length === 0) return [];
 
     const mediaIds = rows.map((r) => r.id);
-    const tagsRows = await this.db
-      .select({
-        mediaId: schema.mediasToTags.mediaId,
-        tagSlug: schema.tags.slug,
-        tagLabel: schema.tags.label,
-      })
-      .from(schema.mediasToTags)
-      .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
-      .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
+    const tagsMap = await this.fetchTags(mediaIds);
 
-    const tagsMap = new Map<string, string[]>();
-    for (const tagRow of tagsRows) {
-      if (!tagsMap.has(tagRow.mediaId)) {
-        tagsMap.set(tagRow.mediaId, []);
-      }
-      tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
-    }
-
-    return rows.map((row) => {
-      let coverUrl: string | null = null;
-      const metadata = row.providerMetadata as ProviderMetadata;
-
-      if (metadata) {
-        if (metadata.coverUrl) {
-          coverUrl = metadata.coverUrl;
-        } else if ('poster_path' in metadata && metadata.poster_path) {
-          const path = metadata.poster_path as string;
-          const finalPath = path.startsWith('/') ? path : `/${path}`;
-          coverUrl = `https://image.tmdb.org/t/p/original${finalPath}`;
-        } else if ('image_id' in metadata && metadata.image_id) {
-          coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
-        }
-      }
-
-      return {
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-        type: row.type.toLowerCase() as MediaType,
-        rating: row.globalRating,
-        releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
-        coverUrl: coverUrl,
-        description: null,
-        isImported: true,
-        tags: tagsMap.get(row.id) || [],
-      };
-    });
+    return rows.map((row) => this.mapRowToReadDto(row, tagsMap));
   }
 
   async findTopRated(limit: number): Promise<MediaReadDto[]> {
@@ -527,54 +484,9 @@ export class DrizzleMediaRepository implements IMediaRepository {
     if (rows.length === 0) return [];
 
     const mediaIds = rows.map((r) => r.id);
-    const tagsRows = await this.db
-      .select({
-        mediaId: schema.mediasToTags.mediaId,
-        tagSlug: schema.tags.slug,
-        tagLabel: schema.tags.label,
-      })
-      .from(schema.mediasToTags)
-      .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
-      .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
+    const tagsMap = await this.fetchTags(mediaIds);
 
-    const tagsMap = new Map<string, string[]>();
-    for (const tagRow of tagsRows) {
-      if (!tagsMap.has(tagRow.mediaId)) {
-        tagsMap.set(tagRow.mediaId, []);
-      }
-      tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
-    }
-
-    return rows.map((row) => {
-      let coverUrl: string | null = null;
-      const metadata = row.providerMetadata as ProviderMetadata;
-
-      if (metadata) {
-        if (metadata.coverUrl) {
-          coverUrl = metadata.coverUrl;
-        } else if ('poster_path' in metadata && metadata.poster_path) {
-          const path = metadata.poster_path as string;
-          const finalPath = path.startsWith('/') ? path : `/${path}`;
-          coverUrl = `https://image.tmdb.org/t/p/original${finalPath}`;
-        } else if ('image_id' in metadata && metadata.image_id) {
-          coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
-        }
-      }
-
-      return {
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-        type: row.type.toLowerCase() as MediaType,
-        rating: row.globalRating,
-        releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
-        coverUrl: coverUrl,
-        description: null,
-        isImported: true,
-        eloScore: row.eloScore,
-        tags: tagsMap.get(row.id) || [],
-      };
-    });
+    return rows.map((row) => this.mapRowToReadDto(row, tagsMap));
   }
 
   async findRandom(filters: {
@@ -629,55 +541,9 @@ export class DrizzleMediaRepository implements IMediaRepository {
     if (rows.length === 0) return [];
 
     const mediaIds = rows.map((r) => r.id);
+    const tagsMap = await this.fetchTags(mediaIds);
 
-    // Fetch Tags separately to avoid JOIN limit issues
-    const tagsRows = await this.db
-      .select({
-        mediaId: schema.mediasToTags.mediaId,
-        tagSlug: schema.tags.slug,
-        tagLabel: schema.tags.label,
-      })
-      .from(schema.mediasToTags)
-      .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
-      .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
-
-    const tagsMap = new Map<string, string[]>();
-    for (const tagRow of tagsRows) {
-      if (!tagsMap.has(tagRow.mediaId)) {
-        tagsMap.set(tagRow.mediaId, []);
-      }
-      tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
-    }
-
-    return rows.map((row) => {
-      let coverUrl: string | null = null;
-      const metadata = row.providerMetadata as ProviderMetadata;
-
-      if (metadata) {
-        if (metadata.coverUrl) {
-          coverUrl = metadata.coverUrl;
-        } else if ('poster_path' in metadata && metadata.poster_path) {
-          const path = metadata.poster_path as string;
-          const finalPath = path.startsWith('/') ? path : `/${path}`;
-          coverUrl = `https://image.tmdb.org/t/p/original${finalPath}`;
-        } else if ('image_id' in metadata && metadata.image_id) {
-          coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
-        }
-      }
-
-      return {
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-        type: row.type.toLowerCase() as MediaType,
-        rating: row.globalRating,
-        releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
-        coverUrl: coverUrl,
-        description: null,
-        isImported: true,
-        tags: tagsMap.get(row.id) || [],
-      };
-    });
+    return rows.map((row) => this.mapRowToReadDto(row, tagsMap));
   }
 
   async findByProviderId(
@@ -893,5 +759,67 @@ export class DrizzleMediaRepository implements IMediaRepository {
         }
       }
     });
+  }
+  // --- Private Helpers ---
+
+  private async fetchTags(mediaIds: string[]): Promise<Map<string, string[]>> {
+    if (mediaIds.length === 0) return new Map();
+
+    const tagsRows = await this.db
+      .select({
+        mediaId: schema.mediasToTags.mediaId,
+        tagSlug: schema.tags.slug,
+        tagLabel: schema.tags.label,
+      })
+      .from(schema.mediasToTags)
+      .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
+      .where(inArray(schema.mediasToTags.mediaId, mediaIds));
+
+    const tagsMap = new Map<string, string[]>();
+    for (const tagRow of tagsRows) {
+      if (!tagsMap.has(tagRow.mediaId)) {
+        tagsMap.set(tagRow.mediaId, []);
+      }
+      tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
+    }
+    return tagsMap;
+  }
+
+  private mapRowToReadDto(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    row: any,
+    tagsMap: Map<string, string[]>,
+  ): MediaReadDto {
+    let coverUrl: string | null = null;
+    const metadata = row.providerMetadata as ProviderMetadata;
+
+    if (metadata) {
+      if (metadata.coverUrl) {
+        coverUrl = metadata.coverUrl;
+      } else if ('poster_path' in metadata && metadata.poster_path) {
+        const path = metadata.poster_path as string;
+        const finalPath = path.startsWith('/') ? path : `/${path}`;
+        coverUrl = `https://image.tmdb.org/t/p/original${finalPath}`;
+      } else if ('image_id' in metadata && metadata.image_id) {
+        coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
+      }
+    }
+
+    // Handle eloScore if present (used in findTopRated), otherwise undefined
+    const eloScore = 'eloScore' in row ? row.eloScore : undefined;
+
+    return {
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      type: row.type.toLowerCase() as MediaType,
+      rating: row.globalRating,
+      releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
+      coverUrl: coverUrl,
+      description: null,
+      isImported: true,
+      tags: tagsMap.get(row.id) || [],
+      ...(eloScore !== undefined && { eloScore }),
+    };
   }
 }

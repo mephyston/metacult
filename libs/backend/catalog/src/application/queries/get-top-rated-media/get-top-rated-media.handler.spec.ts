@@ -33,6 +33,7 @@ describe('GetTopRatedMediaHandler', () => {
         description: 'A cached game',
         isImported: true,
         eloScore: 1800,
+        tags: [],
       },
     ];
 
@@ -58,6 +59,7 @@ describe('GetTopRatedMediaHandler', () => {
         description: 'Desc',
         isImported: true,
         eloScore: 1200,
+        tags: [],
       },
       {
         id: 'db-2',
@@ -70,6 +72,7 @@ describe('GetTopRatedMediaHandler', () => {
         description: null,
         isImported: true,
         eloScore: 1900,
+        tags: [],
       },
     ];
 
@@ -102,6 +105,7 @@ describe('GetTopRatedMediaHandler', () => {
         description: null,
         isImported: true,
         eloScore: 2100, // HIGH ELO
+        tags: [],
       },
       {
         id: 'elo-2',
@@ -114,6 +118,7 @@ describe('GetTopRatedMediaHandler', () => {
         description: null,
         isImported: true,
         eloScore: 1650, // MEDIUM ELO
+        tags: [],
       },
     ];
 

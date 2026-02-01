@@ -72,7 +72,7 @@ export const errorMiddleware = new Elysia({ name: 'error-middleware' }).onError(
       return {
         code: error.code,
         message: error.message,
-        ...(error.details && { details: error.details }),
+        ...(error.details ? { details: error.details } : {}),
       };
     }
 

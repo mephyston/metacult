@@ -74,10 +74,11 @@ export async function fetchWithRetry(
 
       // If 5xx, throw to trigger retry logic
       throw new Error(`Server Error: ${res.status} ${res.statusText}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       const isAbort =
-        error.name === 'AbortError' || error.message?.includes('Aborted');
-      const isTimeout = error.message?.includes('timeout');
+        err.name === 'AbortError' || err.message.includes('Aborted');
+      const isTimeout = err.message.includes('timeout');
 
       // If it's a real user abort, DO NOT RETRY.
       if (externalSignal?.aborted && isAbort) {
@@ -93,8 +94,8 @@ export async function fetchWithRetry(
       attempt++;
       const delay = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s
       logger.warn(
+        { err },
         `[fetchWithRetry] Attempt ${attempt}/${retries} failed for ${url}. Retrying in ${delay}ms...`,
-        error.message,
       );
 
       await new Promise((resolve) => setTimeout(resolve, delay));

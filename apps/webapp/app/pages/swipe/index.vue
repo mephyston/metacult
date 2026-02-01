@@ -81,13 +81,13 @@ const fetchItems = async () => {
       if (items.value.length === 0) {
         // If we got no items and have no items, redirect to dashboard as requested
         console.warn('No items found in feed. Redirecting to dashboard.');
-        router.push('/');
+        await router.push('/');
         return;
       }
     } else if (items.value.length === 0) {
       // If response is invalid/empty and we have no items
       console.warn('Empty feed response. Redirecting to dashboard.');
-      router.push('/');
+      await router.push('/');
       return;
     }
   } catch (e) {
@@ -98,7 +98,7 @@ const fetchItems = async () => {
     // Double check: if we are done loading and have no items, redirect
     if (items.value.length === 0) {
       console.warn('Final check: No items. Redirecting to dashboard.');
-      router.push('/');
+      await router.push('/');
       return;
     }
   }
@@ -150,7 +150,7 @@ const handleSwipe = async (payload: any) => {
 
   // Check if we need to refill the deck (Continuous Feed)
   if (isOnboarding.value && items.value.length < 5 && !isLoading.value) {
-    fetchItems();
+    await fetchItems();
   }
 
   if (isOnboarding.value) {
@@ -183,7 +183,7 @@ const completeOnboarding = async () => {
       credentials: 'include',
     });
     // Redirect to Dashboard (clean URL)
-    router.push('/');
+    await router.push('/');
   } catch (e) {
     console.error('Failed to complete onboarding', e);
   }

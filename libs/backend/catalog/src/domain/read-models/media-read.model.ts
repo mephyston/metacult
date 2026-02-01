@@ -15,4 +15,5 @@ export interface MediaReadModel {
   description: string | null;
   isImported: boolean;
   eloScore?: number;
+  tags: string[];
 }
