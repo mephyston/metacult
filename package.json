@@ -113,7 +113,7 @@
     "test": "bun test --preload ./test/setup.ts --ignore='apps/e2e/**'",
     "test:e2e": "cd apps/e2e && bunx playwright test --reporter=list",
     "test:e2e:ui": "cd apps/e2e && bunx playwright test --ui",
-    "lint:all": "nx run-many -t lint --all --parallel=3 --max-warnings=25",
+    "lint:all": "nx run-many -t lint --all --parallel=3 --max-warnings=5",
     "test:all": "bun test --preload ./test/setup.ts --ignore='apps/e2e/**'",
     "test:coverage": "bun test --coverage --coverage-reporter=lcov --preload ./test/setup.ts --ignore='apps/e2e/**'",
     "quality": "bun run lint:all && bun run test:all",

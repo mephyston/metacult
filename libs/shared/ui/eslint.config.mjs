@@ -16,6 +16,8 @@ export default [
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.vue'],
     rules: {
       'vue/multi-word-component-names': 'off',
+      // Optional props don't need default values
+      'vue/require-default-prop': 'off',
     },
   },
 ];
