@@ -26,7 +26,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       );
 
       // Nettoyage de la session locale
-      clearSession();
+      await clearSession();
 
       // Redirection forcée vers le login
       // On utilise window.location pour un refresh complet si côté client, pour nettoyer l'état propre

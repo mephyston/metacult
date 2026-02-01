@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { liveQuery } from 'dexie';
+import { computed } from 'vue';
+
 import { useObservable } from '@vueuse/rxjs';
 
 import { db } from '@metacult/shared-local-db';

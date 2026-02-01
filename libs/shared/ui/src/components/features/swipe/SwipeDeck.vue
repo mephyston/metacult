@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import SwipeCard from './SwipeCard.vue';
-import {
-  X,
-  Clock,
-  Bookmark,
-  ThumbsUp,
-  Flame,
-  RefreshCcw,
-} from 'lucide-vue-next';
-import { logger } from '../../../lib/logger';
+import { X, Clock, Bookmark, ThumbsUp, RefreshCcw } from 'lucide-vue-next';
 
 // --- Types ---
 interface SwipeItem {

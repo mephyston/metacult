@@ -1,23 +1,10 @@
 <script setup lang="ts">
-import {
-  ArrowRight,
-  Calendar,
-  MapPin,
-  ThumbsUp,
-  MessageSquare,
-  MoreVertical,
-} from 'lucide-vue-next';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
-import { getApiUrl, getWebappUrl } from '../../../lib/utils';
+import { getWebappUrl } from '../../../lib/utils';
 import { TextRotator } from '../../ui/text-rotator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../../ui/tooltip';
-import { ref, computed } from 'vue';
+
+import { computed } from 'vue';
 
 interface Media {
   id: string;

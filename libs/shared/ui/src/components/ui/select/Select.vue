@@ -11,7 +11,7 @@ import {
   SelectValue,
   SelectViewport,
 } from 'radix-vue';
-import { ChevronDown, ChevronUp, Check } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp } from 'lucide-vue-next';
 
 interface Props {
   modelValue?: string;

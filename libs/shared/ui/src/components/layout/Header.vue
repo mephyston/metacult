@@ -15,12 +15,11 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
 } from '../ui/navigation-menu';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
-import { cn, getWebappUrl, getApiUrl, getWebsiteUrl } from '../../lib/utils';
+import { getWebappUrl, getApiUrl, getWebsiteUrl } from '../../lib/utils';
 import { authClient } from '../../lib/auth-client';
 import { logger } from '../../lib/logger';
 

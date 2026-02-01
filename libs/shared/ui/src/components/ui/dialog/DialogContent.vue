@@ -3,8 +3,6 @@ import {
   DialogPortal,
   DialogOverlay,
   DialogContent,
-  DialogTitle,
-  DialogDescription,
   DialogClose,
   type DialogContentProps,
   type DialogContentEmits,

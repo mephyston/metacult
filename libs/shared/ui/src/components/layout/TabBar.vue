@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { Home, Swords, Sparkles, Target, User } from 'lucide-vue-next';
 

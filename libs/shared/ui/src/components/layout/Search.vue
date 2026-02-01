@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
-import { useMagicKeys, useDebounceFn } from '@vueuse/core';
+import { useDebounceFn } from '@vueuse/core';
 import {
   Search as SearchIcon,
   CloudDownload,
@@ -18,7 +18,6 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandItem,
-  CommandSeparator,
 } from '../ui/command';
 import { Button } from '../ui/button';
 import { getApiUrl, getWebsiteUrl } from '../../lib/utils';

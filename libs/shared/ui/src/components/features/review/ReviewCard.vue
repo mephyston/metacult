@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useSwipe } from '@vueuse/core';
 import Card from '../../ui/card/Card.vue';
 // CardImage is removed, using simple img tag

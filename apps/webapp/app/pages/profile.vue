@@ -46,9 +46,7 @@ const history = useObservable<MediaItem[], MediaItem[]>(
     liveQuery(async () => {
       // Fetch LIKE and BANGER (if we tracked it as separate action? No, action is LIKE, sentiment is BANGER)
       // So just fetching LIKE covers both GOOD and BANGER if action is LIKE
-      const likes = await getMediaFromInteractions('LIKE');
-      // Maybe also DISLIKE?
-      return likes;
+      return await getMediaFromInteractions('LIKE');
     }),
   ),
   { initialValue: [] },
