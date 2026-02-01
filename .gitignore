@@ -12,6 +12,7 @@ coverage
 .qodana-results/
 .qodana-cache/
 .qodana-report/
+.qodana-reports/
 .qodana/
 
 # logs
