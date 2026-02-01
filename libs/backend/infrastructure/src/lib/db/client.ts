@@ -28,7 +28,7 @@ import { configService } from '../config/configuration.service';
  * Initialise ou récupère la connexion Singleton à la base de données PostgreSQL via Drizzle ORM.
  * Combine le schéma de base et les schémas d'authentification ou personnalisés.
  *
- * @param {T} customSchema - Schéma additionnel optionnel.
+ * @param {object} customSchema - Schéma additionnel optionnel.
  * @returns {{ pool: Pool, db: NodePgDatabase }} L'instance du pool et de Drizzle.
  */
 export function getDbConnection<T extends Record<string, unknown>>(
