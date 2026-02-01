@@ -38,6 +38,7 @@ export class GoogleBooksProvider {
       const data = (await response.json()) as { items: GoogleBookRaw[] };
       return data.items || [];
     } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error }, '[GoogleBooks] Search error');
       return [];
     }

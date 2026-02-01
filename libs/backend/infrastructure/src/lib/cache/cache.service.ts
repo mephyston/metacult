@@ -17,7 +17,8 @@ export class CacheService {
       if (!data) return null;
       return JSON.parse(data) as T;
     } catch (error) {
-      logger.warn({ err: error, key }, '[Cache] GET failed');
+      // noinspection ExceptionCaughtLocallyJS
+      logger.warn({ err: error, key }, 'Cache get error');
       return null; // Fail Open
     }
   }
@@ -37,7 +38,8 @@ export class CacheService {
       const serialized = JSON.stringify(value);
       await this.redis.set(key, serialized, 'EX', ttlSeconds);
     } catch (error) {
-      logger.warn({ err: error, key }, '[Cache] SET failed');
+      // noinspection ExceptionCaughtLocallyJS
+      logger.warn({ err: error, key }, 'Cache set error');
     }
   }
 

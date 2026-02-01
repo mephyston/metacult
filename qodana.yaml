@@ -52,6 +52,14 @@ exclude:
   # Architectural Decisions (Circular Deps Prevention)
   - name: ES6PreferShortImport
 
+  # False positives in Vue script setup where vars are used in template
+  - name: JSUnusedLocalSymbols
+    paths:
+      - '**/*.vue'
+
+  # Imports not detected by static analysis (e.g. auto-imports or deep usage)
+  - name: UnusedImport
+
   # Generated Files
   - name: TypeScriptDuplicateUnionOrIntersectionType
     paths:

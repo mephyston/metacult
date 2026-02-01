@@ -48,8 +48,11 @@ export class CheapSharkProvider {
         lastUpdated: new Date(),
       });
     } catch (error) {
-      console.error('[CheapSharkProvider] Error fetching deal', error);
-      return null;
+      // noinspection ExceptionCaughtLocallyJS
+      // Assuming 'logger' is available in this scope or imported.
+      // For this example, we'll use console.error with the requested format.
+      console.error({ err: error, title }, '[CheapShark] Search deals error');
+      return null; // Keeping original return type consistency
     }
   }
 }

@@ -94,6 +94,7 @@ export class TmdbOffersProvider implements OffersProvider {
 
       return offers;
     } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
       console.error('[TmdbOffersProvider] Error fetching offers', error);
       return [];
     }

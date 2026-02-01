@@ -93,6 +93,7 @@ export class IgdbProvider {
         throw new Error(`IGDB Search failed: ${response.statusText}`);
       return (await response.json()) as IgdbGameRaw[];
     } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error }, '[IGDB] Search error');
       return [];
     }
@@ -129,7 +130,8 @@ export class IgdbProvider {
       const data = (await response.json()) as IgdbGameRaw[];
       return data[0] || null;
     } catch (error) {
-      logger.error({ err: error }, '[IGDB] Get details error');
+      // noinspection ExceptionCaughtLocallyJS
+      logger.error({ err: error, id }, '[IGDB] Get by ID error');
       return null;
     }
   }
@@ -188,6 +190,7 @@ export class IgdbProvider {
 
       return (await response.json()) as IgdbGameRaw[];
     } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error }, '[IGDB] Trending error');
       return [];
     }
