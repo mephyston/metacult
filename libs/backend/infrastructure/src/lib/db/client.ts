@@ -63,8 +63,7 @@ export function getDbConnection<T extends Record<string, unknown>>(
     );
 
     // Schema is now provided by the caller (apps/api merges all schemas)
-    const enableLogger =
-      configService.isDevelopment || configService.debugSql === true;
+    const enableLogger = configService.isDevelopment || configService.debugSql;
     db = drizzle(pool, {
       schema: customSchema,
       logger: enableLogger ? new TracingLogger() : undefined,
