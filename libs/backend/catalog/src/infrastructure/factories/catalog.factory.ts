@@ -13,6 +13,9 @@ import { GetTopRatedMediaHandler } from '../../application/queries/get-top-rated
 import { MediaController } from '../../api/http/controllers/media.controller';
 import { SearchMediaHandler } from '../../application/queries/search-media/search-media.handler';
 import { GetRecentMediaHandler } from '../../application/queries/get-recent-media/get-recent-media.handler';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../db/media.schema';
+import type { Redis } from 'ioredis';
 
 // ✅ Configuration injectée (pas d'accès direct à process.env)
 export interface CatalogModuleConfig {
@@ -41,7 +44,7 @@ export class CatalogModuleFactory {
    * @returns {ImportMediaHandler} Handler prêt à l'emploi.
    */
   static createImportMediaHandler(
-    db: any,
+    db: NodePgDatabase<any>,
     config: CatalogModuleConfig,
   ): ImportMediaHandler {
     // 1. Infrastructure (Persistance)
@@ -82,9 +85,9 @@ export class CatalogModuleFactory {
    * @returns {SearchMediaHandler}
    */
   static createSearchMediaHandler(
-    db: any,
+    db: NodePgDatabase<any>,
     config: CatalogModuleConfig,
-    redis: any,
+    redis: Redis,
   ): SearchMediaHandler {
     const repository = new DrizzleMediaRepository(db);
 
@@ -129,21 +132,24 @@ export class CatalogModuleFactory {
    * @returns {GetRecentMediaHandler}
    */
   static createGetRecentMediaHandler(
-    db: any,
-    redis: any,
+    db: NodePgDatabase<any>,
+    redis: Redis,
   ): GetRecentMediaHandler {
     const repository = new DrizzleMediaRepository(db);
     return new GetRecentMediaHandler(repository, redis);
   }
 
-  static createGetMediaByIdHandler(db: any, redis: any): GetMediaByIdHandler {
+  static createGetMediaByIdHandler(
+    db: NodePgDatabase<any>,
+    redis: Redis,
+  ): GetMediaByIdHandler {
     const repository = new DrizzleMediaRepository(db);
     return new GetMediaByIdHandler(repository, redis);
   }
 
   static createGetTopRatedMediaHandler(
-    db: any,
-    redis: any,
+    db: NodePgDatabase<any>,
+    redis: Redis,
   ): GetTopRatedMediaHandler {
     const repository = new DrizzleMediaRepository(db);
     return new GetTopRatedMediaHandler(repository, redis);
@@ -159,9 +165,9 @@ export class CatalogModuleFactory {
    * @returns {MediaController}
    */
   static createController(
-    db: any,
+    db: NodePgDatabase<any>,
     config: CatalogModuleConfig,
-    redis: any,
+    redis: Redis,
   ): MediaController {
     return new MediaController(
       this.createSearchMediaHandler(db, config, redis),

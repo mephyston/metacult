@@ -1,9 +1,5 @@
 import { fetchWithRetry } from '@metacult/shared-core';
-import {
-  redisClient,
-  cacheService,
-  logger,
-} from '@metacult/backend-infrastructure';
+import { cacheService, logger } from '@metacult/backend-infrastructure';
 import type { IgdbGameRaw } from '../types/raw-responses';
 
 interface TwitchTokenResponse {

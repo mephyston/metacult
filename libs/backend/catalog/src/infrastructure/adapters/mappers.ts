@@ -5,7 +5,6 @@ import type {
   GoogleBookRaw,
 } from '../types/raw-responses';
 import { InvalidProviderDataError } from '../../domain/errors/catalog.errors';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Rating } from '../../domain/value-objects/rating.vo';
 import { CoverUrl } from '../../domain/value-objects/cover-url.vo';

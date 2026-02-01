@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { selectMediaSchema, selectTagSchema } from '../db/media.schema';
+import { selectMediaSchema } from '../db/media.schema';
 
 import type { RecentMediaReadModel } from '../../domain/read-models/recent-media.read-model';
 

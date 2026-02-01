@@ -5,6 +5,7 @@ import type {
   PaginatedSearchResponse,
   SearchMediaReadModel,
 } from '../../../domain/read-models/search-media.read-model';
+import type { MediaReadDto } from '../../../infrastructure/dtos/media-read.dto';
 
 import type { Redis } from 'ioredis';
 import type { IMediaProvider } from '../../ports/media-provider.interface';
@@ -96,11 +97,11 @@ export class SearchMediaHandler {
       }
 
       // 2. Short Query Check
-      if (searchTerm!.length < 3) {
+      if (!searchTerm || searchTerm.length < 3) {
         return Result.ok(this.emptyResponse());
       }
 
-      const normalizedQuery = searchTerm!.toLowerCase();
+      const normalizedQuery = searchTerm.toLowerCase();
       const cacheKey = `search:unified:${normalizedQuery}`;
 
       // 3. Check Redis Cache
@@ -134,19 +135,15 @@ export class SearchMediaHandler {
         );
 
         const results = await Promise.allSettled([
-          this.igdbAdapter.search(searchTerm!),
-          this.tmdbAdapter.search(searchTerm!),
-          this.googleBooksAdapter.search(searchTerm!),
+          this.igdbAdapter.search(searchTerm),
+          this.tmdbAdapter.search(searchTerm),
+          this.googleBooksAdapter.search(searchTerm),
         ]);
 
         const [igdbRes, tmdbRes, gbooksRes] = results;
 
         if (igdbRes.status === 'fulfilled') {
-          this.mergeRemoteResults(
-            groupedResponse.games,
-            igdbRes.value,
-            MediaType.GAME,
-          );
+          this.mergeRemoteResults(groupedResponse.games, igdbRes.value);
         } else {
           logger.error({ err: igdbRes.reason }, '[Search] IGDB Error');
         }
@@ -165,11 +162,7 @@ export class SearchMediaHandler {
         }
 
         if (gbooksRes.status === 'fulfilled') {
-          this.mergeRemoteResults(
-            groupedResponse.books,
-            gbooksRes.value,
-            MediaType.BOOK,
-          );
+          this.mergeRemoteResults(groupedResponse.books, gbooksRes.value);
         } else {
           logger.error({ err: gbooksRes.reason }, '[Search] GoogleBooks Error');
         }
@@ -199,7 +192,9 @@ export class SearchMediaHandler {
     return { games: [], movies: [], shows: [], books: [] };
   }
 
-  private mapLocalToGrouped(localResults: any[]): GroupedSearchResponse {
+  private mapLocalToGrouped(
+    localResults: MediaReadDto[],
+  ): GroupedSearchResponse {
     const response = this.emptyResponse();
 
     for (const res of localResults) {
@@ -211,7 +206,7 @@ export class SearchMediaHandler {
         poster: res.coverUrl,
         type: res.type,
         isImported: true, // Local DB items are imported
-        externalId: res.externalReference?.id ?? null,
+        externalId: null, // Not available in simple ReadDto
       };
 
       switch (res.type) {
@@ -234,15 +229,14 @@ export class SearchMediaHandler {
 
   private mergeRemoteResults(
     targetArray: SearchMediaReadModel[],
-    remoteItems: any[],
-    type: MediaType,
+    remoteItems: Media[],
   ) {
     for (const remote of remoteItems) {
       const exists = targetArray.some(
         (local) =>
           local.title.toLowerCase() === remote.title.toLowerCase() &&
-          (local.year && remote.releaseYear?.value
-            ? local.year === remote.releaseYear.value
+          (local.year && remote.releaseYear?.getValue()
+            ? local.year === remote.releaseYear.getValue()
             : true),
       );
 

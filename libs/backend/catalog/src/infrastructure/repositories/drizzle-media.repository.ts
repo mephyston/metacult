@@ -10,6 +10,7 @@ import {
 } from 'drizzle-orm';
 import { z } from 'zod';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { ProviderMetadata } from '../types/raw-responses';
 import { logger } from '@metacult/backend-infrastructure';
 import type {
   IMediaRepository,
@@ -30,7 +31,6 @@ import { ProviderMetadataMapper } from '../mappers/provider-metadata.mapper';
 import type { MediaReadDto } from '../dtos/media-read.dto';
 import { MediaMapper } from '../mappers/media.mapper';
 
-
 // Helper type for the DB instance
 type Db = NodePgDatabase<typeof schema>;
 
@@ -39,7 +39,7 @@ type Db = NodePgDatabase<typeof schema>;
  * Gère le mapping entre les Entités du Domaine et le schéma relationnel SQL.
  */
 export class DrizzleMediaRepository implements IMediaRepository {
-  constructor(private readonly db: Db) { }
+  constructor(private readonly db: Db) {}
 
   nextId(): string {
     return crypto.randomUUID();
@@ -111,14 +111,24 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const conditions = [];
 
     if (filters.type) {
-      conditions.push(eq(schema.medias.type, filters.type as any));
+      conditions.push(
+        eq(
+          schema.medias.type,
+          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
+        ),
+      );
     }
 
     if (filters.types && filters.types.length > 0) {
       conditions.push(
         inArray(
           schema.medias.type,
-          filters.types.map((t) => t.toUpperCase()) as any[],
+          filters.types.map((t) => t.toUpperCase()) as (
+            | 'GAME'
+            | 'MOVIE'
+            | 'TV'
+            | 'BOOK'
+          )[],
         ),
       );
     }
@@ -152,7 +162,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     if (rows.length === 0) return [];
 
     // Déduplication immédiate (si le filtre tag a généré des doublons, ou juste par sécurité)
-    const uniqueMap = new Map<string, any>();
+    const uniqueMap = new Map<string, (typeof rows)[number]>();
     const mediaIds: string[] = [];
 
     for (const row of rows) {
@@ -202,6 +212,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const results: Media[] = [];
     for (const id of mediaIds) {
       const row = uniqueMap.get(id);
+      if (!row) continue;
       const entity = MediaMapper.toDomain(row);
       // Si l'entité a une méthode ou propriété setTags, on l'utilise. Sinon on ignore.
       // Comme je ne vois pas l'entité, je ne peux pas deviner.
@@ -239,7 +250,10 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (filters.type) {
       conditions.push(
-        eq(schema.medias.type, filters.type.toUpperCase() as any),
+        eq(
+          schema.medias.type,
+          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
+        ),
       );
     }
 
@@ -247,7 +261,12 @@ export class DrizzleMediaRepository implements IMediaRepository {
       conditions.push(
         inArray(
           schema.medias.type,
-          filters.types.map((t) => t.toUpperCase()) as any[],
+          filters.types.map((t) => t.toUpperCase()) as (
+            | 'GAME'
+            | 'MOVIE'
+            | 'TV'
+            | 'BOOK'
+          )[],
         ),
       );
     }
@@ -363,14 +382,24 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const conditions = [];
 
     if (filters.type) {
-      conditions.push(eq(schema.medias.type, filters.type as any));
+      conditions.push(
+        eq(
+          schema.medias.type,
+          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
+        ),
+      );
     }
 
     if (filters.types && filters.types.length > 0) {
       conditions.push(
         inArray(
           schema.medias.type,
-          filters.types.map((t) => t.toUpperCase()) as any[],
+          filters.types.map((t) => t.toUpperCase()) as (
+            | 'GAME'
+            | 'MOVIE'
+            | 'TV'
+            | 'BOOK'
+          )[],
         ),
       );
     }
@@ -408,7 +437,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     for (const row of rows) {
       if (!unique.has(row.id)) {
         let coverUrl: string | null = null;
-        const metadata = row.providerMetadata as any;
+        const metadata = row.providerMetadata as ProviderMetadata;
         if (metadata && metadata.coverUrl) {
           coverUrl = metadata.coverUrl;
         }
@@ -417,7 +446,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
           id: row.id,
           slug: row.slug,
           title: row.title,
-          type: row.type.toLowerCase() as any,
+          type: row.type.toLowerCase() as MediaType,
           rating: row.rating,
           releaseYear: row.releaseYear ? row.releaseYear.getFullYear() : null,
           description: null,
@@ -459,17 +488,16 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     return rows.map((row) => {
       let coverUrl: string | null = null;
-      const metadata = row.providerMetadata as any;
+      const metadata = row.providerMetadata as ProviderMetadata;
 
       if (metadata) {
         if (metadata.coverUrl) {
           coverUrl = metadata.coverUrl;
-        } else if (metadata.poster_path) {
-          const path = metadata.poster_path.startsWith('/')
-            ? metadata.poster_path
-            : `/${metadata.poster_path}`;
-          coverUrl = `https://image.tmdb.org/t/p/original${path}`;
-        } else if (metadata.image_id) {
+        } else if ('poster_path' in metadata && metadata.poster_path) {
+          const path = metadata.poster_path as string;
+          const finalPath = path.startsWith('/') ? path : `/${path}`;
+          coverUrl = `https://image.tmdb.org/t/p/original${finalPath}`;
+        } else if ('image_id' in metadata && metadata.image_id) {
           coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
         }
       }
@@ -478,7 +506,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
         id: row.id,
         slug: row.slug,
         title: row.title,
-        type: row.type.toLowerCase() as any,
+        type: row.type.toLowerCase() as MediaType,
         rating: row.globalRating,
         releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
         coverUrl: coverUrl,
@@ -519,17 +547,16 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     return rows.map((row) => {
       let coverUrl: string | null = null;
-      const metadata = row.providerMetadata as any;
+      const metadata = row.providerMetadata as ProviderMetadata;
 
       if (metadata) {
         if (metadata.coverUrl) {
           coverUrl = metadata.coverUrl;
-        } else if (metadata.poster_path) {
-          const path = metadata.poster_path.startsWith('/')
-            ? metadata.poster_path
-            : `/${metadata.poster_path}`;
-          coverUrl = `https://image.tmdb.org/t/p/original${path}`;
-        } else if (metadata.image_id) {
+        } else if ('poster_path' in metadata && metadata.poster_path) {
+          const path = metadata.poster_path as string;
+          const finalPath = path.startsWith('/') ? path : `/${path}`;
+          coverUrl = `https://image.tmdb.org/t/p/original${finalPath}`;
+        } else if ('image_id' in metadata && metadata.image_id) {
           coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
         }
       }
@@ -538,7 +565,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
         id: row.id,
         slug: row.slug,
         title: row.title,
-        type: row.type.toLowerCase() as any,
+        type: row.type.toLowerCase() as MediaType,
         rating: row.globalRating,
         releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
         coverUrl: coverUrl,
@@ -578,7 +605,12 @@ export class DrizzleMediaRepository implements IMediaRepository {
       query.where(
         inArray(
           schema.medias.type,
-          filters.types.map((t) => t.toUpperCase()) as any[],
+          filters.types.map((t) => t.toUpperCase()) as (
+            | 'GAME'
+            | 'MOVIE'
+            | 'TV'
+            | 'BOOK'
+          )[],
         ),
       );
     }
@@ -619,17 +651,16 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     return rows.map((row) => {
       let coverUrl: string | null = null;
-      const metadata = row.providerMetadata as any;
+      const metadata = row.providerMetadata as ProviderMetadata;
 
       if (metadata) {
         if (metadata.coverUrl) {
           coverUrl = metadata.coverUrl;
-        } else if (metadata.poster_path) {
-          const path = metadata.poster_path.startsWith('/')
-            ? metadata.poster_path
-            : `/${metadata.poster_path}`;
-          coverUrl = `https://image.tmdb.org/t/p/original${path}`;
-        } else if (metadata.image_id) {
+        } else if ('poster_path' in metadata && metadata.poster_path) {
+          const path = metadata.poster_path as string;
+          const finalPath = path.startsWith('/') ? path : `/${path}`;
+          coverUrl = `https://image.tmdb.org/t/p/original${finalPath}`;
+        } else if ('image_id' in metadata && metadata.image_id) {
           coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
         }
       }
@@ -638,7 +669,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
         id: row.id,
         slug: row.slug,
         title: row.title,
-        type: row.type.toLowerCase() as any,
+        type: row.type.toLowerCase() as MediaType,
         rating: row.globalRating,
         releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
         coverUrl: coverUrl,
@@ -655,7 +686,10 @@ export class DrizzleMediaRepository implements IMediaRepository {
   ): Promise<Media | null> {
     // 1. Input Validation
     const inputSchema = z.object({
-      provider: z.string().min(1).regex(/^[a-zA-Z0-9_]+$/), // Alphanumeric only
+      provider: z
+        .string()
+        .min(1)
+        .regex(/^[a-zA-Z0-9_]+$/), // Alphanumeric only
       externalId: z.string().min(1),
     });
 
@@ -704,10 +738,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     // `externalId` is passed as a value parameter.
 
     const condition = and(
-      eq(
-        sql<string>`${schema.medias.providerMetadata}->>'source'`,
-        sourceKey,
-      ),
+      eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, sourceKey),
       eq(
         sql<string>`${schema.medias.providerMetadata}->>${sql.raw(`'${idKey}'`)}`,
         externalId,
@@ -753,7 +784,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
         id: media.id,
         title: media.title,
         slug: media.slug,
-        type: media.type.toUpperCase() as any,
+        type: media.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
         releaseDate: releaseDate,
         globalRating: media.rating ? media.rating.getValue() : null,
         providerMetadata: providerMetadataRaw,

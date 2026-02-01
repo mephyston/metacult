@@ -104,8 +104,8 @@ describe('SearchMediaHandler', () => {
         title: 'Mario',
         slug: 'mario',
         type: MediaType.GAME,
-        releaseYear: { value: 1985 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 1985 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-1' },
       },
     ]);
@@ -117,8 +117,8 @@ describe('SearchMediaHandler', () => {
         title: 'Mario',
         slug: 'mario', // Duplicate
         type: MediaType.GAME,
-        releaseYear: { value: 1985 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 1985 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-1' },
       },
       {
@@ -126,8 +126,8 @@ describe('SearchMediaHandler', () => {
         title: 'Zelda',
         slug: 'zelda',
         type: MediaType.GAME,
-        releaseYear: { value: 1986 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 1986 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-2' },
       },
     ]);
