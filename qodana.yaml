@@ -40,8 +40,5 @@ exclude:
   - name: Test files
     paths:
       - '**/*.spec.ts'
-
-# Disable redundant inspections
-inspections:
-  - inspection: ESLint
-    enabled: false
+  # Disable redundant inspections
+  - name: ESLint
