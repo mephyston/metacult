@@ -40,7 +40,8 @@ exclude:
   - name: Test files
     paths:
       - '**/*.spec.ts'
-  # Rely on native 'bun run lint:all' for ESLint rules to avoid noise/conflicts
-  - name: ESLint
-    inspections:
-      - ESLint
+
+# Disable redundant inspections
+inspections:
+  - inspection: ESLint
+    enabled: false
