@@ -18,7 +18,23 @@ export const UserProfileSchema: TObject = Type.Object({
   ),
 });
 
-export type UserProfile = Static<typeof UserProfileSchema>;
+export interface UserPreferences {
+  categories: string[];
+  genres: string[];
+}
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  avatarUrl?: string;
+  createdAt: string;
+  level?: number;
+  xp?: number;
+  nextLevelXp?: number;
+  onboardingCompleted: boolean;
+  preferences?: UserPreferences;
+}
 
 export const AuthStateSchema: TObject = Type.Object({
   isAuthenticated: Type.Boolean(),

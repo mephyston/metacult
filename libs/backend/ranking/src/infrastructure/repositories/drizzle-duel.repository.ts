@@ -56,7 +56,7 @@ export class DrizzleDuelRepository implements DuelRepository {
 
   private extractCoverUrl(metadata: unknown): string | null {
     if (!metadata || typeof metadata !== 'object') return null;
-    const meta = metadata as Record<string, unknown>;
+    const meta = metadata as { coverUrl?: unknown; posterUrl?: unknown };
     if (typeof meta.coverUrl === 'string') return meta.coverUrl;
     if (typeof meta.posterUrl === 'string') return meta.posterUrl;
     return null;

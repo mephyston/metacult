@@ -112,6 +112,7 @@ onMounted(async () => {
           level: 1,
           xp: 0,
           nextLevelXp: 100,
+          onboardingCompleted: false,
         };
 
         // Fetch gamification stats ONLY if user is authenticated
@@ -277,8 +278,8 @@ const handleLogout = async () => {
                               "
                               class="block p-2 rounded hover:bg-accent text-sm"
                               >⭐ Hall of Fame</a
-                            ></NavigationMenuLink
-                          >
+                            >
+                          </NavigationMenuLink>
                         </li>
                         <li>
                           <NavigationMenuLink as-child

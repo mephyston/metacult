@@ -125,7 +125,7 @@ const handleSignOut = async () => {
               <div
                 class="h-full bg-primary transition-all duration-500"
                 :style="{
-                  width: `${Math.min((user.xp! / user.nextLevelXp!) * 100, 100)}%`,
+                  width: `${Math.min(((user?.xp || 0) / (user?.nextLevelXp || 100)) * 100, 100)}%`,
                 }"
               ></div>
             </div>

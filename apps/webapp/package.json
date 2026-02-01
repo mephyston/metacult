@@ -16,6 +16,7 @@
     "@metacult/shared-types": "workspace:*",
     "@metacult/shared-ui": "workspace:*",
     "@nuxtjs/i18n": "^9.0.4",
+    "@sinclair/typebox": "^0.34.48",
     "@vite-pwa/nuxt": "^1.1.0",
     "@vueuse/core": "^14.1.0",
     "@vueuse/rxjs": "^14.1.0",

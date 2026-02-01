@@ -69,8 +69,11 @@ const fetchTrends = async () => {
 };
 
 // Display name with fallback
+// Display name with fallback
 const displayName = computed(() => {
-  return user.value?.name || user.value?.email?.split('@')[0] || 'Culturevore';
+  return (
+    user.value?.username || user.value?.email?.split('@')[0] || 'Culturevore'
+  );
 });
 
 // Format ELO score

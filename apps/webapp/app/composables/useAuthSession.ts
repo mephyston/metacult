@@ -71,6 +71,7 @@ export const useAuthSession = () => {
           level: 1, // Default
           xp: 0,
           nextLevelXp: 100,
+          onboardingCompleted: false,
         };
 
         // Fetch Gamification Stats
@@ -192,9 +193,9 @@ export const useAuthSession = () => {
   };
 
   return {
-    user: readonly(user),
+    user: readonly(user) as Readonly<import('vue').Ref<UserProfile | null>>,
     isLoading: readonly(isLoading),
-    refreshSession: enhancedRefresh, // Use the enhanced version
     clearSession,
+    refreshSession: enhancedRefresh,
   };
 };
