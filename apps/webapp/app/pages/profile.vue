@@ -4,7 +4,7 @@ import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import { db } from '@metacult/shared-local-db';
 import { from } from 'rxjs';
-import MediaGrid from '~/components/ui/MediaGrid.vue';
+import MediaGrid from '../components/ui/MediaGrid.vue';
 import type { MediaItem } from '@metacult/shared-types';
 import { useAuthSession } from '../composables/useAuthSession';
 
@@ -125,7 +125,7 @@ const handleSignOut = async () => {
               <div
                 class="h-full bg-primary transition-all duration-500"
                 :style="{
-                  width: `${Math.min((user.xp! / user.nextLevelXp!) * 100, 100)}%`,
+                  width: `${Math.min(((user?.xp || 0) / (user?.nextLevelXp || 100)) * 100, 100)}%`,
                 }"
               ></div>
             </div>

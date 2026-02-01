@@ -1,4 +1,4 @@
-import { Media } from '@metacult/backend-catalog';
+import type { RankedMedia } from '../../domain/types/ranked-media.type';
 
 /**
  * Port pour l'accès aux données des Duels.
@@ -9,13 +9,13 @@ export interface DuelRepository {
    * @param userId ID de l'utilisateur connecté.
    * @returns Un tableau contenant exactement 2 médias.
    */
-  getRandomPairForUser(userId: string): Promise<Media[]>;
+  getRandomPairForUser(userId: string): Promise<RankedMedia[]>;
 
   /**
    * Récupère un média par son ID.
    * @param id ID du média.
    */
-  findById(id: string): Promise<Media | undefined>;
+  findById(id: string): Promise<RankedMedia | undefined>;
 
   /**
    * Met à jour les scores ELO de deux médias de manière atomique.

@@ -38,11 +38,13 @@ const props = withDefaults(
     guestMode?: boolean;
     signupUrl?: string;
     loginUrl?: string;
+    showFooter?: boolean;
   }>(),
   {
     guestMode: false,
     signupUrl: undefined,
     loginUrl: undefined,
+    showFooter: true,
   },
 );
 
@@ -291,7 +293,7 @@ defineExpose({
 
     <!-- Progress Counter -->
     <div
-      v-if="totalItems > 0"
+      v-if="showFooter && totalItems > 0"
       class="flex items-center gap-3 text-sm text-muted-foreground"
     >
       <span class="font-medium"> {{ totalProcessed }} / {{ totalItems }} </span>

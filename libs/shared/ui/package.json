@@ -9,6 +9,7 @@
       "import": "./src/index.ts",
       "require": "./src/index.ts"
     },
+    "./lib/*": "./src/lib/*",
     "./styles/*": "./src/styles/*"
   },
   "dependencies": {

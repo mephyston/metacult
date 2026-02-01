@@ -1,13 +1,18 @@
-import { Job } from 'bullmq';
 import { logger } from '@metacult/backend-infrastructure';
 import {
   GamificationService,
   GrantXpOnInteractionListener,
+  DrizzleGamificationRepository,
 } from '@metacult/backend-gamification';
+import { getDbConnection } from '@metacult/backend-infrastructure';
 import { InteractionSavedEvent } from '@metacult/backend-interaction';
+import { Job } from 'bullmq';
 
 // Manual Dependency Injection
-const gamificationService = new GamificationService();
+const { db } = getDbConnection();
+// We assume schema is part of what's passed or cast to any if schema is not exported
+const repo = new DrizzleGamificationRepository(db as any);
+const gamificationService = new GamificationService(repo);
 const grantXpListener = new GrantXpOnInteractionListener(gamificationService);
 
 interface InteractionEventPayload {

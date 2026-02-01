@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ActivityFeed from '~/components/social/ActivityFeed.vue';
+import ActivityFeed from '../components/social/ActivityFeed.vue';
 </script>
 
 <template>

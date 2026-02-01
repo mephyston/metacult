@@ -36,12 +36,12 @@ export function getDbConnection<T extends Record<string, unknown>>(
   if (!pool) {
     // console.log('🔌 Connexion à la base de données...'); // Too verbose
     const isProduction = configService.isProduction;
-    const connectionString = configService.get('DATABASE_URL');
+    const connectionString = configService.databaseUrl;
 
     // Smart SSL: Disable for Railway Internal URLs (they don't need/support it usually)
     // Can be forced via DB_SSL env var
     const isRailwayInternal = connectionString.includes('.railway.internal');
-    const dbSslConfig = configService.get('DB_SSL');
+    const dbSslConfig = configService.dbSsl;
 
     let useSsl = isProduction;
     // if (isRailwayInternal) useSsl = false;
@@ -63,7 +63,7 @@ export function getDbConnection<T extends Record<string, unknown>>(
 
     // Schema is now provided by the caller (apps/api merges all schemas)
     const enableLogger =
-      configService.isDevelopment || configService.get('DEBUG_SQL') === true;
+      configService.isDevelopment || configService.debugSql === true;
     db = drizzle(pool, {
       schema: customSchema,
       logger: enableLogger ? new TracingLogger() : undefined,

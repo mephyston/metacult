@@ -2,10 +2,9 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { SearchMediaHandler } from './search-media.handler';
 import { MediaType } from '../../../domain/entities/media.entity';
 import type { SearchMediaQuery } from './search-media.query';
-import type { SearchResultItemSchema } from '../../../api/http/dtos/media.dtos';
-import type { Static } from 'elysia';
+import type { SearchMediaReadModel } from '../../../domain/read-models/search-media.read-model';
 
-type SearchResultItem = Static<typeof SearchResultItemSchema>;
+type SearchResultItem = SearchMediaReadModel;
 
 describe('SearchMediaHandler', () => {
   let handler: SearchMediaHandler;
@@ -43,7 +42,7 @@ describe('SearchMediaHandler', () => {
         id: `local-${i}`,
         title: `Local Game ${i}`,
         slug: `local-game-${i}`,
-        type: 'game',
+        type: MediaType.GAME,
         releaseYear: 2020 + i,
         coverUrl: 'http://img',
         externalReference: { id: `ext-${i}` },
@@ -91,7 +90,7 @@ describe('SearchMediaHandler', () => {
         id: 'local-1',
         title: 'Mario',
         slug: 'mario',
-        type: 'game',
+        type: MediaType.GAME,
         releaseYear: 1985,
         coverUrl: 'http://img',
         externalReference: { id: 'ext-1' },
@@ -105,8 +104,8 @@ describe('SearchMediaHandler', () => {
         title: 'Mario',
         slug: 'mario',
         type: MediaType.GAME,
-        releaseYear: { value: 1985 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 1985 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-1' },
       },
     ]);
@@ -118,8 +117,8 @@ describe('SearchMediaHandler', () => {
         title: 'Mario',
         slug: 'mario', // Duplicate
         type: MediaType.GAME,
-        releaseYear: { value: 1985 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 1985 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-1' },
       },
       {
@@ -127,8 +126,8 @@ describe('SearchMediaHandler', () => {
         title: 'Zelda',
         slug: 'zelda',
         type: MediaType.GAME,
-        releaseYear: { value: 1986 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 1986 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-2' },
       },
     ]);
@@ -154,7 +153,7 @@ describe('SearchMediaHandler', () => {
           id: 'cached',
           title: 'Cached',
           slug: 'cached',
-          type: 'game' as const,
+          type: MediaType.GAME,
           year: 2024,
           poster: null,
           externalId: null,

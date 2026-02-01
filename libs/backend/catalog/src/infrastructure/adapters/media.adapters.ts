@@ -1,5 +1,4 @@
 import type { IMediaProvider } from '../../application/ports/media-provider.interface';
-import { logger } from '@metacult/backend-infrastructure';
 import {
   Media,
   MediaType,
@@ -15,12 +14,7 @@ import {
   mapTvToEntity,
   mapBookToEntity,
 } from './mappers';
-import type {
-  IgdbGameRaw,
-  TmdbMovieRaw,
-  TmdbTvRaw,
-  GoogleBookRaw,
-} from '../types/raw-responses';
+import type { TmdbMovieRaw, TmdbTvRaw } from '../types/raw-responses';
 import {
   validateIgdbGame,
   validateTmdbMovie,
@@ -81,12 +75,12 @@ export class TmdbAdapter implements IMediaProvider {
         const record = item as Record<string, unknown>;
         const tempId = crypto.randomUUID();
 
-        if (record.media_type === 'movie') {
+        if (record['media_type'] === 'movie') {
           validateTmdbMovie(item); // Throws if invalid
           return mapMovieToEntity(item as TmdbMovieRaw, tempId);
         }
 
-        if (record.media_type === 'tv') {
+        if (record['media_type'] === 'tv') {
           validateTmdbTv(item); // Throws if invalid
           return mapTvToEntity(item as TmdbTvRaw, tempId);
         }

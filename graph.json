@@ -260,8 +260,8 @@
           "implicitDependencies": []
         }
       },
-      "@metacult/shared-local-db": {
-        "name": "@metacult/shared-local-db",
+      "shared-local-db": {
+        "name": "shared-local-db",
         "type": "lib",
         "data": {
           "root": "libs/shared/local-db",
@@ -306,12 +306,12 @@
               "parallelism": true
             }
           },
-          "name": "@metacult/shared-local-db",
+          "name": "shared-local-db",
           "tags": ["npm:public"],
           "metadata": {
             "targetGroups": {},
             "js": {
-              "packageName": "@metacult/shared-local-db",
+              "packageName": "shared-local-db",
               "packageVersion": "0.0.1",
               "packageMain": "./src/index.ts",
               "isInPackageManagerWorkspaces": true
@@ -1328,7 +1328,7 @@
       "shared-sync-manager": [
         {
           "source": "shared-sync-manager",
-          "target": "@metacult/shared-local-db",
+          "target": "shared-local-db",
           "type": "static"
         },
         {
@@ -1378,9 +1378,9 @@
           "type": "static"
         }
       ],
-      "@metacult/shared-local-db": [
+      "shared-local-db": [
         {
-          "source": "@metacult/shared-local-db",
+          "source": "shared-local-db",
           "target": "shared-types",
           "type": "static"
         }
@@ -1441,7 +1441,7 @@
       "website": [
         {
           "source": "website",
-          "target": "@metacult/shared-local-db",
+          "target": "shared-local-db",
           "type": "static"
         },
         {
@@ -1468,7 +1468,7 @@
         },
         {
           "source": "webapp",
-          "target": "@metacult/shared-local-db",
+          "target": "shared-local-db",
           "type": "static"
         },
         {

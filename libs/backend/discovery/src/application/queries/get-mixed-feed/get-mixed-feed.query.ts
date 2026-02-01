@@ -12,6 +12,8 @@ export class GetMixedFeedQuery {
     public readonly search: string,
     public readonly userId?: string,
     public readonly excludedMediaIds?: string[],
+    public readonly types?: string[],
     public readonly limit = 10,
+    public readonly isOnboarding = false,
   ) {}
 }

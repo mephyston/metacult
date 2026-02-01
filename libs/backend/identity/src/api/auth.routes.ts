@@ -11,13 +11,15 @@ import { auth } from '../infrastructure/auth/better-auth.service';
  * - GET /api/auth/session
  * - etc.
  *
- * @see https://better-auth.com/docs/concepts/authentication
+ * @see https://better-auth.com/docs/integrations/elysia
  */
 export const createAuthRoutes = () => {
   return (
-    new Elysia({ prefix: '/api/auth' })
-      // Délègue toutes les routes à Better Auth
-      .all('/*', ({ request }) => auth.handler(request))
+    new Elysia()
+      // CRITICAL: Mount at root since Better Auth config has basePath: '/api/auth'
+      // Mounting at '/api/auth' would create double prefix: /api/auth/api/auth/*
+      // Better Auth internally routes to configured basePath
+      .mount(auth.handler)
       .as('global')
   );
 };

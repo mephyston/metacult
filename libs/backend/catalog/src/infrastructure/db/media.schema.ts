@@ -115,3 +115,24 @@ export const mediasToTags = pgTable(
     pk: [t.mediaId, t.tagId],
   }),
 );
+
+// --- Zod Schemas ---
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+
+export const insertMediaSchema = createInsertSchema(medias);
+export const selectMediaSchema = createSelectSchema(medias);
+
+export const insertGameSchema = createInsertSchema(games);
+export const selectGameSchema = createSelectSchema(games);
+
+export const insertMovieSchema = createInsertSchema(movies);
+export const selectMovieSchema = createSelectSchema(movies);
+
+export const insertTvSchema = createInsertSchema(tv);
+export const selectTvSchema = createSelectSchema(tv);
+
+export const insertBookSchema = createInsertSchema(books);
+export const selectBookSchema = createSelectSchema(books);
+
+export const insertTagSchema = createInsertSchema(tags);
+export const selectTagSchema = createSelectSchema(tags);

@@ -4,9 +4,11 @@ run-name: '🛡️ Quality Gate: ${{ github.event.pull_request.title || github.r
 on:
   pull_request:
     branches: [develop, main]
+  workflow_dispatch:
 
 jobs:
   quality:
+    name: Quality Gate
     runs-on: ubuntu-latest
 
     steps:
@@ -25,3 +27,38 @@ jobs:
 
       - name: Run Quality Gate (Lint + Test)
         run: bun run quality
+
+      - name: Architecture Audit (Clean Architecture)
+        run: bun run audit:arch
+
+  code-quality:
+    name: Static Code Analysis (Qodana)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
+      actions: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for Qodana analysis
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Run Qodana Analysis
+        uses: JetBrains/qodana-action@v2023.3
+
+      - name: Upload Qodana Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qodana-report
+          path: ${{ runner.temp }}/qodana/results

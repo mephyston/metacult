@@ -29,3 +29,9 @@ export const userMediaAffinity = pgTable(
     mediaIdx: index('idx_affinity_media_id').on(t.mediaId),
   }),
 );
+
+// --- Zod Schemas ---
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+
+export const insertAffinitySchema = createInsertSchema(userMediaAffinity);
+export const selectAffinitySchema = createSelectSchema(userMediaAffinity);

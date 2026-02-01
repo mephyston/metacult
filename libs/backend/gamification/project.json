@@ -1,0 +1,22 @@
+{
+  "name": "backend-gamification",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "libs/backend/gamification/src",
+  "tags": ["scope:gamification", "layer:backend", "type:bounded-context"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/backend/gamification/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun test --preload ./test/setup.ts libs/backend/gamification"
+      }
+    }
+  }
+}

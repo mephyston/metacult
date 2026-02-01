@@ -59,6 +59,7 @@ export class GetMixedFeedHandler {
 
       const shouldCache =
         !query.userId &&
+        !query.isOnboarding &&
         (!query.excludedMediaIds || query.excludedMediaIds.length === 0);
       const cacheKey = `discovery:feed:${normalizedSearch}`;
 
@@ -86,8 +87,9 @@ export class GetMixedFeedHandler {
           limit: query.limit,
           // Si pas de recherche textuelle, on veut explicitement du Random
           orderBy: !normalizedSearch ? 'random' : undefined,
+          types: query.types,
         }),
-        this.adsProvider.getAds(),
+        !query.isOnboarding ? this.adsProvider.getAds() : Promise.resolve([]),
       ]);
 
       const [mediaRes, adsRes] = results;

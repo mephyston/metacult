@@ -29,3 +29,9 @@ export const userStats = gamificationSchema.table(
     xpIdx: index('idx_user_stats_xp').on(t.xp),
   }),
 );
+
+// --- Zod Schemas ---
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+
+export const insertUserStatsSchema = createInsertSchema(userStats);
+export const selectUserStatsSchema = createSelectSchema(userStats);

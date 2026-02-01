@@ -1,23 +1,20 @@
-import type {
-  UserInteraction,
-  InteractionAction,
-  InteractionSentiment,
-} from '../../domain/entities/user-interaction.entity';
+import type { UserId, MediaId } from '@metacult/shared-core';
+import type { UserInteraction } from '../../domain/entities/user-interaction.entity';
 
 export interface IInteractionRepository {
   save(interaction: UserInteraction): Promise<void>;
   findByUserAndMedia(
-    userId: string,
-    mediaId: string,
+    userId: UserId,
+    mediaId: MediaId,
   ): Promise<UserInteraction | null>;
-  findAllByUser(userId: string): Promise<UserInteraction[]>;
-  getSwipedMediaIds(userId: string): Promise<string[]>;
-  followUser(followerId: string, followingId: string): Promise<void>;
-  unfollowUser(followerId: string, followingId: string): Promise<void>;
-  getFollowers(userId: string): Promise<string[]>;
-  getFollowing(userId: string): Promise<string[]>;
+  findAllByUser(userId: UserId): Promise<UserInteraction[]>;
+  getSwipedMediaIds(userId: UserId): Promise<MediaId[]>;
+  followUser(followerId: UserId, followingId: UserId): Promise<void>;
+  unfollowUser(followerId: UserId, followingId: UserId): Promise<void>;
+  getFollowers(userId: UserId): Promise<UserId[]>;
+  getFollowing(userId: UserId): Promise<UserId[]>;
   getFeed(
-    userIds: string[],
+    userIds: UserId[],
     limit?: number,
     offset?: number,
   ): Promise<UserInteraction[]>;

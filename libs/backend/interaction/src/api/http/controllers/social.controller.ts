@@ -4,14 +4,13 @@ import {
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
 import { logger } from '@metacult/backend-infrastructure';
-import {
-  followUserCommand,
-  unfollowUserCommand,
-} from '../../../application/commands/social-graph.command';
+import { SocialGraphHandler } from '../../../application/commands/social-graph.command';
 import { getDbConnection } from '@metacult/backend-infrastructure';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
 import * as schema from '../../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { FollowUserDto } from '../../../application/dtos/interaction.dto';
+import { asUserId } from '@metacult/shared-core';
 
 // const { db } = getDbConnection(); // Moved inside handlers
 // const interactionRepo = new DrizzleInteractionRepository(db); // Moved inside handlers
@@ -21,7 +20,7 @@ export const socialController = new Elysia({ prefix: '/social' })
   .post(
     '/follow',
     async (ctx) => {
-      const { body, set } = ctx as any;
+      const { body, set } = ctx as unknown as { body: FollowUserDto; set: any };
       try {
         const user = await resolveUserOrThrow(ctx);
         const targetUserId = body.targetUserId;
@@ -31,7 +30,12 @@ export const socialController = new Elysia({ prefix: '/social' })
           return { success: false, message: 'Cannot follow yourself' };
         }
 
-        await followUserCommand(user.id, targetUserId);
+        const { db } = getDbConnection();
+        const interactionRepo = new DrizzleInteractionRepository(
+          db as unknown as NodePgDatabase<typeof schema>,
+        );
+        const handler = new SocialGraphHandler(interactionRepo);
+        await handler.follow(user.id, targetUserId);
 
         return {
           success: true,
@@ -61,12 +65,17 @@ export const socialController = new Elysia({ prefix: '/social' })
   .delete(
     '/follow',
     async (ctx) => {
-      const { body, set } = ctx as any;
+      const { body, set } = ctx as unknown as { body: FollowUserDto; set: any };
       try {
         const user = await resolveUserOrThrow(ctx);
         const targetUserId = body.targetUserId;
 
-        await unfollowUserCommand(user.id, targetUserId);
+        const { db } = getDbConnection();
+        const interactionRepo = new DrizzleInteractionRepository(
+          db as unknown as NodePgDatabase<typeof schema>,
+        );
+        const handler = new SocialGraphHandler(interactionRepo);
+        await handler.unfollow(user.id, targetUserId);
 
         return {
           success: true,
@@ -102,7 +111,7 @@ export const socialController = new Elysia({ prefix: '/social' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const following = await interactionRepo.getFollowing(user.id);
+        const following = await interactionRepo.getFollowing(asUserId(user.id));
         return {
           success: true,
           data: following,
@@ -134,7 +143,7 @@ export const socialController = new Elysia({ prefix: '/social' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const followers = await interactionRepo.getFollowers(user.id);
+        const followers = await interactionRepo.getFollowers(asUserId(user.id));
         return {
           success: true,
           data: followers,

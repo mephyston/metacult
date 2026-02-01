@@ -5,13 +5,13 @@
 export abstract class AppError extends Error {
   public readonly code: string;
   public readonly statusCode: number;
-  public readonly details?: any;
+  public readonly details?: unknown;
 
   constructor(
     message: string,
     code: string,
     statusCode: number,
-    details?: any,
+    details?: unknown,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -41,7 +41,7 @@ export abstract class AppError extends Error {
  * HTTP 400 Bad Request
  */
 export class DomainError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: unknown) {
     super(message, 'DOMAIN_ERROR', 400, details);
   }
 }
@@ -51,7 +51,7 @@ export class DomainError extends AppError {
  * HTTP 404 Not Found
  */
 export class NotFoundError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: unknown) {
     super(message, 'NOT_FOUND', 404, details);
   }
 }
@@ -62,7 +62,7 @@ export class NotFoundError extends AppError {
  * HTTP 401 Unauthorized
  */
 export class UnauthorizedError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: unknown) {
     super(message, 'UNAUTHORIZED', 401, details);
   }
 }
@@ -73,7 +73,7 @@ export class UnauthorizedError extends AppError {
  * HTTP 500 Internal Server Error
  */
 export class InfrastructureError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: unknown) {
     super(message, 'INFRASTRUCTURE_ERROR', 500, details);
   }
 }
@@ -84,7 +84,7 @@ export class InfrastructureError extends AppError {
  * HTTP 403 Forbidden
  */
 export class ForbiddenError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: unknown) {
     super(message, 'FORBIDDEN', 403, details);
   }
 }
@@ -95,7 +95,7 @@ export class ForbiddenError extends AppError {
  * HTTP 409 Conflict
  */
 export class ConflictError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: unknown) {
     super(message, 'CONFLICT', 409, details);
   }
 }

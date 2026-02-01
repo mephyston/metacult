@@ -17,6 +17,15 @@ COPY libs/shared/ui/package.json ./libs/shared/ui/
 COPY libs/shared/types/package.json ./libs/shared/types/
 COPY libs/shared/local-db/package.json ./libs/shared/local-db/
 COPY libs/shared/sync-manager/package.json ./libs/shared/sync-manager/
+COPY libs/backend/catalog/package.json ./libs/backend/catalog/
+COPY libs/backend/commerce/package.json ./libs/backend/commerce/
+COPY libs/backend/discovery/package.json ./libs/backend/discovery/
+COPY libs/backend/gamification/package.json ./libs/backend/gamification/
+COPY libs/backend/identity/package.json ./libs/backend/identity/
+COPY libs/backend/infrastructure/package.json ./libs/backend/infrastructure/
+COPY libs/backend/interaction/package.json ./libs/backend/interaction/
+COPY libs/backend/marketing/package.json ./libs/backend/marketing/
+COPY libs/backend/ranking/package.json ./libs/backend/ranking/
 
 # Copy E2E package.json as it is a workspace in bun.lock
 COPY apps/e2e/package.json ./apps/e2e/

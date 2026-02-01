@@ -7,6 +7,8 @@ export * from './constants/provider.source';
 export * from './constants/status';
 export * from './lib/logger';
 export * from './events/event-handler.interface';
+export * from './domain/ids';
+export * from './types/branded';
 export {
   AppError,
   DomainError,

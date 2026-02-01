@@ -1,6 +1,7 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { GetTopRatedMediaHandler } from './get-top-rated-media.handler';
-import type { MediaReadDto } from '../search-media/media-read.dto';
+import type { MediaReadModel } from '../../../domain/read-models/media-read.model';
+import { MediaType } from '../../../domain/entities/media.entity';
 
 describe('GetTopRatedMediaHandler', () => {
   let handler: GetTopRatedMediaHandler;
@@ -20,18 +21,19 @@ describe('GetTopRatedMediaHandler', () => {
   });
 
   it('should return trends from cache if available', async () => {
-    const cachedTrends: MediaReadDto[] = [
+    const cachedTrends: MediaReadModel[] = [
       {
         id: 'cached-1',
         slug: 'cached-game',
         title: 'Cached Game',
-        type: 'game',
-        coverUrl: 'http://img.com/cover.jpg',
+        type: MediaType.GAME,
+        coverUrl: 'http://cache.jpg',
         rating: 9.5,
         releaseYear: 2023,
         description: 'A cached game',
         isImported: true,
         eloScore: 1800,
+        tags: [],
       },
     ];
 
@@ -45,30 +47,32 @@ describe('GetTopRatedMediaHandler', () => {
   });
 
   it('should fetch from DB and cache on cache miss', async () => {
-    const dbTrends: MediaReadDto[] = [
+    const dbTrends: MediaReadModel[] = [
       {
         id: 'db-1',
         slug: 'top-game',
         title: 'Top Game',
-        type: 'game',
-        coverUrl: 'http://img.com/top.jpg',
-        rating: 9.8,
-        releaseYear: 2024,
-        description: null,
+        type: MediaType.GAME,
+        coverUrl: 'http://cover.jpg',
+        rating: 95,
+        releaseYear: 2023,
+        description: 'Desc',
         isImported: true,
-        eloScore: 2000,
+        eloScore: 1200,
+        tags: [],
       },
       {
         id: 'db-2',
         slug: 'second-game',
         title: 'Second Game',
-        type: 'game',
+        type: MediaType.GAME,
         coverUrl: 'http://img.com/second.jpg',
         rating: 9.2,
         releaseYear: 2023,
         description: null,
         isImported: true,
         eloScore: 1900,
+        tags: [],
       },
     ];
 
@@ -89,30 +93,32 @@ describe('GetTopRatedMediaHandler', () => {
   });
 
   it('should include eloScore field in results', async () => {
-    const trendsWithElo: MediaReadDto[] = [
+    const trendsWithElo: MediaReadModel[] = [
       {
         id: 'elo-1',
         slug: 'high-elo-game',
         title: 'High ELO Game',
-        type: 'game',
+        type: MediaType.GAME,
         coverUrl: 'http://img.com/elo.jpg',
         rating: null,
         releaseYear: 2024,
         description: null,
         isImported: true,
         eloScore: 2100, // HIGH ELO
+        tags: [],
       },
       {
         id: 'elo-2',
         slug: 'medium-elo-game',
         title: 'Medium ELO Game',
-        type: 'movie',
+        type: MediaType.MOVIE,
         coverUrl: null,
         rating: 8.5,
         releaseYear: 2022,
         description: null,
         isImported: true,
         eloScore: 1650, // MEDIUM ELO
+        tags: [],
       },
     ];
 

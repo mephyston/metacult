@@ -1,13 +1,14 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { ImportMediaHandler } from './import-media.handler';
 import { MediaType } from '../../../domain/entities/media.entity';
+import { asMediaId } from '../../../domain/value-objects/media-id.vo';
 import type { ImportMediaCommand } from './import-media.command';
-import type { Media } from '../../../domain/entities/media.entity';
 import {
   InvalidProviderDataError,
   MediaAlreadyExistsError,
   MediaNotFoundInProviderError,
 } from '../../../domain/errors/catalog.errors';
+import { MediaMother } from '../../../domain/factories/media.factory.test';
 
 describe('ImportMediaHandler', () => {
   let handler: ImportMediaHandler;
@@ -54,12 +55,11 @@ describe('ImportMediaHandler', () => {
   });
 
   it('should route GAME type to IgdbAdapter', async () => {
-    const mockMedia = {
-      id: '123',
+    const mockMedia = MediaMother.createGame({
+      id: asMediaId('123'),
       title: 'Test Game',
       slug: 'test-game',
-      type: MediaType.GAME,
-    } as Media;
+    });
     mockIgdb.getMedia.mockResolvedValue(mockMedia);
     const command: ImportMediaCommand = {
       mediaId: '123',
@@ -82,12 +82,11 @@ describe('ImportMediaHandler', () => {
   });
 
   it('should route MOVIE type to TmdbAdapter', async () => {
-    const mockMedia = {
-      id: '456',
+    const mockMedia = MediaMother.createMovie({
+      id: asMediaId('456'),
       title: 'Test Movie',
       slug: 'test-movie',
-      type: MediaType.MOVIE,
-    } as Media;
+    });
     mockTmdb.getMedia.mockResolvedValue(mockMedia);
     const command: ImportMediaCommand = {
       mediaId: '456',

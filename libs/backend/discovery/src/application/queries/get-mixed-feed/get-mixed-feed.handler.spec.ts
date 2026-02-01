@@ -64,7 +64,13 @@ describe('GetMixedFeedHandler', () => {
     const mockAds = { getAds: mock(() => []) } as any;
 
     const handler = new GetMixedFeedHandler(mockRedis, mockSearcher, mockAds);
-    const query = new GetMixedFeedQuery('action', 'user-1', ['ex-1'], 15);
+    const query = new GetMixedFeedQuery(
+      'action',
+      'user-1',
+      ['ex-1'],
+      undefined,
+      15,
+    );
 
     await handler.execute(query);
 

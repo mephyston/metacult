@@ -74,10 +74,10 @@ export function getApiUrl(): string {
   }
 
   // Ensure protocol to prevent relative path resolution
-  if (!rawApiUrl.startsWith('http')) {
+  if (rawApiUrl && !rawApiUrl.startsWith('http')) {
     return `https://${rawApiUrl}`;
   }
-  return rawApiUrl;
+  return rawApiUrl || '';
 }
 
 export function getWebappUrl(): string {
@@ -112,10 +112,10 @@ export function getWebappUrl(): string {
     rawUrl = DEFAULT_DEV_URLS.WEBAPP;
   }
 
-  if (!rawUrl.startsWith('http')) {
+  if (rawUrl && !rawUrl.startsWith('http')) {
     return `https://${rawUrl}`;
   }
-  return rawUrl;
+  return rawUrl || '';
 }
 
 export function getWebsiteUrl(): string {
@@ -153,8 +153,8 @@ export function getWebsiteUrl(): string {
     rawUrl = DEFAULT_DEV_URLS.WEBSITE;
   }
 
-  if (!rawUrl.startsWith('http')) {
+  if (rawUrl && !rawUrl.startsWith('http')) {
     return `https://${rawUrl}`;
   }
-  return rawUrl;
+  return rawUrl || '';
 }

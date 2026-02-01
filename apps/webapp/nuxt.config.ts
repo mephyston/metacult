@@ -2,7 +2,7 @@ import { fileURLToPath } from 'url';
 import tailwindcss from '@tailwindcss/vite';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
-import { themeScript } from '../../libs/shared/ui/src/lib/theme-script';
+import { themeScript } from '@metacult/shared-ui/lib/theme-script.ts';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default {
@@ -94,7 +94,6 @@ export default {
       enabled: true,
       suppressWarnings: true,
       navigateFallback: '/',
-      type: 'module',
     },
   },
 
@@ -178,6 +177,48 @@ export default {
     ),
     '@metacult/shared-ui': fileURLToPath(
       new URL('../../libs/shared/ui/src/index.ts', import.meta.url),
+    ),
+    '@metacult/shared-types': fileURLToPath(
+      new URL('../../libs/shared/types/src/index.ts', import.meta.url),
+    ),
+    '@metacult/shared-local-db': fileURLToPath(
+      new URL('../../libs/shared/local-db/src/index.ts', import.meta.url),
+    ),
+    '@metacult/shared-sync-manager': fileURLToPath(
+      new URL('../../libs/shared/sync-manager/src/index.ts', import.meta.url),
+    ),
+    '@metacult/api': fileURLToPath(
+      new URL('../../apps/api/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-catalog': fileURLToPath(
+      new URL('../../libs/backend/catalog/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-discovery': fileURLToPath(
+      new URL('../../libs/backend/discovery/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-identity': fileURLToPath(
+      new URL('../../libs/backend/identity/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-interaction': fileURLToPath(
+      new URL('../../libs/backend/interaction/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-ranking': fileURLToPath(
+      new URL('../../libs/backend/ranking/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-gamification': fileURLToPath(
+      new URL('../../libs/backend/gamification/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-infrastructure': fileURLToPath(
+      new URL(
+        '../../libs/backend/infrastructure/src/index.ts',
+        import.meta.url,
+      ),
+    ),
+    '@metacult/backend-commerce': fileURLToPath(
+      new URL('../../libs/backend/commerce/src/index.ts', import.meta.url),
+    ),
+    '@metacult/backend-marketing': fileURLToPath(
+      new URL('../../libs/backend/marketing/src/index.ts', import.meta.url),
     ),
   },
 };

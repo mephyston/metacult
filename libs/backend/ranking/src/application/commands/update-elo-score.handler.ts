@@ -18,7 +18,7 @@ export class UpdateEloScoreHandler {
   constructor(
     private readonly duelRepository: DuelRepository,
     private readonly eloCalculator: EloCalculator,
-  ) {}
+  ) { }
 
   async execute(
     command: UpdateEloScoreCommand,

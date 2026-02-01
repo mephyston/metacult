@@ -2,7 +2,7 @@ import Redis from 'ioredis';
 import { configService } from '../config/configuration.service';
 import { logger } from '../logger/logger.service';
 
-const redisUrl = configService.get('REDIS_URL');
+const redisUrl = configService.redisUrl;
 
 logger.info('[Redis] Initializing client for Cache');
 

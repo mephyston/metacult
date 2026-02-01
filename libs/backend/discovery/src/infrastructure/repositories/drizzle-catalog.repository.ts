@@ -12,6 +12,8 @@ import {
   CoverUrl,
   ReleaseYear,
 } from '@metacult/backend-catalog';
+import { asMediaId } from '@metacult/shared-core';
+import type { MediaId } from '@metacult/shared-core';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { userInteractions } from '@metacult/backend-interaction';
@@ -201,7 +203,6 @@ export class DrizzleCatalogRepository implements CatalogRepository {
       globalRating,
       releaseDate,
       providerMetadata,
-      eloScore,
     } = row.medias;
 
     const externalReference = new ExternalReference('unknown', 'unknown');
@@ -232,7 +233,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     switch (type) {
       case 'GAME':
         return new Game({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -243,12 +244,10 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           platform: (row.games?.platform as string[]) || [],
           developer: row.games?.developer || '',
           timeToBeat: row.games?.timeToBeat || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       case 'MOVIE':
         return new Movie({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -258,12 +257,10 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           externalReference,
           director: row.movies?.director || '',
           durationMinutes: row.movies?.durationMinutes || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       case 'TV':
         return new TV({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -274,12 +271,10 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           creator: row.tv?.creator || '',
           episodesCount: row.tv?.episodesCount || 0,
           seasonsCount: row.tv?.seasonsCount || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       case 'BOOK':
         return new Book({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -289,8 +284,6 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           externalReference,
           author: row.books?.author || '',
           pages: row.books?.pages || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       default:
         throw new Error(`Unknown Type: ${type}`);

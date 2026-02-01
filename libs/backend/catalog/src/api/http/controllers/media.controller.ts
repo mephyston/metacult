@@ -4,6 +4,7 @@ import { GetRecentMediaHandler } from '../../../application/queries/get-recent-m
 import { GetMediaByIdQuery } from '../../../application/queries/get-media-by-id/get-media-by-id.query';
 import { GetMediaByIdHandler } from '../../../application/queries/get-media-by-id/get-media-by-id.handler';
 import type { SearchMediaDto, ImportMediaDto } from '../dtos/media.dtos';
+
 import { MediaType } from '../../../domain/entities/media.entity';
 import { logger } from '@metacult/backend-infrastructure';
 

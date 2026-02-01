@@ -58,14 +58,6 @@ mock.module('@metacult/backend-infrastructure', () => ({
   },
 }));
 
-mock.module('drizzle-orm', () => ({
-  sql: (strings: any) => strings,
-  eq: () => 'eq',
-  and: () => 'and',
-  or: () => 'or',
-  inArray: () => 'inArray',
-}));
-
 mock.module('@metacult/backend-catalog', () => ({
   mediaSchema: { medias: { id: 'm_id' } },
 }));
@@ -103,8 +95,7 @@ describe('Drizzle Duel Repository', () => {
     expect(mockLimit).toHaveBeenCalledWith(2);
 
     expect(result).toHaveLength(2);
-    // @ts-expect-error - Mock result typing
-    expect(result[0].id).toBe('1');
+    expect(result![0]!.id).toBe('1');
   });
 
   it('should return empty array if not enough media (no throw)', async () => {
@@ -119,15 +110,13 @@ describe('Drizzle Duel Repository', () => {
   // --- New Tests for Refactoring ---
 
   it('should find media by ID', async () => {
-    // findById uses simple select, so returns flat objects, not joined structure
-    mockLimit.mockResolvedValueOnce([{ id: '123' }]);
+    mockLimit.mockResolvedValueOnce([{ id: '123', providerMetadata: null }]);
 
     const result = await repository.findById('123');
 
     expect(mockSelect).toHaveBeenCalled();
     expect(mockWhere).toHaveBeenCalled();
-    // @ts-expect-error - Mock result typing
-    expect(result.id).toBe('123');
+    expect(result!.id).toBe('123');
   });
 
   it('should return undefined if media not found', async () => {

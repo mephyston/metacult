@@ -4,12 +4,14 @@ import type { IMediaRepository, Media } from '@metacult/backend-catalog';
 import { EloCalculator } from '../../../domain/services/elo-calculator.service';
 import { InteractionAction } from '@metacult/backend-interaction';
 import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { asUserId, asMediaId } from '@metacult/shared-core';
+import type { MediaId } from '@metacult/shared-core';
 
 /**
  * DTO de retour pour un média classé.
  */
 export interface RankedMedia {
-  mediaId: string;
+  mediaId: MediaId;
   title: string;
   coverUrl: string | null;
   type: string;
@@ -47,8 +49,9 @@ export class GetUserRankingsHandler {
       const { userId, limit = 10 } = query;
 
       // 1. Récupérer toutes les interactions de l'utilisateur, triées par date
-      const interactions =
-        await this.interactionRepository.findAllByUser(userId);
+      const interactions = await this.interactionRepository.findAllByUser(
+        asUserId(userId),
+      );
 
       if (interactions.length === 0) {
         return Result.ok([]);
@@ -151,7 +154,7 @@ export class GetUserRankingsHandler {
       // 6. Enrichissement avec les données des médias
       const mediaIds = rankedEntries.map((entry) => entry.mediaId);
       const mediaPromises = mediaIds.map((id) =>
-        this.mediaRepository.findById(id),
+        this.mediaRepository.findById(asMediaId(id)),
       );
       const medias = await Promise.all(mediaPromises);
 
@@ -164,7 +167,7 @@ export class GetUserRankingsHandler {
 
       // Construire le résultat final
       const intermediateResults = rankedEntries.map((entry) => {
-        const media = mediaMap.get(entry.mediaId);
+        const media = mediaMap.get(asMediaId(entry.mediaId));
         if (!media) {
           return null; // Média supprimé ou introuvable
         }

@@ -1,5 +1,16 @@
-import { eq, ilike, and, desc, sql, notInArray, gte } from 'drizzle-orm';
+import {
+  eq,
+  ilike,
+  and,
+  desc,
+  sql,
+  notInArray,
+  inArray,
+  gte,
+} from 'drizzle-orm';
+import { z } from 'zod';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { ProviderMetadata } from '../types/raw-responses';
 import { logger } from '@metacult/backend-infrastructure';
 import type {
   IMediaRepository,
@@ -14,42 +25,11 @@ import {
   Book,
 } from '../../domain/entities/media.entity';
 import { ProviderSource } from '@metacult/shared-core';
-import { Rating } from '../../domain/value-objects/rating.vo';
-import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
-import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
-import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
+import type { MediaId } from '../../domain/value-objects/media-id.vo';
 import * as schema from '../db/media.schema';
-import type { ProviderMetadata } from '../types/raw-responses';
 import { ProviderMetadataMapper } from '../mappers/provider-metadata.mapper';
-import type { MediaReadDto } from '../../application/queries/search-media/media-read.dto';
-
-// Helper to safely create VOs from DB data
-const createRating = (val: number | null): Rating | null => {
-  if (val === null) return null;
-  try {
-    return new Rating(val);
-  } catch {
-    return null;
-  }
-};
-
-const createCoverUrl = (val: string | null): CoverUrl | null => {
-  if (!val) return null;
-  try {
-    return new CoverUrl(val);
-  } catch {
-    return null;
-  }
-};
-
-const createReleaseYear = (date: Date | null): ReleaseYear | null => {
-  if (!date) return null;
-  try {
-    return new ReleaseYear(date.getFullYear());
-  } catch {
-    return null;
-  }
-};
+import type { MediaReadDto } from '../dtos/media-read.dto';
+import { MediaMapper } from '../mappers/media.mapper';
 
 // Helper type for the DB instance
 type Db = NodePgDatabase<typeof schema>;
@@ -65,7 +45,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     return crypto.randomUUID();
   }
 
-  async findById(id: string): Promise<Media | null> {
+  async findById(id: MediaId): Promise<Media | null> {
     const rows = await this.db
       .select()
       .from(schema.medias)
@@ -78,7 +58,28 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (rows.length === 0 || !rows[0]) return null;
 
-    return this.mapRowToEntity(rows[0]);
+    return MediaMapper.toDomain(rows[0]);
+  }
+
+  async findByIds(ids: MediaId[]): Promise<Media[]> {
+    if (ids.length === 0) return [];
+
+    // Using simple IN clause on the ID
+    // Note: To be fully correct with JOINs (like findById), we should replicate the joins.
+    // However, for performance, if we just need lightweight entities, basic select might suffice?
+    // But mapRowToEntity EXPECTS the joins (lines 806+).
+    // So we MUST join.
+
+    const rows = await this.db
+      .select()
+      .from(schema.medias)
+      .leftJoin(schema.games, eq(schema.medias.id, schema.games.id))
+      .leftJoin(schema.movies, eq(schema.medias.id, schema.movies.id))
+      .leftJoin(schema.tv, eq(schema.medias.id, schema.tv.id))
+      .leftJoin(schema.books, eq(schema.medias.id, schema.books.id))
+      .where(inArray(schema.medias.id, ids));
+
+    return rows.map((row) => MediaMapper.toDomain(row));
   }
 
   async findBySlug(slug: string): Promise<Media | null> {
@@ -94,7 +95,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (rows.length === 0 || !rows[0]) return null;
 
-    return this.mapRowToEntity(rows[0]);
+    return MediaMapper.toDomain(rows[0]);
   }
 
   async search(filters: MediaSearchFilters): Promise<Media[]> {
@@ -110,7 +111,26 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const conditions = [];
 
     if (filters.type) {
-      conditions.push(eq(schema.medias.type, filters.type as any));
+      conditions.push(
+        eq(
+          schema.medias.type,
+          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
+        ),
+      );
+    }
+
+    if (filters.types && filters.types.length > 0) {
+      conditions.push(
+        inArray(
+          schema.medias.type,
+          filters.types.map((t) => t.toUpperCase()) as (
+            | 'GAME'
+            | 'MOVIE'
+            | 'TV'
+            | 'BOOK'
+          )[],
+        ),
+      );
     }
 
     if (filters.search) {
@@ -142,7 +162,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     if (rows.length === 0) return [];
 
     // Déduplication immédiate (si le filtre tag a généré des doublons, ou juste par sécurité)
-    const uniqueMap = new Map<string, any>();
+    const uniqueMap = new Map<string, (typeof rows)[number]>();
     const mediaIds: string[] = [];
 
     for (const row of rows) {
@@ -192,7 +212,8 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const results: Media[] = [];
     for (const id of mediaIds) {
       const row = uniqueMap.get(id);
-      const entity = this.mapRowToEntity(row);
+      if (!row) continue;
+      const entity = MediaMapper.toDomain(row);
       // Si l'entité a une méthode ou propriété setTags, on l'utilise. Sinon on ignore.
       // Comme je ne vois pas l'entité, je ne peux pas deviner.
       // Hack: Si 'tags' existe sur l'entité (via getter/setter ou prop publique), on assigne.
@@ -228,17 +249,25 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const conditions = [];
 
     if (filters.type) {
-      // Safe cast as DB type matches upper case strings used in enum mostly, or logic adapts
-      // In this repo, DB Enum is 'GAME', 'MOVIE' etc. App Enum is likely 'game', 'movie'.
-      // Existing search code uses `eq(schema.medias.type, filters.type as any)`.
-      // Let's assume the input is correct casing or cast it.
-      // Actually existing `types/raw-responses` or schema defines it.
-      // Let's force uppercase to be safe if provided as lowercase?
-      // Check mapRowToEntity: `row.medias.type` is 'GAME' etc.
-      // `filters.type` is likely 'game'.
-      // existing `search` does `filters.type as any`. I will convert.
       conditions.push(
-        eq(schema.medias.type, filters.type.toUpperCase() as any),
+        eq(
+          schema.medias.type,
+          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
+        ),
+      );
+    }
+
+    if (filters.types && filters.types.length > 0) {
+      conditions.push(
+        inArray(
+          schema.medias.type,
+          filters.types.map((t) => t.toUpperCase()) as (
+            | 'GAME'
+            | 'MOVIE'
+            | 'TV'
+            | 'BOOK'
+          )[],
+        ),
       );
     }
 
@@ -327,7 +356,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const rows = await query.execute();
 
     // Map to entities
-    const items = rows.map((r) => this.mapRowToEntity(r));
+    const items = rows.map((r) => MediaMapper.toDomain(r));
 
     return { items, total };
   }
@@ -353,7 +382,26 @@ export class DrizzleMediaRepository implements IMediaRepository {
     const conditions = [];
 
     if (filters.type) {
-      conditions.push(eq(schema.medias.type, filters.type as any));
+      conditions.push(
+        eq(
+          schema.medias.type,
+          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
+        ),
+      );
+    }
+
+    if (filters.types && filters.types.length > 0) {
+      conditions.push(
+        inArray(
+          schema.medias.type,
+          filters.types.map((t) => t.toUpperCase()) as (
+            | 'GAME'
+            | 'MOVIE'
+            | 'TV'
+            | 'BOOK'
+          )[],
+        ),
+      );
     }
 
     if (filters.search) {
@@ -389,7 +437,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
     for (const row of rows) {
       if (!unique.has(row.id)) {
         let coverUrl: string | null = null;
-        const metadata = row.providerMetadata as any;
+        const metadata = row.providerMetadata as ProviderMetadata;
         if (metadata && metadata.coverUrl) {
           coverUrl = metadata.coverUrl;
         }
@@ -398,12 +446,13 @@ export class DrizzleMediaRepository implements IMediaRepository {
           id: row.id,
           slug: row.slug,
           title: row.title,
-          type: row.type.toLowerCase() as any,
+          type: row.type.toLowerCase() as MediaType,
           rating: row.rating,
           releaseYear: row.releaseYear ? row.releaseYear.getFullYear() : null,
           description: null,
           coverUrl: coverUrl,
           isImported: true,
+          tags: [],
         });
       }
     }
@@ -420,54 +469,9 @@ export class DrizzleMediaRepository implements IMediaRepository {
     if (rows.length === 0) return [];
 
     const mediaIds = rows.map((r) => r.id);
-    const tagsRows = await this.db
-      .select({
-        mediaId: schema.mediasToTags.mediaId,
-        tagSlug: schema.tags.slug,
-        tagLabel: schema.tags.label,
-      })
-      .from(schema.mediasToTags)
-      .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
-      .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
+    const tagsMap = await this.fetchTags(mediaIds);
 
-    const tagsMap = new Map<string, string[]>();
-    for (const tagRow of tagsRows) {
-      if (!tagsMap.has(tagRow.mediaId)) {
-        tagsMap.set(tagRow.mediaId, []);
-      }
-      tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
-    }
-
-    return rows.map((row) => {
-      let coverUrl: string | null = null;
-      const metadata = row.providerMetadata as any;
-
-      if (metadata) {
-        if (metadata.coverUrl) {
-          coverUrl = metadata.coverUrl;
-        } else if (metadata.poster_path) {
-          const path = metadata.poster_path.startsWith('/')
-            ? metadata.poster_path
-            : `/${metadata.poster_path}`;
-          coverUrl = `https://image.tmdb.org/t/p/original${path}`;
-        } else if (metadata.image_id) {
-          coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
-        }
-      }
-
-      return {
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-        type: row.type.toLowerCase() as any,
-        rating: row.globalRating,
-        releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
-        coverUrl: coverUrl,
-        description: null,
-        isImported: true,
-        tags: tagsMap.get(row.id) || [],
-      };
-    });
+    return rows.map((row) => this.mapRowToReadDto(row, tagsMap));
   }
 
   async findTopRated(limit: number): Promise<MediaReadDto[]> {
@@ -480,58 +484,16 @@ export class DrizzleMediaRepository implements IMediaRepository {
     if (rows.length === 0) return [];
 
     const mediaIds = rows.map((r) => r.id);
-    const tagsRows = await this.db
-      .select({
-        mediaId: schema.mediasToTags.mediaId,
-        tagSlug: schema.tags.slug,
-        tagLabel: schema.tags.label,
-      })
-      .from(schema.mediasToTags)
-      .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
-      .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
+    const tagsMap = await this.fetchTags(mediaIds);
 
-    const tagsMap = new Map<string, string[]>();
-    for (const tagRow of tagsRows) {
-      if (!tagsMap.has(tagRow.mediaId)) {
-        tagsMap.set(tagRow.mediaId, []);
-      }
-      tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
-    }
-
-    return rows.map((row) => {
-      let coverUrl: string | null = null;
-      const metadata = row.providerMetadata as any;
-
-      if (metadata) {
-        if (metadata.coverUrl) {
-          coverUrl = metadata.coverUrl;
-        } else if (metadata.poster_path) {
-          const path = metadata.poster_path.startsWith('/')
-            ? metadata.poster_path
-            : `/${metadata.poster_path}`;
-          coverUrl = `https://image.tmdb.org/t/p/original${path}`;
-        } else if (metadata.image_id) {
-          coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
-        }
-      }
-
-      return {
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-        type: row.type.toLowerCase() as any,
-        rating: row.globalRating,
-        releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
-        coverUrl: coverUrl,
-        description: null,
-        isImported: true,
-        eloScore: row.eloScore,
-        tags: tagsMap.get(row.id) || [],
-      };
-    });
+    return rows.map((row) => this.mapRowToReadDto(row, tagsMap));
   }
 
-  async findRandom(filters: MediaSearchFilters): Promise<MediaReadDto[]> {
+  async findRandom(filters: {
+    limit: number;
+    excludedIds?: MediaId[];
+    types?: MediaType[];
+  }): Promise<MediaReadDto[]> {
     logger.debug(
       {
         excludedCount: filters.excludedIds?.length || 0,
@@ -550,6 +512,21 @@ export class DrizzleMediaRepository implements IMediaRepository {
       query.where(notInArray(schema.medias.id, filters.excludedIds));
     }
 
+    // Add type filtering for random search
+    if (filters.types && filters.types.length > 0) {
+      query.where(
+        inArray(
+          schema.medias.type,
+          filters.types.map((t) => t.toUpperCase()) as (
+            | 'GAME'
+            | 'MOVIE'
+            | 'TV'
+            | 'BOOK'
+          )[],
+        ),
+      );
+    }
+
     if (filters.limit) {
       query.limit(filters.limit);
     }
@@ -564,93 +541,75 @@ export class DrizzleMediaRepository implements IMediaRepository {
     if (rows.length === 0) return [];
 
     const mediaIds = rows.map((r) => r.id);
+    const tagsMap = await this.fetchTags(mediaIds);
 
-    // Fetch Tags separately to avoid JOIN limit issues
-    const tagsRows = await this.db
-      .select({
-        mediaId: schema.mediasToTags.mediaId,
-        tagSlug: schema.tags.slug,
-        tagLabel: schema.tags.label,
-      })
-      .from(schema.mediasToTags)
-      .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
-      .where(sql`${schema.mediasToTags.mediaId} IN ${mediaIds}`);
-
-    const tagsMap = new Map<string, string[]>();
-    for (const tagRow of tagsRows) {
-      if (!tagsMap.has(tagRow.mediaId)) {
-        tagsMap.set(tagRow.mediaId, []);
-      }
-      tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
-    }
-
-    return rows.map((row) => {
-      let coverUrl: string | null = null;
-      const metadata = row.providerMetadata as any;
-
-      if (metadata) {
-        if (metadata.coverUrl) {
-          coverUrl = metadata.coverUrl;
-        } else if (metadata.poster_path) {
-          const path = metadata.poster_path.startsWith('/')
-            ? metadata.poster_path
-            : `/${metadata.poster_path}`;
-          coverUrl = `https://image.tmdb.org/t/p/original${path}`;
-        } else if (metadata.image_id) {
-          coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
-        }
-      }
-
-      return {
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-        type: row.type.toLowerCase() as any,
-        rating: row.globalRating,
-        releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
-        coverUrl: coverUrl,
-        description: null,
-        isImported: true,
-        tags: tagsMap.get(row.id) || [],
-      };
-    });
+    return rows.map((row) => this.mapRowToReadDto(row, tagsMap));
   }
 
   async findByProviderId(
     provider: string,
     externalId: string,
   ): Promise<Media | null> {
-    let condition;
-    if (provider === ProviderSource.IGDB) {
-      condition = and(
-        eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'IGDB'),
-        eq(
-          sql<string>`${schema.medias.providerMetadata}->>'igdbId'`,
-          externalId,
-        ),
+    // 1. Input Validation
+    const inputSchema = z.object({
+      provider: z
+        .string()
+        .min(1)
+        .regex(/^[a-zA-Z0-9_]+$/), // Alphanumeric only
+      externalId: z.string().min(1),
+    });
+
+    try {
+      inputSchema.parse({ provider, externalId });
+    } catch (error) {
+      logger.warn(
+        { provider, externalId, error },
+        '[DrizzleMediaRepository] Invalid input for findByProviderId',
       );
-    } else if (provider === ProviderSource.TMDB) {
-      condition = and(
-        eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, 'TMDB'),
-        eq(
-          sql<string>`${schema.medias.providerMetadata}->>'tmdbId'`,
-          externalId,
-        ),
-      );
-    } else if (provider === ProviderSource.GOOGLE_BOOKS) {
-      condition = and(
-        eq(
-          sql<string>`${schema.medias.providerMetadata}->>'source'`,
-          'GOOGLE_BOOKS',
-        ),
-        eq(
-          sql<string>`${schema.medias.providerMetadata}->>'googleId'`,
-          externalId,
-        ),
-      );
-    } else {
       return null;
     }
+
+    // 2. Safe Query Construction
+    let sourceKey: string;
+    let idKey: string;
+
+    switch (provider) {
+      case ProviderSource.IGDB:
+        sourceKey = 'IGDB';
+        idKey = 'igdbId';
+        break;
+      case ProviderSource.TMDB:
+        sourceKey = 'TMDB';
+        idKey = 'tmdbId';
+        break;
+      case ProviderSource.GOOGLE_BOOKS:
+        sourceKey = 'GOOGLE_BOOKS';
+        idKey = 'googleId';
+        break;
+      default:
+        return null;
+    }
+
+    // Note on SQL Injection Protection:
+    // Even though we use `sql` operator, the values `sourceKey` and `idKey` are
+    // determined by our internal switch/case, NOT user input.
+    // The `externalId` is the only user input that goes into the query,
+    // and it must be passed as a parameter to the `sql` template literal for binding.
+
+    // Postgres JSONB operator ->> extracts text.
+    // We construct the condition safely.
+
+    // We can't easily dynamicize the key in `->> 'key'` part inside a single sql`` without risk if we didn't sanitize.
+    // Since we sanitize sourceKey/idKey via hardcoded strings in switch above, it is safe to interpolate them.
+    // `externalId` is passed as a value parameter.
+
+    const condition = and(
+      eq(sql<string>`${schema.medias.providerMetadata}->>'source'`, sourceKey),
+      eq(
+        sql<string>`${schema.medias.providerMetadata}->>${sql.raw(`'${idKey}'`)}`,
+        externalId,
+      ),
+    );
 
     const rows = await this.db
       .select()
@@ -664,7 +623,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (rows.length === 0 || !rows[0]) return null;
 
-    return this.mapRowToEntity(rows[0]);
+    return MediaMapper.toDomain(rows[0]);
   }
 
   async create(media: Media): Promise<void> {
@@ -691,7 +650,7 @@ export class DrizzleMediaRepository implements IMediaRepository {
         id: media.id,
         title: media.title,
         slug: media.slug,
-        type: media.type.toUpperCase() as any,
+        type: media.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
         releaseDate: releaseDate,
         globalRating: media.rating ? media.rating.getValue() : null,
         providerMetadata: providerMetadataRaw,
@@ -801,123 +760,66 @@ export class DrizzleMediaRepository implements IMediaRepository {
       }
     });
   }
+  // --- Private Helpers ---
 
-  private mapRowToEntity(row: {
-    medias: typeof schema.medias.$inferSelect;
-    games: typeof schema.games.$inferSelect | null;
-    movies: typeof schema.movies.$inferSelect | null;
-    tv: typeof schema.tv.$inferSelect | null;
-    books: typeof schema.books.$inferSelect | null;
-  }): Media {
-    const id = row.medias.id;
-    const title = row.medias.title;
-    const slug = row.medias.slug;
-    const description = null;
+  private async fetchTags(mediaIds: string[]): Promise<Map<string, string[]>> {
+    if (mediaIds.length === 0) return new Map();
 
-    // Use mapper to convert ProviderMetadata back to ExternalReference
-    let externalReference: ExternalReference;
-    const metadata = row.medias.providerMetadata;
+    const tagsRows = await this.db
+      .select({
+        mediaId: schema.mediasToTags.mediaId,
+        tagSlug: schema.tags.slug,
+        tagLabel: schema.tags.label,
+      })
+      .from(schema.mediasToTags)
+      .innerJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id))
+      .where(inArray(schema.mediasToTags.mediaId, mediaIds));
+
+    const tagsMap = new Map<string, string[]>();
+    for (const tagRow of tagsRows) {
+      if (!tagsMap.has(tagRow.mediaId)) {
+        tagsMap.set(tagRow.mediaId, []);
+      }
+      tagsMap.get(tagRow.mediaId)?.push(tagRow.tagLabel);
+    }
+    return tagsMap;
+  }
+
+  private mapRowToReadDto(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    row: any,
+    tagsMap: Map<string, string[]>,
+  ): MediaReadDto {
+    let coverUrl: string | null = null;
+    const metadata = row.providerMetadata as ProviderMetadata;
 
     if (metadata) {
-      try {
-        externalReference =
-          ProviderMetadataMapper.toExternalReference(metadata);
-      } catch {
-        externalReference = new ExternalReference('unknown', 'unknown');
+      if (metadata.coverUrl) {
+        coverUrl = metadata.coverUrl;
+      } else if ('poster_path' in metadata && metadata.poster_path) {
+        const path = metadata.poster_path as string;
+        const finalPath = path.startsWith('/') ? path : `/${path}`;
+        coverUrl = `https://image.tmdb.org/t/p/original${finalPath}`;
+      } else if ('image_id' in metadata && metadata.image_id) {
+        coverUrl = `https://images.igdb.com/igdb/image/upload/t_1080p/${metadata.image_id}.jpg`;
       }
-    } else {
-      externalReference = new ExternalReference('unknown', 'unknown');
     }
 
-    const coverUrl = createCoverUrl(metadata?.coverUrl || null);
-    const rating = createRating(row.medias.globalRating);
-    const releaseYear = createReleaseYear(row.medias.releaseDate);
+    // Handle eloScore if present (used in findTopRated), otherwise undefined
+    const eloScore = 'eloScore' in row ? row.eloScore : undefined;
 
-    switch (row.medias.type) {
-      case 'GAME':
-        if (!row.games)
-          throw new Error(
-            `Data integrity error: Media ${id} is TYPE GAME but has no games record.`,
-          );
-        return new Game({
-          id,
-          title,
-          slug,
-          description,
-          coverUrl,
-          rating,
-          releaseYear,
-          externalReference,
-          platform: row.games.platform as string[],
-          developer: row.games.developer,
-          timeToBeat: row.games.timeToBeat,
-          eloScore: row.medias.eloScore, // Assuming eloScore is available in row.medias
-          matchCount: row.medias.matchCount, // Assuming matchCount is available in row.medias
-        });
-
-      case 'MOVIE':
-        if (!row.movies)
-          throw new Error(
-            `Data integrity error: Media ${id} is TYPE MOVIE but has no movies record.`,
-          );
-        return new Movie({
-          id,
-          title,
-          slug,
-          description,
-          coverUrl,
-          rating,
-          releaseYear,
-          externalReference,
-          director: row.movies.director,
-          durationMinutes: row.movies.durationMinutes,
-          eloScore: row.medias.eloScore,
-          matchCount: row.medias.matchCount,
-        });
-
-      case 'TV':
-        if (!row.tv)
-          throw new Error(
-            `Data integrity error: Media ${id} is TYPE TV but has no tv record.`,
-          );
-        return new TV({
-          id,
-          title,
-          slug,
-          description,
-          coverUrl,
-          rating,
-          releaseYear,
-          externalReference,
-          creator: row.tv.creator,
-          episodesCount: row.tv.episodesCount,
-          seasonsCount: row.tv.seasonsCount,
-          eloScore: row.medias.eloScore,
-          matchCount: row.medias.matchCount,
-        });
-
-      case 'BOOK':
-        if (!row.books)
-          throw new Error(
-            `Data integrity error: Media ${id} is TYPE BOOK but has no books record.`,
-          );
-        return new Book({
-          id,
-          title,
-          slug,
-          description,
-          coverUrl,
-          rating,
-          releaseYear,
-          externalReference,
-          author: row.books.author,
-          pages: row.books.pages,
-          eloScore: row.medias.eloScore,
-          matchCount: row.medias.matchCount,
-        });
-
-      default:
-        throw new Error(`Unknown media type: ${row.medias.type}`);
-    }
+    return {
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      type: row.type.toLowerCase() as MediaType,
+      rating: row.globalRating,
+      releaseYear: row.releaseDate ? row.releaseDate.getFullYear() : null,
+      coverUrl: coverUrl,
+      description: null,
+      isImported: true,
+      tags: tagsMap.get(row.id) || [],
+      ...(eloScore !== undefined && { eloScore }),
+    };
   }
 }

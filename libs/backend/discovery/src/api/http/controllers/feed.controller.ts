@@ -81,6 +81,8 @@ export class FeedController {
             const searchTerm = query.q || '';
             const userId = user?.id;
             const excludedIdsParam = query.excludedIds || [];
+            const typesParam = query.types || [];
+            const isOnboarding = query.mode === 'onboarding';
 
             logger.info(
               {
@@ -120,7 +122,9 @@ export class FeedController {
               searchTerm,
               userId,
               excludedMediaIds,
+              typesParam,
               limit,
+              isOnboarding,
             );
 
             const result = await this.getMixedFeedHandler.execute(feedQuery);
@@ -141,7 +145,19 @@ export class FeedController {
                   )
                   .Encode((value: string[]) => value.join(',')),
               ),
+              types: t.Optional(
+                t
+                  .Transform(t.String())
+                  .Decode((value: string) =>
+                    value
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  )
+                  .Encode((value: string[]) => value.join(',')),
+              ),
               limit: t.Optional(t.Numeric()),
+              mode: t.Optional(t.String()),
             }),
           },
         )

@@ -1,3 +1,5 @@
+import type { InteractionId, UserId, MediaId } from '@metacult/shared-core';
+
 export enum InteractionAction {
   LIKE = 'LIKE',
   DISLIKE = 'DISLIKE',
@@ -12,9 +14,9 @@ export enum InteractionSentiment {
 }
 
 export interface UserInteractionProps {
-  id: string;
-  userId: string;
-  mediaId: string;
+  id: InteractionId;
+  userId: UserId;
+  mediaId: MediaId;
   action: InteractionAction;
   sentiment: InteractionSentiment | null;
   createdAt: Date;
@@ -22,9 +24,9 @@ export interface UserInteractionProps {
 }
 
 export class UserInteraction {
-  public readonly id: string;
-  public readonly userId: string;
-  public readonly mediaId: string;
+  public readonly id: InteractionId;
+  public readonly userId: UserId;
+  public readonly mediaId: MediaId;
   public readonly action: InteractionAction;
   public readonly sentiment: InteractionSentiment | null;
   public readonly createdAt: Date;

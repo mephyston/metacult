@@ -23,9 +23,28 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // 2. Redirection UX : Si déjà connecté et tente d'aller sur Login/Register -> Dashboard
   if (user.value && isPublicRoute) {
-    // On évite de rediriger /auth/callback car c'est une route technique
     if (!to.path.startsWith('/auth/callback')) {
       return navigateTo('/');
     }
+  }
+
+  // 3. Enforce Onboarding
+  // 3. Enforce Onboarding - DISABLED to allow navigation via TabBar
+  // if (user.value && !user.value.onboardingCompleted) {
+  //   const isOnboardingRoute = to.path.startsWith('/onboarding');
+  //   const isSwipeOnboarding = to.path === '/swipe' && to.query.mode === 'onboarding';
+
+  //   if (!isOnboardingRoute && !isSwipeOnboarding) {
+  //     return navigateTo('/onboarding');
+  //   }
+  // }
+
+  // 4. Prevent access to Onboarding if already completed
+  if (
+    user.value &&
+    user.value.onboardingCompleted &&
+    to.path.startsWith('/onboarding')
+  ) {
+    return navigateTo('/');
   }
 });

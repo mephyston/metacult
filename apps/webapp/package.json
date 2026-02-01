@@ -1,19 +1,22 @@
 {
-  "name": "apps-webapp",
+  "name": "@metacult/webapp",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "nuxt build",
     "dev": "nx serve webapp",
-    "preview": "node .output/server/index.mjs"
+    "preview": "node .output/server/index.mjs",
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@elysiajs/eden": "^1.4.6",
     "@metacult/shared-core": "workspace:*",
     "@metacult/shared-local-db": "workspace:*",
     "@metacult/shared-sync-manager": "workspace:*",
     "@metacult/shared-types": "workspace:*",
     "@metacult/shared-ui": "workspace:*",
     "@nuxtjs/i18n": "^9.0.4",
+    "@sinclair/typebox": "^0.34.48",
     "@vite-pwa/nuxt": "^1.1.0",
     "@vueuse/core": "^14.1.0",
     "@vueuse/rxjs": "^14.1.0",
@@ -25,9 +28,14 @@
     "rxjs": "^7.8.2",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
+    "vue": "^3.5.26",
+    "vue-router": "^4.5.0",
     "workbox-window": "^7.4.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.16.0",
+    "drizzle-orm": "^0.45.1",
+    "elysia": "^1.4.22",
     "ofetch": "^1.5.1"
   },
   "version": "0.9.0"

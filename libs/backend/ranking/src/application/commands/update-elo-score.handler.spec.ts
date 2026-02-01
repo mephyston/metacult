@@ -15,14 +15,16 @@ describe('UpdateEloScoreHandler', () => {
     title: 'Winner',
     eloScore: 1000,
     matchCount: 10,
-  } as any;
+    coverUrl: null,
+  };
 
   const mockLoser = {
     id: 'loss-1',
     title: 'Loser',
     eloScore: 1000,
     matchCount: 10,
-  } as any;
+    coverUrl: null,
+  };
 
   beforeEach(() => {
     // Mock Repository
