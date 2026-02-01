@@ -20,12 +20,12 @@ run_qodana_docker() {
     -v "$(pwd)":/data/project \
     -e QODANA_TOKEN=$QODANA_TOKEN \
     jetbrains/qodana-js:2024.3-eap \
-    scan --lcov coverage/lcov.info --results-dir ./qodana-results
+    scan --results-dir ./qodana-results
 }
 
 if command -v qodana &> /dev/null; then
   # Use native CLI if available
-  if ! qodana scan --lcov coverage/lcov.info --results-dir ./qodana-results; then
+  if ! qodana scan --results-dir ./qodana-results; then
       echo "❌ Qodana found issues (CLI). Push aborted."
       exit 1
   fi
