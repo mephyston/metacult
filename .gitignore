@@ -9,20 +9,13 @@ dist
 # code coverage
 coverage
 *.lcov
-.qodana-results/
-.qodana-cache/
-.qodana-report/
-.qodana-reports/
-.qodana/
+.qodana*
 
 # logs
 logs
 log/
 _.log
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
-
-# project structure dump
-projectStructure/
 
 # dotenv environment variable files
 .env
