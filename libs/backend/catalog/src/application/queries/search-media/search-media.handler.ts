@@ -5,7 +5,7 @@ import type {
   PaginatedSearchResponse,
   SearchMediaReadModel,
 } from '../../../domain/read-models/search-media.read-model';
-import type { MediaReadDto } from '../../../infrastructure/dtos/media-read.dto';
+import type { MediaReadModel } from '../../../domain/read-models/media-read.model';
 
 import type { Redis } from 'ioredis';
 import type { IMediaProvider } from '../../ports/media-provider.interface';
@@ -193,7 +193,7 @@ export class SearchMediaHandler {
   }
 
   private mapLocalToGrouped(
-    localResults: MediaReadDto[],
+    localResults: MediaReadModel[],
   ): GroupedSearchResponse {
     const response = this.emptyResponse();
 
