@@ -10,12 +10,34 @@ if ! bun run test:coverage; then
   exit 1
 fi
 
-# 2. Run Qodana Analysis (Strict Mode)
+# 2. Run Qodana Analysis
 echo "🕵️  Running Qodana Analysis..."
-if ! bun x @jetbrains/qodana-cli scan --lcov coverage/lcov.info --results-dir ./qodana-results; then
-  echo "❌ Qodana found issues. Push aborted."
-  echo "💡 Run 'bun run qodana:local' to view the full report in your browser."
-  exit 1
+
+# Function to run Qodana via Docker
+run_qodana_docker() {
+  echo "🐳 Qodana CLI not found. Falling back to Docker..."
+  docker run --rm \
+    -v "$(pwd)":/data/project \
+    -e QODANA_TOKEN=$QODANA_TOKEN \
+    jetbrains/qodana-js:2024.3-eap \
+    scan --lcov coverage/lcov.info --results-dir ./qodana-results
+}
+
+if command -v qodana &> /dev/null; then
+  # Use native CLI if available
+  if ! qodana scan --lcov coverage/lcov.info --results-dir ./qodana-results; then
+      echo "❌ Qodana found issues (CLI). Push aborted."
+      exit 1
+  fi
+elif command -v docker &> /dev/null; then
+  # Use Docker if CLI is missing
+  if ! run_qodana_docker; then
+      echo "❌ Qodana found issues (Docker). Push aborted."
+      exit 1
+  fi
+else
+  echo "⚠️  Qodana CLI and Docker not found. Skipping Qodana analysis."
+  echo "ℹ️  To enable quality checks, install Qodana CLI: brew install jetbrains/utils/qodana"
 fi
 
 echo "✅ Quality Gate Passed. Pushing..."
