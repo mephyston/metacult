@@ -6,9 +6,7 @@ import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
 export class GetTopRatedByYearHandler {
   constructor(private readonly catalogRepository: CatalogRepository) {}
 
-  async execute(
-    query: GetTopRatedByYearQuery,
-  ): Promise<Result<Media[], AppError>> {
+  async execute(query: GetTopRatedByYearQuery): Promise<Result<Media[]>> {
     try {
       const res = await this.catalogRepository.findTopRatedByYear(
         query.year,

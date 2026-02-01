@@ -6,7 +6,7 @@ import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
 export class GetTrendingHandler {
   constructor(private readonly catalogRepository: CatalogRepository) {}
 
-  async execute(query: GetTrendingQuery): Promise<Result<Media[], AppError>> {
+  async execute(query: GetTrendingQuery): Promise<Result<Media[]>> {
     try {
       const res = await this.catalogRepository.findTrending(
         query.limit,

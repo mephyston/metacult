@@ -42,9 +42,7 @@ export class GetUserRankingsHandler {
   /**
    * Exécute la génération du classement personnel.
    */
-  async execute(
-    query: GetUserRankingsQuery,
-  ): Promise<Result<RankedMedia[], AppError>> {
+  async execute(query: GetUserRankingsQuery): Promise<Result<RankedMedia[]>> {
     try {
       const { userId, limit = 10 } = query;
 

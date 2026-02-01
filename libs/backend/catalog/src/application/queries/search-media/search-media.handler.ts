@@ -31,9 +31,7 @@ export class SearchMediaHandler {
    */
   async execute(
     query: SearchMediaQuery,
-  ): Promise<
-    Result<GroupedSearchResponse | PaginatedSearchResponse, AppError>
-  > {
+  ): Promise<Result<GroupedSearchResponse | PaginatedSearchResponse>> {
     try {
       const searchTerm = query.search?.trim();
 

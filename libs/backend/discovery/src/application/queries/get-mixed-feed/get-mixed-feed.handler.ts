@@ -38,11 +38,9 @@ export class GetMixedFeedHandler {
    * 4. Mise en cache du résultat.
    *
    * @param {GetMixedFeedQuery} query - Paramètres de recherche.
-   * @returns {Promise<Result<MixedFeedItem[], AppError>>} Le flux composite.
+   * @returns {Promise<Result<MixedFeedItem[]>>} Le flux composite.
    */
-  async execute(
-    query: GetMixedFeedQuery,
-  ): Promise<Result<MixedFeedItem[], AppError>> {
+  async execute(query: GetMixedFeedQuery): Promise<Result<MixedFeedItem[]>> {
     try {
       const normalizedSearch = query.search.trim().toLowerCase();
 

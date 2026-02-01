@@ -6,7 +6,7 @@ import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
 export class GetUpcomingHandler {
   constructor(private readonly catalogRepository: CatalogRepository) {}
 
-  async execute(query: GetUpcomingQuery): Promise<Result<Media[], AppError>> {
+  async execute(query: GetUpcomingQuery): Promise<Result<Media[]>> {
     try {
       const res = await this.catalogRepository.findUpcoming(
         query.limit,

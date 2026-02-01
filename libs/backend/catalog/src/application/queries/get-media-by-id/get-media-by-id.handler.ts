@@ -17,7 +17,7 @@ export class GetMediaByIdHandler {
 
   async execute(
     query: GetMediaByIdQuery,
-  ): Promise<Result<MediaDetailReadModel, AppError>> {
+  ): Promise<Result<MediaDetailReadModel>> {
     const cacheKey = `catalog:media:${query.id}`;
 
     // 1. Check Redis Cache

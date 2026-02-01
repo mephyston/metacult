@@ -16,9 +16,9 @@ export class GetActiveAdsHandler {
    * Récupère les pubs.
    * Stratégie déléguée au Gateway : Cache-First, puis fetch externe si miss.
    *
-   * @returns {Promise<Result<Ad[], AppError>>} Liste de pubs encapsulée dans Result.
+   * @returns {Promise<Result<Ad[]>>} Liste de pubs encapsulée dans Result.
    */
-  async execute(): Promise<Result<Ad[], AppError>> {
+  async execute(): Promise<Result<Ad[]>> {
     try {
       const ads = await this.adsGateway.getActiveAds();
       return Result.ok(ads);

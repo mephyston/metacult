@@ -17,7 +17,7 @@ export class GetTopRatedMediaHandler {
 
   async execute(
     query: GetTopRatedMediaQuery,
-  ): Promise<Result<MediaReadModel[], AppError>> {
+  ): Promise<Result<MediaReadModel[]>> {
     try {
       const cacheKey = `catalog:top-rated:limit:${query.limit}`;
 

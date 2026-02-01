@@ -6,7 +6,7 @@ import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
 export class GetHallOfFameHandler {
   constructor(private readonly catalogRepository: CatalogRepository) {}
 
-  async execute(query: GetHallOfFameQuery): Promise<Result<Media[], AppError>> {
+  async execute(query: GetHallOfFameQuery): Promise<Result<Media[]>> {
     try {
       const res = await this.catalogRepository.findHallOfFame(
         query.limit,

@@ -24,7 +24,7 @@ export class DrizzleRecommendationRepository
     userId: string,
     limit: number,
     offset: number,
-  ): Promise<Result<FeedMediaDto[], AppError>> {
+  ): Promise<Result<FeedMediaDto[]>> {
     try {
       // 1. Get IDs of media the user has already interacted with
       const seenMedia = this.db

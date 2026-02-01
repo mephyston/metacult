@@ -6,9 +6,7 @@ import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
 export class GetControversialHandler {
   constructor(private readonly catalogRepository: CatalogRepository) {}
 
-  async execute(
-    query: GetControversialQuery,
-  ): Promise<Result<Media[], AppError>> {
+  async execute(query: GetControversialQuery): Promise<Result<Media[]>> {
     try {
       const res = await this.catalogRepository.findControversial(
         query.limit,

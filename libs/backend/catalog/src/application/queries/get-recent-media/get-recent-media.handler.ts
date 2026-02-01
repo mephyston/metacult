@@ -15,7 +15,7 @@ export class GetRecentMediaHandler {
 
   async execute(
     query: GetRecentMediaQuery,
-  ): Promise<Result<RecentMediaReadModel[], AppError>> {
+  ): Promise<Result<RecentMediaReadModel[]>> {
     try {
       const cacheKey = `catalog:recent:limit:${query.limit}`;
 

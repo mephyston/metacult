@@ -18,11 +18,11 @@ export class UpdateEloScoreHandler {
   constructor(
     private readonly duelRepository: DuelRepository,
     private readonly eloCalculator: EloCalculator,
-  ) { }
+  ) {}
 
   async execute(
     command: UpdateEloScoreCommand,
-  ): Promise<Result<EloUpdateResult, AppError>> {
+  ): Promise<Result<EloUpdateResult>> {
     const { winnerId, loserId } = command;
 
     logger.info(

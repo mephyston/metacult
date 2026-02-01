@@ -14,5 +14,5 @@ export interface IRecommendationRepository {
     userId: string,
     limit: number,
     offset: number,
-  ): Promise<Result<FeedMediaDto[], AppError>>;
+  ): Promise<Result<FeedMediaDto[]>>;
 }

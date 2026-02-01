@@ -13,7 +13,7 @@ export class GetPersonalizedFeedHandler {
 
   async execute(
     query: GetPersonalizedFeedQuery,
-  ): Promise<Result<FeedMediaDto[], AppError>> {
+  ): Promise<Result<FeedMediaDto[]>> {
     const { userId, limit, offset } = query;
     return this.repository.getPersonalizedRecommendations(
       userId,
