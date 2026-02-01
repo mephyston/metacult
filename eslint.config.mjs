@@ -33,6 +33,7 @@ export default [
       'apps/webapp/nuxt.config.ts',
       '**/playwright-report/**',
       '**/test-results/**',
+      '.qodana-reports/**',
       '**/node_modules',
       '**/vitest.config.*.timestamp*',
       'apps/webapp/.nuxt/**',
