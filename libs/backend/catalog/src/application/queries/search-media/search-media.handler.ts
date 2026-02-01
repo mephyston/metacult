@@ -11,7 +11,7 @@ import type { Redis } from 'ioredis';
 import type { IMediaProvider } from '../../ports/media-provider.interface';
 import { MediaType, Media } from '../../../domain/entities/media.entity';
 import { logger } from '@metacult/backend-infrastructure';
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 
 /**
  * Handler pour la requête de recherche de médias (Query Handler).
@@ -177,7 +177,7 @@ export class SearchMediaHandler {
       return Result.ok(groupedResponse);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',

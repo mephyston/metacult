@@ -3,7 +3,7 @@ import type { IInteractionRepository } from '@metacult/backend-interaction';
 import type { IMediaRepository, Media } from '@metacult/backend-catalog';
 import { EloCalculator } from '../../../domain/services/elo-calculator.service';
 import { InteractionAction } from '@metacult/backend-interaction';
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 import { asUserId, asMediaId } from '@metacult/shared-core';
 import type { MediaId } from '@metacult/shared-core';
 
@@ -190,7 +190,7 @@ export class GetUserRankingsHandler {
       return Result.ok(result);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',

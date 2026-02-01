@@ -1,4 +1,4 @@
-import { Result, AppError } from '@metacult/shared-core';
+import { Result } from '@metacult/shared-core';
 
 export interface FeedMediaDto {
   id: string;

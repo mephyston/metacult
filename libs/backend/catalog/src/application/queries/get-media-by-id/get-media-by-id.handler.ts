@@ -5,7 +5,7 @@ import { MediaType } from '../../../domain/entities/media.entity';
 import { asMediaId } from '../../../domain/value-objects/media-id.vo';
 import { MediaNotFoundInProviderError } from '../../../domain/errors/catalog.errors';
 import { logger } from '@metacult/backend-infrastructure';
-import { Result, type AppError } from '@metacult/shared-core';
+import { Result } from '@metacult/shared-core';
 
 import type { Redis } from 'ioredis';
 

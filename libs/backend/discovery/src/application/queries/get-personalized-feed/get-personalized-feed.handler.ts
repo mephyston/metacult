@@ -1,5 +1,5 @@
 import { GetPersonalizedFeedQuery } from './get-personalized-feed.query';
-import { Result, AppError } from '@metacult/shared-core';
+import { Result } from '@metacult/shared-core';
 import type {
   IRecommendationRepository,
   FeedMediaDto,

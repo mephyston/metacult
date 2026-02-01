@@ -4,7 +4,7 @@ import { logger } from '@metacult/backend-infrastructure';
 import type { IMediaSearcher } from '../../ports/media-searcher.interface';
 import type { IAdsProvider } from '../../ports/ads-provider.interface';
 
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 
 // Types (simplified for this exercise)
 export type MixedFeedItem =
@@ -138,7 +138,7 @@ export class GetMixedFeedHandler {
       return Result.ok(mixedFeed);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',

@@ -5,7 +5,7 @@ import { logger } from '@metacult/backend-infrastructure';
 
 import type { Redis } from 'ioredis';
 
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 
 export class GetRecentMediaHandler {
   constructor(
@@ -50,7 +50,7 @@ export class GetRecentMediaHandler {
       return Result.ok(results);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',

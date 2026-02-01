@@ -1,6 +1,6 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { sql, desc, and, eq } from 'drizzle-orm';
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 import type {
   IRecommendationRepository,
   FeedMediaDto,
