@@ -50,7 +50,7 @@ const value = computed({
       <SliderRange class="absolute h-full bg-primary" />
     </SliderTrack>
     <SliderThumb
-      v-for="(_, index) in value"
+      v-for="(_val, index) in value"
       :key="index"
       class="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
     />

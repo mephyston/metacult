@@ -1,3 +1,4 @@
+// noinspection JSDeprecatedSymbols
 import { z } from 'zod';
 import { logger } from '@metacult/shared-core';
 

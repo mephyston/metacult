@@ -1,3 +1,4 @@
+// noinspection JSDeprecatedSymbols
 import { z } from 'zod';
 export const UserPublicProfileSchema = z.object({
   id: z.string().uuid(),

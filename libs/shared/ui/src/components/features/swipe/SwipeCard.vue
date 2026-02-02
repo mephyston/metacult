@@ -3,7 +3,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import {
-  Heart,
   X,
   Clock,
   ThumbsUp,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useSwipe } from '@vueuse/core';
+// useSwipe removed
 import Card from '../../ui/card/Card.vue';
 // CardImage is removed, using simple img tag
 // CardContent is available if needed but ReviewCard structure differs slightly, keeping Card only for container
@@ -19,7 +19,7 @@ const emit = defineEmits(['swipe-left', 'swipe-right']);
 const cardRef = ref<HTMLElement | null>(null);
 
 // Basic swipe logic (could be enhanced)
-function startDrag(e: MouseEvent | TouchEvent) {
+function startDrag() {
   // Implement drag logic if needed, or rely on buttons for MVP
 }
 

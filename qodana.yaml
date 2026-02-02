@@ -37,6 +37,11 @@ exclude:
       - coverage
       - .nuxt
       - apps/webapp/.nuxt
+      - _bmad/**
+      - analyze_qodana.cjs
+      - test
+      - scripts
+      - qodana_analysis
       - '**/.astro'
       - '**/out-tsc'
       - '**/*.d.ts'

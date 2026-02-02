@@ -265,34 +265,8 @@ export class DrizzleMediaRepository implements IMediaRepository {
       )
       .leftJoin(schema.tags, eq(schema.mediasToTags.tagId, schema.tags.id));
 
-    const conditions = [];
-
-    if (filters.type) {
-      conditions.push(
-        eq(
-          schema.medias.type,
-          filters.type.toUpperCase() as 'GAME' | 'MOVIE' | 'TV' | 'BOOK',
-        ),
-      );
-    }
-
-    if (filters.types && filters.types.length > 0) {
-      conditions.push(
-        inArray(
-          schema.medias.type,
-          filters.types.map((t) => t.toUpperCase()) as (
-            | 'GAME'
-            | 'MOVIE'
-            | 'TV'
-            | 'BOOK'
-          )[],
-        ),
-      );
-    }
-
-    if (filters.search) {
-      conditions.push(ilike(schema.medias.title, `%${filters.search}%`));
-    }
+    // Reuse common filters
+    const conditions = this.applyFilters(filters);
 
     if (filters.tag) {
       conditions.push(eq(schema.tags.slug, filters.tag));
@@ -300,10 +274,6 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (conditions.length > 0) {
       query.where(and(...conditions));
-    }
-
-    if (filters.excludedIds && filters.excludedIds.length > 0) {
-      query.where(notInArray(schema.medias.id, filters.excludedIds));
     }
 
     if (filters.orderBy === 'random') {
@@ -671,6 +641,10 @@ export class DrizzleMediaRepository implements IMediaRepository {
 
     if (filters.search) {
       conditions.push(ilike(schema.medias.title, `%${filters.search}%`));
+    }
+
+    if (filters.excludedIds && filters.excludedIds.length > 0) {
+      conditions.push(notInArray(schema.medias.id, filters.excludedIds));
     }
 
     if (filters.releaseYear) {

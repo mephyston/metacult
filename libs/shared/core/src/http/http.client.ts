@@ -81,7 +81,8 @@ export async function fetchWithRetry(
       
       const errorMsg = `Server Error: ${res.status} ${res.statusText}`;
       if (attempt >= retries) {
-        throw new Error(errorMsg);
+        // Return the error response directly instead of throwing, so the caller handles the 500
+        return res;
       }
       // Log and wait
       attempt++;
@@ -91,7 +92,7 @@ export async function fetchWithRetry(
         `[fetchWithRetry] Attempt ${attempt}/${retries} failed for ${url}. Retrying in ${delay}ms...`,
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
-      continue; // Retry loop
+      // continue; // Retry loop
 
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));

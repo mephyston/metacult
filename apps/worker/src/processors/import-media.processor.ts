@@ -177,26 +177,24 @@ export const processImportMedia = async (
     logger.info({ jobId: job.id, type, id }, '[Worker] Processing Import Job');
 
       let mediaType: MediaType;
-      try {
-        switch (type) {
-          case 'game':
-            mediaType = MediaType.GAME;
-            break;
-          case 'movie':
-            mediaType = MediaType.MOVIE;
-            break;
-          case 'tv':
-            mediaType = MediaType.TV;
-            break;
-          case 'book':
-            mediaType = MediaType.BOOK;
-            break;
-          default:
-            throw new Error(`Unknown type ${type}`);
+      switch (type) {
+        case 'game':
+          mediaType = MediaType.GAME;
+          break;
+        case 'movie':
+          mediaType = MediaType.MOVIE;
+          break;
+        case 'tv':
+          mediaType = MediaType.TV;
+          break;
+        case 'book':
+          mediaType = MediaType.BOOK;
+          break;
+        default: {
+          const err = new Error(`Unknown type ${type}`);
+          logger.error({ jobId: job.id, err }, '[Worker] Failed to process job (Invalid Type)');
+          throw err;
         }
-      } catch (err) {
-        logger.error({ jobId: job.id, err }, '[Worker] Failed to process job (Invalid Type)');
-        throw err;
       }
 
       

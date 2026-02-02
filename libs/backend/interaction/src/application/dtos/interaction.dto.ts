@@ -1,3 +1,4 @@
+// noinspection JSDeprecatedSymbols
 import { z } from 'zod';
 
 // Define Enums manually or import from Domain Entity (if Enums are in Domain)

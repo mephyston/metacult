@@ -1,3 +1,4 @@
+// noinspection DuplicatedCode
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { Elysia } from 'elysia';
 import { FeedController } from './feed.controller';

@@ -14,7 +14,7 @@ console.log(
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 class ConsoleLogger {
-  child(bindings?: any) {
+  child(_bindings?: any) {
     return this;
   }
   trace(...args: any[]) {

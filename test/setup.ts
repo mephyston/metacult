@@ -19,13 +19,13 @@ mock.module('ioredis', () => {
       constructor() {
         super();
       }
-      async get(key: string) {
+      async get(_key: string) {
         return null;
       }
-      async set(key: string, val: string) {
+      async set(_key: string, _val: string) {
         return 'OK';
       }
-      async del(key: string) {
+      async del(_key: string) {
         return 1;
       }
       async quit() {

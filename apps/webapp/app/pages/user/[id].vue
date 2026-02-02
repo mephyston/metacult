@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import MediaGrid from '../../components/ui/MediaGrid.vue';
 import type { MediaItem } from '@metacult/shared-types';

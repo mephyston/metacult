@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+// noinspection JSDeprecatedSymbols
 import { Facebook, Instagram, Youtube, X } from 'lucide-vue-next';
 // Assuming Separator exists or will be created. If not, I'll remove it or use distinct div.
 // To be safe, I'll use a div border for now if Separator is not confirmed,

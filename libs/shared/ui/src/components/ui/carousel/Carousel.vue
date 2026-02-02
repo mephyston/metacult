@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<CarouselProps & { class?: string }>(), {
 
 const emits = defineEmits<CarouselEmits>();
 
-const { carouselRef, orientation } = useProvideCarousel(props, emits);
+const { carouselRef, orientation } = useProvideCarousel(props);
 
 defineExpose({
   carouselRef,
@@ -26,7 +26,7 @@ defineExpose({
 
 function onKeyDown(event: KeyboardEvent) {
   const prevKey = props.orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft';
-  const nextKey = props.orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight';
+  // nextKey removed
 
   if (event.key === prevKey) {
     event.preventDefault();

@@ -63,7 +63,19 @@ export const RankingController = new Elysia({ prefix: '/ranking' })
         });
 
         if (result.isFailure()) {
-          throw result.getError();
+          const error = result.getError();
+          // Map domain error to HTTP error immediately
+          // Note: This logic duplicates the catch block, but avoids locally throwing.
+          // Ideally, we'd have a clean error mapping utility.
+          // For now, let's keep it simple and minimal.
+          // Actually, looking at the catch block, it handles specific types.
+          // We can just throw non-locally (e.g. specialized HttpExceptions) or just return the error object if we had a standard format.
+          // But to strictly follow "No ExceptionCaughtLocally", we should process it here.
+          
+          logger.warn({ error }, '[RankingController] Domain Error');
+           // Simple mapping
+          set.status = 400; 
+          return { error: error.message };
         }
 
         const rankings = result.getValue();

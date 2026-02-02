@@ -151,7 +151,7 @@ const finishOnboarding = async () => {
     // So we need to allow access to /swipe even if onboardingCompleted is false, IF a query param is present? Or just modify middleware to allow /swipe?
     // Middleware should likely allow /swipe if specific condition met.
 
-    router.push('/swipe?mode=onboarding');
+    await router.push('/swipe?mode=onboarding');
   } catch (e) {
     console.error('Failed to finish', e);
   } finally {

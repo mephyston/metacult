@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useDark, useToggle } from '@vueuse/core';
 import { Moon, Sun } from 'lucide-vue-next';
 import { Button } from '../button';

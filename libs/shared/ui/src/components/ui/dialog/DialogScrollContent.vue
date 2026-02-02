@@ -43,6 +43,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
           (event) => {
             const originalEvent = event.detail.originalEvent;
             const target = originalEvent.target as HTMLElement;
+            // noinspection UnreachableCodeJS
             if (
               originalEvent.offsetX > target.clientWidth ||
               originalEvent.offsetY > target.clientHeight
