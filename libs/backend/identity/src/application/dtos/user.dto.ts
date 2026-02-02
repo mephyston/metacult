@@ -1,9 +1,12 @@
 // noinspection JSDeprecatedSymbols
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { z } from 'zod';
 export const UserPublicProfileSchema = z.object({
-  // noinspection JSDeprecatedSymbols
+  // @ts-ignore
   id: z.string().uuid(),
+  // @ts-ignore
   name: z.string().nullable(),
+  // @ts-ignore
   image: z.string().nullable(),
 });
 
