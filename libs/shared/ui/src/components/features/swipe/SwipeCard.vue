@@ -180,7 +180,7 @@ const angle = computed(() => {
 const cardTransform = computed(() => {
   // Tactile feedback: Scale down slightly when dragging
   const scale = isDragging.value ? 0.95 : 1;
-  const flipRotate = isFlipped.value ? 180 : 0; // Handled by class, but keep cleanup if needed
+  // flipRotate removed (handled by class)
 
   // N'applique RIEN si x et y sont à 0 ou quasi-0 (sauf le scale si on drag)
   if (distance.value < 3 && !isDragging.value) {

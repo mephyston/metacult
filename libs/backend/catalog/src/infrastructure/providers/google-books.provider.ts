@@ -33,12 +33,15 @@ export class GoogleBooksProvider {
         },
       );
 
-      if (!response.ok)
-        throw new Error(`GoogleBooks error: ${response.statusText}`);
+      if (!response.ok) {
+        // Log directly and return empty
+        logger.error({ err: new Error(response.statusText) }, '[GoogleBooks] Search error (HTTP)');
+        return [];
+      }
+      
       const data = (await response.json()) as { items: GoogleBookRaw[] };
       return data.items || [];
     } catch (error) {
-      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error }, '[GoogleBooks] Search error');
       return [];
     }

@@ -176,11 +176,36 @@ export const processImportMedia = async (
     const { id } = job.data;
     logger.info({ jobId: job.id, type, id }, '[Worker] Processing Import Job');
 
-    try {
+      let mediaType: MediaType;
+      try {
+        switch (type) {
+          case 'game':
+            mediaType = MediaType.GAME;
+            break;
+          case 'movie':
+            mediaType = MediaType.MOVIE;
+            break;
+          case 'tv':
+            mediaType = MediaType.TV;
+            break;
+          case 'book':
+            mediaType = MediaType.BOOK;
+            break;
+          default:
+            throw new Error(`Unknown type ${type}`);
+        }
+      } catch (err) {
+        logger.error({ jobId: job.id, err }, '[Worker] Failed to process job (Invalid Type)');
+        throw err;
+      }
+
+      
+      try {
       let handler = deps?.handler;
 
       if (!handler) {
         logger.debug('[Worker] Initializing dependencies via Factory');
+        // ... factory init code ...
         const { db } = getDbConnection(mediaSchema);
 
         const config = {
@@ -197,24 +222,6 @@ export const processImportMedia = async (
         };
 
         handler = CatalogModuleFactory.createImportMediaHandler(db, config);
-      }
-
-      let mediaType: MediaType;
-      switch (type) {
-        case 'game':
-          mediaType = MediaType.GAME;
-          break;
-        case 'movie':
-          mediaType = MediaType.MOVIE;
-          break;
-        case 'tv':
-          mediaType = MediaType.TV;
-          break;
-        case 'book':
-          mediaType = MediaType.BOOK;
-          break;
-        default:
-          throw new Error(`Unknown type ${type}`);
       }
 
       const command = new ImportMediaCommand(id, mediaType);

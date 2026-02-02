@@ -89,11 +89,13 @@ export class IgdbProvider {
         externalSignal: signal,
       });
 
-      if (!response.ok)
-        throw new Error(`IGDB Search failed: ${response.statusText}`);
+      if (!response.ok) {
+        logger.error({ err: new Error(response.statusText) }, '[IGDB] Search failed (HTTP)');
+        return [];
+      }
+      
       return (await response.json()) as IgdbGameRaw[];
     } catch (error) {
-      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error }, '[IGDB] Search error');
       return [];
     }
@@ -125,12 +127,14 @@ export class IgdbProvider {
         externalSignal: signal,
       });
 
-      if (!response.ok)
-        throw new Error(`IGDB Details failed: ${response.statusText}`);
+      if (!response.ok) {
+        logger.error({ err: new Error(response.statusText) }, '[IGDB] Details failed (HTTP)');
+        return null;
+      }
+      
       const data = (await response.json()) as IgdbGameRaw[];
       return data[0] || null;
     } catch (error) {
-      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error, id }, '[IGDB] Get by ID error');
       return null;
     }

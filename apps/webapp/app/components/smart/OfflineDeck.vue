@@ -131,8 +131,10 @@ const fetchAndCacheFeed = async () => {
       credentials: 'include',
     });
 
-    // noinspection ExceptionCaughtLocallyJS
-    if (!response.ok) throw new Error('Failed to fetch feed');
+    if (!response.ok) {
+      console.error('[OfflineDeck] Failed to fetch feed (HTTP)', response.status);
+      return;
+    }
 
     const data = await response.json();
 

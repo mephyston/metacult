@@ -48,7 +48,9 @@ export class TmdbOffersProvider implements OffersProvider {
 
       if (!response.ok) {
         if (response.status === 404) return [];
-        throw new Error(`TMDB API error: ${response.statusText}`);
+        // Log and return empty instead of throwing to catch
+        console.error(`[TmdbOffersProvider] TMDB API error: ${response.statusText}`);
+        return [];
       }
 
       const data = (await response.json()) as TmdbProvidersResponse;
@@ -88,13 +90,10 @@ export class TmdbOffersProvider implements OffersProvider {
       addOffers(frData.flatrate, 'subscription');
       addOffers(frData.rent, 'rent');
       addOffers(frData.buy, 'purchase');
-
-      // Deduplicate if necessary? Usually different types are distinct offers.
-      // Same provider could be in flatrate and rent (e.g. Amazon Prime vs Amazon Video rent).
-
+      
       return offers;
+
     } catch (error) {
-      // noinspection ExceptionCaughtLocallyJS
       console.error('[TmdbOffersProvider] Error fetching offers', error);
       return [];
     }

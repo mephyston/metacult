@@ -37,7 +37,7 @@ mock.module('ioredis', () => {
       async info() {
         return 'redis_version:6.2.0';
       }
-      defineCommand(name: string, def: any) {}
+      defineCommand(name: string, _def: any) {}
       duplicate() {
         return this;
       }

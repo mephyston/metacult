@@ -112,10 +112,7 @@ export class FeedController {
                   { err: e },
                   '[FeedController] Failed to fetch blacklist',
                 );
-                excludedMediaIds = excludedIdsParam;
               }
-            } else {
-              excludedMediaIds = excludedIdsParam;
             }
 
             const feedQuery = new GetMixedFeedQuery(

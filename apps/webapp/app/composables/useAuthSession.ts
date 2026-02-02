@@ -92,19 +92,23 @@ export const useAuthSession = () => {
             });
 
           if (error) {
-            throw error;
-          }
+            logger.warn(
+              '[useAuthSession] Failed to fetch gamification stats',
+              error,
+            );
+          } else {
+            const stats = statsObject;
 
-          const stats = statsObject;
-
-          if (stats) {
-            mappedUser.level = stats.level;
-            mappedUser.xp = stats.xp;
-            mappedUser.nextLevelXp = stats.nextLevelXp;
+            if (stats) {
+              mappedUser.level = stats.level;
+              mappedUser.xp = stats.xp;
+              mappedUser.nextLevelXp = stats.nextLevelXp;
+            }
           }
         } catch (err: unknown) {
+          // Additional safety net for runtime errors
           logger.warn(
-            '[useAuthSession] Failed to fetch gamification stats',
+            '[useAuthSession] Runtime error fetching gamification stats',
             err,
           );
         }

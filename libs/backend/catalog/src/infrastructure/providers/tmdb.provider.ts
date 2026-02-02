@@ -34,11 +34,13 @@ export class TmdbProvider {
         },
       );
 
-      if (!response.ok) throw new Error(`TMDB error: ${response.statusText}`);
+      if (!response.ok) {
+        logger.error({ err: new Error(response.statusText) }, '[TMDB] Search error (HTTP)');
+        return [];
+      } 
       const data = (await response.json()) as { results: TmdbMovieRaw[] };
       return data.results || [];
     } catch (error) {
-      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error }, '[TMDB] Search error');
       return [];
     }

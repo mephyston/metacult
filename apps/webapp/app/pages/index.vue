@@ -52,14 +52,14 @@ const fetchTrends = async () => {
 
     logger.debug('[Dashboard] Response status:', response.status);
 
-    // noinspection ExceptionCaughtLocallyJS
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      logger.error('[Dashboard] Failed to fetch trends:', `HTTP ${response.status}`);
+      trends.value = [];
+    } else {
+      const data = await response.json();
+      logger.debug('[Dashboard] Trends received:', data.length, 'items');
+      trends.value = data.slice(0, 5); // Limit to 5 trends
     }
-
-    const data = await response.json();
-    logger.debug('[Dashboard] Trends received:', data.length, 'items');
-    trends.value = data.slice(0, 5); // Limit to 5 trends
   } catch (error) {
     logger.error('[Dashboard] Failed to fetch trends:', error);
     trends.value = [];

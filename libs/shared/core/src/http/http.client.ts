@@ -71,16 +71,33 @@ export async function fetchWithRetry(
       if (res.ok || res.status < 500) {
         return res;
       }
+      
+      // If 5xx, we fall through to retry logic below (without throwing)
+      // We throw specifically to unify the "error handling" path if we want to reuse the catch block,
+      // BUT to satisfy Qodana and be cleaner, we should just continue the loop if we want to retry,
+      // or handle the error. 
+      // However, the catch block handles 'attempt++' and 'delay'. 
+      // Let's manually trigger the retry logic for 5xx.
+      
+      const errorMsg = `Server Error: ${res.status} ${res.statusText}`;
+      if (attempt >= retries) {
+        throw new Error(errorMsg);
+      }
+      // Log and wait
+      attempt++;
+      const delay = 1000 * Math.pow(2, attempt - 1);
+      logger.warn(
+        { err: new Error(errorMsg) },
+        `[fetchWithRetry] Attempt ${attempt}/${retries} failed for ${url}. Retrying in ${delay}ms...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      continue; // Retry loop
 
-      // If 5xx, throw to trigger retry logic
-      // noinspection ExceptionCaughtLocallyJS
-      throw new Error(`Server Error: ${res.status} ${res.statusText}`);
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error(String(error));
       const isAbort =
         err.name === 'AbortError' || err.message.includes('Aborted');
-      // const isTimeout = err.message.includes('timeout');
-
+      
       // If it's a real user abort, DO NOT RETRY.
       if (externalSignal?.aborted && isAbort) {
         throw error;
@@ -91,7 +108,7 @@ export async function fetchWithRetry(
         throw error;
       }
 
-      // If it's a timeout or 5xx or network error, we retry.
+      // If it's a timeout or network error, we retry.
       attempt++;
       const delay = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s
       logger.warn(

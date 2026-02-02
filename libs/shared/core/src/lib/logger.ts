@@ -35,7 +35,7 @@ class ConsoleLogger {
   fatal(...args: any[]) {
     console.error(...args);
   }
-  silent(...args: any[]) {
+  silent(..._args: any[]) {
     /* noop */
   }
   level = 'info';
