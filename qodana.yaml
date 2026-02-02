@@ -37,7 +37,7 @@ exclude:
       - coverage
       - .nuxt
       - apps/webapp/.nuxt
-      - _bmad/**
+      - _bmad
       - analyze_qodana.cjs
       - test
       - scripts
