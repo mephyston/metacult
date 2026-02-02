@@ -1,4 +1,5 @@
 // noinspection JSDeprecatedSymbols
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { z } from 'zod';
 import { logger } from '@metacult/shared-core';
 
@@ -6,13 +7,13 @@ import { logger } from '@metacult/shared-core';
 const envSchema = z.object({
   // Infrastructure
   API_PORT: z.coerce.number().default(3000),
-  // noinspection JSDeprecatedSymbols
+  // @ts-ignore
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url(),
 
   // Auth & Security
   BETTER_AUTH_SECRET: z.string().optional(),
-  // noinspection JSDeprecatedSymbols
+  // @ts-ignore
   BETTER_AUTH_URL: z.string().url().optional(),
   BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
   AUTH_COOKIE_PREFIX: z.string().default('metacult'),
@@ -23,13 +24,13 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
 
   // Internal / Public URLs
-  // noinspection JSDeprecatedSymbols
+  // @ts-ignore
   INTERNAL_API_URL: z.string().url().optional(),
-  // noinspection JSDeprecatedSymbols
+  // @ts-ignore
   PUBLIC_API_URL: z.string().url().optional(),
-  // noinspection JSDeprecatedSymbols
+  // @ts-ignore
   PUBLIC_WEBSITE_URL: z.string().url().optional(),
-  // noinspection JSDeprecatedSymbols
+  // @ts-ignore
   PUBLIC_WEBAPP_URL: z.string().url().optional(),
 
   // Environment
