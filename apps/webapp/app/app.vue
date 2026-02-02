@@ -78,6 +78,7 @@ const handleLogout = async () => {
 const config = useRuntimeConfig();
 
 // Standardization logic
+// noinspection JSDeprecatedSymbols
 const sha = (config.public as any).commitSha || 'local';
 const appVer = (config.public as any).appVersion;
 
