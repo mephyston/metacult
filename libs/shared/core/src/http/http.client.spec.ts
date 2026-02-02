@@ -41,21 +41,18 @@ describe('fetchWithRetry', () => {
     expect(global.fetch).toHaveBeenCalledTimes(3);
   });
 
-  it('should throw after max retries exhausted', async () => {
+  it('should return error response after max retries exhausted', async () => {
     global.fetch = mock(() =>
       Promise.resolve(new Response('Server Error', { status: 500 })),
     ) as unknown as typeof fetch;
 
-    try {
-      await fetchWithRetry('https://api.example.com', {
-        retries: 2,
-        timeoutMs: 50,
-      });
-      expect(true).toBe(false); // Should not reach here
-    } catch (e: unknown) {
-      expect((e as Error).message).toContain('Server Error');
-      expect(global.fetch).toHaveBeenCalledTimes(3); // Initial + 2 retries
-    }
+    const res = await fetchWithRetry('https://api.example.com', {
+      retries: 2,
+      timeoutMs: 50,
+    });
+
+    expect(res.status).toBe(500);
+    expect(global.fetch).toHaveBeenCalledTimes(3); // Initial + 2 retries
   });
 
   it('should respect internal timeout', async () => {
