@@ -1,9 +1,8 @@
 const fs = require('fs');
-const path = require('path');
 
 // --- Configuration ---
 // Adjust this path to point to your qodana.sarif.json file
-const REPORT_PATH = './qodana_analysis/qodana.sarif.json'; 
+const REPORT_PATH = './qodana_analysis/qodana.sarif.json';
 
 // --- Main Execution ---
 try {
@@ -28,18 +27,8 @@ try {
     console.log(`Tool: ${run.tool.driver.fullName} (${run.tool.driver.version})`);
     console.log(`Total Issues: ${results.length}\n`);
 
-    // Helper to get severity from rule ID
-    const getSeverity = (ruleId) => {
-        const rule = rules.find(r => r.id === ruleId);
-        // Map SARIF severity/level to typically Qodana severities if available. 
-        // Default to provided level or Warning.
-        // Qodana often puts severity in properties tags or we infer from defaultConfiguration.level
-        if (rule && rule.defaultConfiguration && rule.defaultConfiguration.level) {
-            return rule.defaultConfiguration.level.toUpperCase();
-        }
-        return 'UNKNOWN';
-    };
-    
+
+
     // Group by Severity
     const issuesBySeverity = {
         'CRITICAL': [],
@@ -54,9 +43,9 @@ try {
     // note: Qodana-js usually maps 'error' -> High/Critical, 'warning' -> Moderate, 'note' -> Low
     const mapSeverity = (sarifLevel) => {
         switch (sarifLevel) {
-            case 'error': return 'HIGH'; 
+            case 'error': return 'HIGH';
             case 'warning': return 'MODERATE';
-            case 'note': return 'LOW'; 
+            case 'note': return 'LOW';
             case 'none': return 'INFO';
             default: return 'UNKNOWN';
         }
@@ -72,7 +61,7 @@ try {
         const issues = issuesBySeverity[severity];
         if (issues.length > 0) {
             console.log(`\n--- ${severity} ISSUES (${issues.length}) ---`);
-            
+
             // Group by Rule ID
             const issuesByRule = {};
             issues.forEach(i => {
@@ -83,10 +72,10 @@ try {
             Object.entries(issuesByRule).forEach(([ruleId, ruleIssues]) => {
                 const rule = rules.find(r => r.id === ruleId);
                 const desc = rule ? rule.shortDescription.text : 'No description';
-                
+
                 console.log(`\nRule: ${ruleId} (${desc})`);
                 console.log(`  Frequency: ${ruleIssues.length} issues`);
-                
+
                 // Show first 5 examples
                 ruleIssues.slice(0, 5).forEach(issue => {
                     const loc = issue.locations[0].physicalLocation;
