@@ -17,7 +17,7 @@ export class CommerceModuleFactory {
     db: NodePgDatabase<typeof mediaSchema>,
     config: CommerceModuleConfig,
   ): CommerceController {
-    const mediaRepository = new DrizzleMediaRepository(db);
+    const mediaRepository = new DrizzleMediaRepository(db as any);
     const mediaDetailsProvider = new CatalogMediaDetailsProvider(
       mediaRepository,
     );

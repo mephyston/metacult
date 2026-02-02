@@ -305,7 +305,7 @@ const commerceConfig: CommerceModuleConfig = {
   },
 };
 const commerceController = CommerceModuleFactory.createController(
-  db as unknown as NodePgDatabase<typeof mediaSchema>,
+  db as any,
   commerceConfig,
 );
 const commerceRoutes = createCommerceRoutes(commerceController);
