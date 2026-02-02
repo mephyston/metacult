@@ -6,11 +6,13 @@ import { logger } from '@metacult/shared-core';
 const envSchema = z.object({
   // Infrastructure
   API_PORT: z.coerce.number().default(3000),
+  // noinspection JSDeprecatedSymbols
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url(),
 
   // Auth & Security
   BETTER_AUTH_SECRET: z.string().optional(),
+  // noinspection JSDeprecatedSymbols
   BETTER_AUTH_URL: z.string().url().optional(),
   BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
   AUTH_COOKIE_PREFIX: z.string().default('metacult'),
@@ -21,9 +23,13 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
 
   // Internal / Public URLs
+  // noinspection JSDeprecatedSymbols
   INTERNAL_API_URL: z.string().url().optional(),
+  // noinspection JSDeprecatedSymbols
   PUBLIC_API_URL: z.string().url().optional(),
+  // noinspection JSDeprecatedSymbols
   PUBLIC_WEBSITE_URL: z.string().url().optional(),
+  // noinspection JSDeprecatedSymbols
   PUBLIC_WEBAPP_URL: z.string().url().optional(),
 
   // Environment

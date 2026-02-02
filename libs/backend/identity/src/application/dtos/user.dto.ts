@@ -1,6 +1,7 @@
 // noinspection JSDeprecatedSymbols
 import { z } from 'zod';
 export const UserPublicProfileSchema = z.object({
+  // noinspection JSDeprecatedSymbols
   id: z.string().uuid(),
   name: z.string().nullable(),
   image: z.string().nullable(),
