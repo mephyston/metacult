@@ -305,6 +305,7 @@ const commerceConfig: CommerceModuleConfig = {
   },
 };
 const commerceController = CommerceModuleFactory.createController(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   db as any,
   commerceConfig,
 );
