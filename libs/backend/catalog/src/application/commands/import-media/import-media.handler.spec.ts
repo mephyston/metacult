@@ -1,6 +1,7 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { ImportMediaHandler } from './import-media.handler';
-import { MediaType, asMediaId } from '../../../index';
+import { MediaType } from '../../../domain/entities/media.entity';
+import { asMediaId } from '../../../domain/value-objects/media-id.vo';
 import type { ImportMediaCommand } from './import-media.command';
 import {
   InvalidProviderDataError,
