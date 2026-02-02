@@ -38,6 +38,8 @@ exclude:
       - .nuxt
       - apps/webapp/.nuxt
       - _bmad
+      - _bmad/**
+      - '**/_bmad/**'
       - analyze_qodana.cjs
       - test
       - scripts
@@ -56,6 +58,12 @@ exclude:
 
   # Architectural Decisions (Circular Deps Prevention)
   - name: ES6PreferShortImport
+
+  # Explicitly ignore agent configuration folder
+  - name: All
+    paths:
+      - _bmad
+      - _bmad/**
 
   # False positives in Vue script setup where vars are used in template
   - name: JSUnusedLocalSymbols

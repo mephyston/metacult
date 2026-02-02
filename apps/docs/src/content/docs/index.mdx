@@ -1,0 +1,38 @@
+---
+title: Metacult Engineering
+description: Documentation technique et architecture.
+template: splash
+hero:
+  tagline: Portail de documentation interne pour l'équipe technique.
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Commencer (Intro)
+      link: /intro/
+      icon: right-arrow
+    - text: Modules Backend
+      link: /modules/backend-catalog/
+      icon: list-format
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Documentation disponible
+
+<CardGrid stagger>
+	<Card title="Onboarding" icon="rocket">
+		Découvrez le projet, l'installation et les standards de code.
+        [Lire l'intro](/intro/)
+	</Card>
+	<Card title="Architecture" icon="puzzle">
+		Design patterns, Clean Architecture et décisions techniques.
+	</Card>
+	<Card title="Modules Backend" icon="setting">
+		Documentation détaillée des 9 modules domain (Catalog, Interaction, etc.).
+        [Voir les modules](/modules/backend-catalog/)
+	</Card>
+	<Card title="Guides" icon="open-book">
+		Tutoriels et recettes pour le développement quotidien.
+	</Card>
+</CardGrid>

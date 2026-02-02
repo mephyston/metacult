@@ -35,6 +35,12 @@ export interface MediaProps {
  * Racine de l'Agrégat (Aggregate Root) "Media".
  * Représente une œuvre culturelle générique. C'est l'entité centrale du module Catalog.
  *
+ * **Design Pattern** :
+ * Polychic Aggregate. `Media` est la classe de base abstraite, étendue par des types concrets (Game, Movie...).
+ *
+ * **Role** :
+ * Sert de pivot pour les relations (Interactions, Reviews) sans se soucier du type spécifique.
+ *
  * @class Media
  * @abstract
  */
@@ -47,6 +53,7 @@ export abstract class Media {
   public readonly coverUrl: CoverUrl | null;
   public readonly rating: Rating | null;
   public readonly releaseYear: ReleaseYear | null;
+  /** Référence externe (IGDB, TMDB...) garantissant l'unicité de la source. */
   public readonly externalReference: ExternalReference;
 
   protected constructor(props: MediaProps) {
@@ -70,7 +77,7 @@ export interface GameProps extends Omit<MediaProps, 'type'> {
 
 /**
  * Représente un Jeu Vidéo.
- * Étend l'entité Media avec des propriétés spécifiques au gaming.
+ * Étend l'entité Media avec des propriétés spécifiques au gaming (HLTB, plateformes).
  *
  * @class Game
  * @extends Media
@@ -78,6 +85,7 @@ export interface GameProps extends Omit<MediaProps, 'type'> {
 export class Game extends Media {
   public readonly platform: string[];
   public readonly developer: string | null;
+  /** Temps moyen pour finir le jeu (en heures). Source : HLTB. */
   public readonly timeToBeat: number | null;
 
   constructor(props: GameProps) {
