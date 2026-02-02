@@ -51,8 +51,8 @@ const mockGetTopRatedByYearHandler = {
   execute: mock(() => Promise.resolve(Result.ok([]))),
 };
 
-// noinspection DuplicatedCode
 describe('Feed Controller (Guest)', () => {
+  // noinspection DuplicatedCode
   let controller: FeedController;
   let app: Elysia;
 
