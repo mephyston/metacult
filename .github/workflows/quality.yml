@@ -4,6 +4,9 @@ run-name: '🛡️ Quality Gate: ${{ github.event.pull_request.title || github.r
 on:
   pull_request:
     branches: [develop, main]
+  push:
+    branches:
+      - develop
   workflow_dispatch:
 
 concurrency:
