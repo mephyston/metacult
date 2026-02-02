@@ -13,6 +13,7 @@ COPY apps/api/package.json ./apps/api/
 COPY apps/webapp/package.json ./apps/webapp/
 COPY apps/website/package.json ./apps/website/
 COPY apps/worker/package.json ./apps/worker/
+COPY apps/docs/package.json ./apps/docs/
 
 COPY libs/shared/core/package.json ./libs/shared/core/
 COPY libs/shared/ui/package.json ./libs/shared/ui/
