@@ -1,0 +1,71 @@
+---
+#-------------------------------------------------------------------------------#
+#               Qodana analysis is configured by qodana.yaml file               #
+#             https://www.jetbrains.com/help/qodana/qodana-yaml.html            #
+#-------------------------------------------------------------------------------#
+# Linter image for JavaScript/TypeScript projects
+linter: jetbrains/qodana-js:2024.3-eap
+
+# Project root directory (usually current directory)
+projectJDK: '20'
+
+# Include patterns - scan these directories
+include:
+  - name: Apps
+    paths:
+      - apps
+  - name: Libraries
+    paths:
+      - libs
+
+# Fail threshold - report will fail if number of problems exceeds this
+# Set to 0 to be strict. We exclude ESLint validation here as it is handled natively.
+failThreshold: 0
+
+# Profile - use recommended set of inspections (default for CI)
+profile:
+  name: qodana.recommended
+
+# Exclude redundant or conflicting inspections
+exclude:
+  - name: Build and deps
+    paths:
+      - node_modules
+      - .nx
+      - dist
+      - .output
+      - coverage
+      - .nuxt
+      - apps/webapp/.nuxt
+      - _bmad
+      - analyze_qodana.cjs
+      - test
+      - scripts
+      - qodana_analysis
+      - '**/.astro'
+      - '**/out-tsc'
+      - '**/*.d.ts'
+      - '**/playwright-report'
+      - '**/test-results'
+      - '**/vite.config.*.timestamp*'
+  - name: Test files
+    paths:
+      - '**/*.spec.ts'
+  # Disable redundant inspections - ESLint is run separately in CI
+  - name: Eslint
+
+  # Architectural Decisions (Circular Deps Prevention)
+  - name: ES6PreferShortImport
+
+  # False positives in Vue script setup where vars are used in template
+  - name: JSUnusedLocalSymbols
+    paths:
+      - '**/*.vue'
+
+  # Imports not detected by static analysis (e.g. auto-imports or deep usage)
+  - name: UnusedImport
+
+  # Generated Files
+  - name: TypeScriptDuplicateUnionOrIntersectionType
+    paths:
+      - '**/*.d.ts'

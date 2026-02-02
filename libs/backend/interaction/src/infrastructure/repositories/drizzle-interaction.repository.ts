@@ -1,6 +1,9 @@
 import { eq, and, sql, inArray, desc } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { IInteractionRepository } from '../../application/ports/interaction.repository.interface';
+import type {
+  IInteractionRepository,
+  SyncInteractionPayload,
+} from '../../domain/ports/interaction.repository.interface';
 import {
   UserInteraction,
   InteractionAction,
@@ -8,6 +11,13 @@ import {
 } from '../../domain/entities/user-interaction.entity';
 import { userInteractions, userFollows } from '../db/interactions.schema';
 import * as schema from '../db/interactions.schema';
+import {
+  type UserId,
+  asUserId,
+  type MediaId,
+  asMediaId,
+  asInteractionId,
+} from '@metacult/shared-core';
 
 export class DrizzleInteractionRepository implements IInteractionRepository {
   constructor(private readonly db: NodePgDatabase<typeof schema>) {}
@@ -39,8 +49,8 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
   // ... (other methods) ...
 
   async findByUserAndMedia(
-    userId: string,
-    mediaId: string,
+    userId: UserId,
+    mediaId: MediaId,
   ): Promise<UserInteraction | null> {
     const result = await this.db
       .select()
@@ -58,7 +68,7 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
     return this.mapToEntity(row);
   }
 
-  async findAllByUser(userId: string): Promise<UserInteraction[]> {
+  async findAllByUser(userId: UserId): Promise<UserInteraction[]> {
     const results = await this.db
       .select()
       .from(userInteractions)
@@ -67,7 +77,7 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
     return results.map((row) => this.mapToEntity(row));
   }
 
-  async getSwipedMediaIds(userId: string): Promise<string[]> {
+  async getSwipedMediaIds(userId: UserId): Promise<MediaId[]> {
     const results = await this.db
       .select({ mediaId: userInteractions.mediaId })
       .from(userInteractions)
@@ -79,10 +89,10 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
         ),
       );
 
-    return results.map((r) => r.mediaId);
+    return results.map((r) => asMediaId(r.mediaId));
   }
 
-  async followUser(followerId: string, followingId: string): Promise<void> {
+  async followUser(followerId: UserId, followingId: UserId): Promise<void> {
     await this.db
       .insert(userFollows)
       .values({
@@ -92,7 +102,7 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
       .onConflictDoNothing();
   }
 
-  async unfollowUser(followerId: string, followingId: string): Promise<void> {
+  async unfollowUser(followerId: UserId, followingId: UserId): Promise<void> {
     await this.db
       .delete(userFollows)
       .where(
@@ -103,24 +113,24 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
       );
   }
 
-  async getFollowers(userId: string): Promise<string[]> {
+  async getFollowers(userId: UserId): Promise<UserId[]> {
     const results = await this.db
       .select({ followerId: userFollows.followerId })
       .from(userFollows)
       .where(eq(userFollows.followingId, userId));
-    return results.map((r) => r.followerId);
+    return results.map((r) => asUserId(r.followerId));
   }
 
-  async getFollowing(userId: string): Promise<string[]> {
+  async getFollowing(userId: UserId): Promise<UserId[]> {
     const results = await this.db
       .select({ followingId: userFollows.followingId })
       .from(userFollows)
       .where(eq(userFollows.followerId, userId));
-    return results.map((r) => r.followingId);
+    return results.map((r) => asUserId(r.followingId));
   }
 
   async getFeed(
-    userIds: string[],
+    userIds: UserId[],
     limit = 50,
     offset = 0,
   ): Promise<UserInteraction[]> {
@@ -141,13 +151,62 @@ export class DrizzleInteractionRepository implements IInteractionRepository {
     raw: typeof userInteractions.$inferSelect,
   ): UserInteraction {
     return new UserInteraction({
-      id: raw.id,
-      userId: raw.userId,
-      mediaId: raw.mediaId,
+      id: asInteractionId(raw.id),
+      userId: asUserId(raw.userId),
+      mediaId: asMediaId(raw.mediaId),
       action: raw.action as InteractionAction,
       sentiment: raw.sentiment as InteractionSentiment | null,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,
     });
+  }
+
+  async syncInteractions(
+    userId: UserId,
+    interactions: SyncInteractionPayload[],
+  ): Promise<void> {
+    for (const interaction of interactions) {
+      try {
+        if (interaction.action === 'SKIP') {
+          const existing = await this.db
+            .select()
+            .from(userInteractions)
+            .where(
+              and(
+                eq(userInteractions.userId, userId),
+                eq(userInteractions.mediaId, interaction.mediaId),
+              ),
+            )
+            .limit(1);
+
+          if (existing.length > 0) {
+            continue;
+          }
+        }
+
+        await this.db
+          .insert(userInteractions)
+          .values({
+            userId: userId,
+            mediaId: asMediaId(interaction.mediaId),
+            action: interaction.action as InteractionAction,
+            sentiment: interaction.sentiment as InteractionSentiment | null,
+          })
+          .onConflictDoUpdate({
+            target: [userInteractions.userId, userInteractions.mediaId],
+            set: {
+              action: interaction.action as InteractionAction,
+              sentiment: interaction.sentiment as InteractionSentiment | null,
+              updatedAt: new Date(),
+            },
+          });
+      } catch (err: unknown) {
+        const error = err as Error & { code?: string };
+        if (error?.code !== '23503') {
+          // Log error if not foreign key violation
+          console.error('[Sync] Error syncing interaction', err);
+        }
+      }
+    }
   }
 }

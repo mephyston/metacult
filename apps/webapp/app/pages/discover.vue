@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Button } from '@metacult/shared-ui';
 import OfflineDeck from '../components/smart/OfflineDeck.vue';
 import { useAuthSession } from '../composables/useAuthSession';
 

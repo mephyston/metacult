@@ -1,11 +1,7 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { SearchMediaHandler } from './search-media.handler';
-import { MediaType } from '../../../domain/entities/media.entity';
-import type { SearchMediaQuery } from './search-media.query';
-import type { SearchResultItemSchema } from '../../../api/http/dtos/media.dtos';
-import type { Static } from 'elysia';
-
-type SearchResultItem = Static<typeof SearchResultItemSchema>;
+import { MediaType } from '../../../index';
+import { SearchMediaQuery } from './search-media.query';
 
 describe('SearchMediaHandler', () => {
   let handler: SearchMediaHandler;
@@ -43,7 +39,7 @@ describe('SearchMediaHandler', () => {
         id: `local-${i}`,
         title: `Local Game ${i}`,
         slug: `local-game-${i}`,
-        type: 'game',
+        type: MediaType.GAME,
         releaseYear: 2020 + i,
         coverUrl: 'http://img',
         externalReference: { id: `ext-${i}` },
@@ -52,7 +48,8 @@ describe('SearchMediaHandler', () => {
     mockRepo.searchViews.mockResolvedValue(localResults);
 
     const query: SearchMediaQuery = { search: 'test' };
-    const response = (await handler.execute(query)).getValue() as any;
+    const result = await handler.execute(query);
+    const response = result.getValue() as { games: { isImported: boolean }[] };
 
     expect(mockRepo.searchViews).toHaveBeenCalled();
     expect(mockIgdb.search).not.toHaveBeenCalled(); // Should NOT call remote
@@ -69,14 +66,17 @@ describe('SearchMediaHandler', () => {
         title: 'Remote Game',
         slug: 'remote-game',
         type: MediaType.GAME,
-        releaseYear: { value: 2021 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 2021 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-1' },
       },
     ]);
 
     const query: SearchMediaQuery = { search: 'remote' };
-    const response = (await handler.execute(query)).getValue() as any;
+    const result = await handler.execute(query);
+    const response = result.getValue() as {
+      games: { title: string; isImported: boolean }[];
+    };
 
     expect(mockIgdb.search).toHaveBeenCalled();
     expect(response.games).toHaveLength(1);
@@ -91,7 +91,7 @@ describe('SearchMediaHandler', () => {
         id: 'local-1',
         title: 'Mario',
         slug: 'mario',
-        type: 'game',
+        type: MediaType.GAME,
         releaseYear: 1985,
         coverUrl: 'http://img',
         externalReference: { id: 'ext-1' },
@@ -105,8 +105,8 @@ describe('SearchMediaHandler', () => {
         title: 'Mario',
         slug: 'mario',
         type: MediaType.GAME,
-        releaseYear: { value: 1985 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 1985 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-1' },
       },
     ]);
@@ -118,8 +118,8 @@ describe('SearchMediaHandler', () => {
         title: 'Mario',
         slug: 'mario', // Duplicate
         type: MediaType.GAME,
-        releaseYear: { value: 1985 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 1985 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-1' },
       },
       {
@@ -127,14 +127,17 @@ describe('SearchMediaHandler', () => {
         title: 'Zelda',
         slug: 'zelda',
         type: MediaType.GAME,
-        releaseYear: { value: 1986 },
-        coverUrl: { value: 'http://img' },
+        releaseYear: { getValue: () => 1986 },
+        coverUrl: { getValue: () => 'http://img' },
         externalReference: { id: 'igdb-2' },
       },
     ]);
 
     const query: SearchMediaQuery = { search: 'mario' };
-    const response = (await handler.execute(query)).getValue() as any;
+    const result = await handler.execute(query);
+    const response = result.getValue() as {
+      games: { title: string; isImported: boolean }[];
+    };
 
     const games = response.games;
     expect(games).toHaveLength(2); // Mario (Local) + Zelda (Remote)
@@ -154,7 +157,7 @@ describe('SearchMediaHandler', () => {
           id: 'cached',
           title: 'Cached',
           slug: 'cached',
-          type: 'game' as const,
+          type: MediaType.GAME,
           year: 2024,
           poster: null,
           externalId: null,
@@ -187,7 +190,7 @@ describe('SearchMediaHandler', () => {
       }),
     );
 
-    const callArgs = mockRepo.searchViews.mock.calls[0][0];
+    const callArgs = mockRepo.searchViews.mock.calls[0][0] as any;
     expect(callArgs.excludedIds).toBeUndefined();
   });
 
@@ -203,7 +206,7 @@ describe('SearchMediaHandler', () => {
           releaseYear = { getValue: () => 2022 };
           coverUrl = { getValue: () => 'http://img' };
           externalReference = { id: 'ext-adv' };
-        } as any)(),
+        } as unknown as any)(),
       ],
       total: 50,
     };
@@ -217,7 +220,13 @@ describe('SearchMediaHandler', () => {
       page: 1,
       limit: 10,
     };
-    const response: any = (await handler.execute(query)).getValue();
+    const result = await handler.execute(query);
+    const response = result.getValue() as {
+      items: any[];
+      total: number;
+      page: number;
+      totalPages: number;
+    };
 
     // Verify Mode B logic
     expect(mockRepo.searchAdvanced).toHaveBeenCalledWith(

@@ -10,7 +10,7 @@ import {
   InvalidProviderDataError,
   MediaAlreadyExistsError,
 } from '../../../domain/errors/catalog.errors';
-import { Result, ProviderSource, type AppError } from '@metacult/shared-core';
+import { Result, ProviderSource } from '@metacult/shared-core';
 import { logger } from '@metacult/backend-infrastructure';
 
 interface ImportResult {
@@ -68,11 +68,9 @@ export class ImportMediaHandler {
    * 3. Persiste le nouveau média.
    *
    * @param {ImportMediaCommand} command - Les données de la commande.
-   * @returns {Promise<Result<ImportResult, AppError>>} Result contenant l'UUID et le Slug ou une erreur.
+   * @returns {Promise<Result<ImportResult>>} Result contenant l'UUID et le Slug ou une erreur.
    */
-  async execute(
-    command: ImportMediaCommand,
-  ): Promise<Result<ImportResult, AppError>> {
+  async execute(command: ImportMediaCommand): Promise<Result<ImportResult>> {
     const { mediaId, type } = command;
 
     const providerConfig = this.providers[type];

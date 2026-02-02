@@ -1,11 +1,11 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { GetRecentMediaQuery } from './get-recent-media.query';
-import type { RecentMediaItemDto } from './recent-media.dto';
+import type { RecentMediaReadModel } from '../../../domain/read-models/recent-media.read-model';
 import { logger } from '@metacult/backend-infrastructure';
 
 import type { Redis } from 'ioredis';
 
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 
 export class GetRecentMediaHandler {
   constructor(
@@ -15,7 +15,7 @@ export class GetRecentMediaHandler {
 
   async execute(
     query: GetRecentMediaQuery,
-  ): Promise<Result<RecentMediaItemDto[], AppError>> {
+  ): Promise<Result<RecentMediaReadModel[]>> {
     try {
       const cacheKey = `catalog:recent:limit:${query.limit}`;
 
@@ -31,14 +31,18 @@ export class GetRecentMediaHandler {
       // 2. Fetch from DB
       const views = await this.mediaRepository.findMostRecent(query.limit);
 
-      const results = views.map((view) => ({
-        id: view.id,
-        title: view.title,
-        releaseYear: view.releaseYear,
-        type: view.type as any,
-        posterUrl: view.coverUrl || null,
-        tags: (view as any).tags || [],
-      }));
+      const results = views.map((view) => {
+        const viewWithTags = view as unknown as { tags?: string[] };
+        return {
+          id: view.id,
+          title: view.title,
+          releaseYear: view.releaseYear,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          type: view.type as any,
+          posterUrl: view.coverUrl || null,
+          tags: viewWithTags.tags || [],
+        };
+      });
 
       // 3. Set Cache (TTL 300s / 5 min)
       await this.redis.set(cacheKey, JSON.stringify(results), 'EX', 300);
@@ -46,7 +50,7 @@ export class GetRecentMediaHandler {
       return Result.ok(results);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',

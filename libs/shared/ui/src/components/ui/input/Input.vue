@@ -31,5 +31,5 @@ const modelValue = computed({
         props.class,
       )
     "
-  />
+  >
 </template>

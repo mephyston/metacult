@@ -1,7 +1,6 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { MediaController } from './media.controller';
 import { createCatalogRoutes } from '../../routes'; // Import the Router Factory
-import { SearchMediaHandler } from '../../../application/queries/search-media/search-media.handler';
 import { Result } from '@metacult/shared-core';
 
 describe('Media Controller API (Routes & Validation)', () => {
@@ -52,6 +51,7 @@ describe('Media Controller API (Routes & Validation)', () => {
         set.status = 422;
         return error;
       }
+      return null;
     });
   });
 

@@ -12,6 +12,7 @@ import {
   CoverUrl,
   ReleaseYear,
 } from '@metacult/backend-catalog';
+import { asMediaId } from '@metacult/shared-core';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { userInteractions } from '@metacult/backend-interaction';
@@ -88,7 +89,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     return ids
       .map((id) => rowMap.get(id))
       .filter((r) => !!r)
-      .map((row) => this.mapRowToEntity(row!));
+      .map((row) => this.mapRowToEntity(row));
   }
 
   async findHallOfFame(
@@ -182,8 +183,8 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     const rowMap = new Map(rows.map((r) => [r.medias.id, r]));
     return ids
       .map((id) => rowMap.get(id))
-      .filter((r) => !!r)
-      .map((row) => this.mapRowToEntity(row!));
+      .filter((r): r is NonNullable<typeof r> => !!r)
+      .map((row) => this.mapRowToEntity(row));
   }
 
   private mapRowToEntity(row: {
@@ -201,7 +202,6 @@ export class DrizzleCatalogRepository implements CatalogRepository {
       globalRating,
       releaseDate,
       providerMetadata,
-      eloScore,
     } = row.medias;
 
     const externalReference = new ExternalReference('unknown', 'unknown');
@@ -209,16 +209,19 @@ export class DrizzleCatalogRepository implements CatalogRepository {
 
     let coverUrlStr: string | null = null;
     if (providerMetadata) {
-      const meta = providerMetadata as any;
-      if (meta.coverUrl) {
-        coverUrlStr = meta.coverUrl;
-      } else if (meta.poster_path) {
-        const path = meta.poster_path.startsWith('/')
-          ? meta.poster_path
-          : `/${meta.poster_path}`;
+      const meta = providerMetadata as Record<string, unknown>;
+      if (meta['coverUrl'] && typeof meta['coverUrl'] === 'string') {
+        coverUrlStr = meta['coverUrl'];
+      } else if (
+        meta['poster_path'] &&
+        typeof meta['poster_path'] === 'string'
+      ) {
+        const path = meta['poster_path'].startsWith('/')
+          ? meta['poster_path']
+          : `/${meta['poster_path']}`;
         coverUrlStr = `https://image.tmdb.org/t/p/original${path}`;
-      } else if (meta.image_id) {
-        coverUrlStr = `https://images.igdb.com/igdb/image/upload/t_1080p/${meta.image_id}.jpg`;
+      } else if (meta['image_id']) {
+        coverUrlStr = `https://images.igdb.com/igdb/image/upload/t_1080p/${meta['image_id']}.jpg`;
       }
     }
 
@@ -232,7 +235,7 @@ export class DrizzleCatalogRepository implements CatalogRepository {
     switch (type) {
       case 'GAME':
         return new Game({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -243,12 +246,10 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           platform: (row.games?.platform as string[]) || [],
           developer: row.games?.developer || '',
           timeToBeat: row.games?.timeToBeat || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       case 'MOVIE':
         return new Movie({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -258,12 +259,10 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           externalReference,
           director: row.movies?.director || '',
           durationMinutes: row.movies?.durationMinutes || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       case 'TV':
         return new TV({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -274,12 +273,10 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           creator: row.tv?.creator || '',
           episodesCount: row.tv?.episodesCount || 0,
           seasonsCount: row.tv?.seasonsCount || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       case 'BOOK':
         return new Book({
-          id,
+          id: asMediaId(id),
           title,
           slug,
           description: null,
@@ -289,8 +286,6 @@ export class DrizzleCatalogRepository implements CatalogRepository {
           externalReference,
           author: row.books?.author || '',
           pages: row.books?.pages || 0,
-          eloScore: eloScore,
-          matchCount: row.medias.matchCount,
         });
       default:
         throw new Error(`Unknown Type: ${type}`);

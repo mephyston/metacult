@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useProvideCarousel } from './useCarousel'
-import type { CarouselEmits, CarouselProps } from './interface'
-import { cn } from '../../../lib/utils'
+import { useProvideCarousel } from './useCarousel';
+import type { CarouselEmits, CarouselProps } from './interface';
+import { cn } from '../../../lib/utils';
 
-// Note: adjust path to utils if needed. 
+// Note: adjust path to utils if needed.
 // libs/shared/ui/src/components/ui/carousel -> libs/shared/ui/src/lib/utils?
 // Actually utils is usually in `libs/shared/ui/src/lib/utils.ts` or similar.
 // Let's assume standard shadcn utils location or check.
@@ -14,22 +14,22 @@ import { cn } from '../../../lib/utils'
 
 const props = withDefaults(defineProps<CarouselProps & { class?: string }>(), {
   orientation: 'horizontal',
-})
+});
 
-const emits = defineEmits<CarouselEmits>()
+const emits = defineEmits<CarouselEmits>();
 
-const { carouselRef, orientation } = useProvideCarousel(props, emits)
+const { carouselRef, orientation } = useProvideCarousel(props);
 
 defineExpose({
   carouselRef,
-})
+});
 
 function onKeyDown(event: KeyboardEvent) {
-  const prevKey = props.orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft'
-  const nextKey = props.orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight'
+  const prevKey = props.orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft';
+  // nextKey removed
 
   if (event.key === prevKey) {
-    event.preventDefault()
+    event.preventDefault();
     // api?.scrollPrev() // handled via provide/inject or we need to access api here?
     // useProvideCarousel returns api but inside the setup.
     // simpler is generic carousel.

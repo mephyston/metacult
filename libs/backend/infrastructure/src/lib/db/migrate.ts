@@ -21,7 +21,7 @@ async function runMigrations() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   // Allow overriding via ENV (for Docker), otherwise use relative dev path
   const migrationsFolder =
-    configService.get('MIGRATIONS_FOLDER') ||
+    configService.migrationsFolder ||
     path.resolve(__dirname, '../../../drizzle');
 
   for (let i = 1; i <= MAX_RETRIES; i++) {

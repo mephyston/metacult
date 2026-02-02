@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { liveQuery } from 'dexie';
-import { useObservable } from '@vueuse/rxjs';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+import { computed } from 'vue';
+
 import { db } from '@metacult/shared-local-db';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+
 import { addToOutbox } from '@metacult/shared-sync-manager';
 import { SwipeDeck } from '@metacult/shared-ui';
-import { from } from 'rxjs';
 
 // --- Props ---
 const props = defineProps<{
@@ -54,11 +51,11 @@ const onUndo = async (payload: any) => {
     // we search for the last item matching mediaId.
     const outboxItem = await db.outbox
       .where({ type: 'SWIPE' })
-      .filter((item) => item.payload.mediaId === payload.mediaId)
+      .filter((item: any) => item.payload.mediaId === payload.mediaId)
       .last();
 
     if (outboxItem && outboxItem.status === 'pending') {
-      await db.outbox.delete(outboxItem.id!);
+      await db.outbox.delete(outboxItem.id as number);
       console.log('[WebsiteSwipeDeck] Undo: Removed pending swipe from outbox');
     }
   } catch (e) {

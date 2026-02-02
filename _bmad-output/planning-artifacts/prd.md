@@ -264,6 +264,7 @@ Metacult est une **Progressive Web App (PWA)** "Mobile-First". L'expérience doi
 - **FR-DUEL-01**: Le système doit proposer des "Duels" contextuels (Item A vs Item B) pour affiner les préférences.
 - **FR-DUEL-02**: Le système doit recalculer et mettre à jour le score ELO de l'utilisateur pour les entités concernées immédiatement après un duel.
 - **FR-DUEL-03**: Le système doit maintenir un classement (Leaderboard) personnel des Top 100 oeuvres préférées de l'utilisateur basé sur l'ELO.
+- **FR-DUEL-04**: Les duels ne peuvent opposer que des médias du **même type** (Film vs Film, Jeu vs Jeu, etc.).
 
 ### 5. Affiliation & Monetization
 

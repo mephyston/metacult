@@ -1,6 +1,8 @@
 import { describe, it, expect, mock } from 'bun:test';
-import { GetTopRatedByYearHandler } from './get-top-rated-by-year.handler';
-import { GetTopRatedByYearQuery } from './get-top-rated-by-year.query';
+import {
+  GetTopRatedByYearHandler,
+  GetTopRatedByYearQuery,
+} from '../../../index';
 import type { CatalogRepository } from '../../../domain/ports/catalog.repository.interface';
 
 describe('GetTopRatedByYearHandler', () => {

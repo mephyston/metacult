@@ -5,7 +5,7 @@ export type OutboxActionType = 'SWIPE' | 'DUEL_VOTE';
 
 export interface OutboxAction {
   type: OutboxActionType;
-  payload: any;
+  payload: unknown;
   createdAt: number;
 }
 
@@ -74,10 +74,12 @@ export const processOutbox = async (
 
     // Success: Delete all synced items
     // Note: In a production robust system, we might want the server to return which IDs were processed.
-    const ids = pendingItems.map((i) => i.id!);
+    const ids = pendingItems
+      .map((i) => i.id)
+      .filter((id): id is number => id !== undefined);
     await db.outbox.bulkDelete(ids);
     logger.info(`[Sync] Successfully synced ${ids.length} items.`);
   } catch (error) {
-    logger.error(`[Sync] Network error during batch sync`, error);
+    logger.error(error, '[Sync] Network error during batch sync');
   }
 };

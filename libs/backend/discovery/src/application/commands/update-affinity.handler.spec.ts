@@ -1,10 +1,10 @@
-import { describe, expect, it, mock, spyOn } from 'bun:test';
-import { UpdateAffinityHandler } from './update-affinity.handler';
-import type { AffinityRepository } from '../../domain/ports/affinity.repository.interface';
-import type {
-  SentimentUpdateCommand,
-  DuelUpdateCommand,
-} from './update-affinity.command';
+import { describe, expect, it, mock } from 'bun:test';
+import {
+  UpdateAffinityHandler,
+  type SentimentUpdateCommand,
+  type DuelUpdateCommand,
+  type AffinityRepository,
+} from '../../index';
 import { Affinity } from '../../domain/entities/affinity.entity';
 
 describe('UpdateAffinityHandler', () => {

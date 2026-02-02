@@ -1,0 +1,11 @@
+{
+  "name": "@metacult/backend-catalog",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "peerDependencies": {
+    "@metacult/backend-infrastructure": "workspace:*",
+    "@metacult/shared-core": "workspace:*"
+  }
+}

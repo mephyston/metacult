@@ -69,7 +69,10 @@ const components: { title: string; href: string; description: string }[] = [
               </NavigationMenuLink>
             </li>
 
-            <li v-for="component in components" :key="component.title">
+            <li
+              v-for="component in components"
+              :key="component.title"
+            >
               <NavigationMenuLink as-child>
                 <a
                   :href="component.href"

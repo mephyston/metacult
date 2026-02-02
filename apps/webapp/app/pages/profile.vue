@@ -4,7 +4,7 @@ import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
 import { db } from '@metacult/shared-local-db';
 import { from } from 'rxjs';
-import MediaGrid from '~/components/ui/MediaGrid.vue';
+import MediaGrid from '../components/ui/MediaGrid.vue';
 import type { MediaItem } from '@metacult/shared-types';
 import { useAuthSession } from '../composables/useAuthSession';
 
@@ -46,9 +46,7 @@ const history = useObservable<MediaItem[], MediaItem[]>(
     liveQuery(async () => {
       // Fetch LIKE and BANGER (if we tracked it as separate action? No, action is LIKE, sentiment is BANGER)
       // So just fetching LIKE covers both GOOD and BANGER if action is LIKE
-      const likes = await getMediaFromInteractions('LIKE');
-      // Maybe also DISLIKE?
-      return likes;
+      return await getMediaFromInteractions('LIKE');
     }),
   ),
   { initialValue: [] },
@@ -59,7 +57,6 @@ const currentItems = computed(() => {
 });
 
 const removeFromList = async (item: MediaItem) => {
-  const actionTarget = activeTab.value === 'wishlist' ? 'WISHLIST' : 'LIKE';
   await db.interactions.delete(item.id);
 };
 
@@ -125,7 +122,7 @@ const handleSignOut = async () => {
               <div
                 class="h-full bg-primary transition-all duration-500"
                 :style="{
-                  width: `${Math.min((user.xp! / user.nextLevelXp!) * 100, 100)}%`,
+                  width: `${Math.min(((user?.xp || 0) / (user?.nextLevelXp || 100)) * 100, 100)}%`,
                 }"
               ></div>
             </div>

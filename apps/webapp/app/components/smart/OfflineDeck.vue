@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { liveQuery } from 'dexie';
 import { useObservable } from '@vueuse/rxjs';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+
 import { db } from '@metacult/shared-local-db';
-// eslint-disable-next-line @nx/enforce-module-boundaries
+
 import { addToOutbox } from '@metacult/shared-sync-manager';
 import { SwipeDeck } from '@metacult/shared-ui'; // Clean barrel import
 
@@ -18,7 +18,7 @@ import { from } from 'rxjs'; // Fix Dexie interop
 const mediaItems = useObservable<MediaItem[], MediaItem[]>(
   from(
     liveQuery<MediaItem[]>(async () => {
-      return await db.dailyStack.toArray();
+      return db.dailyStack.toArray();
     }),
   ),
   { initialValue: [] },
@@ -96,11 +96,11 @@ const onUndo = async (payload: any) => {
   // Find pending outbox item for this media and type 'SWIPE'
   const outboxItem = await db.outbox
     .where({ type: 'SWIPE' })
-    .filter((item) => item.payload.mediaId === payload.mediaId)
+    .filter((item: any) => item.payload.mediaId === payload.mediaId)
     .last();
 
   if (outboxItem && outboxItem.status === 'pending') {
-    await db.outbox.delete(outboxItem.id!);
+    await db.outbox.delete(outboxItem.id as number);
     console.log('[OfflineDeck] Undo: Removed pending swipe from outbox');
   } else {
     // Already synced? We might need to send a 'UNDO_SWIPE' action.
@@ -131,7 +131,10 @@ const fetchAndCacheFeed = async () => {
       credentials: 'include',
     });
 
-    if (!response.ok) throw new Error('Failed to fetch feed');
+    if (!response.ok) {
+      console.error('[OfflineDeck] Failed to fetch feed (HTTP)', response.status);
+      return;
+    }
 
     const data = await response.json();
 
@@ -150,6 +153,7 @@ const fetchAndCacheFeed = async () => {
         rating: media.globalRating || 0,
         posterUrl: media.coverUrl || media.poster || null, // Map coverUrl -> posterUrl
         releaseDate: media.releaseDate,
+        offers: media.offers || [],
       };
     });
 
@@ -168,8 +172,9 @@ const fetchAndCacheFeed = async () => {
         img.src = item.posterUrl;
       }
     });
-  } catch (e) {
-    console.error('[OfflineDeck] Error fetching feed', e);
+  } catch (err) {
+    // noinspection ExceptionCaughtLocallyJS
+    console.error('[OfflineDeck] Failed to load offline feed', err);
   }
 };
 

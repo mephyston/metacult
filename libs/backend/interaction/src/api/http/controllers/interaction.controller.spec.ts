@@ -25,7 +25,11 @@ mock.module('../../../application/commands/save-interaction.command', () => ({
 }));
 
 mock.module('../../../application/commands/sync-interactions.command', () => ({
-  syncInteractions: mockSyncInteractions,
+  SyncInteractionsHandler: class {
+    execute(...args: any[]) {
+      return mockSyncInteractions(...args);
+    }
+  },
 }));
 
 // 2. Import controller after mocks

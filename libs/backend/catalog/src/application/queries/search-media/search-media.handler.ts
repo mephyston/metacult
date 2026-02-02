@@ -1,22 +1,17 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { SearchMediaQuery } from './search-media.query';
 import type {
-  GroupedSearchResponseDto,
-  PaginatedSearchResponseDto,
-  SearchResultItemSchema,
-} from '../../../api/http/dtos/media.dtos';
-import type { Static } from 'elysia';
+  GroupedSearchResponse,
+  PaginatedSearchResponse,
+  SearchMediaReadModel,
+} from '../../../domain/read-models/search-media.read-model';
+import type { MediaReadModel } from '../../../domain/read-models/media-read.model';
+
 import type { Redis } from 'ioredis';
-import type {
-  IgdbAdapter,
-  TmdbAdapter,
-  GoogleBooksAdapter,
-} from '../../../infrastructure/adapters/media.adapters';
+import type { IMediaProvider } from '../../ports/media-provider.interface';
 import { MediaType, Media } from '../../../domain/entities/media.entity';
 import { logger } from '@metacult/backend-infrastructure';
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
-
-type SearchResultItem = Static<typeof SearchResultItemSchema>;
+import { Result, InfrastructureError } from '@metacult/shared-core';
 
 /**
  * Handler pour la requête de recherche de médias (Query Handler).
@@ -26,9 +21,9 @@ export class SearchMediaHandler {
   constructor(
     private readonly mediaRepository: IMediaRepository,
     private readonly redis: Redis,
-    private readonly igdbAdapter: IgdbAdapter,
-    private readonly tmdbAdapter: TmdbAdapter,
-    private readonly googleBooksAdapter: GoogleBooksAdapter,
+    private readonly igdbAdapter: IMediaProvider,
+    private readonly tmdbAdapter: IMediaProvider,
+    private readonly googleBooksAdapter: IMediaProvider,
   ) {}
 
   /**
@@ -36,17 +31,24 @@ export class SearchMediaHandler {
    */
   async execute(
     query: SearchMediaQuery,
-  ): Promise<
-    Result<GroupedSearchResponseDto | PaginatedSearchResponseDto, AppError>
-  > {
+  ): Promise<Result<GroupedSearchResponse | PaginatedSearchResponse>> {
     try {
       const searchTerm = query.search?.trim();
+
+      // Normalize types (Debt cleanup: prefer types array over single type)
+      const effectiveTypes =
+        query.types && query.types.length > 0
+          ? query.types
+          : query.type
+            ? [query.type]
+            : undefined;
 
       // Check Advanced Filters
       const isAdvancedFilterActive =
         !!query.minElo ||
         !!query.releaseYear ||
         (!!query.tags && query.tags.length > 0) ||
+        (!!effectiveTypes && effectiveTypes.length > 0) ||
         !!query.page;
 
       if (isAdvancedFilterActive || !searchTerm) {
@@ -59,7 +61,8 @@ export class SearchMediaHandler {
           minElo: query.minElo,
           releaseYear: query.releaseYear,
           tags: query.tags,
-          type: query.type,
+          // type: query.type, // Legacy support removed (using normalized types)
+          types: effectiveTypes,
           excludedIds: query.excludedIds,
           page: page,
           limit: limit,
@@ -85,17 +88,18 @@ export class SearchMediaHandler {
             await this.mediaRepository.findRandom({
               excludedIds: query.excludedIds,
               limit: query.limit ?? 10,
+              types: effectiveTypes,
             }),
           ),
         );
       }
 
       // 2. Short Query Check
-      if (searchTerm!.length < 3) {
+      if (!searchTerm || searchTerm.length < 3) {
         return Result.ok(this.emptyResponse());
       }
 
-      const normalizedQuery = searchTerm!.toLowerCase();
+      const normalizedQuery = searchTerm.toLowerCase();
       const cacheKey = `search:unified:${normalizedQuery}`;
 
       // 3. Check Redis Cache
@@ -113,7 +117,8 @@ export class SearchMediaHandler {
       // 4. Local Search
       const localResults = await this.mediaRepository.searchViews({
         search: searchTerm,
-        type: query.type, // Legacy support for type in simple search
+        // type: query.type, // Legacy support removed
+        types: effectiveTypes,
         limit: query.limit, // Legacy limit support
       });
 
@@ -128,19 +133,15 @@ export class SearchMediaHandler {
         );
 
         const results = await Promise.allSettled([
-          this.igdbAdapter.search(searchTerm!),
-          this.tmdbAdapter.search(searchTerm!),
-          this.googleBooksAdapter.search(searchTerm!),
+          this.igdbAdapter.search(searchTerm),
+          this.tmdbAdapter.search(searchTerm),
+          this.googleBooksAdapter.search(searchTerm),
         ]);
 
         const [igdbRes, tmdbRes, gbooksRes] = results;
 
         if (igdbRes.status === 'fulfilled') {
-          this.mergeRemoteResults(
-            groupedResponse.games,
-            igdbRes.value,
-            MediaType.GAME,
-          );
+          this.mergeRemoteResults(groupedResponse.games, igdbRes.value);
         } else {
           logger.error({ err: igdbRes.reason }, '[Search] IGDB Error');
         }
@@ -159,11 +160,7 @@ export class SearchMediaHandler {
         }
 
         if (gbooksRes.status === 'fulfilled') {
-          this.mergeRemoteResults(
-            groupedResponse.books,
-            gbooksRes.value,
-            MediaType.BOOK,
-          );
+          this.mergeRemoteResults(groupedResponse.books, gbooksRes.value);
         } else {
           logger.error({ err: gbooksRes.reason }, '[Search] GoogleBooks Error');
         }
@@ -180,7 +177,7 @@ export class SearchMediaHandler {
       return Result.ok(groupedResponse);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',
@@ -189,15 +186,17 @@ export class SearchMediaHandler {
     }
   }
 
-  private emptyResponse(): GroupedSearchResponseDto {
+  private emptyResponse(): GroupedSearchResponse {
     return { games: [], movies: [], shows: [], books: [] };
   }
 
-  private mapLocalToGrouped(localResults: any[]): GroupedSearchResponseDto {
+  private mapLocalToGrouped(
+    localResults: MediaReadModel[],
+  ): GroupedSearchResponse {
     const response = this.emptyResponse();
 
     for (const res of localResults) {
-      const item: SearchResultItem = {
+      const item: SearchMediaReadModel = {
         id: res.id,
         title: res.title,
         slug: res.slug,
@@ -205,7 +204,7 @@ export class SearchMediaHandler {
         poster: res.coverUrl,
         type: res.type,
         isImported: true, // Local DB items are imported
-        externalId: res.externalReference?.id ?? null,
+        externalId: null, // Not available in simple ReadDto
       };
 
       switch (res.type) {
@@ -227,16 +226,15 @@ export class SearchMediaHandler {
   }
 
   private mergeRemoteResults(
-    targetArray: SearchResultItem[],
-    remoteItems: any[],
-    type: MediaType,
+    targetArray: SearchMediaReadModel[],
+    remoteItems: Media[],
   ) {
     for (const remote of remoteItems) {
       const exists = targetArray.some(
         (local) =>
           local.title.toLowerCase() === remote.title.toLowerCase() &&
-          (local.year && remote.releaseYear?.value
-            ? local.year === remote.releaseYear.value
+          (local.year && remote.releaseYear?.getValue()
+            ? local.year === remote.releaseYear.getValue()
             : true),
       );
 
@@ -246,7 +244,7 @@ export class SearchMediaHandler {
     }
   }
 
-  private mapEntityToItem(entity: Media): SearchResultItem {
+  private mapEntityToItem(entity: Media): SearchMediaReadModel {
     return {
       id: entity.id,
       title: entity.title,
@@ -259,7 +257,7 @@ export class SearchMediaHandler {
     };
   }
 
-  private mapRemoteToItem(media: any): SearchResultItem {
+  private mapRemoteToItem(media: Media): SearchMediaReadModel {
     // media is a Domain Entity (Media/Game/Movie/etc) or similar shape from remote adapter
     const extId = media.externalReference?.id;
     if (!extId) {
@@ -273,14 +271,17 @@ export class SearchMediaHandler {
       externalId: extId || null, // Real Provider ID
       title: media.title,
       slug: media.slug, // Entity has slug
-      year: media.releaseYear ? media.releaseYear.value : null,
-      poster: media.coverUrl ? media.coverUrl.value : null,
+      year: media.releaseYear ? media.releaseYear.getValue() : null,
+      poster: media.coverUrl ? media.coverUrl.getValue() : null,
       type: media.type,
       isImported: false,
     };
   }
 
-  private addUnique(target: SearchResultItem[], item: SearchResultItem) {
+  private addUnique(
+    target: SearchMediaReadModel[],
+    item: SearchMediaReadModel,
+  ) {
     if (
       !target.some((t) => t.title.toLowerCase() === item.title.toLowerCase())
     ) {

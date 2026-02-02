@@ -5,15 +5,16 @@ import {
   InteractionAction,
   InteractionSentiment,
 } from '../../domain/entities/user-interaction.entity';
+import { asUserId, asMediaId, asInteractionId } from '@metacult/shared-core';
 
 describe('DrizzleInteractionRepository', () => {
   let repository: DrizzleInteractionRepository;
   let mockDb: any;
 
   const mockInteraction = new UserInteraction({
-    id: 'uuid-123',
-    userId: 'user-1',
-    mediaId: 'media-1',
+    id: asInteractionId('uuid-123'),
+    userId: asUserId('user-1'),
+    mediaId: asMediaId('media-1'),
     action: InteractionAction.LIKE,
     sentiment: InteractionSentiment.GOOD,
     createdAt: new Date('2024-01-01'),
@@ -73,7 +74,10 @@ describe('DrizzleInteractionRepository', () => {
     mockDb.where.mockReturnValue(mockDb);
     mockDb.limit = mockLimit;
 
-    const result = await repository.findByUserAndMedia('user-1', 'media-1');
+    const result = await repository.findByUserAndMedia(
+      asUserId('user-1'),
+      asMediaId('media-1'),
+    );
 
     expect(mockDb.select).toHaveBeenCalled();
     expect(mockDb.from).toHaveBeenCalled();
@@ -82,7 +86,7 @@ describe('DrizzleInteractionRepository', () => {
 
     expect(result).not.toBeNull();
     expect(result).toBeInstanceOf(UserInteraction);
-    expect(result?.id).toBe('uuid-123');
+    expect(result?.id).toBe(asInteractionId('uuid-123'));
     expect(result?.action).toBe(InteractionAction.LIKE);
   });
 
@@ -94,7 +98,10 @@ describe('DrizzleInteractionRepository', () => {
     mockDb.where.mockReturnValue(mockDb);
     mockDb.limit = mockLimit;
 
-    const result = await repository.findByUserAndMedia('user-1', 'unknown');
+    const result = await repository.findByUserAndMedia(
+      asUserId('user-1'),
+      asMediaId('unknown'),
+    );
 
     expect(result).toBeNull();
   });
@@ -113,7 +120,7 @@ describe('DrizzleInteractionRepository', () => {
     mockDb.from.mockReturnValue(mockDb);
     mockDb.where = mock(() => Promise.resolve(mockResults));
 
-    const results = await repository.findAllByUser('user-1');
+    const results = await repository.findAllByUser(asUserId('user-1'));
 
     expect(mockDb.select).toHaveBeenCalled();
     expect(results).toHaveLength(2);

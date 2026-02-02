@@ -1,16 +1,16 @@
-import { describe, it, expect, afterAll } from 'bun:test';
+import { describe, it, expect } from 'bun:test';
 import { DrizzleCatalogRepository } from './drizzle-catalog.repository';
 import { getDbConnection } from '@metacult/backend-infrastructure';
 import { mediaSchema } from '@metacult/backend-catalog';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { userInteractions } from '@metacult/backend-interaction';
 import { randomUUID } from 'crypto';
-import { sql } from 'drizzle-orm';
 
 // Note: This test requires a running database instance.
 // Safety: It uses strict TRANSACTION ROLLBACK to ensure NO data is ever committed to your local DB.
-const isMockDb = process.env.DATABASE_URL?.includes('mock');
-const runIntegration = (process.env.DATABASE_URL && !isMockDb) ? describe : describe.skip;
+const isMockDb = process.env['DATABASE_URL']?.includes('mock');
+const runIntegration =
+  process.env['DATABASE_URL'] && !isMockDb ? describe : describe.skip;
 
 runIntegration('DrizzleCatalogRepository Integration', () => {
   const { db } = getDbConnection();
@@ -46,7 +46,7 @@ runIntegration('DrizzleCatalogRepository Integration', () => {
         await tx.insert(mediaSchema.medias).values([
           {
             id: m1,
-            slug: `game-trending-${m1}`,
+            slug: `game - trending - ${m1} `,
             title: 'Game Trending',
             type: 'GAME',
             matchCount: 10,
@@ -55,7 +55,7 @@ runIntegration('DrizzleCatalogRepository Integration', () => {
           },
           {
             id: m2,
-            slug: `movie-classic-${m2}`,
+            slug: `movie - classic - ${m2} `,
             title: 'Movie Classic',
             type: 'MOVIE',
             matchCount: 100,
@@ -64,7 +64,7 @@ runIntegration('DrizzleCatalogRepository Integration', () => {
           },
           {
             id: m3,
-            slug: `show-controversial-${m3}`,
+            slug: `show - controversial - ${m3} `,
             title: 'Show Controversial',
             type: 'TV',
             matchCount: 30,
@@ -73,7 +73,7 @@ runIntegration('DrizzleCatalogRepository Integration', () => {
           },
           {
             id: m4,
-            slug: `book-upcoming-${m4}`,
+            slug: `book - upcoming - ${m4} `,
             title: 'Book Upcoming',
             type: 'BOOK',
             matchCount: 0,
@@ -82,7 +82,7 @@ runIntegration('DrizzleCatalogRepository Integration', () => {
           },
           {
             id: m5,
-            slug: `movie-2023-${m5}`,
+            slug: `movie - 2023 - ${m5} `,
             title: 'Movie 2023',
             type: 'MOVIE',
             matchCount: 5,
@@ -91,7 +91,7 @@ runIntegration('DrizzleCatalogRepository Integration', () => {
           },
           {
             id: m6,
-            slug: `movie-2023-bad-${m6}`,
+            slug: `movie - 2023 - bad - ${m6} `,
             title: 'Movie 2023 Bad',
             type: 'MOVIE',
             matchCount: 5,

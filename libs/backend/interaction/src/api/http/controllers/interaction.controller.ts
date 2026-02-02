@@ -1,16 +1,19 @@
 import { Elysia, t } from 'elysia';
 import {
   isAuthenticated,
-  auth,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
 import { logger, getDbConnection } from '@metacult/backend-infrastructure';
 import { API_MESSAGES } from '@metacult/shared-core';
 import { SaveInteractionHandler } from '../../../application/commands/save-interaction.command';
-import { syncInteractions } from '../../../application/commands/sync-interactions.command';
+import { SyncInteractionsHandler } from '../../../application/commands/sync-interactions.command';
 import * as schema from '../../../infrastructure/db/interactions.schema';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleInteractionRepository } from '../../../infrastructure/repositories/drizzle-interaction.repository';
+// import { asUserId } from '@metacult/shared-core'; // Keeping if used later, but cleaned DTOs
+import { asUserId } from '@metacult/shared-core';
+
+// ..
 
 // ..
 
@@ -20,7 +23,7 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
   .post(
     '/',
     async (ctx) => {
-      const { body, set } = ctx as any; // Cast temporaire
+      const { body, set } = ctx;
       try {
         // Use helper to resolve user or throw 401
         const user = await resolveUserOrThrow(ctx);
@@ -44,16 +47,17 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
           data: interaction,
           message: API_MESSAGES.INTERACTION.VOTE_RECORDED,
         };
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const err = e as Error;
         logger.error(
-          { err: e },
+          { err },
           '[InteractionController] Error saving interaction',
         );
         set.status = 500;
         return {
           success: false,
           message: API_MESSAGES.INTERACTION.SAVE_FAILED,
-          error: e.message,
+          error: err.message,
         };
       }
     },
@@ -82,7 +86,7 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
   .post(
     '/sync',
     async (ctx) => {
-      const { body, set } = ctx as any;
+      const { body, set } = ctx;
 
       // Use helper to resolve user or throw 401
       const user = await resolveUserOrThrow(ctx);
@@ -92,22 +96,24 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const results = await syncInteractions(user.id, body);
+        const handler = new SyncInteractionsHandler(interactionRepo);
+        await handler.execute(user.id, body);
         return {
           success: true,
-          synced: results.length,
+          synced: body.length,
           message: API_MESSAGES.INTERACTION.SYNC_SUCCESS,
         };
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const err = e as Error;
         logger.error(
-          { err: e },
+          { err },
           '[InteractionController] Error syncing interactions',
         );
         set.status = 500;
         return {
           success: false,
           message: API_MESSAGES.INTERACTION.SYNC_FAILED,
-          error: e.message,
+          error: err.message,
         };
       }
     },
@@ -146,21 +152,24 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const interactions = await interactionRepo.findAllByUser(params.userId);
+        const interactions = await interactionRepo.findAllByUser(
+          asUserId(params.userId),
+        );
         return {
           success: true,
           data: interactions,
         };
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const err = e as Error;
         logger.error(
-          { err: e },
+          { err },
           '[InteractionController] Error fetching user interactions',
         );
         set.status = 500;
         return {
           success: false,
           message: 'Failed to fetch interactions',
-          error: e.message,
+          error: err.message,
         };
       }
     },
@@ -188,7 +197,9 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
         const interactionRepo = new DrizzleInteractionRepository(
           db as unknown as NodePgDatabase<typeof schema>,
         );
-        const followingIds = await interactionRepo.getFollowing(user.id);
+        const followingIds = await interactionRepo.getFollowing(
+          asUserId(user.id),
+        );
 
         // 2. Get their interactions
         const feed = await interactionRepo.getFeed(followingIds);
@@ -197,13 +208,14 @@ export const interactionController = new Elysia({ prefix: '/interactions' })
           success: true,
           data: feed,
         };
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const error = e as Error;
         logger.error({ err: e }, '[InteractionController] Error fetching feed');
         set.status = 500;
         return {
           success: false,
           message: 'Failed to fetch feed',
-          error: e.message,
+          error: error.message,
         };
       }
     },

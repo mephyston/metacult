@@ -26,7 +26,7 @@ export const useGuestSync = () => {
    * À appeler au montage de l'app (app.vue ou plugin)
    * Vérifie la présence du query param 'sync', le décode et le stocke.
    */
-  const initSync = () => {
+  const initSync = async () => {
     if (import.meta.server) return;
     const logger = useLogger();
 
@@ -53,7 +53,7 @@ export const useGuestSync = () => {
           // Nettoyage de l'URL pour ne pas polluer
           const query = { ...route.query };
           delete query.sync;
-          router.replace({ query });
+          await router.replace({ query });
         }
       } catch (e) {
         logger.error('[GuestSync] Failed to parse sync param', e);

@@ -2,7 +2,7 @@ import Redis from 'ioredis';
 import { configService } from '../config/configuration.service';
 import { logger } from '../logger/logger.service';
 
-const redisUrl = configService.get('REDIS_URL');
+const redisUrl = configService.redisUrl;
 
 logger.info('[Redis] Initializing client for Cache');
 
@@ -17,8 +17,7 @@ export const redisClient = new Redis(redisUrl, {
   enableReadyCheck: false,
   retryStrategy(times) {
     // Exponential backoff with max 2s delay
-    const delay = Math.min(times * 50, 2000);
-    return delay;
+    return Math.min(times * 50, 2000);
   },
 });
 

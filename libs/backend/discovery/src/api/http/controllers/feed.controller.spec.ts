@@ -1,6 +1,6 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { Elysia } from 'elysia';
-import { FeedController } from './feed.controller';
+import { FeedController } from '../../../index';
 import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
 import { Result } from '@metacult/shared-core';
 
@@ -45,7 +45,7 @@ mock.module('@metacult/backend-identity', () => ({
     app.derive(() => ({
       user: { id: 'test-user-id' },
     })),
-  resolveUserOrThrow: async (ctx: any) => ({ id: 'test-user-id' }),
+  resolveUserOrThrow: async () => ({ id: 'test-user-id' }),
   auth: {
     api: {
       getSession: mock(() =>

@@ -6,7 +6,7 @@ export class MetacultDB extends Dexie {
   media!: Table<MediaItem, string>; // id is string
   userProfile!: Table<UserProfile, string>;
   dailyStack!: Table<MediaItem, string>; // Local cache of the daily stack
-  outbox!: Table<any, number>; // auto-inc id
+  outbox!: Table<Record<string, unknown>, number>; // auto-inc id;
 
   interactions!: Table<
     {

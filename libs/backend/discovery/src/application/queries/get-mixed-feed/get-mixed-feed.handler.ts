@@ -4,12 +4,12 @@ import { logger } from '@metacult/backend-infrastructure';
 import type { IMediaSearcher } from '../../ports/media-searcher.interface';
 import type { IAdsProvider } from '../../ports/ads-provider.interface';
 
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 
 // Types (simplified for this exercise)
 export type MixedFeedItem =
-  | { type: 'MEDIA'; data: any }
-  | { type: 'SPONSORED'; data: any };
+  | { type: 'MEDIA'; data: unknown }
+  | { type: 'SPONSORED'; data: unknown };
 
 /**
  * Cas d'Utilisation (Use Case) : Générer un flux mixte (Contenu + Pubs).
@@ -38,11 +38,9 @@ export class GetMixedFeedHandler {
    * 4. Mise en cache du résultat.
    *
    * @param {GetMixedFeedQuery} query - Paramètres de recherche.
-   * @returns {Promise<Result<MixedFeedItem[], AppError>>} Le flux composite.
+   * @returns {Promise<Result<MixedFeedItem[]>>} Le flux composite.
    */
-  async execute(
-    query: GetMixedFeedQuery,
-  ): Promise<Result<MixedFeedItem[], AppError>> {
+  async execute(query: GetMixedFeedQuery): Promise<Result<MixedFeedItem[]>> {
     try {
       const normalizedSearch = query.search.trim().toLowerCase();
 
@@ -59,6 +57,7 @@ export class GetMixedFeedHandler {
 
       const shouldCache =
         !query.userId &&
+        !query.isOnboarding &&
         (!query.excludedMediaIds || query.excludedMediaIds.length === 0);
       const cacheKey = `discovery:feed:${normalizedSearch}`;
 
@@ -86,8 +85,9 @@ export class GetMixedFeedHandler {
           limit: query.limit,
           // Si pas de recherche textuelle, on veut explicitement du Random
           orderBy: !normalizedSearch ? 'random' : undefined,
+          types: query.types,
         }),
-        this.adsProvider.getAds(),
+        !query.isOnboarding ? this.adsProvider.getAds() : Promise.resolve([]),
       ]);
 
       const [mediaRes, adsRes] = results;
@@ -113,7 +113,9 @@ export class GetMixedFeedHandler {
       while (mediaIndex < mediaItems.length) {
         // Take chunk of 5 media
         const chunk = mediaItems.slice(mediaIndex, mediaIndex + 5);
-        chunk.forEach((m: any) => mixedFeed.push({ type: 'MEDIA', data: m }));
+        chunk.forEach((m: unknown) =>
+          mixedFeed.push({ type: 'MEDIA', data: m }),
+        );
         mediaIndex += 5;
 
         // Insert 1 Ad if available
@@ -136,7 +138,7 @@ export class GetMixedFeedHandler {
       return Result.ok(mixedFeed);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',

@@ -1,0 +1,8 @@
+{
+  "name": "backend-commerce",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/commerce/src",
+  "projectType": "library",
+  "tags": ["scope:commerce", "layer:backend", "type:bounded-context"],
+  "targets": {}
+}

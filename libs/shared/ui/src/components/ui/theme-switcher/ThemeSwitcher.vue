@@ -37,7 +37,10 @@ const setTheme = (theme: string) => {
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button variant="ghost" size="icon">
+      <Button
+        variant="ghost"
+        size="icon"
+      >
         <Paintbrush class="h-[1.2rem] w-[1.2rem]" />
         <span class="sr-only">Toggle theme color</span>
       </Button>

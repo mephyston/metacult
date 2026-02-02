@@ -5,7 +5,6 @@ import type {
   GoogleBookRaw,
 } from '../types/raw-responses';
 import { InvalidProviderDataError } from '../../domain/errors/catalog.errors';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Rating } from '../../domain/value-objects/rating.vo';
 import { CoverUrl } from '../../domain/value-objects/cover-url.vo';
@@ -13,6 +12,7 @@ import { ReleaseYear } from '../../domain/value-objects/release-year.vo';
 import { ProviderSource } from '@metacult/shared-core';
 import { ExternalReference } from '../../domain/value-objects/external-reference.vo';
 import { Game, Movie, TV, Book } from '../../domain/entities/media.entity';
+import { asMediaId } from '../../domain/value-objects/media-id.vo';
 
 // Helper to safely create VOs
 const createRating = (val: number | undefined | null): Rating | null => {
@@ -88,7 +88,7 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
   }
   const rating = raw.total_rating ? raw.total_rating / 10 : null;
   return new Game({
-    id,
+    id: asMediaId(id),
     title: raw.name,
     slug: slugify(`${raw.name}-igdb-${raw.id}`),
     description: raw.summary || null,
@@ -103,8 +103,6 @@ export function mapGameToEntity(raw: IgdbGameRaw, id: string): Game {
     platform: raw.platforms?.map((p) => p.name) || [],
     developer: null, // Developer not fetched
     timeToBeat: null, // TimeToBeat not fetched
-    eloScore: 1500,
-    matchCount: 0,
   });
 }
 
@@ -124,7 +122,7 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
     ? `https://image.tmdb.org/t/p/w500${raw.poster_path}`
     : null;
   return new Movie({
-    id,
+    id: asMediaId(id),
     title: raw.title,
     slug: slugify(`${raw.title}-tmdb-${raw.id}`),
     description: raw.overview || null,
@@ -137,8 +135,6 @@ export function mapMovieToEntity(raw: TmdbMovieRaw, id: string): Movie {
     ),
     director: null, // Director
     durationMinutes: raw.runtime || null,
-    eloScore: 1500,
-    matchCount: 0,
   });
 }
 
@@ -158,7 +154,7 @@ export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
     ? `https://image.tmdb.org/t/p/w500${raw.poster_path}`
     : null;
   return new TV({
-    id,
+    id: asMediaId(id),
     title: raw.name,
     slug: slugify(`${raw.name}-tmdb-${raw.id}`),
     description: raw.overview || null,
@@ -172,8 +168,6 @@ export function mapTvToEntity(raw: TmdbTvRaw, id: string): TV {
     creator: raw.created_by?.[0]?.name || null,
     episodesCount: raw.number_of_episodes || null,
     seasonsCount: raw.number_of_seasons || null,
-    eloScore: 1500,
-    matchCount: 0,
   });
 }
 
@@ -191,7 +185,7 @@ export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
     );
   }
   return new Book({
-    id,
+    id: asMediaId(id),
     title: info.title,
     slug: slugify(`${info.title}-gb-${raw.id}`),
     description: info.description || null,
@@ -204,8 +198,6 @@ export function mapBookToEntity(raw: GoogleBookRaw, id: string): Book {
     ),
     author: info.authors?.[0] || 'Unknown',
     pages: info.pageCount || null,
-    eloScore: 1500,
-    matchCount: 0,
   });
 }
 

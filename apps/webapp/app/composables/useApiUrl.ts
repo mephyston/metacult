@@ -23,7 +23,8 @@ export const useApiUrl = () => {
  * Nuxt composable for resolving Website URL
  */
 
-export const useWebsiteUrl = () => {
+export const useWebsiteUrl = (): string => {
   const config = useRuntimeConfig();
-  return config.public.websiteUrl || 'http://localhost:4444';
+  const publicConfig = config.public as Record<string, unknown>;
+  return (publicConfig.websiteUrl as string) || 'http://localhost:4444';
 };

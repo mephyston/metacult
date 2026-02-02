@@ -92,7 +92,7 @@ const formatDate = (date: string) => {
   });
 };
 
-const getActionIcon = (action: string, sentiment?: string) => {
+const getActionIcon = (action: string) => {
   if (action === 'WISHLIST') return '🔖';
   if (action === 'LIKE') return '❤️';
   if (action === 'DISLIKE') return '👎';

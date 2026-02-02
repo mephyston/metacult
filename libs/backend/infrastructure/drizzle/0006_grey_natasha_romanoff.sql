@@ -1,0 +1,1 @@
+ALTER TABLE "identity"."user" ADD COLUMN "preferences" jsonb;

@@ -9,7 +9,11 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Hook global pour intercepter les erreurs de l'application (SSR et Client)
   nuxtApp.hook('app:error', async (error: unknown) => {
     // Détection d'une erreur 401 Unauthorized
-    const err = error as any; // Safe assumption for legacy error objects if we don't have a strict Error type
+    const err = error as {
+      statusCode?: number;
+      response?: { status?: number };
+      message?: string;
+    };
     if (
       err?.statusCode === 401 ||
       err?.response?.status === 401 ||
@@ -22,7 +26,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       );
 
       // Nettoyage de la session locale
-      clearSession();
+      await clearSession();
 
       // Redirection forcée vers le login
       // On utilise window.location pour un refresh complet si côté client, pour nettoyer l'état propre

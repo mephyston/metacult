@@ -1,3 +1,4 @@
+import type { MediaId } from '../value-objects/media-id.vo';
 import { Rating } from '../value-objects/rating.vo';
 import { CoverUrl } from '../value-objects/cover-url.vo';
 import { ReleaseYear } from '../value-objects/release-year.vo';
@@ -19,7 +20,7 @@ export enum MediaType {
 }
 
 export interface MediaProps {
-  id: string;
+  id: MediaId;
   title: string;
   slug: string;
   description: string | null;
@@ -28,8 +29,6 @@ export interface MediaProps {
   rating: Rating | null;
   releaseYear: ReleaseYear | null;
   externalReference: ExternalReference;
-  eloScore?: number;
-  matchCount?: number;
 }
 
 /**
@@ -40,7 +39,7 @@ export interface MediaProps {
  * @abstract
  */
 export abstract class Media {
-  public readonly id: string;
+  public readonly id: MediaId;
   public readonly title: string;
   public readonly slug: string;
   public readonly description: string | null;
@@ -49,10 +48,8 @@ export abstract class Media {
   public readonly rating: Rating | null;
   public readonly releaseYear: ReleaseYear | null;
   public readonly externalReference: ExternalReference;
-  public readonly eloScore: number;
-  public readonly matchCount: number;
 
-  constructor(props: MediaProps) {
+  protected constructor(props: MediaProps) {
     this.id = props.id;
     this.title = props.title;
     this.slug = props.slug;
@@ -62,23 +59,7 @@ export abstract class Media {
     this.rating = props.rating;
     this.releaseYear = props.releaseYear;
     this.externalReference = props.externalReference;
-    this.eloScore = props.eloScore ?? 1500;
-    this.matchCount = props.matchCount ?? 0;
   }
-}
-
-export enum InteractionType {
-  RATING = 'RATING',
-  BACKLOG = 'BACKLOG',
-  DUEL_WIN = 'DUEL_WIN',
-  DUEL_LOSS = 'DUEL_LOSS',
-}
-
-export enum RatingValue {
-  MASTERPIECE = 4,
-  RECOMMENDED = 3,
-  MEH = 2,
-  SKIP = 1,
 }
 
 export interface GameProps extends Omit<MediaProps, 'type'> {
@@ -174,12 +155,4 @@ export class Book extends Media {
     this.author = props.author;
     this.pages = props.pages;
   }
-}
-
-export interface UserInteraction {
-  userId: string;
-  mediaId: string;
-  type: InteractionType;
-  value: RatingValue | null;
-  comments: string | null;
 }

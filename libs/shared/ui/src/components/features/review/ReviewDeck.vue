@@ -32,7 +32,9 @@ function handleVote(direction: 'left' | 'right') {
       v-if="currentIndex >= items.length"
       class="h-full flex flex-col items-center justify-center text-center p-8 bg-card rounded-xl border border-border dashed"
     >
-      <div class="text-6xl mb-4">🎉</div>
+      <div class="text-6xl mb-4">
+        🎉
+      </div>
       <h3 class="text-2xl font-bold text-card-foreground mb-2">
         You're all caught up!
       </h3>
@@ -42,7 +44,10 @@ function handleVote(direction: 'left' | 'right') {
     </div>
 
     <template v-else>
-      <template v-for="(item, index) in items" :key="item.id">
+      <template
+        v-for="(item, index) in items"
+        :key="item.id"
+      >
         <!-- ReviewCard handles its own display state based on active prop, or we control it via v-if order? 
                  Better to render ALL (for stack effect) but only interaction on top one?
                  Simple version: Only render current and next.

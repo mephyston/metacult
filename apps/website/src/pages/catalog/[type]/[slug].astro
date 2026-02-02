@@ -3,6 +3,7 @@ import Layout from '../../../layouts/Layout.astro';
 import { getApiUrl } from '@metacult/shared-ui';
 import { getCurrentCatalogYear } from '../../../utils/date.utils';
 import { MoveLeft, Star, Calendar } from 'lucide-vue-next';
+import { MediaOffers } from '@metacult/shared-ui';
 
 export const prerender = false;
 
@@ -101,6 +102,23 @@ if (isCategoryView) {
   } catch (e) {
     console.error('[Media] Fetch failed:', e);
     error = e;
+  }
+
+  // --- 2. Fetch Offers (Commerce Module) ---
+  if (media && media.id) {
+    try {
+      const offersRes = await fetch(
+        `${baseUrl}/api/commerce/offers/${media.id}`,
+      );
+      if (offersRes.ok) {
+        media.offers = await offersRes.json();
+      } else {
+        media.offers = [];
+      }
+    } catch (e) {
+      console.error('[Offers] Fetch failed:', e);
+      media.offers = [];
+    }
   }
 
   mediaTitle = media ? `${media.title} - MetaCult` : 'Media Not Found';
@@ -210,8 +228,8 @@ const pageDescription = isCategoryView ? categoryDescription : mediaDescription;
       </div>
     ) : (
       // ==================== MEDIA DETAIL VIEW TEMPLATE ====================
-      <div class="container py-10 max-w-5xl mx-auto">
-        <div class="mb-6">
+      <div class="container px-4 py-6 md:py-10 max-w-5xl mx-auto">
+        <div class="mb-4 md:mb-6">
           <a
             href="/"
             class="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -228,10 +246,10 @@ const pageDescription = isCategoryView ? categoryDescription : mediaDescription;
         )}
 
         {media && (
-          <div class="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
+          <div class="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6 md:gap-8">
             {/* Poster Column */}
             <div class="flex flex-col gap-4">
-              <div class="relative aspect-[2/3] overflow-hidden rounded-lg border bg-muted shadow-sm">
+              <div class="relative aspect-[2/3] overflow-hidden rounded-lg border bg-muted shadow-sm mx-auto md:mx-0 w-2/3 md:w-full">
                 {media.posterUrl ? (
                   <img
                     src={media.posterUrl}
@@ -248,9 +266,9 @@ const pageDescription = isCategoryView ? categoryDescription : mediaDescription;
             </div>
 
             {/* Info Column */}
-            <div class="flex flex-col gap-6">
+            <div class="flex flex-col gap-4 md:gap-6">
               <div>
-                <h1 class="text-4xl font-bold tracking-tight lg:text-5xl mb-2">
+                <h1 class="text-3xl font-bold tracking-tight md:text-5xl mb-2 text-center md:text-left">
                   {media.title}
                 </h1>
                 <div class="flex flex-wrap gap-4 text-sm text-muted-foreground items-center">
@@ -318,6 +336,16 @@ const pageDescription = isCategoryView ? categoryDescription : mediaDescription;
                     </span>
                   </div>
                 )}
+              </div>
+
+              {/* Media Offers / Commercial Actions */}
+              <div class="mt-4 pt-6 border-t">
+                <MediaOffers
+                  client:visible
+                  offers={media.offers}
+                  mediaTitle={media.title}
+                  variant="detail"
+                />
               </div>
             </div>
           </div>

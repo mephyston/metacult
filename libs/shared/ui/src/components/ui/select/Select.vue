@@ -3,21 +3,15 @@ import { cn } from '../../../lib/utils';
 import { computed } from 'vue';
 import {
   SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectItemIndicator,
-  SelectItemText,
-  SelectLabel,
   SelectPortal,
   SelectRoot,
   SelectScrollDownButton,
   SelectScrollUpButton,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
   SelectViewport,
 } from 'radix-vue';
-import { ChevronDown, ChevronUp, Check } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp } from 'lucide-vue-next';
 
 interface Props {
   modelValue?: string;
@@ -43,7 +37,10 @@ const value = computed({
 </script>
 
 <template>
-  <SelectRoot v-model="value" :disabled="disabled">
+  <SelectRoot
+    v-model="value"
+    :disabled="disabled"
+  >
     <SelectTrigger
       :class="
         cn(

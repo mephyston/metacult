@@ -9,6 +9,7 @@
     "baseUrl": ".",
     "paths": {
       "@metacult/shared-ui": ["libs/shared/ui/src/index.ts"],
+      "@metacult/shared-ui/lib/*": ["libs/shared/ui/src/lib/*"],
       "@metacult/shared-core": ["libs/shared/core/src/index.ts"],
       "@metacult/shared-ui/styles/*": ["libs/shared/ui/src/styles/*"],
       "@metacult/shared-types": ["libs/shared/types/src/index.ts"],
@@ -31,7 +32,9 @@
         "libs/backend/gamification/src/index.ts"
       ],
       "interaction": ["libs/backend/interaction/src/index.ts"],
-      "identity": ["libs/backend/identity/src/index.ts"]
+      "identity": ["libs/backend/identity/src/index.ts"],
+      "@metacult/backend-commerce": ["libs/backend/commerce/src/index.ts"],
+      "@metacult/api": ["apps/api/index.ts"]
     }
   },
   "exclude": ["node_modules", "dist", "build", ".nx", "tmp"]

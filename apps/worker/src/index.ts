@@ -123,4 +123,7 @@ export const startWorker = async () => {
   );
 };
 
-startWorker();
+startWorker().catch((err) => {
+  logger.error({ err }, 'Worker process crashed');
+  process.exit(1);
+});

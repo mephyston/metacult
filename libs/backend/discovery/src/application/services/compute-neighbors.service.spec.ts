@@ -1,9 +1,9 @@
-import { describe, expect, it, mock, spyOn } from 'bun:test';
-import { ComputeNeighborsService } from './compute-neighbors.service';
-import type { AffinityRepository } from '../../domain/ports/affinity.repository.interface';
-import type { SimilarityRepository } from '../../domain/ports/similarity.repository.interface';
-import { SimilarityCalculator } from '../../domain/services/similarity-calculator.service';
-import { Neighbor } from '../../domain/entities/neighbor.entity';
+import { describe, expect, it, mock } from 'bun:test';
+import {
+  ComputeNeighborsService,
+  type AffinityRepository,
+  type SimilarityRepository,
+} from '../../index';
 import { Affinity } from '../../domain/entities/affinity.entity';
 
 describe('ComputeNeighborsService', () => {
@@ -21,10 +21,7 @@ describe('ComputeNeighborsService', () => {
     getNeighbors: mock(() => Promise.resolve([])),
   };
 
-  // Mock Calculator (not strictly necessary but good for isolation)
-  const mockCalculator = {
-    calculate: mock((a: any, b: any) => 0.5),
-  } as any as SimilarityCalculator;
+  // Mock Calculator removed as unused
 
   const service = new ComputeNeighborsService(
     mockAffinityRepo,

@@ -1,7 +1,8 @@
+// noinspection DuplicatedCode
 import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { Elysia } from 'elysia';
 import { FeedController } from './feed.controller';
-import { GetMixedFeedQuery } from '../../../application/queries/get-mixed-feed/get-mixed-feed.query';
+import { GetMixedFeedQuery } from '../../../index';
 import { Result } from '@metacult/shared-core';
 
 // --- Mocks ---
@@ -24,7 +25,7 @@ const mockInteractionRepository = {
 // Standardized mock for @metacult/backend-identity - GUEST VERSION (No User)
 mock.module('@metacult/backend-identity', () => ({
   isAuthenticated: (app: any) => app, // Passthrough - no user injection for guest
-  resolveUserOrThrow: async (ctx: any) => {
+  resolveUserOrThrow: async () => {
     throw new Error('Unauthorized'); // Guest should fail auth
   },
   auth: {
@@ -51,6 +52,7 @@ const mockGetTopRatedByYearHandler = {
 };
 
 describe('Feed Controller (Guest)', () => {
+  // noinspection DuplicatedCode
   let controller: FeedController;
   let app: Elysia;
 

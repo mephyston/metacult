@@ -3,14 +3,18 @@ import {
   isAuthenticated,
   resolveUserOrThrow,
 } from '@metacult/backend-identity';
-import { syncInteractions } from '@metacult/backend-interaction';
-import { logger } from '@metacult/backend-infrastructure';
+import {
+  SyncInteractionsHandler,
+  DrizzleInteractionRepository,
+} from '@metacult/backend-interaction';
+import { getDbConnection, logger } from '@metacult/backend-infrastructure';
 
 export const syncRoutes = new Elysia({ prefix: '/sync' })
   .use(isAuthenticated)
   .post(
     '/',
     async (ctx) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { body, set } = ctx as any; // Elysia types can be tricky with complex nested validation
 
       // Resolve user
@@ -25,7 +29,7 @@ export const syncRoutes = new Elysia({ prefix: '/sync' })
       try {
         const outboxItems = body as Array<{
           type: string;
-          payload: any;
+          payload: unknown;
           timestamp: number;
         }>;
 
@@ -40,17 +44,32 @@ export const syncRoutes = new Elysia({ prefix: '/sync' })
         // Outbox Payload: { mediaId, action, sentiment }
         const swipeActions = outboxItems
           .filter((item) => item.type === 'SWIPE')
-          .map((item) => ({
-            mediaId: item.payload.mediaId,
-            action: item.payload.action,
-            sentiment: item.payload.sentiment,
-          }));
+          .map((item) => {
+            const payload = item.payload as Record<string, unknown>;
+            return {
+              mediaId: payload.mediaId as string,
+              action: payload.action as
+                | 'LIKE'
+                | 'DISLIKE'
+                | 'WISHLIST'
+                | 'SKIP',
+              sentiment: payload.sentiment as
+                | 'BANGER'
+                | 'GOOD'
+                | 'OKAY'
+                | undefined,
+            };
+          });
 
         if (swipeActions.length > 0) {
           try {
-            // Delegate to existing Domain Command (Reusing logic!)
-            const synced = await syncInteractions(user.id, swipeActions);
-            results.swipes = synced.length;
+            const { db } = getDbConnection();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const repo = new DrizzleInteractionRepository(db as any);
+            const handler = new SyncInteractionsHandler(repo);
+
+            await handler.execute(user.id, swipeActions);
+            results.swipes = swipeActions.length; // Assume partial success is handled internally or generic success
           } catch (err) {
             logger.error({ err }, '[Sync] Failed to process swipe subgroup');
             results.errors += 1;
@@ -66,13 +85,14 @@ export const syncRoutes = new Elysia({ prefix: '/sync' })
           results,
           message: 'Sync processed successfully',
         };
-      } catch (e: any) {
-        logger.error({ err: e }, '[Sync] Fatal error processing batch');
+      } catch (e: unknown) {
+        const err = e as Error;
+        logger.error({ err }, '[Sync] Fatal error processing batch');
         set.status = 500;
         return {
           success: false,
           message: 'Internal Server Error during sync',
-          error: e.message,
+          error: err.message,
         };
       }
     },

@@ -26,22 +26,22 @@ mock.module('@metacult/backend-infrastructure', () => ({
 }));
 
 // Mocks
-const mockRepo = { searchViews: mock(() => Promise.resolve([])) } as any;
+const mockRepo = { searchViews: mock(() => Promise.resolve([] as unknown[])) };
 const mockRedis = {
   get: mock(() => Promise.resolve(null)),
   set: mock(() => Promise.resolve('OK')),
-} as any;
-const mockIgdb = { search: mock(() => Promise.resolve([])) } as any;
-const mockTmdb = { search: mock(() => Promise.resolve([])) } as any;
-const mockGbooks = { search: mock(() => Promise.resolve([])) } as any;
+};
+const mockIgdb = { search: mock(() => Promise.resolve([] as unknown[])) };
+const mockTmdb = { search: mock(() => Promise.resolve([] as unknown[])) };
+const mockGbooks = { search: mock(() => Promise.resolve([] as unknown[])) };
 
 // Handler
 const searchHandler = new SearchMediaHandler(
-  mockRepo,
-  mockRedis,
-  mockIgdb,
-  mockTmdb,
-  mockGbooks,
+  mockRepo as any, // Mocks are partials
+  mockRedis as any,
+  mockIgdb as any,
+  mockTmdb as any,
+  mockGbooks as any,
 );
 
 // Other Handlers (Mocked merely for Controller instantiation)
@@ -87,7 +87,7 @@ describe('Search Integration (API -> Handler)', () => {
     );
     expect(res.status).toBe(200);
 
-    const json: any = await res.json();
+    const json = (await res.json()) as { games: any[] }; // Explicit shape instead of any
     expect(json.games).toHaveLength(1);
     expect(json.games[0].title).toBe('Test Game');
     expect(json.games[0].isImported).toBe(true);
@@ -102,7 +102,7 @@ describe('Search Integration (API -> Handler)', () => {
         title: 'Remote Game',
         slug: 'remote-game',
         type: MediaType.GAME,
-        releaseYear: { value: 2024 },
+        releaseYear: { getValue: () => 2024 },
         coverUrl: null,
         externalReference: { id: 'ext-1' },
       },
@@ -113,7 +113,7 @@ describe('Search Integration (API -> Handler)', () => {
     );
     expect(res.status).toBe(200);
 
-    const json: any = await res.json();
+    const json = (await res.json()) as { games: any[] };
     expect(json.games).toHaveLength(1);
     expect(json.games[0].isImported).toBe(false);
     expect(mockIgdb.search).toHaveBeenCalled();
@@ -126,7 +126,7 @@ describe('Search Integration (API -> Handler)', () => {
     // < 3 chars handled by Handler logic returns empty, OR < 1 char validation error
     // Handler says: if < 3 returns empty. Route validation says minLength: 1.
     expect(res.status).toBe(200);
-    const json: any = await res.json();
+    const json = (await res.json()) as { games: unknown[] };
     expect(json.games).toHaveLength(0);
   });
 
@@ -137,10 +137,11 @@ describe('Search Integration (API -> Handler)', () => {
       );
       // Elysia should return 422 for validation errors
       expect(res.status).toBe(422);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If Elysia throws instead of returning response, check error properties
-      expect(error.status).toBe(422);
-      expect(error.code).toBe('VALIDATION');
+      const err = error as { status: number; code: string };
+      expect(err.status).toBe(422);
+      expect(err.code).toBe('VALIDATION');
     }
   });
 });

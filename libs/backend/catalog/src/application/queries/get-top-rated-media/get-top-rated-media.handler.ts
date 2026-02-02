@@ -1,9 +1,9 @@
 import type { IMediaRepository } from '../../ports/media.repository.interface';
 import type { Redis } from 'ioredis';
-import type { MediaReadDto } from '../search-media/media-read.dto';
+import type { MediaReadModel } from '../../../domain/read-models/media-read.model';
 import { logger } from '@metacult/backend-infrastructure';
 
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 
 export interface GetTopRatedMediaQuery {
   limit: number;
@@ -17,7 +17,7 @@ export class GetTopRatedMediaHandler {
 
   async execute(
     query: GetTopRatedMediaQuery,
-  ): Promise<Result<MediaReadDto[], AppError>> {
+  ): Promise<Result<MediaReadModel[]>> {
     try {
       const cacheKey = `catalog:top-rated:limit:${query.limit}`;
 
@@ -39,7 +39,7 @@ export class GetTopRatedMediaHandler {
       return Result.ok(results);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',

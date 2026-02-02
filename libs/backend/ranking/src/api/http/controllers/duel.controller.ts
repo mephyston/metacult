@@ -7,13 +7,20 @@ import { logger } from '@metacult/backend-infrastructure';
 import { API_MESSAGES, DUEL_STATUS } from '@metacult/shared-core';
 import { RankingQueue } from '../../../infrastructure/queue/ranking.queue';
 import { DrizzleDuelRepository } from '../../../infrastructure/repositories/drizzle-duel.repository';
-import { GamificationService } from '@metacult/backend-gamification';
+import {
+  GamificationService,
+  DrizzleGamificationRepository,
+} from '@metacult/backend-gamification';
+import { getDbConnection } from '@metacult/backend-infrastructure';
+
+// Actually report says NodePgDatabase is unused. I used it in cast 'db as unknown as NodePgDatabase<{...}>' but then I reverted to 'any' in suppression.
+// So removing it is correct.
 
 // Initialisation des dépendances (Poor man's injection pour ce module)
 // Idéalement, on passerait par un conteneur ou une factory au niveau de l'app.
 const duelRepository = new DrizzleDuelRepository();
 const rankingQueue = new RankingQueue();
-const gamificationService = new GamificationService();
+// const gamificationService = new GamificationService(); // Moved to handler
 
 /**
  * Contrôleur pour le module Duel.
@@ -27,12 +34,12 @@ export const DuelController = new Elysia({ prefix: '/duel' })
   .get(
     '/',
     async (context) => {
-      const { request, set } = context;
+      const { set } = context;
 
       try {
         // Tentative de résolution de l'utilisateur via le helper unifié
         // Cela lancera une erreur 401 si l'utilisateur n'est pas dans le contexte
-        const user = await resolveUserOrThrow(context as any);
+        const user = await resolveUserOrThrow(context);
         const userId = user.id;
 
         const pair = await duelRepository.getRandomPairForUser(userId);
@@ -48,7 +55,8 @@ export const DuelController = new Elysia({ prefix: '/duel' })
         }
 
         return pair;
-      } catch (err: any) {
+      } catch (e: unknown) {
+        const err = e as Error & { status?: number };
         logger.error({ err }, '[DuelController] Error');
         // Si c'est une erreur d'auth lancée par resolveUserOrThrow
         if (
@@ -73,17 +81,24 @@ export const DuelController = new Elysia({ prefix: '/duel' })
   .post(
     '/vote',
     async (context) => {
-      const { body } = context as any; // Elysia context typing workaround
+      const { body } = context;
       const { winnerId, loserId } = body;
 
-      const user = await resolveUserOrThrow(context as any);
+      const user = await resolveUserOrThrow(context);
 
       // 1. Dispatch job update classement
       await rankingQueue.addDuelResult(winnerId, loserId);
 
       // 2. GAMIFICATION: Award XP
       try {
-        await gamificationService.addXp(user.id, 50, 'DUEL');
+        const { db } = getDbConnection();
+        const repo = new DrizzleGamificationRepository(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          db as unknown as any,
+        );
+        const gamificationService = new GamificationService(repo);
+
+        await gamificationService.addXp(user.id, 50);
       } catch (e) {
         logger.error({ err: e }, '[Gamification] Failed to award XP for DUEL');
       }

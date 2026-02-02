@@ -8,7 +8,10 @@ const { carouselRef, orientation } = useCarousel();
 </script>
 
 <template>
-  <div ref="carouselRef" class="overflow-hidden">
+  <div
+    ref="carouselRef"
+    class="overflow-hidden"
+  >
     <div
       :class="
         cn(

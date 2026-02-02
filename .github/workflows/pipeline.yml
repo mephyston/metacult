@@ -28,6 +28,10 @@ on:
           - beta
           - rc
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
   packages: write
@@ -73,10 +77,10 @@ jobs:
       #   run: bunx playwright install --with-deps
 
       - name: Lint Affected
-        run: bun run nx affected -t lint --parallel=3
+        run: bun run nx affected -t lint --parallel=3 --verbose
 
       - name: Test Affected
-        run: bun run nx affected -t test --parallel=3 --exclude=e2e
+        run: bun run nx affected -t test --parallel=3 --exclude=e2e --verbose
 
   # ------------------------------------------------------------------
   # JOB 1 (Part B): STAGING BUILD & DEPLOY

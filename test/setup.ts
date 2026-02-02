@@ -19,13 +19,13 @@ mock.module('ioredis', () => {
       constructor() {
         super();
       }
-      async get(key: string) {
+      async get(_key: string) {
         return null;
       }
-      async set(key: string, val: string) {
+      async set(_key: string, _val: string) {
         return 'OK';
       }
-      async del(key: string) {
+      async del(_key: string) {
         return 1;
       }
       async quit() {
@@ -37,7 +37,7 @@ mock.module('ioredis', () => {
       async info() {
         return 'redis_version:6.2.0';
       }
-      defineCommand(name: string, def: any) {}
+      defineCommand(name: string, _def: any) {}
       duplicate() {
         return this;
       }

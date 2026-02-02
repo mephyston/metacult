@@ -1,8 +1,7 @@
 import type { AdsGateway } from '../../ports/ads.gateway.interface';
-import type { GetActiveAdsQuery } from './get-active-ads.query';
 import type { Ad } from '../../../domain/ad.entity';
 
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 
 /**
  * Cas d'Utilisation : Récupérer les campagnes pubs actives.
@@ -17,15 +16,15 @@ export class GetActiveAdsHandler {
    * Récupère les pubs.
    * Stratégie déléguée au Gateway : Cache-First, puis fetch externe si miss.
    *
-   * @returns {Promise<Result<Ad[], AppError>>} Liste de pubs encapsulée dans Result.
+   * @returns {Promise<Result<Ad[]>>} Liste de pubs encapsulée dans Result.
    */
-  async execute(): Promise<Result<Ad[], AppError>> {
+  async execute(): Promise<Result<Ad[]>> {
     try {
       const ads = await this.adsGateway.getActiveAds();
       return Result.ok(ads);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',

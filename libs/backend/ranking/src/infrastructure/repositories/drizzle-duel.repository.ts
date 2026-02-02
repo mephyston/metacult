@@ -1,14 +1,15 @@
 import { sql, eq, and, or, inArray } from 'drizzle-orm';
-import { Media, mediaSchema } from '@metacult/backend-catalog';
+import { mediaSchema } from '@metacult/backend-catalog';
 import { userInteractions } from '@metacult/backend-interaction';
 import { getDbConnection } from '@metacult/backend-infrastructure';
 import type { DuelRepository } from '../../application/ports/duel.repository.interface';
+import type { RankedMedia } from '../../domain/types/ranked-media.type';
 
 /**
  * Implémentation Drizzle du DuelRepository.
  */
 export class DrizzleDuelRepository implements DuelRepository {
-  async getRandomPairForUser(userId: string): Promise<Media[]> {
+  async getRandomPairForUser(userId: string): Promise<RankedMedia[]> {
     const { db } = getDbConnection();
 
     // On récupère les médias "aimés" par l'utilisateur (LIKE/WISHLIST ou Sentiment positif)
@@ -34,18 +35,34 @@ export class DrizzleDuelRepository implements DuelRepository {
       .limit(2);
 
     if (rows.length < 2) {
-      return rows.map((row: any) => row.medias) as unknown as Media[];
+      return rows.map((row) => ({
+        ...row.medias,
+        providerMetadata: row.medias.providerMetadata as Record<
+          string,
+          unknown
+        > | null,
+        coverUrl: this.extractCoverUrl(row.medias.providerMetadata),
+      })) as RankedMedia[];
     }
 
-    const rawMedias = rows.map((row: any) => row.medias);
+    const rawMedias = rows.map((row) => row.medias);
 
-    return rawMedias.map((m: any) => ({
+    return rawMedias.map((m) => ({
       ...m,
-      coverUrl:
-        m.providerMetadata?.coverUrl || m.providerMetadata?.posterUrl || null,
-    })) as unknown as Media[];
+      providerMetadata: m.providerMetadata as Record<string, unknown> | null,
+      coverUrl: this.extractCoverUrl(m.providerMetadata),
+    })) as RankedMedia[];
   }
-  async findById(id: string): Promise<Media | undefined> {
+
+  private extractCoverUrl(metadata: unknown): string | null {
+    if (!metadata || typeof metadata !== 'object') return null;
+    const meta = metadata as { coverUrl?: unknown; posterUrl?: unknown };
+    if (typeof meta.coverUrl === 'string') return meta.coverUrl;
+    if (typeof meta.posterUrl === 'string') return meta.posterUrl;
+    return null;
+  }
+
+  async findById(id: string): Promise<RankedMedia | undefined> {
     const { db } = getDbConnection();
     const rows = await db
       .select()
@@ -53,19 +70,17 @@ export class DrizzleDuelRepository implements DuelRepository {
       .where(eq(mediaSchema.medias.id, id))
       .limit(1);
 
-    if (rows.length === 0) {
+    if (!rows.length) {
       return undefined;
     }
 
-    // Cast pour correspondre au type Media (approximatif ici car on utilise le schema Drizzle direct)
     const m = rows[0];
+    if (!m) return undefined;
     return {
       ...m,
-      coverUrl:
-        (m as any).providerMetadata?.coverUrl ||
-        (m as any).providerMetadata?.posterUrl ||
-        null,
-    } as unknown as Media;
+      providerMetadata: m.providerMetadata as Record<string, unknown> | null,
+      coverUrl: this.extractCoverUrl(m.providerMetadata),
+    } as RankedMedia;
   }
 
   async updateEloScores(

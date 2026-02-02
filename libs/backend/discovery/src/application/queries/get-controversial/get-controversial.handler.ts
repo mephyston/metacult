@@ -1,14 +1,12 @@
 import { Media } from '@metacult/backend-catalog';
 import type { CatalogRepository } from '../../../domain/ports/catalog.repository.interface';
 import { GetControversialQuery } from './get-controversial.query';
-import { Result, AppError, InfrastructureError } from '@metacult/shared-core';
+import { Result, InfrastructureError } from '@metacult/shared-core';
 
 export class GetControversialHandler {
   constructor(private readonly catalogRepository: CatalogRepository) {}
 
-  async execute(
-    query: GetControversialQuery,
-  ): Promise<Result<Media[], AppError>> {
+  async execute(query: GetControversialQuery): Promise<Result<Media[]>> {
     try {
       const res = await this.catalogRepository.findControversial(
         query.limit,
@@ -17,7 +15,7 @@ export class GetControversialHandler {
       return Result.ok(res);
     } catch (error) {
       return Result.fail(
-        error instanceof AppError
+        error instanceof InfrastructureError
           ? error
           : new InfrastructureError(
               error instanceof Error ? error.message : 'Unknown error',

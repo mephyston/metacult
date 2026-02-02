@@ -1,4 +1,4 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { DefaultLogger, type LogWriter } from 'drizzle-orm/logger';
 import { requestContext } from '../context/request-context';
@@ -19,7 +19,8 @@ class TracingLogWriter implements LogWriter {
 }
 
 let pool: Pool;
-let db: ReturnType<typeof drizzle>;
+
+let db: unknown;
 
 import { configService } from '../config/configuration.service';
 
@@ -27,7 +28,7 @@ import { configService } from '../config/configuration.service';
  * Initialise ou récupère la connexion Singleton à la base de données PostgreSQL via Drizzle ORM.
  * Combine le schéma de base et les schémas d'authentification ou personnalisés.
  *
- * @param {T} customSchema - Schéma additionnel optionnel.
+ * @param {object} customSchema - Schéma additionnel optionnel.
  * @returns {{ pool: Pool, db: NodePgDatabase }} L'instance du pool et de Drizzle.
  */
 export function getDbConnection<T extends Record<string, unknown>>(
@@ -36,12 +37,12 @@ export function getDbConnection<T extends Record<string, unknown>>(
   if (!pool) {
     // console.log('🔌 Connexion à la base de données...'); // Too verbose
     const isProduction = configService.isProduction;
-    const connectionString = configService.get('DATABASE_URL');
+    const connectionString = configService.databaseUrl;
 
     // Smart SSL: Disable for Railway Internal URLs (they don't need/support it usually)
     // Can be forced via DB_SSL env var
     const isRailwayInternal = connectionString.includes('.railway.internal');
-    const dbSslConfig = configService.get('DB_SSL');
+    const dbSslConfig = configService.dbSsl;
 
     let useSsl = isProduction;
     // if (isRailwayInternal) useSsl = false;
@@ -62,12 +63,11 @@ export function getDbConnection<T extends Record<string, unknown>>(
     );
 
     // Schema is now provided by the caller (apps/api merges all schemas)
-    const enableLogger =
-      configService.isDevelopment || configService.get('DEBUG_SQL') === true;
+    const enableLogger = configService.isDevelopment || configService.debugSql;
     db = drizzle(pool, {
       schema: customSchema,
       logger: enableLogger ? new TracingLogger() : undefined,
-    }) as any;
+    });
   }
-  return { pool, db };
+  return { pool, db: db as NodePgDatabase<T> };
 }

@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'bun:test';
 import { mapMovieToEntity, mapTvToEntity, mapGameToEntity } from './mappers';
-import { MediaType } from '../../domain/entities/media.entity';
 import { InvalidProviderDataError } from '../../domain/errors/catalog.errors';
 
 describe('Media Mappers', () => {

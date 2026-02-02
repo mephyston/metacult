@@ -1,5 +1,4 @@
 import { Affinity } from '../entities/affinity.entity';
-import { Neighbor } from '../entities/neighbor.entity';
 
 export interface AffinityRepository {
   /**

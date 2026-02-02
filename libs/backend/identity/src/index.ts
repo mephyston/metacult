@@ -1,23 +1,7 @@
-/**
- * @module @metacult/backend-identity
- *
- * Bounded Context: Identity (Authentification & Gestion Utilisateurs)
- *
- * **Responsabilités :**
- * - Authentification (email/password, OAuth)
- * - Gestion des sessions
- * - Middleware de protection des routes
- * - Schemas Drizzle pour les tables auth
- *
- * **API Publique :**
- * - `createAuthRoutes()` - Routes Better Auth
- * - `isAuthenticated` - Middleware Elysia pour routes protégées
- * - `auth` - Client Better Auth
- * - Schemas Drizzle (user, session, account, verification)
- * - Types (AuthenticatedContext, ProtectedRoute, SelectUser, etc.)
- */
+// ===== DOMAIN (Public API) =====
+export * from './domain/value-objects/user-id.vo';
 
-// --- API Layer (Routes & Middleware) ---
+// ===== API (Presentation Layer) =====
 export { createAuthRoutes } from './api/auth.routes';
 export { userController } from './api/http/controllers/user.controller';
 export {
@@ -28,7 +12,7 @@ export {
 } from './api/middleware/auth.middleware';
 export { resolveUserOrThrow } from './api/helpers/auth.helper';
 
-// --- Infrastructure Layer (Better Auth & Schemas) ---
+// ===== INFRASTRUCTURE (Configuration & Initialization) =====
 export {
   auth,
   initAuth,

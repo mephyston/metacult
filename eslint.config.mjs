@@ -21,7 +21,26 @@ export default [
     },
   },
   {
-    ignores: ['**/dist', '**/out-tsc', '**/vite.config.*.timestamp*', '**/*.d.ts', '**/.astro/**/*', '**/.nuxt/**/*', 'apps/webapp/.nuxt/**/*', '**/.output/**/*', 'apps/webapp/nuxt.config.ts', '**/playwright-report/**', '**/test-results/**', '**/node_modules'],
+    ignores: [
+      '**/dist',
+      '**/out-tsc',
+      '**/vite.config.*.timestamp*',
+      '**/*.d.ts',
+      '**/.astro/**/*',
+      '**/.nuxt/**/*',
+      'apps/webapp/.nuxt/**/*',
+      '**/.output/**/*',
+      'apps/webapp/nuxt.config.ts',
+      '**/playwright-report/**',
+      '**/test-results/**',
+      '.qodana-reports/**',
+      '**/node_modules',
+      '**/vitest.config.*.timestamp*',
+      'apps/webapp/.nuxt/**',
+      'apps/webapp/.output/**',
+      'apps/webapp/dist/**',
+      'apps/webapp/node_modules/**'
+    ],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.vue'],
@@ -36,22 +55,35 @@ export default [
             // Domain layer: Pure business logic, NO external dependencies
             {
               sourceTag: 'layer:domain',
-              onlyDependOnLibsWithTags: ['layer:domain', 'scope:shared']
+              onlyDependOnLibsWithTags: ['layer:domain', 'scope:shared'],
             },
             // Application layer: Use Cases, can depend on Domain
             {
               sourceTag: 'layer:application',
-              onlyDependOnLibsWithTags: ['layer:domain', 'layer:application', 'scope:shared']
+              onlyDependOnLibsWithTags: [
+                'layer:domain',
+                'layer:application',
+                'scope:shared',
+              ],
             },
             // Infrastructure layer: Adapters, can depend on Domain and Application
             {
               sourceTag: 'layer:infrastructure',
-              onlyDependOnLibsWithTags: ['layer:domain', 'layer:application', 'layer:infrastructure', 'scope:shared']
+              onlyDependOnLibsWithTags: [
+                'layer:domain',
+                'layer:application',
+                'layer:infrastructure',
+                'scope:shared',
+              ],
             },
             // API layer: HTTP/Controllers, can depend on Application (Commands/Queries)
             {
               sourceTag: 'layer:api',
-              onlyDependOnLibsWithTags: ['layer:application', 'layer:api', 'scope:shared']
+              onlyDependOnLibsWithTags: [
+                'layer:application',
+                'layer:api',
+                'scope:shared',
+              ],
             },
 
             // === Bounded Context Isolation ===
@@ -59,58 +91,89 @@ export default [
             {
               sourceTag: 'scope:catalog',
               onlyDependOnLibsWithTags: ['scope:catalog', 'scope:shared'],
-              notDependOnLibsWithTags: ['scope:identity', 'scope:interaction']
+              notDependOnLibsWithTags: ['scope:identity', 'scope:interaction'],
             },
             // Identity context: Cannot import Catalog or Interaction directly
             {
               sourceTag: 'scope:identity',
               onlyDependOnLibsWithTags: ['scope:identity', 'scope:shared'],
-              notDependOnLibsWithTags: ['scope:catalog', 'scope:interaction']
+              notDependOnLibsWithTags: ['scope:catalog', 'scope:interaction'],
             },
             // Interaction context: Cannot import other bounded contexts
             {
               sourceTag: 'scope:interaction',
-              onlyDependOnLibsWithTags: ['scope:interaction', 'scope:shared', 'scope:identity'],
-              notDependOnLibsWithTags: ['scope:catalog', 'scope:discovery', 'scope:marketing']
+              onlyDependOnLibsWithTags: [
+                'scope:interaction',
+                'scope:shared',
+                'scope:identity',
+              ],
+              notDependOnLibsWithTags: [
+                'scope:catalog',
+                'scope:discovery',
+                'scope:marketing',
+              ],
             },
             // Discovery context: Needs Catalog access for Media Metadata
             {
               sourceTag: 'scope:discovery',
-              onlyDependOnLibsWithTags: ['scope:discovery', 'scope:shared', 'scope:catalog'],
-              notDependOnLibsWithTags: ['scope:identity', 'scope:interaction', 'scope:marketing']
+              onlyDependOnLibsWithTags: [
+                'scope:discovery',
+                'scope:shared',
+                'scope:catalog',
+              ],
+              notDependOnLibsWithTags: [
+                'scope:identity',
+                'scope:interaction',
+                'scope:marketing',
+              ],
             },
             // Marketing context: Cannot import other bounded contexts
             {
               sourceTag: 'scope:marketing',
               onlyDependOnLibsWithTags: ['scope:marketing', 'scope:shared'],
-              notDependOnLibsWithTags: ['scope:catalog', 'scope:identity', 'scope:interaction', 'scope:discovery']
+              notDependOnLibsWithTags: [
+                'scope:catalog',
+                'scope:identity',
+                'scope:interaction',
+                'scope:discovery',
+              ],
             },
 
             // === Legacy constraints (to migrate) ===
             {
               sourceTag: 'layer:backend',
-              onlyDependOnLibsWithTags: ['layer:backend', 'scope:shared']
+              onlyDependOnLibsWithTags: ['layer:backend', 'scope:shared'],
             },
             {
               sourceTag: 'layer:frontend',
-              onlyDependOnLibsWithTags: ['layer:frontend', 'scope:shared']
+              onlyDependOnLibsWithTags: ['layer:frontend', 'scope:shared'],
             },
             {
               sourceTag: 'type:app',
-              onlyDependOnLibsWithTags: ['type:feature', 'type:ui', 'type:util', 'type:bounded-context', 'type:domain']
+              onlyDependOnLibsWithTags: [
+                'type:feature',
+                'type:ui',
+                'type:util',
+                'type:bounded-context',
+                'type:domain',
+              ],
             },
             {
               sourceTag: 'type:bounded-context',
-              onlyDependOnLibsWithTags: ['type:bounded-context', 'type:util', 'scope:shared']
+              onlyDependOnLibsWithTags: [
+                'type:bounded-context',
+                'type:util',
+                'scope:shared',
+              ],
             },
             {
               sourceTag: 'type:ui',
-              onlyDependOnLibsWithTags: ['type:util', 'type:ui']
+              onlyDependOnLibsWithTags: ['type:util', 'type:ui'],
             },
             {
               sourceTag: 'type:util',
-              onlyDependOnLibsWithTags: ['type:util']
-            }
+              onlyDependOnLibsWithTags: ['type:util'],
+            },
           ],
         },
       ],
@@ -127,7 +190,45 @@ export default [
       '**/*.cjs',
       '**/*.mjs',
     ],
-    // Override or add rules here
-    rules: {},
+    rules: {
+      // Discourage wildcard imports to enforce minimal, explicit imports
+      // Use eslint-disable-next-line for legitimate cases like database schemas
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector:
+            'ImportDeclaration[source.value=/^@metacult/] ImportNamespaceSpecifier',
+          message:
+            'Avoid wildcard imports from @metacult modules. Import only what you need (e.g., import { Media, MediaType } from \'@metacult/backend-catalog\'). If you need to import a schema namespace (e.g., import * as mediaSchema), add // eslint-disable-next-line no-restricted-syntax above the import.',
+        },
+      ],
+      // Prevent cross-module relative imports
+      // Force usage of @metacult/* aliases for better encapsulation
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/libs/**', '**/apps/**'],
+              message:
+                'Do not import across module boundaries using relative paths. Use @metacult/* aliases instead (e.g., import { Media } from \'@metacult/backend-catalog\').',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      '**/*.spec.ts',
+      '**/*.test.ts',
+      '**/__tests__/**/*',
+      '**/test/**/*',
+    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+    },
   },
 ];

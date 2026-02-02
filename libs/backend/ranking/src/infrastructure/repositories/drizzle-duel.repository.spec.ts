@@ -2,11 +2,12 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test';
 import { DEFAULT_DEV_URLS } from '@metacult/shared-core';
 
 // --- Exposed Mocks ---
+// --- Exposed Mocks ---
 export const mockLimit = mock(() =>
   Promise.resolve([
     { medias: { id: '1' }, user_interactions: {} },
     { medias: { id: '2' }, user_interactions: {} },
-  ] as any[]),
+  ] as unknown[]),
 );
 export const mockOrderBy = mock(() => ({ limit: mockLimit }));
 // where() can filter, and it can be followed by limit directly OR orderBy
@@ -29,7 +30,9 @@ export const mockUpdateSet = mock(() => ({
 export const mockTx = {
   update: mock(() => ({ set: mockUpdateSet })),
 };
-export const mockTransaction = mock(async (cb: any) => cb(mockTx));
+export const mockTransaction = mock(
+  async (cb: (tx: typeof mockTx) => Promise<unknown>) => cb(mockTx),
+);
 
 mock.module('@metacult/backend-infrastructure', () => ({
   getDbConnection: () => ({
@@ -56,14 +59,6 @@ mock.module('@metacult/backend-infrastructure', () => ({
     isStaging: false,
     isTest: true,
   },
-}));
-
-mock.module('drizzle-orm', () => ({
-  sql: (strings: any) => strings,
-  eq: () => 'eq',
-  and: () => 'and',
-  or: () => 'or',
-  inArray: () => 'inArray',
 }));
 
 mock.module('@metacult/backend-catalog', () => ({
@@ -103,8 +98,7 @@ describe('Drizzle Duel Repository', () => {
     expect(mockLimit).toHaveBeenCalledWith(2);
 
     expect(result).toHaveLength(2);
-    // @ts-expect-error - Mock result typing
-    expect(result[0].id).toBe('1');
+    expect(result![0]!.id).toBe('1');
   });
 
   it('should return empty array if not enough media (no throw)', async () => {
@@ -119,15 +113,13 @@ describe('Drizzle Duel Repository', () => {
   // --- New Tests for Refactoring ---
 
   it('should find media by ID', async () => {
-    // findById uses simple select, so returns flat objects, not joined structure
-    mockLimit.mockResolvedValueOnce([{ id: '123' }]);
+    mockLimit.mockResolvedValueOnce([{ id: '123', providerMetadata: null }]);
 
     const result = await repository.findById('123');
 
     expect(mockSelect).toHaveBeenCalled();
     expect(mockWhere).toHaveBeenCalled();
-    // @ts-expect-error - Mock result typing
-    expect(result.id).toBe('123');
+    expect(result!.id).toBe('123');
   });
 
   it('should return undefined if media not found', async () => {

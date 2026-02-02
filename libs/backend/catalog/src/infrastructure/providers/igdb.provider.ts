@@ -1,9 +1,5 @@
 import { fetchWithRetry } from '@metacult/shared-core';
-import {
-  redisClient,
-  cacheService,
-  logger,
-} from '@metacult/backend-infrastructure';
+import { cacheService, logger } from '@metacult/backend-infrastructure';
 import type { IgdbGameRaw } from '../types/raw-responses';
 
 interface TwitchTokenResponse {
@@ -19,10 +15,10 @@ interface TwitchTokenResponse {
  * @class IgdbProvider
  */
 export class IgdbProvider {
-  private clientId: string;
-  private clientSecret: string;
-  private authUrl = 'https://id.twitch.tv/oauth2/token';
-  private apiUrl = 'https://api.igdb.com/v4';
+  private readonly clientId: string;
+  private readonly clientSecret: string;
+  private readonly authUrl = 'https://id.twitch.tv/oauth2/token';
+  private readonly apiUrl = 'https://api.igdb.com/v4';
 
   constructor(clientId: string, clientSecret: string) {
     this.clientId = clientId;
@@ -93,8 +89,11 @@ export class IgdbProvider {
         externalSignal: signal,
       });
 
-      if (!response.ok)
-        throw new Error(`IGDB Search failed: ${response.statusText}`);
+      if (!response.ok) {
+        logger.error({ err: new Error(response.statusText) }, '[IGDB] Search failed (HTTP)');
+        return [];
+      }
+      
       return (await response.json()) as IgdbGameRaw[];
     } catch (error) {
       logger.error({ err: error }, '[IGDB] Search error');
@@ -128,12 +127,15 @@ export class IgdbProvider {
         externalSignal: signal,
       });
 
-      if (!response.ok)
-        throw new Error(`IGDB Details failed: ${response.statusText}`);
+      if (!response.ok) {
+        logger.error({ err: new Error(response.statusText) }, '[IGDB] Details failed (HTTP)');
+        return null;
+      }
+      
       const data = (await response.json()) as IgdbGameRaw[];
       return data[0] || null;
     } catch (error) {
-      logger.error({ err: error }, '[IGDB] Get details error');
+      logger.error({ err: error, id }, '[IGDB] Get by ID error');
       return null;
     }
   }
@@ -192,6 +194,7 @@ export class IgdbProvider {
 
       return (await response.json()) as IgdbGameRaw[];
     } catch (error) {
+      // noinspection ExceptionCaughtLocallyJS
       logger.error({ err: error }, '[IGDB] Trending error');
       return [];
     }

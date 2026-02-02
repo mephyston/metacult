@@ -1,0 +1,7 @@
+{
+  "name": "shared-local-db",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/local-db/src",
+  "projectType": "library",
+  "tags": ["type:shared", "scope:local-db"]
+}

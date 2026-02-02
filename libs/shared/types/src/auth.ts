@@ -1,6 +1,6 @@
-import { Type, type Static } from '@sinclair/typebox';
+import { Type, type Static, type TObject } from '@sinclair/typebox';
 
-export const UserProfileSchema = Type.Object({
+export const UserProfileSchema: TObject = Type.Object({
   id: Type.String(),
   username: Type.String(),
   email: Type.String({ format: 'email' }),
@@ -9,11 +9,34 @@ export const UserProfileSchema = Type.Object({
   level: Type.Optional(Type.Number()),
   xp: Type.Optional(Type.Number()),
   nextLevelXp: Type.Optional(Type.Number()),
+  onboardingCompleted: Type.Boolean({ default: false }),
+  preferences: Type.Optional(
+    Type.Object({
+      categories: Type.Array(Type.String()),
+      genres: Type.Array(Type.String()),
+    }),
+  ),
 });
 
-export type UserProfile = Static<typeof UserProfileSchema>;
+export interface UserPreferences {
+  categories: string[];
+  genres: string[];
+}
 
-export const AuthStateSchema = Type.Object({
+export interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  avatarUrl?: string;
+  createdAt: string;
+  level?: number;
+  xp?: number;
+  nextLevelXp?: number;
+  onboardingCompleted: boolean;
+  preferences?: UserPreferences;
+}
+
+export const AuthStateSchema: TObject = Type.Object({
   isAuthenticated: Type.Boolean(),
   user: Type.Optional(UserProfileSchema),
 });

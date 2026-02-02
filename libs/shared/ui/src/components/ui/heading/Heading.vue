@@ -88,7 +88,10 @@ const classes = computed(() => {
 </script>
 
 <template>
-  <component :is="componentTag" :class="classes">
+  <component
+    :is="componentTag"
+    :class="classes"
+  >
     <slot />
     <!-- Optional subtitle slot behavior could go here or explicit slots -->
   </component>

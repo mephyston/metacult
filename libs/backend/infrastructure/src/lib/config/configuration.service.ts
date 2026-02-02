@@ -1,53 +1,74 @@
-import { Type, type Static } from '@sinclair/typebox';
-import { Value } from '@sinclair/typebox/value';
+// noinspection JSDeprecatedSymbols
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { z } from 'zod';
+import { logger } from '@metacult/shared-core';
 
-// 1. Définition du Schema Strict
-const EnvSchema = Type.Object({
+// 1. Définition du Schema Strict avec Zod
+const envSchema = z.object({
   // Infrastructure
-  API_PORT: Type.Number({ default: 3000 }),
-  DATABASE_URL: Type.String(), // ex: postgres://...
-  REDIS_URL: Type.String(), // ex: redis://...
+  API_PORT: z.coerce.number().default(3000),
+  // @ts-ignore
+  DATABASE_URL: z.string().url(),
+  REDIS_URL: z.string().url(),
 
   // Auth & Security
-  BETTER_AUTH_SECRET: Type.Optional(Type.String()),
-  BETTER_AUTH_URL: Type.Optional(Type.String()), // URL publique de l'API Auth
-  BETTER_AUTH_TRUSTED_ORIGINS: Type.Optional(Type.String()), // Comma separated
-  AUTH_COOKIE_PREFIX: Type.Optional(Type.String({ default: 'metacult' })),
-  ROOT_DOMAIN: Type.Optional(Type.String()), // Pour partage cookies cross-subdomain (.metacult.gg)
+  BETTER_AUTH_SECRET: z.string().optional(),
+  // @ts-ignore
+  BETTER_AUTH_URL: z.string().url().optional(),
+  BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
+  AUTH_COOKIE_PREFIX: z.string().default('metacult'),
+  ROOT_DOMAIN: z.string().optional(),
 
-  // Providers (Optional - uniquement si OAuth configuré)
-  GOOGLE_CLIENT_ID: Type.Optional(Type.String()),
-  GOOGLE_CLIENT_SECRET: Type.Optional(Type.String()),
+  // Providers
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
 
-  // Internal / Public URLs (Clean Architecture Split)
-  INTERNAL_API_URL: Type.Optional(Type.String()), // Service-to-Service (Railway Internal)
-  PUBLIC_API_URL: Type.Optional(Type.String()), // Client-facing (Browser)
-  PUBLIC_WEBSITE_URL: Type.Optional(Type.String()), // Website (Astro)
+  // Internal / Public URLs
+  // @ts-ignore
+  INTERNAL_API_URL: z.string().url().optional(),
+  // @ts-ignore
+  PUBLIC_API_URL: z.string().url().optional(),
+  // @ts-ignore
+  PUBLIC_WEBSITE_URL: z.string().url().optional(),
+  // @ts-ignore
+  PUBLIC_WEBAPP_URL: z.string().url().optional(),
 
   // Environment
-  NODE_ENV: Type.Union(
-    [
-      Type.Literal('development'),
-      Type.Literal('production'),
-      Type.Literal('staging'),
-      Type.Literal('test'),
-    ],
-    { default: 'development' },
-  ),
+  NODE_ENV: z
+    .enum(['development', 'production', 'staging', 'test'])
+    .default('development'),
 
-  // External API Keys (optional pour permettre démarrage si non utilisés)
-  IGDB_CLIENT_ID: Type.Optional(Type.String()),
-  IGDB_CLIENT_SECRET: Type.Optional(Type.String()),
-  TMDB_API_KEY: Type.Optional(Type.String()),
-  GOOGLE_BOOKS_API_KEY: Type.Optional(Type.String()),
+  // External API Keys
+  IGDB_CLIENT_ID: z.string().optional(),
+  IGDB_CLIENT_SECRET: z.string().optional(),
+  TMDB_API_KEY: z.string().optional(),
+  GOOGLE_BOOKS_API_KEY: z.string().optional(),
+
+  // Affiliate
+  INSTANT_GAMING_REF: z.string().optional(),
+  AMAZON_TAG: z.string().optional(),
 
   // Debug & Dev Tools
-  DEBUG_SQL: Type.Optional(Type.Boolean({ default: false })),
-  DB_SSL: Type.Optional(Type.Boolean()), // Force SSL on/off si défini
-  MIGRATIONS_FOLDER: Type.Optional(Type.String()), // Custom migration folder path
+  DEBUG_SQL: z
+    .preprocess((val) => {
+      if (typeof val === 'string') return val === 'true';
+      return val;
+    }, z.boolean())
+    .default(false),
+  DB_SSL: z
+    .preprocess((val) => {
+      if (typeof val === 'string') {
+        if (val === 'true') return true;
+        if (val === 'false') return false;
+      }
+      return val;
+    }, z.boolean().optional())
+    .optional(),
+  MIGRATIONS_FOLDER: z.string().optional(),
 });
 
-export type EnvType = Static<typeof EnvSchema>;
+// noinspection JSDeprecatedSymbols
+export type EnvType = z.infer<typeof envSchema>;
 
 export class ConfigurationService {
   private static instance: ConfigurationService;
@@ -56,31 +77,32 @@ export class ConfigurationService {
   private constructor() {
     // 2. Validation Fail-Fast au démarrage
     const rawEnv = { ...process.env };
-    // Railway provides PORT, map it to API_PORT if not explicit
-    if (!rawEnv.API_PORT && rawEnv.PORT) {
-      rawEnv.API_PORT = rawEnv.PORT;
+
+    // Compatibilité Railway: PORT -> API_PORT
+    if (!rawEnv['API_PORT'] && rawEnv['PORT']) {
+      rawEnv['API_PORT'] = rawEnv['PORT'];
     }
 
-    // Auto-detect Railway Environment to force correct NODE_ENV
-    if (rawEnv.RAILWAY_ENVIRONMENT_NAME) {
-      const railwayEnv = rawEnv.RAILWAY_ENVIRONMENT_NAME.toLowerCase();
+    // Compatibilité Railway: RAILWAY_ENVIRONMENT_NAME -> NODE_ENV
+    if (rawEnv['RAILWAY_ENVIRONMENT_NAME']) {
+      const railwayEnv = rawEnv['RAILWAY_ENVIRONMENT_NAME'].toLowerCase();
       if (['staging', 'production', 'development'].includes(railwayEnv)) {
-        rawEnv.NODE_ENV = railwayEnv;
+        rawEnv['NODE_ENV'] = railwayEnv;
       }
     }
 
-    // Apply defaults and convert types
-    const withDefaults = Value.Default(EnvSchema, { ...rawEnv });
-    const convertedEnv = Value.Convert(EnvSchema, withDefaults);
+    const result = envSchema.safeParse(rawEnv);
 
-    if (!Value.Check(EnvSchema, convertedEnv)) {
-      const errors = [...Value.Errors(EnvSchema, convertedEnv)];
-      console.error('❌ Invalid Configuration:', errors);
+    if (!result.success) {
+      logger.fatal(
+        { err: result.error.format() },
+        '❌ Invalid Environment Configuration',
+      );
       process.exit(1);
     }
 
-    this.config = convertedEnv;
-    console.log('✅ Configuration Loaded & Validated');
+    this.config = result.data;
+    logger.info('✅ Configuration Loaded & Validated');
   }
 
   public static getInstance(): ConfigurationService {
@@ -90,10 +112,62 @@ export class ConfigurationService {
     return ConfigurationService.instance;
   }
 
-  public get<K extends keyof EnvType>(key: K): EnvType[K] {
-    return this.config[key];
+  // --- TYPED GETTERS ---
+
+  // Infrastructure
+  public get apiPort(): number {
+    return this.config.API_PORT;
   }
 
+  public get databaseUrl(): string {
+    return this.config.DATABASE_URL;
+  }
+
+  public get redisUrl(): string {
+    return this.config.REDIS_URL;
+  }
+
+  // Auth
+  public get betterAuthSecret(): string | undefined {
+    return this.config.BETTER_AUTH_SECRET;
+  }
+
+  public get betterAuthUrl(): string | undefined {
+    return this.config.BETTER_AUTH_URL;
+  }
+
+  public get betterAuthTrustedOrigins(): string[] {
+    return this.config.BETTER_AUTH_TRUSTED_ORIGINS
+      ? this.config.BETTER_AUTH_TRUSTED_ORIGINS.split(',').map((o) => o.trim())
+      : [];
+  }
+
+  public get authCookiePrefix(): string {
+    return this.config.AUTH_COOKIE_PREFIX;
+  }
+
+  public get rootDomain(): string | undefined {
+    return this.config.ROOT_DOMAIN;
+  }
+
+  // URLs
+  public get internalApiUrl(): string | undefined {
+    return this.config.INTERNAL_API_URL;
+  }
+
+  public get publicApiUrl(): string | undefined {
+    return this.config.PUBLIC_API_URL;
+  }
+
+  public get publicWebsiteUrl(): string | undefined {
+    return this.config.PUBLIC_WEBSITE_URL;
+  }
+
+  public get publicWebappUrl(): string | undefined {
+    return this.config.PUBLIC_WEBAPP_URL;
+  }
+
+  // Environment Checks
   public get isProduction(): boolean {
     return this.config.NODE_ENV === 'production';
   }
@@ -107,8 +181,36 @@ export class ConfigurationService {
   }
 
   public get isTest(): boolean {
-    // Permet de tester avec NODE_ENV=staging en considérant staging comme test
-    return this.config.NODE_ENV === 'staging';
+    return (
+      this.config.NODE_ENV === 'test' || this.config.NODE_ENV === 'staging'
+    );
+  }
+
+  // Config Flags
+  public get debugSql(): boolean {
+    return this.config.DEBUG_SQL;
+  }
+
+  public get dbSsl(): boolean | undefined {
+    return this.config.DB_SSL;
+  }
+
+  public get migrationsFolder(): string | undefined {
+    return this.config.MIGRATIONS_FOLDER;
+  }
+
+  // Affiliate
+  public get instantGamingRef(): string | undefined {
+    return this.config.INSTANT_GAMING_REF;
+  }
+
+  public get amazonTag(): string | undefined {
+    return this.config.AMAZON_TAG;
+  }
+
+  // Generic Getter (Deprecated - prefer typed getters)
+  public get<K extends keyof EnvType>(key: K): EnvType[K] {
+    return this.config[key];
   }
 }
 

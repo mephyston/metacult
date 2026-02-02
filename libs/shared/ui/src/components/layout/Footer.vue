@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Facebook, Instagram, Twitter, Youtube } from 'lucide-vue-next';
+// noinspection JSDeprecatedSymbols
+import { Facebook, Instagram, Youtube, X } from 'lucide-vue-next';
 // Assuming Separator exists or will be created. If not, I'll remove it or use distinct div.
 // To be safe, I'll use a div border for now if Separator is not confirmed,
 // BUT the prompt said "Importé depuis vos composants UI standard".
@@ -87,6 +88,7 @@ defineProps<{
           class="text-muted-foreground transition-colors hover:text-foreground"
           aria-label="Facebook"
         >
+          <!-- noinspection JSDeprecatedSymbols -->
           <Facebook class="size-5" />
         </a>
         <a
@@ -101,7 +103,7 @@ defineProps<{
           class="text-muted-foreground transition-colors hover:text-foreground"
           aria-label="X (Twitter)"
         >
-          <Twitter class="size-5" />
+          <X class="size-5" />
         </a>
         <a
           href="#"

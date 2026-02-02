@@ -3,7 +3,7 @@ import type { DuelRepository } from '../ports/duel.repository.interface';
 import { MediaNotFoundError } from '../../domain/errors/ranking.errors';
 import { EloCalculator } from '../../domain/services/elo-calculator.service';
 import { UpdateEloScoreCommand } from './update-elo-score.command';
-import { Result, type AppError } from '@metacult/shared-core';
+import { Result } from '@metacult/shared-core';
 
 interface EloUpdateResult {
   winner: { id: string; oldElo: number; newElo: number };
@@ -22,7 +22,7 @@ export class UpdateEloScoreHandler {
 
   async execute(
     command: UpdateEloScoreCommand,
-  ): Promise<Result<EloUpdateResult, AppError>> {
+  ): Promise<Result<EloUpdateResult>> {
     const { winnerId, loserId } = command;
 
     logger.info(

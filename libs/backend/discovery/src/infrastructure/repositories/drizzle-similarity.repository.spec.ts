@@ -13,7 +13,7 @@ export const mockValues = mock(() => ({
 }));
 export const mockInsert = mock(() => ({ values: mockValues }));
 
-import { DrizzleSimilarityRepository } from './drizzle-similarity.repository';
+import { DrizzleSimilarityRepository } from '../../index';
 import { Neighbor } from '../../domain/entities/neighbor.entity';
 
 describe('Drizzle Similarity Repository', () => {

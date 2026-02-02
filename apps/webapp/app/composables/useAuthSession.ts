@@ -11,6 +11,7 @@ import { useApiUrl } from './useApiUrl';
 import { db } from '@metacult/shared-local-db';
 import { processOutbox } from '@metacult/shared-sync-manager';
 import type { UserProfile } from '@metacult/shared-types';
+import { useApi } from '../lib/api';
 
 export const useAuthSession = () => {
   // État global partagé (SSR-friendly)
@@ -50,7 +51,7 @@ export const useAuthSession = () => {
           logger.info('[useAuthSession] Loaded optimistic session from Dexie');
           isLoading.value = false; // UI is ready
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         logger.warn('[useAuthSession] Failed to load from Dexie', e);
       }
     }
@@ -70,33 +71,44 @@ export const useAuthSession = () => {
           level: 1, // Default
           xp: 0,
           nextLevelXp: 100,
+          onboardingCompleted: false,
         };
 
         // Fetch Gamification Stats
         try {
-          const apiUrl = useApiUrl();
           // Headers for SSR cookie forwarding
           const headers = import.meta.server
             ? useRequestHeaders(['cookie'])
             : undefined;
 
-          const stats = await $fetch<{
-            level: number;
-            xp: number;
-            nextLevelXp: number;
-          }>(`${apiUrl}/api/gamification/me`, {
-            headers: headers as any,
-            credentials: 'include', // Ensure cookies are sent (CORS)
-          });
+          // Eden Treaty Call (Type-Safe) - Get API client from composable
+          const apiClient = useApi();
+          const { data: statsObject, error } =
+            await apiClient.api.gamification.me.get({
+              headers: headers as HeadersInit,
+              fetch: {
+                credentials: 'include',
+              },
+            });
 
-          if (stats) {
-            mappedUser.level = stats.level;
-            mappedUser.xp = stats.xp;
-            mappedUser.nextLevelXp = stats.nextLevelXp;
+          if (error) {
+            logger.warn(
+              '[useAuthSession] Failed to fetch gamification stats',
+              error,
+            );
+          } else {
+            const stats = statsObject;
+
+            if (stats) {
+              mappedUser.level = stats.level;
+              mappedUser.xp = stats.xp;
+              mappedUser.nextLevelXp = stats.nextLevelXp;
+            }
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
+          // Additional safety net for runtime errors
           logger.warn(
-            '[useAuthSession] Failed to fetch gamification stats',
+            '[useAuthSession] Runtime error fetching gamification stats',
             err,
           );
         }
@@ -122,7 +134,10 @@ export const useAuthSession = () => {
 
           // Store user in local DB
           await db.userProfile.put(mappedUser);
-          localStorage.setItem('metacult_current_user_id', mappedUser.id);
+          localStorage.setItem(
+            'metacult_current_user_id',
+            String(mappedUser.id),
+          );
 
           // Trigger Immediate Sync (Guest -> User transition)
           // We don't await this to not block UI
@@ -165,7 +180,7 @@ export const useAuthSession = () => {
     if (!import.meta.client) return null;
     const id = localStorage.getItem('metacult_current_user_id');
     if (!id) return null;
-    return await db.userProfile.get(id);
+    return db.userProfile.get(id);
   };
 
   // Override refresh logic with the localStorage glue
@@ -182,9 +197,9 @@ export const useAuthSession = () => {
   };
 
   return {
-    user: readonly(user),
+    user: readonly(user) as Readonly<import('vue').Ref<UserProfile | null>>,
     isLoading: readonly(isLoading),
-    refreshSession: enhancedRefresh, // Use the enhanced version
     clearSession,
+    refreshSession: enhancedRefresh,
   };
 };

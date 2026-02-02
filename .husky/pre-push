@@ -1,1 +1,13 @@
-bun run quality
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🛡️  Security & Quality Check (Pre-push)..."
+
+if ! bun run audit:push; then
+  echo ""
+  echo "❌ Qualité insuffisante, push annulé."
+  echo "💡 Lance 'bun run qodana:local' pour voir les détails ou corrige les erreurs ci-dessus."
+  exit 1
+fi
+
+echo "✅ Quality Check Passed!"

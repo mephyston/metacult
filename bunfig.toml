@@ -21,3 +21,8 @@
 # Very legacy aliases (to remove eventually)
 "interaction" = "libs/backend/interaction/src/index.ts"
 "identity" = "libs/backend/identity/src/index.ts"
+
+[test]
+# Enforce 80% coverage threshold. 
+# bun test will fail if coverage is lower.
+coverageThreshold = 0.8

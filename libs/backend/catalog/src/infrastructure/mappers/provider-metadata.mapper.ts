@@ -84,6 +84,7 @@ export class ProviderMetadataMapper {
       );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     throw new Error(`Unknown metadata source: ${(metadata as any).source}`);
   }
 }

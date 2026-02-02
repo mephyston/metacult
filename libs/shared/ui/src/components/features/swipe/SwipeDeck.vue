@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import SwipeCard from './SwipeCard.vue';
-import {
-  X,
-  Clock,
-  Bookmark,
-  ThumbsUp,
-  Flame,
-  RefreshCcw,
-} from 'lucide-vue-next';
-import { logger } from '../../../lib/logger';
+import { X, Clock, Bookmark, ThumbsUp, RefreshCcw } from 'lucide-vue-next';
 
 // --- Types ---
 interface SwipeItem {
@@ -38,11 +30,13 @@ const props = withDefaults(
     guestMode?: boolean;
     signupUrl?: string;
     loginUrl?: string;
+    showFooter?: boolean;
   }>(),
   {
     guestMode: false,
     signupUrl: undefined,
     loginUrl: undefined,
+    showFooter: true,
   },
 );
 
@@ -179,20 +173,41 @@ defineExpose({
       class="relative w-full max-w-sm h-[70vh] md:h-[600px] flex items-center justify-center"
     >
       <!-- Current Card -->
-      <div v-if="currentCard" class="absolute inset-0">
-        <SwipeCard ref="cardRef" :item="currentCard" @swipe="handleSwipe" />
+      <div
+        v-if="currentCard"
+        class="absolute inset-0"
+      >
+        <SwipeCard
+          ref="cardRef"
+          :item="currentCard"
+          @swipe="handleSwipe"
+        />
       </div>
 
       <!-- Empty State (Slot for customization) -->
-      <div v-else class="flex items-center justify-center h-full">
-        <slot name="empty" :reset="resetDeck" :history="history">
+      <div
+        v-else
+        class="flex items-center justify-center h-full"
+      >
+        <slot
+          name="empty"
+          :reset="resetDeck"
+          :history="history"
+        >
           <div class="text-center space-y-4 p-8">
-            <p class="text-3xl">🎉</p>
-            <p class="text-xl font-bold text-foreground">Tout vu !</p>
+            <p class="text-3xl">
+              🎉
+            </p>
+            <p class="text-xl font-bold text-foreground">
+              Tout vu !
+            </p>
             <p class="text-sm text-muted-foreground">
               Vous avez swipé {{ totalProcessed }} cartes
             </p>
-            <div v-if="guestMode && signupUrl" class="flex flex-col gap-2">
+            <div
+              v-if="guestMode && signupUrl"
+              class="flex flex-col gap-2"
+            >
               <a
                 data-testid="btn-signup"
                 :href="signupUrl"
@@ -212,7 +227,10 @@ defineExpose({
                   </a>
                   ou
                 </span>
-                <button class="hover:underline" @click="resetDeck">
+                <button
+                  class="hover:underline"
+                  @click="resetDeck"
+                >
                   recommencer sans sauvegarder
                 </button>
               </div>
@@ -243,7 +261,10 @@ defineExpose({
         aria-label="Undo"
         @click="undo"
       >
-        <RefreshCcw class="w-5 h-5 text-yellow-500" stroke-width="2.5" />
+        <RefreshCcw
+          class="w-5 h-5 text-yellow-500"
+          stroke-width="2.5"
+        />
       </button>
 
       <!-- Dislike -->
@@ -254,7 +275,10 @@ defineExpose({
         aria-label="Dislike"
         @click="triggerSwipe('DISLIKE')"
       >
-        <X class="w-6 h-6 text-red-500" stroke-width="2.5" />
+        <X
+          class="w-6 h-6 text-red-500"
+          stroke-width="2.5"
+        />
       </button>
 
       <!-- Skip -->
@@ -264,7 +288,10 @@ defineExpose({
         aria-label="Skip"
         @click="triggerSwipe('SKIP')"
       >
-        <Clock class="w-5 h-5 text-gray-500" stroke-width="2.5" />
+        <Clock
+          class="w-5 h-5 text-gray-500"
+          stroke-width="2.5"
+        />
       </button>
 
       <!-- Wishlist -->
@@ -274,7 +301,10 @@ defineExpose({
         aria-label="Wishlist"
         @click="triggerSwipe('WISHLIST')"
       >
-        <Bookmark class="w-5 h-5 text-blue-500" stroke-width="2.5" />
+        <Bookmark
+          class="w-5 h-5 text-blue-500"
+          stroke-width="2.5"
+        />
       </button>
 
       <!-- Like (Good) -->
@@ -285,13 +315,16 @@ defineExpose({
         aria-label="Like"
         @click="triggerSwipe('LIKE')"
       >
-        <ThumbsUp class="w-6 h-6 text-green-500" stroke-width="2.5" />
+        <ThumbsUp
+          class="w-6 h-6 text-green-500"
+          stroke-width="2.5"
+        />
       </button>
     </div>
 
     <!-- Progress Counter -->
     <div
-      v-if="totalItems > 0"
+      v-if="showFooter && totalItems > 0"
       class="flex items-center gap-3 text-sm text-muted-foreground"
     >
       <span class="font-medium"> {{ totalProcessed }} / {{ totalItems }} </span>
@@ -306,7 +339,10 @@ defineExpose({
             i <= totalProcessed ? 'bg-primary scale-110' : 'bg-muted',
           ]"
         />
-        <span v-if="totalItems > 10" class="text-xs ml-1">...</span>
+        <span
+          v-if="totalItems > 10"
+          class="text-xs ml-1"
+        >...</span>
       </div>
     </div>
 
